@@ -9,12 +9,14 @@
 //  [X] Renderer: User texture binding. Use 'SDL_Texture*' as ImTextureID. Read the FAQ about ImTextureID!
 // Missing features:
 //  [ ] Renderer: Support for large meshes (64k+ vertices) with 16-bit indices.
+//  [ ] Renderer: Multi-viewport support (multiple windows).
 
 // You can copy and use unmodified imgui_impl_* files in your project. See examples/ folder for examples of using this.
 // If you are new to Dear ImGui, read documentation from the docs/ folder + read the top of imgui.cpp.
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
 // CHANGELOG
+//  2021-10-06: Backup and restore modified ClipRect/Viewport.
 //  2021-09-21: Initial version.
 
 #include "imgui.h"
@@ -115,6 +117,16 @@ void ImGui_ImplSDLRenderer_RenderDrawData(ImDrawData* draw_data)
 	if (fb_width == 0 || fb_height == 0)
 		return;
 
+    // Backup SDL_Renderer state that will be modified to restore it afterwards
+    struct BackupSDLRendererState
+    {
+        SDL_Rect    Viewport;
+        SDL_Rect    ClipRect;
+    };
+    BackupSDLRendererState old = {};
+    SDL_RenderGetViewport(bd->SDLRenderer, &old.Viewport);
+    SDL_RenderGetClipRect(bd->SDLRenderer, &old.ClipRect);
+
 	// Will project scissor/clipping rectangles into framebuffer space
 	ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
 	ImVec2 clip_scale = render_scale;
@@ -169,6 +181,10 @@ void ImGui_ImplSDLRenderer_RenderDrawData(ImDrawData* draw_data)
             }
         }
     }
+
+    // Restore modified SDL_Renderer state
+    SDL_RenderSetViewport(bd->SDLRenderer, &old.Viewport);
+    SDL_RenderSetClipRect(bd->SDLRenderer, &old.ClipRect);
 }
 
 // Called by Init/NewFrame/Shutdown
