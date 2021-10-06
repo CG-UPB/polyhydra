@@ -1,22 +1,26 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.12)
 project(volumeshOS)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# we don't need glfw docs, tests or examples
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-add_subdirectory(ext/glfw)
+# volumeshOS configuration
+set(VOLUMESHOS_ROOT ${CMAKE_CURRENT_LIST_DIR})
+set(VOLUMESHOS_SRC ${VOLUMESHOS_ROOT}/src)
+set(VOLUMESHOS_RES ${VOLUMESHOS_ROOT}/res)
+set(VOLUMESHOS_EXT ${VOLUMESHOS_ROOT}/ext)
 
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS})
+add_subdirectory(ext)
 
-file(GLOB Main_Sources "src/*.cpp")
-file(GLOB ImGUI_Sources "ext/imgui/*.cpp")
+set(volumeshOS_SOURCES src/main.cpp src/Window.h src/Window.cpp)
 
-add_executable(volumeshOS ${Main_Sources} ${ImGUI_Sources})
+add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_include_directories(volumeshOS PUBLIC ext/imgui)
-target_include_directories(volumeshOS PUBLIC ext/imgui/backends)
-target_link_libraries(volumeshOS OpenVolumeMesh glfw ${OPENGL_LIBRARIES})
+target_link_libraries(volumeshOS glew glfw imgui OpenVolumeMesh)
+
+# copy our resources to the build dir
+file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
