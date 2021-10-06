@@ -20,7 +20,7 @@ set(volumeshOS_SOURCES src/main.cpp src/Window.h src/Window.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_link_libraries(volumeshOS glew glfw imgui OpenVolumeMesh)
+target_link_libraries(volumeshOS glew glfw imgui OpenVolumeMesh ${CMAKE_DL_LIBS})
 
 # copy our resources to the build dir
 file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
