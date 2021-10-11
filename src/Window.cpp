@@ -3,12 +3,14 @@
 //
 
 #include <utility>
+#include <GL/glew.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
 #include "Window.h"
+#include "panels/MeshView.h"
 
 namespace vOS
 {
@@ -22,7 +24,7 @@ namespace vOS
         fprintf(stderr, "Error %d: %s\n", error, description.c_str());
     }
 
-    vOS::Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
+    Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
     {
         // Setup window
         glfwSetErrorCallback(glfwErrorCallback);
@@ -47,10 +49,10 @@ namespace vOS
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
         #else
             // GL 3.0 + GLSL 130
-            const char *glsl_version = "#version 130";
+            const char *glsl_version = "#version 330 core";
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-            //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
             //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
         #endif
 
@@ -64,6 +66,13 @@ namespace vOS
 
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1); // Enable vsync
+
+        GLenum err = glewInit();
+        if (err != GLEW_OK)
+        {
+            fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+            return;
+        }
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
@@ -82,6 +91,9 @@ namespace vOS
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
         ImGui_ImplOpenGL3_Init(glsl_version);
 
+        //
+        // Init ImGui style
+        //
         io.Fonts->AddFontFromFileTTF("./res/fonts/Roboto-Medium.ttf", 18.0f);
         ImGuiStyle& style = ImGui::GetStyle();
         style.FrameRounding = 4.0f;
@@ -150,9 +162,17 @@ namespace vOS
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
         colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
         colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+
+        initPanels();
     }
 
-    void vOS::Window::show()
+    void Window::initPanels()
+    {
+        auto meshView = new MeshView(720, 480);
+        m_panels.push_back(meshView);
+    }
+
+    void Window::show()
     {
         // Our state
         bool show_demo_window = true;
@@ -258,6 +278,11 @@ namespace vOS
             if (show_demo_window)
                 ImGui::ShowDemoWindow(&show_demo_window);
 
+            // draw all of our windows
+            for (auto& element: m_panels) {
+                element->show();
+            }
+
             ImGui::End();
 
             // Rendering
@@ -273,7 +298,7 @@ namespace vOS
         }
     }
 
-    void vOS::Window::destroy()
+    void Window::destroy()
     {
         // Cleanup
         ImGui_ImplOpenGL3_Shutdown();

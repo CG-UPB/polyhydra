@@ -25,4 +25,4 @@ set_target_properties(imgui PROPERTIES FOLDER "ext")
 set(IMGUI_INCLUDE_DIR  ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/backends ${VOLUMESHOS_EXT}/glew/include)
 target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})
 
-target_link_libraries(imgui PUBLIC glew glfw)
+target_link_libraries(imgui PUBLIC glew_s glfw)

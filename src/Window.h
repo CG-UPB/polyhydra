@@ -8,9 +8,16 @@
 #include <GLFW/glfw3.h>
 
 #include <string>
+#include <vector>
 
 namespace vOS
 {
+    class WindowPanel
+    {
+    public:
+        virtual void show() = 0;
+    };
+
     class Window
     {
 
@@ -21,11 +28,15 @@ namespace vOS
 
     private:
 
+        void initPanels();
+
         int m_width;
         int m_height;
         std::string m_title;
 
         GLFWwindow* m_window;
+
+        std::vector<WindowPanel*> m_panels;
     };
 }
 
