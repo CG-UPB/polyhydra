@@ -3,6 +3,7 @@
 //
 
 #include "glm/gtx/transform.hpp"
+#include "glm/gtx/euler_angles.hpp"
 
 #include "iostream"
 
@@ -13,7 +14,12 @@ namespace vOS
 {
     void MeshView::show()
     {
+        //
+        // render our mesh scene to the framebuffer texture
+        //
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glLineWidth(5);
+        glEnable(GL_LINE_SMOOTH);
         // update and render mesh
         m_meshFrameBuffer->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -22,9 +28,26 @@ namespace vOS
 
         glm::mat4 position = glm::translate(glm::vec3(m_meshPosition[0], m_meshPosition[1], m_meshPosition[2]));
         glm::mat4 scale = glm::scale(glm::vec3(m_meshScale[0], m_meshScale[1], m_meshScale[2]));
-        glm::vec3 rotation = glm::normalize(glm::vec3(m_meshRotation[0], m_meshRotation[1], m_meshRotation[2]));
-        glm::mat4 transform = glm::rotate(glm::mat4(1.0f), m_meshRotation[3], rotation) * position * scale;
+        glm::mat4 rotation = glm::eulerAngleXYZ(
+                glm::radians(m_meshRotation[0]),
+                glm::radians(m_meshRotation[1]),
+                glm::radians(m_meshRotation[2])
+                );
+        glm::mat4 transform = position * rotation * scale;
+        glm::mat4 projection = glm::perspective(
+                glm::radians(50.0f),
+                (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
+                0.1f,
+                100.0f
+                );
+        glm::mat4 view = glm::lookAt(
+                glm::vec3 {0.0f, 3.0f, 10.0f},
+                glm::vec3 {0.0f, 0.0f, 0.0f},
+                glm::vec3 {0.0f, 1.0f, 0.0f}
+                );
         m_meshShader->setUniformMat4f("u_Transform", transform);
+        m_meshShader->setUniformMat4f("u_Projection", projection);
+        m_meshShader->setUniformMat4f("u_View", view);
 
         m_vertexArrayObject->bind();
         m_vertexArrayObject->draw();
@@ -56,7 +79,7 @@ namespace vOS
 
         if (ImGui::DragFloat3("Position", m_meshPosition, 0.05f)) {}
         if (ImGui::DragFloat3("Scale", m_meshScale, 0.05f)) {}
-        if (ImGui::DragFloat4("Rotation", m_meshRotation, 0.05f)) {}
+        if (ImGui::DragFloat3("Rotation", m_meshRotation, 0.5f)) {}
 
         ImGui::End();
         ImGui::PopStyleColor();
@@ -104,13 +127,12 @@ namespace vOS
         m_meshPosition[0] = 0.0f;
         m_meshPosition[1] = 0.0f;
         m_meshPosition[2] = 0.0f;
-        m_meshScale[0] = 0.5f;
-        m_meshScale[1] = 0.5f;
-        m_meshScale[2] = 0.5f;
-        m_meshRotation[0] = 1.0f;
-        m_meshRotation[1] = 0.0f;
+        m_meshScale[0] = 1.0f;
+        m_meshScale[1] = 1.0f;
+        m_meshScale[2] = 1.0f;
+        m_meshRotation[0] = 0.0f;
+        m_meshRotation[1] = 35.0f;
         m_meshRotation[2] = 0.0f;
-        m_meshRotation[3] = 0.0f;
     }
 
     MeshView::~MeshView()

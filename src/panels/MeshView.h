@@ -23,7 +23,7 @@ namespace vOS
 
         float m_meshPosition[3];
         float m_meshScale[3];
-        float m_meshRotation[4];
+        float m_meshRotation[3];
 
         int m_viewportPanelWidth;
         int m_viewportPanelHeight;
