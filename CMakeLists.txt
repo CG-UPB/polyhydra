@@ -17,19 +17,15 @@ set(VOLUMESHOS_EXT ${VOLUMESHOS_ROOT}/ext)
 add_subdirectory(ext)
 
 set(volumeshOS_SOURCES
-        src/main.cpp
-        src/Window.h
-        src/Window.cpp
-        src/panels/MeshView.cpp
-        src/panels/MeshView.h
-        src/rendering/Shader.cpp
-        src/rendering/Shader.h
-        src/fs/FileManager.cpp
-        src/fs/FileManager.h
-        src/rendering/FrameBufferObject.cpp
-        src/rendering/FrameBufferObject.h
-        src/rendering/VertexArrayObject.cpp
-        src/rendering/VertexArrayObject.h)
+        ${VOLUMESHOS_SRC}/main.cpp
+        ${VOLUMESHOS_SRC}/Window.cpp
+        ${VOLUMESHOS_SRC}/panels/MeshView.cpp
+        ${VOLUMESHOS_SRC}/rendering/Shader.cpp
+        ${VOLUMESHOS_SRC}/fs/FileManager.cpp
+        ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
+        ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
+        ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
+        ${VOLUMESHOS_SRC}/input/Input.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

@@ -16,18 +16,27 @@ namespace vOS
     {
     public:
         MeshView(int width, int height);
-        ~MeshView();
+        ~MeshView() override;
         void show() override;
 
     private:
 
-        float m_meshPosition[3];
-        float m_meshScale[3];
-        float m_meshRotation[3];
+        // used for the arc ball
+        bool m_arcBallOn;
+        bool m_lastDown;
+        double m_lastX;
+        double m_lastY;
+
+        // current mvp and world matrix
+        glm::mat4 m_meshTransform;
+        glm::mat4 m_meshWorld;
+        glm::mat4 m_meshView;
+        glm::mat4 m_meshProjection;
 
         int m_viewportPanelWidth;
         int m_viewportPanelHeight;
 
+        // opengl rendering
         VertexArrayObject* m_vertexArrayObject;
         FrameBufferObject* m_meshFrameBuffer;
         Shader* m_meshShader;

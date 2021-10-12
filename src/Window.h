@@ -16,6 +16,7 @@ namespace vOS
     {
     public:
         virtual void show() = 0;
+        virtual ~WindowPanel() = default;
     };
 
     class Window
@@ -23,8 +24,8 @@ namespace vOS
 
     public:
         Window(int width, int height, std::string title);
+        ~Window();
         void show();
-        void destroy();
 
     private:
 
@@ -33,9 +34,7 @@ namespace vOS
         int m_width;
         int m_height;
         std::string m_title;
-
         GLFWwindow* m_window;
-
         std::vector<WindowPanel*> m_panels;
     };
 }

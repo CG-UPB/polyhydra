@@ -11,6 +11,8 @@
 
 #include "Window.h"
 #include "panels/MeshView.h"
+#include "input/Input.h"
+#include "panels/MenuBar.h"
 
 namespace vOS
 {
@@ -67,6 +69,13 @@ namespace vOS
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1); // Enable vsync
 
+        // add input callbacks
+        glfwSetKeyCallback(m_window, Input::glfwKeyCallback);
+        glfwSetMouseButtonCallback(m_window, Input::glfwMouseButtonCallback);
+        glfwSetCursorPosCallback(m_window, Input::glfwMouseCursorPosCallback);
+        glfwSetScrollCallback(m_window, Input::glfwScrollCallback);
+
+        // init glew so we can use opengl functions later
         GLenum err = glewInit();
         if (err != GLEW_OK)
         {
@@ -81,7 +90,6 @@ namespace vOS
         (void) io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
         io.IniFilename = "./res/config.ini";
 
         // Setup Dear ImGui style
@@ -98,18 +106,18 @@ namespace vOS
         ImGuiStyle& style = ImGui::GetStyle();
         style.FrameRounding = 4.0f;
         style.GrabRounding = 4.0f;
-        style.FramePadding = {10.0f, 6.0f};
+        style.FramePadding = {6.0f, 6.0f};
         style.ItemSpacing = {16.0f, 5.0f};
         style.IndentSpacing = 30.0f;
         style.ScrollbarSize = 20.0f;
-        style.WindowBorderSize = 0.0f;
-        style.ChildBorderSize = 0.0f;
-        style.PopupBorderSize = 0.0f;
-        style.WindowRounding = 12.0f;
-        style.ChildRounding = 12.0f;
-        style.FrameRounding = 12.0f;
-        style.PopupRounding = 12.0f;
-        style.ScrollbarRounding = 12.0f;
+        style.WindowBorderSize = 1.0f;
+        style.ChildBorderSize = 1.0f;
+        style.PopupBorderSize = 1.0f;
+        style.WindowRounding = 6.0f;
+        style.ChildRounding = 6.0f;
+        style.FrameRounding = 6.0f;
+        style.PopupRounding = 6.0f;
+        style.ScrollbarRounding = 6.0f;
         style.WindowTitleAlign = {0.5f, 0.5f};
 
 
@@ -168,8 +176,8 @@ namespace vOS
 
     void Window::initPanels()
     {
-        auto meshView = new MeshView(720, 480);
-        m_panels.push_back(meshView);
+        m_panels.push_back(new MenuBar());
+        m_panels.push_back(new MeshView(720, 480));
     }
 
     void Window::show()
@@ -239,42 +247,6 @@ namespace vOS
 
             style.WindowMinSize.x = minWinSizeX;
 
-            if (ImGui::BeginMenuBar())
-            {
-                if (ImGui::BeginMenu("File"))
-                {
-                    if (ImGui::MenuItem("New", "Ctrl+N"))
-                    {}
-
-                    if (ImGui::MenuItem("Open...", "Ctrl+O"))
-                    {}
-
-                    if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
-                    {}
-
-                    if (ImGui::MenuItem("Exit"))
-                    {}
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Edit"))
-                {
-                    if (ImGui::MenuItem("New", "Ctrl+N"))
-                    {}
-
-                    if (ImGui::MenuItem("Open...", "Ctrl+O"))
-                    {}
-
-                    if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
-                    {}
-
-                    if (ImGui::MenuItem("Exit"))
-                    {}
-                    ImGui::EndMenu();
-                }
-
-                ImGui::EndMenuBar();
-            }
-
             if (show_demo_window)
                 ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -295,11 +267,17 @@ namespace vOS
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             glfwSwapBuffers(m_window);
+            Input::resetOffset();
         }
     }
 
-    void Window::destroy()
+    Window::~Window()
     {
+        // delete window panels
+        for (auto& element: m_panels) {
+            delete element;
+        }
+
         // Cleanup
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
