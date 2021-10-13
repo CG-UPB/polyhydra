@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_LIBRARY_TYPE "STATIC")
 
 # volumeshOS configuration
 set(VOLUMESHOS_ROOT ${CMAKE_CURRENT_LIST_DIR})
@@ -29,7 +30,7 @@ set(volumeshOS_SOURCES
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_link_libraries(volumeshOS glm glew_s glfw imgui OpenVolumeMesh ${CMAKE_DL_LIBS})
+target_link_libraries(volumeshOS glm glew glfw imgui OpenVolumeMesh ${CMAKE_DL_LIBS})
 
 # copy our resources to the build dir
 file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
