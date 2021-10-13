@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(volumeshOS)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # we don't need glfw docs, tests or examples
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -30,7 +30,7 @@ set(volumeshOS_SOURCES
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_link_libraries(volumeshOS glm glew glfw imgui OpenVolumeMesh ${CMAKE_DL_LIBS})
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh)
 
 # copy our resources to the build dir
 file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})

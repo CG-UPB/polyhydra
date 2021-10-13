@@ -3,7 +3,7 @@
 //
 
 #include <utility>
-#include <GL/glew.h>
+#include <glad/glad.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -75,11 +75,8 @@ namespace vOS
         glfwSetCursorPosCallback(m_window, Input::glfwMouseCursorPosCallback);
         glfwSetScrollCallback(m_window, Input::glfwScrollCallback);
 
-        // init glew so we can use opengl functions later
-        GLenum err = glewInit();
-        if (err != GLEW_OK)
-        {
-            fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+            printError(1, "Failed to initialize OpenGL context");
             return;
         }
 

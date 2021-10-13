@@ -2,7 +2,7 @@
 // Created by steffen on 11.10.21.
 //
 
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <iostream>
 
 #include "Shader.h"
