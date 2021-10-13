@@ -93,7 +93,7 @@ namespace vOS
 
         // we have to create a new string here, otherwise it would be deallocated from the stack before imgui uses it
         std::filesystem::path iniPath = FileManager::getResourcePath() / "config.ini";
-        io.IniFilename = (new std::string(iniPath))->c_str();
+        io.IniFilename = (new std::string(iniPath.string().c_str()))->c_str();
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
@@ -106,7 +106,7 @@ namespace vOS
         // Init ImGui style
         //
         std::filesystem::path fontPath = FileManager::getResourcePath() / "fonts" / "Roboto-Medium.ttf";
-        io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 18.0f);
+        io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 18.0f);
         ImGuiStyle& style = ImGui::GetStyle();
         style.FrameRounding = 4.0f;
         style.GrabRounding = 4.0f;

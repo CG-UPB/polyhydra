@@ -33,4 +33,8 @@ add_executable(volumeshOS ${volumeshOS_SOURCES})
 target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh)
 
 # copy our resources to the build dir
-file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
+if(MSVC)
+    file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR}/Debug)
+else()
+    file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
+endif(MSVC)
