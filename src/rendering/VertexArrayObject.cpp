@@ -3,9 +3,8 @@
 //
 
 #include <glad/glad.h>
-#include "VertexArrayObject.h"
 
-#include "iostream"
+#include "VertexArrayObject.h"
 
 namespace vOS
 {
@@ -40,20 +39,12 @@ namespace vOS
         glDeleteBuffers(1, &m_ibo);
     }
 
-    void VertexArrayObject::bind()
+    void VertexArrayObject::draw()
     {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    }
-
-    void VertexArrayObject::unbind()
-    {
+        glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    void VertexArrayObject::draw()
-    {
-        glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
     }
 }

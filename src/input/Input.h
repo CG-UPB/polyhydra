@@ -34,7 +34,9 @@ namespace vOS
         ~Input();
         static Input& getInstance();
 
+        // map for each key code as index, true if currently pressed
         bool* m_keyMap;
+
         double m_currentMouseX;
         double m_currentMouseY;
 

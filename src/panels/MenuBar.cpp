@@ -2,13 +2,15 @@
 // Created by steffen on 12.10.21.
 //
 
-#include <imgui.h>
 #include "MenuBar.h"
+
+#include <imgui.h>
 
 namespace vOS
 {
     void MenuBar::show()
     {
+        // this should of course be changed to serve a function, for now this is just a placeholder
         if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("File"))

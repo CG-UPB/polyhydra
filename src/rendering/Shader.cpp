@@ -3,15 +3,17 @@
 //
 
 #include <glad/glad.h>
-#include <iostream>
 
 #include "Shader.h"
+
+#include <iostream>
+
 #include "../fs/FileManager.h"
 
 namespace vOS
 {
 
-    Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
+    Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath)
     {
         std::string vertexSource = FileManager::loadAsString(vertexPath);
         std::string fragmentSource = FileManager::loadAsString(fragmentPath);
@@ -57,14 +59,6 @@ namespace vOS
         glDeleteShader(fragmentID);
     }
 
-    Shader::~Shader()
-    {
-        for (auto& it: m_locations)
-        {
-            delete it.second;
-        }
-    }
-
     void Shader::bind()
     {
         glUseProgram(m_shaderID);
@@ -77,22 +71,41 @@ namespace vOS
 
     int Shader::getUniform(const std::string& name)
     {
-        int *location = m_locations[name];
-        if (location != nullptr)
+        auto location = m_locations.find(name);
+        if (location == m_locations.end())
         {
-            return *location;
+            int loc = glGetUniformLocation(m_shaderID, name.c_str());
+            if (loc == -1)
+            {
+                std::cout << "Could not find uniform: " << name << std::endl;
+            }
+            m_locations.emplace(name, loc);
         }
-        int loc = glGetUniformLocation(m_shaderID, name.c_str());
-        if (loc == -1)
-        {
-            std::cout << "Could not find uniform: " << name << std::endl;
-        }
-        m_locations[name] = new int(loc);
-        return loc;
+        return m_locations[name];
     }
 
     void Shader::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
     {
         glUniformMatrix4fv(getUniform(name), 1, GL_FALSE, &matrix[0][0]);
+    }
+
+    void Shader::setUniform1f(const std::string& name, float value)
+    {
+        glUniform1f(getUniform(name), value);
+    }
+
+    void Shader::setUniform2f(const std::string& name, glm::vec2& value)
+    {
+        glUniform2f(getUniform(name), value.x, value.y);
+    }
+
+    void Shader::setUniform3f(const std::string& name, glm::vec3& value)
+    {
+        glUniform3f(getUniform(name), value.x, value.y, value.z);
+    }
+
+    void Shader::setUniform4f(const std::string& name, glm::vec4& value)
+    {
+        glUniform4f(getUniform(name), value.x, value.y, value.z, value.w);
     }
 }

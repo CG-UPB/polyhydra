@@ -14,8 +14,6 @@ namespace vOS
     public:
         VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
         ~VertexArrayObject();
-        void bind();
-        void unbind();
         void draw();
 
     private:

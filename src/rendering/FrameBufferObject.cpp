@@ -3,9 +3,10 @@
 //
 
 #include <glad/glad.h>
-#include <iostream>
 
 #include "FrameBufferObject.h"
+
+#include <iostream>
 
 vOS::FrameBufferObject::FrameBufferObject(int width, int height)
 {

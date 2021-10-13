@@ -6,15 +6,15 @@
 #define VOLUMESHOS_FILEMANAGER_H
 
 #include <string>
+#include <filesystem>
 
 namespace vOS
 {
     class FileManager
     {
     public:
-        static const char* resourcePath;
-
-        static std::string loadAsString(const std::string& filePath);
+        static std::filesystem::path& getResourcePath();
+        static std::string loadAsString(const std::filesystem::path& filePath);
     };
 }
 

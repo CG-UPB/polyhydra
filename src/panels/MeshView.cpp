@@ -3,16 +3,14 @@
 //
 
 #include "glad/glad.h"
-#include "glm/gtx/transform.hpp"
-#include "glm/gtx/euler_angles.hpp"
-
-#include "iostream"
 
 #include "MeshView.h"
-
-#include <cmath>
-#include "imgui.h"
 #include "../input/Input.h"
+
+#include <algorithm>
+
+#include "imgui.h"
+#include "glm/gtx/transform.hpp"
 
 namespace vOS
 {
@@ -67,21 +65,12 @@ namespace vOS
 
             // scroll scaling of the mesh
             float scaleSpeed = 0.1f;
-            m_meshTransform = glm::scale(m_meshTransform, glm::vec3(1.0f + (float) Input::getScrollOffsetY() * scaleSpeed));
+            m_meshTransform = glm::scale(
+                    m_meshTransform,
+                    glm::vec3(1.0f + (float) Input::getScrollOffsetY() * scaleSpeed)
+            );
         }
         m_lastDown = isDown;
-
-        // now render our mesh scene to the framebuffer texture
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glLineWidth(5);
-        glEnable(GL_LINE_SMOOTH);
-
-        m_meshFrameBuffer->bind();
-
-        // we need to clear our framebuffer as well
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        m_meshShader->bind();
 
         // arc ball rotation based on this article: https://nerdhut.de/2019/12/04/arcball-camera-opengl/
         if (m_arcBallOn)
@@ -106,25 +95,55 @@ namespace vOS
             // rotate the world (all objects) around the y axis
             if (dx < 0)
             {
-                m_meshWorld = glm::rotate(m_meshWorld, glm::radians(-rotX), glm::vec3(0.0f, 1.0f, 0.0f));
+                m_meshWorld = glm::rotate(
+                        m_meshWorld,
+                        glm::radians(-rotX),
+                        glm::vec3(0.0f, 1.0f, 0.0f)
+                );
             }
             else if (dx > 0)
             {
-                m_meshWorld = glm::rotate(m_meshWorld, glm::radians(rotX), glm::vec3(0.0f, 1.0f, 0.0f));
+                m_meshWorld = glm::rotate(
+                        m_meshWorld,
+                        glm::radians(rotX),
+                        glm::vec3(0.0f, 1.0f, 0.0f)
+                );
             }
 
             // rotate the camera around the x axis
             if (dy < 0)
             {
-                m_meshView = glm::rotate(m_meshView, glm::radians(-rotSpeed * scaleY), glm::vec3(1.0f, 0.0f, 0.0f));
+                m_meshView = glm::rotate(
+                        m_meshView,
+                        glm::radians(-rotSpeed * scaleY),
+                        glm::vec3(1.0f, 0.0f, 0.0f)
+                );
             }
             else if (dy > 0)
             {
-                m_meshView = glm::rotate(m_meshView, glm::radians(rotSpeed * scaleY), glm::vec3(1.0f, 0.0f, 0.0f));
+                m_meshView = glm::rotate(
+                        m_meshView,
+                        glm::radians(rotSpeed * scaleY),
+                        glm::vec3(1.0f, 0.0f, 0.0f)
+                );
             }
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
         }
+
+        // render our mesh in polygon mode for debugging
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glEnable(GL_LINE_SMOOTH);
+        glLineWidth(5);
+
+        // now render our mesh scene to the framebuffer texture
+        m_meshFrameBuffer->bind();
+
+        // we need to clear our framebuffer as well
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        m_meshShader->bind();
 
         // set all of our uniforms
         m_meshShader->setUniformMat4f("u_Transform", m_meshWorld * m_meshTransform);
@@ -132,11 +151,13 @@ namespace vOS
         m_meshShader->setUniformMat4f("u_View", m_meshView);
 
         // now draw to the actual texture of the framebuffer
-        m_vertexArrayObject->bind();
         m_vertexArrayObject->draw();
-        m_vertexArrayObject->unbind();
+
+        // unbind our framebuffer and shader
         m_meshShader->unbind();
         m_meshFrameBuffer->unbind();
+
+        // disable polygon mode again
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // finally, add the framebuffer texture as an image to the imgui window
@@ -160,7 +181,7 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        // test mesh cube
+        // test mesh cube vertices and indices
         std::vector<float> vertices = {
                 // front
                 -1.0, -1.0, 1.0,
@@ -194,19 +215,16 @@ namespace vOS
                 6, 7, 3
         };
 
-        m_vertexArrayObject = new VertexArrayObject(vertices, indices);
+        std::filesystem::path shaderPath = "shaders";
+        m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
         m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_meshShader = new Shader("shaders/mesh.vert", "shaders/mesh.frag");
+        m_vertexArrayObject = new VertexArrayObject(vertices, indices);
 
+        // set up the initial camera position, direction and orientation of the mesh
         glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
         glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
-        glm::mat4 rotation = glm::eulerAngleXYZ(
-                glm::radians(0.0f),
-                glm::radians(0.0f),
-                glm::radians(0.0f)
-        );
+        glm::mat4 rotation = glm::mat4(1.0f);
         m_meshTransform = position * rotation * scale;
-
         m_meshWorld = glm::mat4(1.0f);
         m_meshProjection = glm::perspective(
                 glm::radians(50.0f),

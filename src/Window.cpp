@@ -2,8 +2,10 @@
 // Created by steffen on 06.10.21.
 //
 
-#include <utility>
 #include <glad/glad.h>
+
+#include <iostream>
+#include <utility>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -13,6 +15,7 @@
 #include "panels/MeshView.h"
 #include "input/Input.h"
 #include "panels/MenuBar.h"
+#include "fs/FileManager.h"
 
 namespace vOS
 {
@@ -21,9 +24,9 @@ namespace vOS
         fprintf(stderr, "Glfw Error %d: %s\n", error, description);
     }
 
-    static void printError(int error, const std::string &description)
+    static void printError(const std::string& description)
     {
-        fprintf(stderr, "Error %d: %s\n", error, description.c_str());
+        fprintf(stderr, "Error: %s\n", description.c_str());
     }
 
     Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
@@ -62,7 +65,7 @@ namespace vOS
         m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
         if (m_window == nullptr)
         {
-            printError(1, "Failed to create window");
+            printError("Failed to create window");
             return;
         }
 
@@ -76,7 +79,7 @@ namespace vOS
         glfwSetScrollCallback(m_window, Input::glfwScrollCallback);
 
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-            printError(1, "Failed to initialize OpenGL context");
+            printError("Failed to initialize OpenGL context");
             return;
         }
 
@@ -87,7 +90,10 @@ namespace vOS
         (void) io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.IniFilename = "./res/config.ini";
+
+        // we have to create a new string here, otherwise it would be deallocated from the stack before imgui uses it
+        std::filesystem::path iniPath = FileManager::getResourcePath() / "config.ini";
+        io.IniFilename = (new std::string(iniPath))->c_str();
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
@@ -99,7 +105,8 @@ namespace vOS
         //
         // Init ImGui style
         //
-        io.Fonts->AddFontFromFileTTF("./res/fonts/Roboto-Medium.ttf", 18.0f);
+        std::filesystem::path fontPath = FileManager::getResourcePath() / "fonts" / "Roboto-Medium.ttf";
+        io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 18.0f);
         ImGuiStyle& style = ImGui::GetStyle();
         style.FrameRounding = 4.0f;
         style.GrabRounding = 4.0f;
