@@ -93,7 +93,7 @@ namespace vOS
 
         // we have to create a new string here, otherwise it would be deallocated from the stack before imgui uses it
         std::filesystem::path iniPath = FileManager::getResourcePath() / "config.ini";
-        io.IniFilename = (new std::string(iniPath.string().c_str()))->c_str();
+        io.IniFilename = (new std::string(iniPath.string()))->c_str();
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();

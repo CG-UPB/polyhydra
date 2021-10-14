@@ -1,4 +1,0 @@
-#pragma once
-
-#cmakedefine01  OVM_ENABLE_DEPRECATED_APIS
-
