@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.12)
+project(volumeshOS)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# we don't need glfw docs, tests or examples
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_LIBRARY_TYPE "STATIC")
+
+# volumeshOS configuration
+set(VOLUMESHOS_ROOT ${CMAKE_CURRENT_LIST_DIR})
+set(VOLUMESHOS_SRC ${VOLUMESHOS_ROOT}/src)
+set(VOLUMESHOS_RES ${VOLUMESHOS_ROOT}/res)
+set(VOLUMESHOS_EXT ${VOLUMESHOS_ROOT}/ext)
+
+add_subdirectory(${VOLUMESHOS_EXT})
+
+set(volumeshOS_SOURCES
+        ${VOLUMESHOS_SRC}/main.cpp
+        ${VOLUMESHOS_SRC}/Window.cpp
+        ${VOLUMESHOS_SRC}/panels/MeshView.cpp
+        ${VOLUMESHOS_SRC}/rendering/Shader.cpp
+        ${VOLUMESHOS_SRC}/fs/FileManager.cpp
+        ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
+        ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
+        ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
+        ${VOLUMESHOS_SRC}/input/Input.cpp)
+
+add_executable(volumeshOS ${volumeshOS_SOURCES})
+
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh)
+
+# copy our resources to the build dir
+if(MSVC)
+    file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR}/Debug)
+else()
+    file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
+endif(MSVC)
