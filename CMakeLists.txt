@@ -15,7 +15,7 @@ set(VOLUMESHOS_SRC ${VOLUMESHOS_ROOT}/src)
 set(VOLUMESHOS_RES ${VOLUMESHOS_ROOT}/res)
 set(VOLUMESHOS_EXT ${VOLUMESHOS_ROOT}/ext)
 
-add_subdirectory(ext)
+add_subdirectory(${VOLUMESHOS_EXT})
 
 set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/main.cpp
