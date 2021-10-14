@@ -1,0 +1,3 @@
+[submodule "ext/OpenVolumeMesh"]
+	path = ext/OpenVolumeMesh
+	url = https://gitlab.vci.rwth-aachen.de:9000/OpenVolumeMesh/OpenVolumeMesh.git
