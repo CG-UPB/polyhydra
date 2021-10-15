@@ -1,9 +1,4 @@
-//
-// Created by steffen on 06.10.21.
-//
-
-#ifndef VOLUMESHOS_WINDOW_H
-#define VOLUMESHOS_WINDOW_H
+#pragma once
 
 #include <GLFW/glfw3.h>
 
@@ -29,14 +24,17 @@ namespace vOS
 
     private:
 
+        void initGLFW();
+        void initImGui();
+        void initImGuiStyle();
         void initPanels();
+        void showDockSpace();
 
         int m_width;
         int m_height;
         std::string m_title;
+        std::string m_glslVersion;
         GLFWwindow* m_window;
         std::vector<WindowPanel*> m_panels;
     };
 }
-
-#endif //VOLUMESHOS_WINDOW_H

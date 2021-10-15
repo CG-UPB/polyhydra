@@ -1,6 +1,3 @@
-//
-// Created by steffen on 12.10.21.
-//
 
 #include "GLFW/glfw3.h"
 #include "Input.h"

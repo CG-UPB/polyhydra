@@ -1,6 +1,3 @@
-//
-// Created by steffen on 11.10.21.
-//
 
 #include "glad/glad.h"
 
@@ -14,11 +11,81 @@
 
 namespace vOS
 {
-    void MeshView::show()
+    MeshView::MeshView(int width, int height):
+            m_viewportPanelWidth(width),
+            m_viewportPanelHeight(height),
+            m_lastDown(false),
+            m_lastX(0.0),
+            m_lastY(0.0),
+            m_arcBallOn(false)
     {
+        // test mesh cube vertices and indices
+        std::vector<float> vertices = {
+                // front
+                -1.0, -1.0, 1.0,
+                1.0, -1.0, 1.0,
+                1.0, 1.0, 1.0,
+                -1.0, 1.0, 1.0,
+                // back
+                -1.0, -1.0, -1.0,
+                1.0, -1.0, -1.0,
+                1.0, 1.0, -1.0,
+                -1.0, 1.0, -1.0
+        };
+        std::vector<unsigned int> indices = {
+                // front
+                0, 1, 2,
+                2, 3, 0,
+                // right
+                1, 5, 6,
+                6, 2, 1,
+                // back
+                7, 6, 5,
+                5, 4, 7,
+                // left
+                4, 0, 3,
+                3, 7, 4,
+                // bottom
+                4, 5, 1,
+                1, 0, 4,
+                // top
+                3, 2, 6,
+                6, 7, 3
+        };
 
-        ImGui::Begin("Mesh");
+        std::filesystem::path shaderPath = "shaders";
+        m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
+        m_meshFrameBuffer = new FrameBufferObject(width, height);
+        m_vertexArrayObject = new VertexArrayObject(vertices, indices);
 
+        // set up the initial camera position, direction and orientation of the mesh
+        glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
+        glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
+        glm::mat4 rotation = glm::mat4(1.0f);
+        m_meshTransform = position * rotation * scale;
+        m_meshWorld = glm::mat4(1.0f);
+        m_meshProjection = glm::perspective(
+                glm::radians(50.0f),
+                (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
+                0.1f,
+                100.0f
+        );
+        m_meshView = glm::lookAt(
+                glm::vec3{0.0f, 0.0f, 8.0f},
+                glm::vec3{0.0f, 0.0f, 0.0f},
+                glm::vec3{0.0f, 1.0f, 0.0f}
+        );
+    }
+
+    MeshView::~MeshView()
+    {
+        delete m_vertexArrayObject;
+        delete m_meshFrameBuffer;
+        delete m_meshShader;
+    }
+
+    void MeshView::handleResize()
+    {
         // if our window panel size changes, we need to adjust the framebuffer size and projection
         auto viewPortPanelSize = ImGui::GetContentRegionAvail();
         float width = std::max(viewPortPanelSize.x, 100.0f);
@@ -35,7 +102,10 @@ namespace vOS
                     100.0f
             );
         }
+    }
 
+    void MeshView::handleMouseControl()
+    {
         // check where the imgui window is inside the main window, and how big it is
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
         ImVec2 vMax = ImGui::GetWindowContentRegionMax();
@@ -130,7 +200,10 @@ namespace vOS
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
         }
+    }
 
+    void MeshView::renderMesh()
+    {
         // render our mesh in polygon mode for debugging
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glEnable(GL_LINE_SMOOTH);
@@ -159,6 +232,22 @@ namespace vOS
 
         // disable polygon mode again
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    void MeshView::show()
+    {
+        ImGui::Begin("Mesh");
+
+        // handle the things related to our mesh rendering canvas
+        handleResize();
+        handleMouseControl();
+        renderMesh();
+
+        // store the current top left position, so we can draw text here later on top of our canvas
+        auto topLeft = ImGui::GetCursorPos();
+        auto padding = ImGui::GetStyle().WindowPadding;
+        topLeft.x += padding.x;
+        topLeft.y += padding.y;
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
@@ -170,79 +259,12 @@ namespace vOS
                 {1.0f, 0.0f}
         );
 
+        // show frame time and fps
+        ImGui::SetCursorPos(topLeft);
+        ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+        ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+
         ImGui::End();
-    }
-
-    MeshView::MeshView(int width, int height) :
-            m_viewportPanelWidth(width),
-            m_viewportPanelHeight(height),
-            m_lastDown(false),
-            m_lastX(0.0),
-            m_lastY(0.0),
-            m_arcBallOn(false)
-    {
-        // test mesh cube vertices and indices
-        std::vector<float> vertices = {
-                // front
-                -1.0, -1.0, 1.0,
-                1.0, -1.0, 1.0,
-                1.0, 1.0, 1.0,
-                -1.0, 1.0, 1.0,
-                // back
-                -1.0, -1.0, -1.0,
-                1.0, -1.0, -1.0,
-                1.0, 1.0, -1.0,
-                -1.0, 1.0, -1.0
-        };
-        std::vector<unsigned int> indices = {
-                // front
-                0, 1, 2,
-                2, 3, 0,
-                // right
-                1, 5, 6,
-                6, 2, 1,
-                // back
-                7, 6, 5,
-                5, 4, 7,
-                // left
-                4, 0, 3,
-                3, 7, 4,
-                // bottom
-                4, 5, 1,
-                1, 0, 4,
-                // top
-                3, 2, 6,
-                6, 7, 3
-        };
-
-        std::filesystem::path shaderPath = "shaders";
-        m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
-        m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_vertexArrayObject = new VertexArrayObject(vertices, indices);
-
-        // set up the initial camera position, direction and orientation of the mesh
-        glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
-        glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
-        glm::mat4 rotation = glm::mat4(1.0f);
-        m_meshTransform = position * rotation * scale;
-        m_meshWorld = glm::mat4(1.0f);
-        m_meshProjection = glm::perspective(
-                glm::radians(50.0f),
-                (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                0.1f,
-                100.0f
-        );
-        m_meshView = glm::lookAt(
-                glm::vec3{0.0f, 0.0f, 8.0f},
-                glm::vec3{0.0f, 0.0f, 0.0f},
-                glm::vec3{0.0f, 1.0f, 0.0f}
-        );
-    }
-
-    MeshView::~MeshView()
-    {
-        delete m_vertexArrayObject;
-        delete m_meshFrameBuffer;
-        delete m_meshShader;
     }
 }

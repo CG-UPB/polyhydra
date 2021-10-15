@@ -1,9 +1,4 @@
-//
-// Created by steffen on 12.10.21.
-//
-
-#ifndef VOLUMESHOS_INPUT_H
-#define VOLUMESHOS_INPUT_H
+#pragma once
 
 class GLFWwindow;
 
@@ -44,5 +39,3 @@ namespace vOS
         double m_currentScrollOffsetY;
     };
 }
-
-#endif //VOLUMESHOS_INPUT_H

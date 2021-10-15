@@ -1,9 +1,4 @@
-//
-// Created by steffen on 11.10.21.
-//
-
-#ifndef VOLUMESHOS_SHADER_H
-#define VOLUMESHOS_SHADER_H
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -38,7 +33,3 @@ namespace vOS
         std::unordered_map<std::string, int> m_locations;
     };
 }
-
-
-
-#endif //VOLUMESHOS_SHADER_H

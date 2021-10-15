@@ -1,9 +1,4 @@
-//
-// Created by steffen on 11.10.21.
-//
-
-#ifndef VOLUMESHOS_FRAMEBUFFEROBJECT_H
-#define VOLUMESHOS_FRAMEBUFFEROBJECT_H
+#pragma once
 
 namespace vOS
 {
@@ -36,6 +31,3 @@ namespace vOS
         int m_previousViewPort[4];
     };
 }
-
-
-#endif //VOLUMESHOS_FRAMEBUFFEROBJECT_H

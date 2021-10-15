@@ -1,9 +1,4 @@
-//
-// Created by steffen on 12.10.21.
-//
-
-#ifndef VOLUMESHOS_MENUBAR_H
-#define VOLUMESHOS_MENUBAR_H
+#pragma once
 
 #include "../Window.h"
 
@@ -15,5 +10,3 @@ namespace vOS
         ~MenuBar() override = default;
     };
 }
-
-#endif //VOLUMESHOS_MENUBAR_H

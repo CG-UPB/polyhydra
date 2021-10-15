@@ -1,6 +1,3 @@
-//
-// Created by steffen on 11.10.21.
-//
 
 #include "FileManager.h"
 

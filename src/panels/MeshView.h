@@ -1,9 +1,4 @@
-//
-// Created by steffen on 11.10.21.
-//
-
-#ifndef VOLUMESHOS_MESHVIEW_H
-#define VOLUMESHOS_MESHVIEW_H
+#pragma once
 
 #include "../Window.h"
 #include "../rendering/FrameBufferObject.h"
@@ -20,6 +15,10 @@ namespace vOS
         void show() override;
 
     private:
+
+        void handleResize();
+        void handleMouseControl();
+        void renderMesh();
 
         // used for the arc ball
         bool m_arcBallOn;
@@ -42,6 +41,3 @@ namespace vOS
         Shader* m_meshShader;
     };
 }
-
-
-#endif //VOLUMESHOS_MESHVIEW_H
