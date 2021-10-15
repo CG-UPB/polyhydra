@@ -121,6 +121,7 @@ namespace vOS
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
 
+
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
         ImGui_ImplOpenGL3_Init(m_glslVersion.c_str());
