@@ -26,7 +26,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
         ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
-        ${VOLUMESHOS_SRC}/input/Input.cpp)
+        ${VOLUMESHOS_SRC}/input/Input.cpp src/algorithms/dijkstra.cpp src/algorithms/dijkstra.h src/algorithms/VosWindow.cpp src/algorithms/VosWindow.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
