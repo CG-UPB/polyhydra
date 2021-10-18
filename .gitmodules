@@ -13,4 +13,4 @@
 [submodule "ext/ImGuiFileDialog"]
     path = ext/ImGuiFileDialog
     url = https://github.com/aiekick/ImGuiFileDialog.git
-    branch = Lib_only
+    branch = Lib_Only
