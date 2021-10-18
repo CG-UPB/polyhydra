@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 
 #include <utility>
+#include <iostream>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -12,6 +13,8 @@
 #include "input/Input.h"
 #include "panels/MenuBar.h"
 #include "fs/FileManager.h"
+
+#include"../ext/ImGuiFileDialog/ImGuiFileDialog.h"
 
 namespace vOS
 {
@@ -250,6 +253,7 @@ namespace vOS
     void Window::show()
     {
         // Main loop
+        int counter = 0;
         while (!glfwWindowShouldClose(m_window))
         {
             glfwPollEvents();
@@ -262,6 +266,27 @@ namespace vOS
             showDockSpace();
 
             ImGui::ShowDemoWindow();
+
+            if (counter == 0){
+                ImGuiFileDialog::Instance()->OpenDialog("ChooseOVMFIle", "Choose File", ".ovm", ".");
+
+            }
+
+            if (ImGuiFileDialog::Instance()->Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
+            {
+                // action if OK
+                if (ImGuiFileDialog::Instance()->IsOk())
+                {
+                    std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                    std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                    counter++;
+                    std::cout << filePathName << std::endl;
+                    // action
+                }
+
+                // close
+                ImGuiFileDialog::Instance()->Close();
+            }
 
             // draw all of our windows
             for (auto& element: m_panels) {
