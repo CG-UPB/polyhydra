@@ -6,7 +6,6 @@
 
 namespace vOS
 {
-
     class MeshObject
     {
     public:
@@ -22,8 +21,15 @@ namespace vOS
         std::vector<int> edges();
         //std::vector<int> faces();
 
+        void set_highlight(OpenVolumeMesh::VertexIter v_it, bool b);
+        void set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col);
+    private:
+
 
     };
+
+
+
 
 
 }

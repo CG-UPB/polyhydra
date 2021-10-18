@@ -4,11 +4,16 @@
 
 #include <array>
 #include <vector>
+#include <OpenVolumeMesh/Attribs/OpenVolumeMeshStatus.hh>
 
 namespace vOS
 {
     MeshObject::MeshObject() {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
+
+        OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
+        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>("VertexHighlightColor");
+
     }
 
     void MeshObject::load_from_file(std::string file_path){
@@ -69,5 +74,17 @@ namespace vOS
         return faces;
     }
 */
+
+    void MeshObject::set_highlight(OpenVolumeMesh::VertexIter v_it, bool b){
+        OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
+        highlightProp[*v_it] = b;
+    }
+
+    void MeshObject::set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col){
+        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>("VertexHighlightColor");
+        highlightColProp[*v_it] = col;
+    }
+
+
 }
 
