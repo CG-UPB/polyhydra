@@ -202,7 +202,16 @@ namespace vOS
     {
         m_panels.push_back(new MenuBar());
         m_panels.push_back(new MeshView(720, 480));
-        m_panels.push_back(new LogWindow());
+        LogWindow* mylog = LogWindow::getInstance();
+        m_panels.push_back(mylog);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 543);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
+        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
     }
 
     void Window::showDockSpace()

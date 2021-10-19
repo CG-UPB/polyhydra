@@ -6,11 +6,11 @@
 
 namespace vOS
 {
-    class LogWindow: public WindowPanel
+    class LogWindow final: public WindowPanel
     {
         public:
-            LogWindow();
-            ~LogWindow() override;
+            ~LogWindow();
+            static LogWindow* getInstance();
             void clear();
             void addLog(const char* fmt, ...) IM_FMTARGS(2);
             void show() override;
@@ -18,6 +18,9 @@ namespace vOS
             ImGuiTextFilter filter;
             ImVector<int>   lineOffsets;
         private:
+            LogWindow();
+
+            static LogWindow* instance;
             bool autoScroll;
     };
 }

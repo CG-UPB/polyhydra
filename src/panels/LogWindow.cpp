@@ -11,15 +11,29 @@
 namespace vOS
 {
 
+    LogWindow* LogWindow::instance = 0;
+
+    LogWindow* LogWindow::getInstance()
+    {
+        if (instance == 0)
+        {
+            instance = new LogWindow();
+        }
+        
+        return instance;
+
+    }
+
     LogWindow::LogWindow()
     {
         autoScroll = true;
         clear();
     }
 
+
     LogWindow::~LogWindow()
     {
-        
+        delete instance;
     }
 
     void LogWindow::clear()
@@ -31,6 +45,9 @@ namespace vOS
 
     void LogWindow::addLog(const char* fmt, ...)
     {
+        //TODO: Add new Line automaticaly after each new Log
+        //TODO: Add new Line, if a Log-Message is to big for the Screen
+
         int old_size = Buf.size();
         va_list args;
         va_start(args, fmt);
@@ -39,6 +56,7 @@ namespace vOS
         for (int new_size = Buf.size(); old_size < new_size; old_size++)
             if (Buf[old_size] == '\n')
                 lineOffsets.push_back(old_size + 1);
+        lineOffsets.push_back(old_size);
     }
 
 
