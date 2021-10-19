@@ -1,6 +1,4 @@
 
-#include "glad/glad.h"
-
 #include "LogWindow.h"
 
 #include "../input/Input.h"
@@ -16,30 +14,30 @@ namespace vOS
     LogWindow::LogWindow()
     {
         autoScroll = true;
-        clear()
+        clear();
     }
 
-    LogWindow::clear()
+    void LogWindow::clear()
     {
         Buf.clear();
-        lineOfSets.clear();
-        lineOfSets.push_back(0);
+        lineOffsets.clear();
+        lineOffsets.push_back(0);
     }
 
-    LogWindow::addLog(const char* fmt, ...)
+    void LogWindow::addLog(const char* fmt, ...)
     {
         int old_size = Buf.size();
         va_list args;
         va_start(args, fmt);
         Buf.appendfv(fmt, args);
         va_end(args);
-        for (int new_size = buf.size(); old_size < new_size; old_size++)
+        for (int new_size = Buf.size(); old_size < new_size; old_size++)
             if (Buf[old_size] == '\n')
                 lineOffsets.push_back(old_size + 1);
     }
 
 
-    void LogWindow::draw()
+    void LogWindow::draw(const char* title, bool* p_open)
     {
         if (!ImGui::Begin(title, p_open))
         {
@@ -50,7 +48,7 @@ namespace vOS
         // Options menu
         if (ImGui::BeginPopup("Options"))
         {
-            ImGui::Checkbox("Auto-scroll", &AutoScroll);
+            ImGui::Checkbox("Auto-scroll", &autoScroll);
             ImGui::EndPopup();
         }
 
@@ -62,13 +60,13 @@ namespace vOS
         ImGui::SameLine();
         bool copy = ImGui::Button("Copy");
         ImGui::SameLine();
-        Filter.Draw("Filter", -100.0f);
+        filter.Draw("Filter", -100.0f);
 
         ImGui::Separator();
         ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
         if (clear)
-            Clear();
+            clear();
         if (copy)
             ImGui::LogToClipboard();
 
@@ -85,7 +83,7 @@ namespace vOS
             {
                 const char* line_start = buf + lineOffsets[line_no];
                 const char* line_end = (line_no + 1 < lineOffsets.Size) ? (buf + lineOffsets[line_no + 1] - 1) : buf_end;
-                if (Filter.PassFilter(line_start, line_end))
+                if (filter.PassFilter(line_start, line_end))
                     ImGui::TextUnformatted(line_start, line_end);
             }
         }
@@ -119,7 +117,7 @@ namespace vOS
         }
         ImGui::PopStyleVar();
 
-        if (AutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+        if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
             ImGui::SetScrollHereY(1.0f);
 
         ImGui::EndChild();
