@@ -17,6 +17,11 @@ namespace vOS
         clear();
     }
 
+    LogWindow::~LogWindow()
+    {
+        
+    }
+
     void LogWindow::clear()
     {
         Buf.clear();
@@ -37,9 +42,9 @@ namespace vOS
     }
 
 
-    void LogWindow::draw(const char* title, bool* p_open)
+    void LogWindow::show()
     {
-        if (!ImGui::Begin(title, p_open))
+        if (!ImGui::Begin("Log-Window"))
         {
             ImGui::End();
             return;
@@ -56,7 +61,7 @@ namespace vOS
         if (ImGui::Button("Options"))
             ImGui::OpenPopup("Options");
         ImGui::SameLine();
-        bool clear = ImGui::Button("Clear");
+        bool clear1 = ImGui::Button("Clear");
         ImGui::SameLine();
         bool copy = ImGui::Button("Copy");
         ImGui::SameLine();
@@ -65,7 +70,7 @@ namespace vOS
         ImGui::Separator();
         ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
-        if (clear)
+        if (clear1)
             clear();
         if (copy)
             ImGui::LogToClipboard();

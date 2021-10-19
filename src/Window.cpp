@@ -12,6 +12,7 @@
 #include "input/Input.h"
 #include "panels/MenuBar.h"
 #include "fs/FileManager.h"
+#include "panels/LogWindow.h"
 
 namespace vOS
 {
@@ -201,6 +202,7 @@ namespace vOS
     {
         m_panels.push_back(new MenuBar());
         m_panels.push_back(new MeshView(720, 480));
+        m_panels.push_back(new LogWindow());
     }
 
     void Window::showDockSpace()
