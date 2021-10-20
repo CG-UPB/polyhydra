@@ -14,9 +14,9 @@ namespace vOS{
 
     }
 
-    bool VosWindow::OpenWindow() {
+    int VosWindow::OpenWindow() {
 
-        return true;
+        return 0;
     }
 
     bool VosWindow::LinkMesh(v3f *mesh) {
