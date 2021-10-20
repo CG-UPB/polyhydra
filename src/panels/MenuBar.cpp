@@ -3,6 +3,9 @@
 
 #include <imgui.h>
 
+#include "ImGuiFileDialog.h"
+#include <iostream>
+
 namespace vOS
 {
     void MenuBar::show()
@@ -16,7 +19,27 @@ namespace vOS
                 {}
 
                 if (ImGui::MenuItem("Open...", "Ctrl+O"))
-                {}
+                {
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseOVMFIle", "Choose File", ".ovm", ".");
+
+                    if (ImGuiFileDialog::Instance()->Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
+                    {
+                        // action if OK
+                        if (ImGuiFileDialog::Instance()->IsOk())
+                        {
+                            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+                            std::cout << filePathName << std::endl;
+                            // action
+                            ImGuiFileDialog::Instance()->Close();
+
+                        }
+
+                        // close
+
+                    }
+                }
 
                 if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
                 {}

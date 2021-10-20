@@ -5,6 +5,7 @@ add_subdirectory(glad)
 add_subdirectory(glfw)
 add_subdirectory(glm)
 add_subdirectory(OpenVolumeMesh)
+add_subdirectory(ImGuiFileDialog)
 
 # imgui is not built with cmake by default, so we need to include the files ourselves
 project(imgui)

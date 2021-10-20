@@ -31,7 +31,7 @@ set(volumeshOS_SOURCES
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh)
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh ImGuiFileDialog)
 
 # copy our resources to the build dir
 if(MSVC)

@@ -44,36 +44,34 @@ namespace vOS
     }
 
     std::vector<int> MeshObject::edges() {
-        //int dim = m_mesh->dim();
-        int dim = 3;
         std::vector<int> edges;
 
         for(OpenVolumeMesh::EdgeIter e_it = m_mesh->edges_begin();
             e_it != m_mesh->edges_end(); ++e_it){
-            std::array<OpenVolumeMesh::VertexHandle, 2> vertexids = m_mesh->edge_vertices(*e_it);
-            edges.push_back(vertexids[0].idx());
-            edges.push_back(vertexids[1].idx());
+            std::array<OpenVolumeMesh::VertexHandle, 2> edge_vertexids = m_mesh->edge_vertices(*e_it);
+            edges.push_back(edge_vertexids[0].idx());
+            edges.push_back(edge_vertexids[1].idx());
 
         }
 
         return edges;
     }
 
-/*
+
     std::vector<int> MeshObject::faces() {
-        //int dim = m_mesh->dim();
-        int dim = 3;
+
         std::vector<int> faces;
 
         for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
             f_it != m_mesh->vertices_end(); ++f_it) {
-
-            ///TODO
+            //<FaceVertexIter, FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
+            //faces.push_back(face_vertexids[0].idx());
+            //faces.push_back(face_vertexids[1].idx());
         }
 
         return faces;
     }
-*/
+
 
     void MeshObject::set_highlight(OpenVolumeMesh::VertexIter v_it, bool b){
         OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
