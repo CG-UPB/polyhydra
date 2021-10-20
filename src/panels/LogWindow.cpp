@@ -1,22 +1,17 @@
 
 #include "LogWindow.h"
-
 #include "../input/Input.h"
-
 #include <algorithm>
-
 #include "imgui.h"
-
 #include <iostream>
-
 #include <string.h>
-
 
 namespace vOS
 {
 
     LogWindow* LogWindow::instance = 0;
 
+    // Singleton
     LogWindow* LogWindow::getInstance()
     {
         if (instance == 0)
@@ -28,13 +23,14 @@ namespace vOS
 
     }
 
+    // Konstruktor
     LogWindow::LogWindow()
     {
         autoScroll = true;
         clear();
     }
 
-
+    // Destruktor
     LogWindow::~LogWindow()
     {
         delete instance;
@@ -48,8 +44,10 @@ namespace vOS
     }
 
 
-    //TODO: Add new Line, if a Log-Message is to big for the Screen
+    // following methods are similar to https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp [SECTION] Example App: Debug Log 
+    // sends messages to the log console
     void LogWindow::addLog(const char* fmt, int level_int)
+    // TODO: Add new Line, if a Log-Message is to big for the Screen
     {
         int old_size = Buf.size();
         if (level_int == 0){
@@ -72,15 +70,13 @@ namespace vOS
                 lineOffsets.push_back(old_size + 1);
     }
 
-
+    // show log window and corresponding buttons
     void LogWindow::show()
     {
-
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         int size_y = main_viewport->WorkSize.y * 0.7;
         ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 5, main_viewport->WorkPos.y + main_viewport->WorkSize.y * 0.7), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(500, main_viewport->WorkSize.y - size_y), ImGuiCond_Once);
-
 
         if (!ImGui::Begin("Log-Window"))
         {
@@ -116,35 +112,24 @@ namespace vOS
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
         const char* buf = Buf.begin();
         const char* buf_end = Buf.end();
+        
+        // implements a filter function looking for specific words 
         if (filter.IsActive())
         {
-            // In this example we don't use the clipper when Filter is enabled.
-            // This is because we don't have a random access on the result on our filter.
-            // A real application processing logs with ten of thousands of entries may want to store the result of
-            // search/filter.. especially if the filtering function is not trivial (e.g. reg-exp).
             for (int line_no = 0; line_no < lineOffsets.Size; line_no++)
             {
                 const char* line_start = buf + lineOffsets[line_no];
                 const char* line_end = (line_no + 1 < lineOffsets.Size) ? (buf + lineOffsets[line_no + 1] - 1) : buf_end;
                 if (filter.PassFilter(line_start, line_end))
+                    // option to get colorful text
+                    // ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.00f),line_start,line_end);
+                    // option may be used to print white text
                     ImGui::TextUnformatted(line_start, line_end);
             }
         }
         else
         {
-            // The simplest and easy way to display the entire buffer:
-            //   ImGui::TextUnformatted(buf_begin, buf_end);
-            // And it'll just work. TextUnformatted() has specialization for large blob of text and will fast-forward
-            // to skip non-visible lines. Here we instead demonstrate using the clipper to only process lines that are
-            // within the visible area.
-            // If you have tens of thousands of items and their processing cost is non-negligible, coarse clipping them
-            // on your side is recommended. Using ImGuiListClipper requires
-            // - A) random access into your data
-            // - B) items all being the  same height,
-            // both of which we can handle since we an array pointing to the beginning of each line of text.
-            // When using the filter (in the block of code above) we don't have random access into the data to display
-            // anymore, which is why we don't use the clipper. Storing or skimming through the search result would make
-            // it possible (and would be recommended if you want to search through tens of thousands of entries).
+            // using the clipper to only process lines that are within the visible area.
             ImGuiListClipper clipper;
             clipper.Begin(lineOffsets.Size);
             while (clipper.Step())
@@ -153,6 +138,9 @@ namespace vOS
                 {
                     const char* line_start = buf + lineOffsets[line_no];
                     const char* line_end = (line_no + 1 < lineOffsets.Size) ? (buf + lineOffsets[line_no + 1] - 1) : buf_end;
+                    // option to get colorful text
+                    // ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.00f),line_start,line_end);
+                    // option to get white text
                     ImGui::TextUnformatted(line_start, line_end);
                 }
             }
