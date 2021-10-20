@@ -7,6 +7,10 @@
 
 #include "imgui.h"
 
+#include <iostream>
+
+#include <string.h>
+
 
 namespace vOS
 {
@@ -43,20 +47,29 @@ namespace vOS
         lineOffsets.push_back(0);
     }
 
-    void LogWindow::addLog(const char* fmt, ...)
-    {
-        //TODO: Add new Line automaticaly after each new Log
-        //TODO: Add new Line, if a Log-Message is to big for the Screen
 
+    //TODO: Add new Line, if a Log-Message is to big for the Screen
+    void LogWindow::addLog(const char* fmt, int level_int)
+    {
         int old_size = Buf.size();
-        va_list args;
-        va_start(args, fmt);
-        Buf.appendfv(fmt, args);
-        va_end(args);
+        if (level_int == 0){
+            Buf.append("information: ");
+        } else if(level_int == 1){
+            Buf.append("warning: ");
+        } else if(level_int == 2){
+            Buf.append("errror: ");
+        } else if(level_int == 3){
+            Buf.append("critical: ");
+        } else {
+            std::cout << "undefined log type";
+        }
+
+        Buf.append(fmt);
+        Buf.append("\n");
+        
         for (int new_size = Buf.size(); old_size < new_size; old_size++)
             if (Buf[old_size] == '\n')
                 lineOffsets.push_back(old_size + 1);
-        lineOffsets.push_back(old_size);
     }
 
 

@@ -204,14 +204,12 @@ namespace vOS
         m_panels.push_back(new MeshView(720, 480));
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 543);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
-        LogWindow::getInstance()->addLog("Hello %d world\n", 123);
+        // TODO delete test phrases
+        LogWindow::getInstance()->addLog("Hello world");
+        LogWindow::getInstance()->addLog("Hello world", 0);
+        LogWindow::getInstance()->addLog("Hello world", 1);
+        LogWindow::getInstance()->addLog("Hello world", 2);
+        LogWindow::getInstance()->addLog("Hello world", 3);
     }
 
     void Window::showDockSpace()

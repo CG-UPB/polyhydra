@@ -3,6 +3,7 @@
 #include "../Window.h"
 #include "imgui.h"
 #include <cstdarg>
+#include <string.h>
 
 namespace vOS
 {
@@ -12,11 +13,12 @@ namespace vOS
             ~LogWindow();
             static LogWindow* getInstance();
             void clear();
-            void addLog(const char* fmt, ...) IM_FMTARGS(2);
+            void addLog(const char* fmt, int level = 0);
             void show() override;
             ImGuiTextBuffer Buf;
             ImGuiTextFilter filter;
             ImVector<int>   lineOffsets;
+            std::string levels[4];
         private:
             LogWindow();
 
