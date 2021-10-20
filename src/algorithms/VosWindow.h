@@ -8,6 +8,7 @@
 #include <iostream>
 #include <OpenVolumeMesh/Mesh/HexahedralMesh.hh>
 #include <OpenVolumeMesh/Mesh/PolyhedralMesh.hh>
+#include <thread>
 #include <list>
 #include <map>
 #include <string>
@@ -127,6 +128,13 @@ private:
     static int static_thread_id;
     int thread_id = 0;
 
+    std::thread* main_loop_thread;
+
+    // Functionality
+    // Main function that will be run parallel in a thread
+    void Main_Loop();
+
+    // Variables
     v3f* m_mesh;
 
     // Callback functions

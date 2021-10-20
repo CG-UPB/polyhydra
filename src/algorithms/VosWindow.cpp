@@ -3,6 +3,7 @@
 //
 
 #include "VosWindow.h"
+#include <thread>
 
 namespace vOS{
 
@@ -14,8 +15,14 @@ namespace vOS{
 
     }
 
-    int VosWindow::OpenWindow() {
+    void VosWindow::Main_Loop() {
 
+    }
+
+    int VosWindow::OpenWindow() {
+        //std::thread newie(VosWindow::Main_Loop);
+
+        //main_loop_thread = &newie;
         return 0;
     }
 
