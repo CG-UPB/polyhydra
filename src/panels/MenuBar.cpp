@@ -6,6 +6,8 @@
 #include "ImGuiFileDialog.h"
 #include <iostream>
 
+#include "../mesh/mesh_object.h"
+
 namespace vOS
 {
     void MenuBar::show()
@@ -59,7 +61,17 @@ namespace vOS
 
                 std::cout << filePathName << std::endl;
                 // action
-                //m_mesh->write_to_file(std::string filePathName);
+                //m_mesh->read_from_file(std::string filePathName);
+                MeshObject *mesh = MeshObject::getInstance();
+                mesh->load_from_file(filePathName);
+
+                /*
+                std::vector<unsigned int> edges = mesh->edges();
+                for(auto it = std::begin(edges); it != std::end(edges); ++it) {
+                    std::cout << *it << "\n";
+                }
+                 */
+
             }
             ImGuiFileDialog::Instance()->Close();
         }

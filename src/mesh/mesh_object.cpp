@@ -8,6 +8,20 @@
 
 namespace vOS
 {
+    MeshObject *MeshObject::instance = 0;
+
+    MeshObject *MeshObject::getInstance() {
+        if (instance == 0)
+        {
+            instance = new MeshObject();
+        }
+
+        return instance;
+
+    }
+
+
+
     MeshObject::MeshObject() {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
 
@@ -46,8 +60,8 @@ namespace vOS
         return vertices;
     }
 
-    std::vector<int> MeshObject::edges() {
-        std::vector<int> edges;
+    std::vector<unsigned int> MeshObject::edges() {
+        std::vector<unsigned int> edges;
 
         for(OpenVolumeMesh::EdgeIter e_it = m_mesh->edges_begin();
             e_it != m_mesh->edges_end(); ++e_it){
@@ -61,9 +75,9 @@ namespace vOS
     }
 
 
-    std::vector<int> MeshObject::faces() {
+    std::vector<unsigned int> MeshObject::faces() {
 
-        std::vector<int> faces;
+        std::vector<unsigned int> faces;
 
         for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
             f_it != m_mesh->vertices_end(); ++f_it) {

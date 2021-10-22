@@ -9,6 +9,8 @@
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
 
+#include "../mesh/mesh_object.h"
+
 namespace vOS
 {
     MeshView::MeshView(int width, int height):
@@ -70,6 +72,7 @@ namespace vOS
                 0.1f,
                 100.0f
         );
+
         m_meshView = glm::lookAt(
                 glm::vec3{0.0f, 0.0f, 8.0f},
                 glm::vec3{0.0f, 0.0f, 0.0f},
@@ -224,6 +227,12 @@ namespace vOS
         m_meshShader->setUniformMat4f("u_View", m_meshView);
 
         // now draw to the actual texture of the framebuffer
+
+        MeshObject *mesh = MeshObject::getInstance();
+        std::vector<float> vertices = mesh->vertices();
+        std::vector<unsigned int> edges = mesh->edges();
+        m_vertexArrayObject = new VertexArrayObject(vertices, edges);
+
         m_vertexArrayObject->draw();
 
         // unbind our framebuffer and shader

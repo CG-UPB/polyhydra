@@ -9,8 +9,9 @@ namespace vOS
     class MeshObject
     {
     public:
-        MeshObject();
+
         ~MeshObject() = default;
+        static MeshObject *getInstance();
 
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
@@ -18,12 +19,14 @@ namespace vOS
         void write_to_file(std::string file_path);
 
         std::vector<float> vertices();
-        std::vector<int> edges();
-        std::vector<int> faces();
+        std::vector<unsigned int> edges();
+        std::vector<unsigned int> faces();
 
         void set_highlight(OpenVolumeMesh::VertexIter v_it, bool b);
         void set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col);
     private:
+        MeshObject();
+        static MeshObject *instance;
 
 
     };
