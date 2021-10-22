@@ -13,15 +13,9 @@ void unpauseCallbackTest(){
 int main() {
 
     vOS::VosWindow* win = new vOS::VosWindow();
-    win->SetCallbackPauseDeactivated(unpauseCallbackTest);
-    win->SetCallbackPauseActivated(pauseCallbackTest);
-    win->PauseButtonFlank(true);
-    win->PauseButtonFlank(false);
-    win->PauseButtonFlank(true);
-    win->PauseButtonFlank(false);
+    win->Open();
 
-    vOS::Window window(1280, 720, "volumeshOS");
-    window.show();
+    delete win;
 
     return 0;
 }

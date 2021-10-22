@@ -12,6 +12,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include "../Window.h"
 
 namespace vOS
 {
@@ -25,20 +26,37 @@ namespace vOS
  */
 class VosWindow {
 
+
+public:
+    enum class Selection_Mode {ADD, SUBTRACT, TOGGLE, SET};
+    enum class Translation_Mode {ADD, SET, MULTIPLY};
+    enum class Rendering_Mode {DRAW, HIDE, HIGHLIGHT};
+
     // Renamed Classes for convenience
     using v3f = OpenVolumeMesh::GeometricPolyhedralMeshV3f;
-    typedef void(*void_callback)();
     typedef void(*button_callback)(int button_id, bool flanked);
     typedef void(*parameter_callback)(int double_id, double value);
 
-public:
+    typedef void(*vertex_selection_callback)(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode);
+    typedef void(*edge_selection_callback)(OpenVolumeMesh::EdgeHandle* vertices_array, int length, Selection_Mode selection_mode);
+    typedef void(*face_selection_callback)(OpenVolumeMesh::FaceHandle* vertices_array, int length, Selection_Mode selection_mode);
+    typedef void(*cell_selection_callback)(OpenVolumeMesh::CellHandle* vertices_array, int length, Selection_Mode selection_mode);
+
+    typedef void(*operation_translation_callback)(double x, double y, double z, Translation_Mode translation_mode);
+    typedef void(*operation_rendering_callback)(Rendering_Mode translation_mode);
+
+    typedef void(*void_callback)();
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////// Initialization ////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /*
-     * Constructor
+     * Empty Constructor
      */
     VosWindow();
+    /*
+     * Mesh Constructor
+     */
+    VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh);
     /*
      * Deconstructor
      */
@@ -48,7 +66,7 @@ public:
      * Opens a plain VolumeOs window. It will render any linked Meshes according to preset Preferences
      * Returns unique thread ID
      */
-    int OpenWindow();
+    std::thread::id Open();
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////// Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,6 +82,32 @@ public:
      */
     bool RemoveMesH(v3f* mesh);
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////// Buttons ////////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button, an internal
+     * timer is not ready yet or some other underlying issue.
+     */
+    bool NextStepAllowed();
+
+    /*
+     * Asks whether Vos is paused
+     */
+    bool IsPaused();
+
+    /*
+     * Asks wether the set Cooldown Timer is < 0 or not
+     */
+    bool IsOnCooldown();
+
+    /*
+     * Called when the User Pressed or Released the Pause Button
+     */
+    void PauseButtonFlank(bool is_pressed){if(is_pressed) OnPauseActivated(); else OnPauseDeactivated();};
+
     /*
      * Sets Callback Function which is called when the user presses the Pause Button inside Vos
      */
@@ -73,55 +117,33 @@ public:
      * Sets Callback Function which is called when the user releases the Pause Button inside Vos
      */
     void SetCallbackPauseDeactivated(void_callback vc);
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////// Preset Interface ////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /*
-     * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button, an internal
-     * timer is not ready yet or some other underlying issue.
+     * Sets Callback Function which is called when the user presses the Reset Button
      */
-    bool VosSideReady();
-
+    void SetCallbackOnReset(void_callback vc);
     /*
-     * Asks whether Vos is paused
+     * Sets Callback Function which is called when the user presses the Step Button
      */
-    bool VosPauseActive();
+    void SetCallbackOnStep(void_callback vc);
+
+    /////////////////////////////////////////////////// Selections //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /*
-     * Called when the User Pressed or Released the Pause Button
+     * Sets Callback Function which is called when the user selects an array of vertices
      */
-    void PauseButtonFlank(bool is_pressed){if(is_pressed) OnPauseActivated(); else OnPauseDeactivated();};
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////// Custom Interface ////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    void AddCustomButton(std::string* button_name, bool default_value, bool stay_locked = false);
-    void RemoveCustomButton(std::string* button_name);
-    void AddCustomParameter(std::string* parameter_name, double default_value);
-    void RemoveCustomParameter(std::string* parameter_name);
-
-
-
+    void SetCallbackVertexSelection(vertex_selection_callback vsc){OnVerticesSelection = vsc;};
     /*
-     * Called when a custom double parameter has been changed by the user
+     * Sets Callback Function which is called when the user presses the Step Button
      */
-    void OnParameterValueChanged(std::string* parameter_name, double value);
-   // void ParameterValueChanged(int parameter_id, double value) { if(custom_parameter_callbacks.size() < parameter_id)  custom_button_callbacks[parameter_id](parameter_id, value);};
+    void SetCallbackEdgeSelection(edge_selection_callback esc){OnEdgeSelection = esc;};
     /*
-     * Called when a custom button has been changed by the user
+     * Sets Callback Function which is called when the user presses the Step Button
      */
-    //void ButtonValueChanged(int button_id, bool flanked) {ButtonCallback(button_id, flanked);};
+    void SetCallbackFaceSelection(face_selection_callback fsc){OnFaceSelection = fsc;};
     /*
-     * Asks for the current state of a customly added button. True means the button id pressed, false means it is not pressed
+     * Sets Callback Function which is called when the user presses the Step Button
      */
-    bool AskButtonValue(int button_id){return false;}
-    /*
-     * Asks for the current value of a customly added double parameter.
-     */
-    double AskParameterValue(int parameter_id) {return 0;}
+    void SetCallbackCellSelection(cell_selection_callback csc) {OnCellSelection = csc;};
 
 private:
     // Threading Variables
@@ -135,12 +157,22 @@ private:
     void Main_Loop();
 
     // Variables
-    v3f* m_mesh;
+    std::shared_ptr<v3f> m_thread_mesh_pointer;
+    v3f* m_linear_mesh_pointer;
+    Window* m_debug_window;
 
     // Callback functions
     static void default_callback_function() {std::cout << "Debug: Default Callback Function Called" << std::endl;};
     static void default_button_function(int button_id, bool flanked){};
     static void default_parameter_function(int parameter_id, double value){};
+
+    static void default_vertex_selection_function(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode){};
+    static void default_edge_selection_function(OpenVolumeMesh::EdgeHandle* edge_array, int length, Selection_Mode selection_mode){};
+    static void default_face_selection_function(OpenVolumeMesh::FaceHandle* face_array, int length, Selection_Mode selection_mode){};
+    static void default_cell_selection_function(OpenVolumeMesh::CellHandle* cell_array, int length, Selection_Mode selection_mode){};
+
+    static void default_translate_operation_function(double x, double y, double z, Translation_Mode translation_mode){};
+    static void default_rendering_operation_function(Rendering_Mode rendering_mode){};
 
     /// Call Back Functions
     /// User Input Reactions
@@ -154,18 +186,19 @@ private:
     void_callback OnStepPressed = default_callback_function;
     // Called when internal Step Timer has reached < 0
     void_callback OnStepTimerLap  = default_callback_function;
+    // Called when Step Button has been pressed
+    vertex_selection_callback OnVerticesSelection = default_vertex_selection_function;
+    // Called when Step Button has been pressed
+    edge_selection_callback OnEdgeSelection = default_edge_selection_function;
+    // Called when Step Button has been pressed
+    face_selection_callback OnFaceSelection = default_face_selection_function;
+    // Called when Step Button has been pressed
+    cell_selection_callback OnCellSelection = default_cell_selection_function;
 
-    // Custom GUI
-    // The Amount of Custom Button added so far (includes deleted ones)
-    int custom_button_total_amount = 0;
-    // The Amount of Custom Parameters added so far (includes deleted ones)
-    int custom_parameter_total_amount = 0;
-    std::map<int, std::string*> custom_button_names;
-    std::map<int, std::string*> custom_parameter_names;
-    // List of Custom GUI Buttons. Called when flanked. True if Active, False otherwise
-    std::list<button_callback>  custom_button_callbacks;
-    // List of Custom GUI Parameters typed as doubles. Called when the value has been updated
-    std::list<parameter_callback> custom_parameter_callbacks;
+    operation_translation_callback OnTranslateOperation = default_translate_operation_function;
+    operation_rendering_callback OnRenderingOperation = default_rendering_operation_function;
+    // Generally Called when the User does anything to the Mesh (debug)
+    void_callback OnUpdate = default_callback_function;
 
 
 };
