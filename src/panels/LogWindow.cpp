@@ -41,6 +41,8 @@ namespace vOS
         Buf.clear();
         lineOffsets.clear();
         lineOffsets.push_back(0);
+        colors.clear();
+        colors.push_back(ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
 
@@ -52,12 +54,16 @@ namespace vOS
         int old_size = Buf.size();
         if (level_int == 0){
             Buf.append("information: ");
+            colors.push_back(ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
         } else if(level_int == 1){
             Buf.append("warning: ");
+            colors.push_back(ImVec4(1.0f, 0.0f, 1.0f, 1.0f));
         } else if(level_int == 2){
             Buf.append("errror: ");
+            colors.push_back(ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
         } else if(level_int == 3){
             Buf.append("critical: ");
+            colors.push_back(ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
         } else {
             std::cout << "undefined log type";
         }
@@ -121,8 +127,8 @@ namespace vOS
                 const char* line_start = buf + lineOffsets[line_no];
                 const char* line_end = (line_no + 1 < lineOffsets.Size) ? (buf + lineOffsets[line_no + 1] - 1) : buf_end;
                 if (filter.PassFilter(line_start, line_end))
-                    // option to get colorful text
-                    // ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.00f),line_start,line_end);
+                    // option to get colorful text -> not really working yet
+                    //ImGui::TextColored(colors.at(line_no),line_start,line_end);
                     // option may be used to print white text
                     ImGui::TextUnformatted(line_start, line_end);
             }
@@ -134,12 +140,13 @@ namespace vOS
             clipper.Begin(lineOffsets.Size);
             while (clipper.Step())
             {
+                int colLine = 0;
                 for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++)
                 {
                     const char* line_start = buf + lineOffsets[line_no];
                     const char* line_end = (line_no + 1 < lineOffsets.Size) ? (buf + lineOffsets[line_no + 1] - 1) : buf_end;
-                    // option to get colorful text
-                    // ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.00f),line_start,line_end);
+                    // option to get colorful text -> not really working yet
+                    //ImGui::TextColored(colors.at(colLine++),line_start,line_end);
                     // option to get white text
                     ImGui::TextUnformatted(line_start, line_end);
                 }

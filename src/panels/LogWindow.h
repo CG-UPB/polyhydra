@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include <cstdarg>
 #include <string.h>
+#include <vector>
 
 namespace vOS
 {
@@ -24,5 +25,6 @@ namespace vOS
 
             static LogWindow* instance;
             bool autoScroll;
+            std::vector<ImVec4> colors;
     };
 }
