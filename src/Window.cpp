@@ -13,6 +13,7 @@
 #include "input/Input.h"
 #include "panels/MenuBar.h"
 #include "fs/FileManager.h"
+#include "panels/LogWindow.h"
 
 namespace vOS
 {
@@ -202,6 +203,14 @@ namespace vOS
     {
         m_panels.push_back(new MenuBar());
         m_panels.push_back(new MeshView(720, 480));
+        LogWindow* mylog = LogWindow::getInstance();
+        m_panels.push_back(mylog);
+        // TODO delete test phrases
+        LogWindow::getInstance()->addLog("Hello world");
+        LogWindow::getInstance()->addLog("Hello world", 0);
+        LogWindow::getInstance()->addLog("Hello world", 1);
+        LogWindow::getInstance()->addLog("Hello world", 2);
+        LogWindow::getInstance()->addLog("Hello world", 3);
     }
 
     void Window::showDockSpace()

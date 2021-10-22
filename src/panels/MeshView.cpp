@@ -3,6 +3,7 @@
 
 #include "MeshView.h"
 #include "../input/Input.h"
+#include "LogWindow.h"
 
 #include <algorithm>
 
@@ -202,6 +203,7 @@ namespace vOS
             }
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
+            LogWindow::getInstance()->addLog("Neue Position");
         }
     }
 
