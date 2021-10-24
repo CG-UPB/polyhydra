@@ -33,7 +33,7 @@ namespace vOS
     // Destruktor
     LogWindow::~LogWindow()
     {
-        delete instance;
+        //delete instance;
     }
 
     void LogWindow::clear()
@@ -49,7 +49,7 @@ namespace vOS
     // following methods are similar to https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp [SECTION] Example App: Debug Log 
     // sends messages to the log console
     void LogWindow::addLog(const char* fmt, int level_int)
-    // TODO: Add new Line, if a Log-Message is to big for the Screen
+    // TODO: Add new Line, if a Log-Message is too big for the Screen
     {
         int old_size = Buf.size();
         if (level_int == 0){
@@ -59,7 +59,7 @@ namespace vOS
             Buf.append("warning: ");
             colors.push_back(ImVec4(1.0f, 0.0f, 1.0f, 1.0f));
         } else if(level_int == 2){
-            Buf.append("errror: ");
+            Buf.append("error: ");
             colors.push_back(ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
         } else if(level_int == 3){
             Buf.append("critical: ");

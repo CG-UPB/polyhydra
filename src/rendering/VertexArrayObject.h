@@ -9,6 +9,7 @@ namespace vOS
     public:
         VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
         ~VertexArrayObject();
+        void update(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
         void draw();
 
     private:

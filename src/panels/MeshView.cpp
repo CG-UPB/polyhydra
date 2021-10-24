@@ -83,7 +83,6 @@ namespace vOS
 
     MeshView::~MeshView()
     {
-        delete m_vertexArrayObject;
         delete m_meshFrameBuffer;
         delete m_meshShader;
     }
@@ -203,7 +202,7 @@ namespace vOS
             }
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
-            LogWindow::getInstance()->addLog("Neue Position");
+            //LogWindow::getInstance()->addLog("Neue Position");
         }
     }
 
@@ -229,11 +228,6 @@ namespace vOS
         m_meshShader->setUniformMat4f("u_View", m_meshView);
 
         // now draw to the actual texture of the framebuffer
-
-        MeshObject *mesh = MeshObject::getInstance();
-        std::vector<float> vertices = mesh->vertices();
-        std::vector<unsigned int> edges = mesh->edges();
-        m_vertexArrayObject = new VertexArrayObject(vertices, edges);
 
         m_vertexArrayObject->draw();
 
