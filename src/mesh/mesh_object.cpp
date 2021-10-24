@@ -3,7 +3,8 @@
 
 
 #include <array>
-#include <vector>
+#include <random>
+
 #include <OpenVolumeMesh/Attribs/OpenVolumeMeshStatus.hh>
 
 namespace vOS
@@ -36,6 +37,11 @@ namespace vOS
     void MeshObject::load_from_file(std::string file_path){
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
+
+        if (m_vertexArrayObject != nullptr) {
+            delete m_vertexArrayObject;
+        }
+        m_vertexArrayObject = new VertexArrayObject(vertices(), edges());
     }
 
     void MeshObject::write_to_file(std::string file_path){
@@ -46,22 +52,25 @@ namespace vOS
     std::vector<float> MeshObject::vertices() {
         //int dim = m_mesh->dim();
         int dim = 3;
-        std::vector<float> vertices (m_mesh->n_vertices() * dim);
+        //std::vector<float> vertices (m_mesh->n_vertices() * dim);
+
+        m_vertices.clear();
+        m_vertices.resize(m_mesh->n_vertices() * dim);
 
         for(OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
             v_it != m_mesh->vertices_end(); ++v_it) {
 
             auto myPoint = m_mesh->vertex(*v_it);
             for(int i = 0; i < dim; i++){
-                vertices.push_back(myPoint[i]);
+                m_vertices.push_back(myPoint[i]);
             }
         }
 
-        return vertices;
+        return m_vertices;
     }
 
     std::vector<unsigned int> MeshObject::edges() {
-        std::vector<unsigned int> edges;
+//        m_indices.clear();
 
 //        for(OpenVolumeMesh::HalfEdgeIter he_it = m_mesh->halfedges_begin();
 //            he_it != m_mesh->halfedges_end(); ++he_it){
@@ -130,6 +139,12 @@ namespace vOS
         }
 
         return faces;
+    }
+
+    void MeshObject::draw() {
+        if (m_vertexArrayObject != nullptr) {
+            m_vertexArrayObject->draw();
+        }
     }
 
 

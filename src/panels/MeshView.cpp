@@ -59,7 +59,6 @@ namespace vOS
         std::filesystem::path shaderPath = "shaders";
         m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
         m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_vertexArrayObject = new VertexArrayObject(vertices, indices);
 
         // set up the initial camera position, direction and orientation of the mesh
         glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -208,6 +207,8 @@ namespace vOS
 
     void MeshView::renderMesh()
     {
+
+
         // render our mesh in polygon mode for debugging
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glEnable(GL_LINE_SMOOTH);
@@ -229,7 +230,7 @@ namespace vOS
 
         // now draw to the actual texture of the framebuffer
 
-        m_vertexArrayObject->draw();
+        MeshObject::getInstance()->draw();
 
         // unbind our framebuffer and shader
         m_meshShader->unbind();

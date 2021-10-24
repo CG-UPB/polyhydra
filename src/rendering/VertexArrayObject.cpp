@@ -4,11 +4,11 @@
 #include "VertexArrayObject.h"
 
 
-namespace vOS
-{
+#include <iostream>
 
-    VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
-    {
+namespace vOS {
+
+    VertexArrayObject::VertexArrayObject(const std::vector<float> &vertices, const std::vector<unsigned int> &indices) {
         m_numIndices = (int) indices.size();
 
         glGenVertexArrays(1, &m_vao);
@@ -30,19 +30,31 @@ namespace vOS
         glBindVertexArray(0);
     }
 
-    VertexArrayObject::~VertexArrayObject()
-    {
+    VertexArrayObject::~VertexArrayObject() {
         glDeleteVertexArrays(1, &m_vao);
         glDeleteBuffers(1, &m_vbo);
         glDeleteBuffers(1, &m_ibo);
     }
 
-    void VertexArrayObject::draw()
-    {
+    void VertexArrayObject::draw() {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+        //glDrawArrays(GL_POINTS, 0, m_numIndices);
         glDrawElements(GL_LINES, m_numIndices, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    void VertexArrayObject::update(const std::vector<float> &vertices, const std::vector<unsigned int> &indices)
+    {
+        m_numIndices = (int) indices.size();
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int) indices.size() * 4, indices.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 }
