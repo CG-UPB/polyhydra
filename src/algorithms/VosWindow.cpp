@@ -31,12 +31,10 @@ namespace vOS{
     }
 
     bool VosWindow::LinkMesh(v3f *mesh) {
-        m_linear_mesh_pointer = mesh;
         return true;
     }
 
     bool VosWindow::RemoveMesH(v3f *mesh) {
-        m_linear_mesh_pointer = nullptr;
         return true;
     }
 

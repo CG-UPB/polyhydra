@@ -1,6 +1,9 @@
 
 #include "algorithms/VosWindow.h"
+#include "panels/LogWindow.h"
+#include "mesh/mesh_object.h"
 vOS::VosWindow* window = nullptr;
+#include "mesh/mesh_object.h"
 
 void pauseCallbackTest(){
     if(window != nullptr) window->Log()->addLog("Pause");
@@ -13,8 +16,9 @@ void unpauseCallbackTest(){
 int main() {
     window = new vOS::VosWindow();
 
-    for(int i = 0; i < 1000; i++)
-        window->Log()->addLog(std::to_string(i));
+    OpenVolumeMesh::GeometricPolyhedralMeshV3f* v3f;
+
+    window->LinkMesh(v3f);
 
     window->SetCallbackPauseActivated(pauseCallbackTest);
     window->SetCallbackPauseDeactivated(unpauseCallbackTest);
