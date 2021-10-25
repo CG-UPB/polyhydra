@@ -88,9 +88,12 @@ namespace vOS
 
         for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
             f_it != m_mesh->vertices_end(); ++f_it) {
-            //<FaceVertexIter, FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
+            std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
             //faces.push_back(face_vertexids[0].idx());
             //faces.push_back(face_vertexids[1].idx());
+//            for(OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids){
+//
+//            }
         }
 
         return faces;
