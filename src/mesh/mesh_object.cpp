@@ -71,34 +71,12 @@ namespace vOS
     std::vector<unsigned int> MeshObject::edges() {
         m_indices.clear();
 
-        for(OpenVolumeMesh::HalfEdgeIter he_it = m_mesh->halfedges_begin();
-            he_it != m_mesh->halfedges_end(); ++he_it){
-            std::array<OpenVolumeMesh::VertexHandle, 2> halfedge_vertexids = m_mesh->halfedge_vertices(*he_it);
-            m_indices.push_back(halfedge_vertexids[0].idx());
-            m_indices.push_back(halfedge_vertexids[1].idx());
+        for(OpenVolumeMesh::EdgeIter e_it = m_mesh->edges_begin();
+            e_it != m_mesh->edges_end(); ++e_it){
+            std::array<OpenVolumeMesh::VertexHandle, 2> edge_vertexids = m_mesh->edge_vertices(*e_it);
+            m_indices.push_back(edge_vertexids[0].idx());
+            m_indices.push_back(edge_vertexids[1].idx());
         }
-
-
-//        m_indices.clear();
-//        for(OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
-//            v_it != m_mesh->vertices_end(); ++v_it) {
-//
-//            for(OpenVolumeMesh::VertexOHalfEdgeIter voh_it = m_mesh->voh_iter(*v_it);
-//                voh_it.valid(); ++voh_it) {
-//
-//                std::array<OpenVolumeMesh::VertexHandle, 2> halfedge_vertexids = m_mesh->halfedge_vertices(*voh_it);
-//                int first = halfedge_vertexids[0].idx();
-//                int second = halfedge_vertexids[1].idx();
-//                m_indices.push_back(first);
-//                m_indices.push_back(second);
-//
-//                int max = m_vertices.size() / 3 - 1;
-//                if (first > max || second > max) {
-//                    std::cout << "wrong index: first: " << first << ", second: " << second << std::endl;
-//                }
-//            }
-//        }
-//
 
         return m_indices;
     }
