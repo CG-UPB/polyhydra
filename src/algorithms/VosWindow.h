@@ -81,16 +81,48 @@ public:
      * Returns true on success, otherwise false  (see Log for specific info)
      */
     bool RemoveMesH(v3f* mesh);
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////// Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Renders the Debug Window inside Vos
+    void ShowDebugWindow();
+    // Hides the Debug Window inside Vos
+    void HideDebugWindow();
+    // Writes a message to the Debug Window in Vos
+    void Log(std::string* message);
+
+    /*
+     * Resets all given materials and color values back to the default value
+     */
+    void DefaultAll();
+
+    /*
+     * Applies the given material shader to all vertices in array
+     * TODO: Only for Vertices at the moment
+     */
+    void ApplyMaterial(OpenVolumeMesh::VertexHandle* vertices_array, std::string material_path);
+
+    /*
+     * Applies given material shader to all elements with given property
+     */
+    void ApplyMaterial(std::string property, std::string material_path);
+
+    /*
+     * Draws all vertices in array in the given color
+     * TODO: Only for Vertices at the moment
+     */
+    void SetColor(OpenVolumeMesh::VertexHandle* vertices_array, float r, float g, float b, float a);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////////////////////////// Buttons ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////// Queueries ///////////////////////////////////////////////////////////////////////////////////////////////////
     /*
-     * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button, an internal
-     * timer is not ready yet or some other underlying issue.
-     */
+    * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button, an internal
+    * timer is not ready yet or some other underlying issue.
+    */
     bool NextStepAllowed();
 
     /*
@@ -98,15 +130,7 @@ public:
      */
     bool IsPaused();
 
-    /*
-     * Asks wether the set Cooldown Timer is < 0 or not
-     */
-    bool IsOnCooldown();
-
-    /*
-     * Called when the User Pressed or Released the Pause Button
-     */
-    void PauseButtonFlank(bool is_pressed){if(is_pressed) OnPauseActivated(); else OnPauseDeactivated();};
+    ///////////////////////////////////////////////////// Buttons ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /*
      * Sets Callback Function which is called when the user presses the Pause Button inside Vos
@@ -129,42 +153,57 @@ public:
     /////////////////////////////////////////////////// Selections //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /*
-     * Sets Callback Function which is called when the user selects an array of vertices
+     * Sets Callback Function which is called when the user performs a selection operation on vertices
      */
     void SetCallbackVertexSelection(vertex_selection_callback vsc){OnVerticesSelection = vsc;};
     /*
-     * Sets Callback Function which is called when the user presses the Step Button
+     * Sets Callback Function which is called when the user performs a selection operation on edges
      */
     void SetCallbackEdgeSelection(edge_selection_callback esc){OnEdgeSelection = esc;};
     /*
-     * Sets Callback Function which is called when the user presses the Step Button
+     * Sets Callback Function which is called when the user performs a selection operation on faces
      */
     void SetCallbackFaceSelection(face_selection_callback fsc){OnFaceSelection = fsc;};
     /*
-     * Sets Callback Function which is called when the user presses the Step Button
+     * Sets Callback Function which is called when the user performs a selection operation on cells
      */
     void SetCallbackCellSelection(cell_selection_callback csc) {OnCellSelection = csc;};
 
 private:
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////// Variables ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Threading Variables
     static int static_thread_id;
     int thread_id = 0;
-
-    std::thread* main_loop_thread;
-
-    // Functionality
-    // Main function that will be run parallel in a thread
-    void Main_Loop();
 
     // Variables
     std::shared_ptr<v3f> m_thread_mesh_pointer;
     v3f* m_linear_mesh_pointer;
     Window* m_debug_window;
 
-    // Callback functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////// Main Loop /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    std::thread* main_loop_thread;
+
+    // Main function that will be run parallel in a thread
+    void Main_Loop();
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////// Callback Buttons ////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     * Called when the User Pressed or Released the Pause Button
+     */
+    void PauseButtonFlank(bool is_pressed){if(is_pressed) OnPauseActivated(); else OnPauseDeactivated();};
+
+    /////////////////////////////////////////////// Callback Functions ///////////////////////////////////////////////////////////////////////////////////////////////
     static void default_callback_function() {std::cout << "Debug: Default Callback Function Called" << std::endl;};
-    static void default_button_function(int button_id, bool flanked){};
-    static void default_parameter_function(int parameter_id, double value){};
 
     static void default_vertex_selection_function(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode){};
     static void default_edge_selection_function(OpenVolumeMesh::EdgeHandle* edge_array, int length, Selection_Mode selection_mode){};
@@ -186,13 +225,13 @@ private:
     void_callback OnStepPressed = default_callback_function;
     // Called when internal Step Timer has reached < 0
     void_callback OnStepTimerLap  = default_callback_function;
-    // Called when Step Button has been pressed
+    // Called when a number of vertices have been selected
     vertex_selection_callback OnVerticesSelection = default_vertex_selection_function;
-    // Called when Step Button has been pressed
+    // Called when a number of edges have been selected
     edge_selection_callback OnEdgeSelection = default_edge_selection_function;
-    // Called when Step Button has been pressed
+    // Called when a number of faces have been selected
     face_selection_callback OnFaceSelection = default_face_selection_function;
-    // Called when Step Button has been pressed
+    // Called when a number of cells have been selected
     cell_selection_callback OnCellSelection = default_cell_selection_function;
 
     operation_translation_callback OnTranslateOperation = default_translate_operation_function;

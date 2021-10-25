@@ -73,7 +73,4 @@ namespace vOS{
     bool VosWindow::NextStepAllowed() {
         return true;
     }
-    bool VosWindow::IsOnCooldown() {
-        return false;
-    }
 }
