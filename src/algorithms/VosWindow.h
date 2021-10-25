@@ -50,12 +50,14 @@ public:
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////// Initialization ////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /*
-     * Empty Constructor
+     * Opens a plain VolumeOs window. It will render any linked Meshes according to preset Preferences
      */
     VosWindow();
     /*
-     * Mesh Constructor
+     * Opens a plain VolumeOs window. It will render any linked Meshes according to preset Preferences
+     * Also links given mesh immediatly
      */
     VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh);
     /*
@@ -63,11 +65,6 @@ public:
      */
     ~VosWindow();
 
-    /*
-     * Opens a plain VolumeOs window. It will render any linked Meshes according to preset Preferences
-     * Returns unique thread ID
-     */
-    std::thread::id Open();
 
     LogWindow* Log(){return LogWindow::getInstance();}
 

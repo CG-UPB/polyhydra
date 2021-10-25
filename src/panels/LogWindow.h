@@ -15,6 +15,7 @@ namespace vOS
             static LogWindow* getInstance();
             void clear();
             void addLog(const char* fmt, int level = 0);
+            void addLog(std::string fmt, int level = 0);
             void show() override;
             ImGuiTextBuffer Buf;
             ImGuiTextFilter filter;

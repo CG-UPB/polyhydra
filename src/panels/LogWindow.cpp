@@ -45,7 +45,9 @@ namespace vOS
         colors.push_back(ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
-
+    void LogWindow::addLog(std::string fmt, int level) {
+        addLog(fmt.c_str(), level);
+    }
     // following methods are similar to https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp [SECTION] Example App: Debug Log 
     // sends messages to the log console
     void LogWindow::addLog(const char* fmt, int level_int)

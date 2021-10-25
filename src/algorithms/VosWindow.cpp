@@ -9,7 +9,9 @@
 namespace vOS{
 
     VosWindow::VosWindow(){
-        // Setup
+        // Start main loop thread
+        main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
+
     }
 
     VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh){
@@ -26,19 +28,6 @@ namespace vOS{
         m_debug_window= new Window(1280, 720, "volumeshOS");
         // Render window
         m_debug_window->show();
-    }
-
-    std::thread::id VosWindow::Open() {
-
-        // Make Pointer to the mesh to a shared pointer
-        if(m_linear_mesh_pointer != nullptr)
-            m_thread_mesh_pointer = std::make_shared<v3f>(*m_linear_mesh_pointer);
-
-        // Start main loop thread
-        main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
-
-        // Return thread id
-        return main_loop_thread->get_id();
     }
 
     bool VosWindow::LinkMesh(v3f *mesh) {

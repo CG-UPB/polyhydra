@@ -1,18 +1,23 @@
 
 #include "algorithms/VosWindow.h"
+vOS::VosWindow* window = nullptr;
 
 void pauseCallbackTest(){
-    std::cout << "Pause" << std::endl;
+    if(window != nullptr) window->Log()->addLog("Pause");
 }
 
 void unpauseCallbackTest(){
-    std::cout << "Unpause" << std::endl;
+    if(window != nullptr) window->Log()->addLog("Unpause");
 }
 
 int main() {
-    vOS::VosWindow* window = new vOS::VosWindow();
+    window = new vOS::VosWindow();
 
-    window->Open();
+    for(int i = 0; i < 1000; i++)
+        window->Log()->addLog(std::to_string(i));
+
+    window->SetCallbackPauseActivated(pauseCallbackTest);
+    window->SetCallbackPauseDeactivated(unpauseCallbackTest);
 
     delete window;
 
