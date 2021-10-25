@@ -212,7 +212,7 @@ namespace vOS
         // render our mesh in polygon mode for debugging
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glEnable(GL_LINE_SMOOTH);
-        glLineWidth(5);
+        glLineWidth(1);
 
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();

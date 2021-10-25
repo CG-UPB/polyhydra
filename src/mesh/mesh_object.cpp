@@ -22,7 +22,6 @@ namespace vOS
     }
 
 
-
     MeshObject::MeshObject() {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
 
@@ -55,7 +54,7 @@ namespace vOS
         //std::vector<float> vertices (m_mesh->n_vertices() * dim);
 
         m_vertices.clear();
-        m_vertices.resize(m_mesh->n_vertices() * dim);
+        m_vertices.reserve(m_mesh->n_vertices() * dim);
 
         for(OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
             v_it != m_mesh->vertices_end(); ++v_it) {
@@ -70,15 +69,16 @@ namespace vOS
     }
 
     std::vector<unsigned int> MeshObject::edges() {
-//        m_indices.clear();
+        m_indices.clear();
 
-//        for(OpenVolumeMesh::HalfEdgeIter he_it = m_mesh->halfedges_begin();
-//            he_it != m_mesh->halfedges_end(); ++he_it){
-//            std::array<OpenVolumeMesh::VertexHandle, 2> halfedge_vertexids = m_mesh->halfedge_vertices(*he_it);
-//            m_indices.push_back(halfedge_vertexids[0].idx());
-//            m_indices.push_back(halfedge_vertexids[1].idx());
-//        }
-//        bool stop = false;
+        for(OpenVolumeMesh::HalfEdgeIter he_it = m_mesh->halfedges_begin();
+            he_it != m_mesh->halfedges_end(); ++he_it){
+            std::array<OpenVolumeMesh::VertexHandle, 2> halfedge_vertexids = m_mesh->halfedge_vertices(*he_it);
+            m_indices.push_back(halfedge_vertexids[0].idx());
+            m_indices.push_back(halfedge_vertexids[1].idx());
+        }
+
+
 //        m_indices.clear();
 //        for(OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
 //            v_it != m_mesh->vertices_end(); ++v_it) {
@@ -96,32 +96,9 @@ namespace vOS
 //                if (first > max || second > max) {
 //                    std::cout << "wrong index: first: " << first << ", second: " << second << std::endl;
 //                }
-//
-//                if (m_indices.size() > m_vertices.size()) {
-//                    stop = true;
-//                    break;
-//                }
-//            }
-//            if (stop) {
-//                break;
 //            }
 //        }
-//        std::cout << "vertices1: "<< m_vertices.size() <<std::endl;
-//        std::cout << "indices1: "<< m_indices.size() <<std::endl;
-
-        m_indices.clear();
-        int index = 0;
-        for (int i = 0; i < m_vertices.size(); i += 3) {
-            for (int j = 0; j < std::rand() % 15; j++){
-                m_indices.push_back(index);
-                m_indices.push_back(std::rand() % (m_vertices.size() /3));
-            }
-            index++;
-        }
-
-        std::cout << "vertices2: "<< m_vertices.size() <<std::endl;
-        std::cout << "indices2: "<< m_indices.size() <<std::endl;
-
+//
 
         return m_indices;
     }
