@@ -1,5 +1,4 @@
 
-#include "Window.h"
 #include "algorithms/VosWindow.h"
 
 void pauseCallbackTest(){
@@ -11,9 +10,11 @@ void unpauseCallbackTest(){
 }
 
 int main() {
+    vOS::VosWindow* window = new vOS::VosWindow();
 
-    vOS::Window window(1280, 720, "volumeshOS");
-    window.show();
+    window->Open();
+
+    delete window;
 
     return 0;
 }

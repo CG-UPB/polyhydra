@@ -25,8 +25,11 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/fs/FileManager.cpp
         ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
+        ${VOLUMESHOS_SRC}/algorithms/VosWindow.cpp
         ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
+        ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp src/mesh/mesh_object.cpp
+
         ${VOLUMESHOS_EXT}/ImGuiFileDialog/ImGuiFileDialog.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
