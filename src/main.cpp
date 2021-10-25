@@ -1,6 +1,7 @@
 
 #include "Window.h"
 #include "algorithms/VosWindow.h"
+#include "algorithms/Dijkstra.h"
 
 void pauseCallbackTest(){
     std::cout << "Pause" << std::endl;
@@ -11,6 +12,9 @@ void unpauseCallbackTest(){
 }
 
 int main() {
+
+    vOS::Dijkstra dijkstra;
+    dijkstra.run();
 
     vOS::VosWindow* win = new vOS::VosWindow();
     win->SetCallbackPauseDeactivated(unpauseCallbackTest);
