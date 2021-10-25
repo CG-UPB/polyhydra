@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 
 #include <utility>
+#include <iostream>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -12,6 +13,7 @@
 #include "input/Input.h"
 #include "panels/MenuBar.h"
 #include "fs/FileManager.h"
+#include "panels/LogWindow.h"
 
 namespace vOS
 {
@@ -202,6 +204,14 @@ namespace vOS
     {
         m_panels.push_back(new MenuBar());
         m_panels.push_back(new MeshView(720, 480));
+        LogWindow* mylog = LogWindow::getInstance();
+        m_panels.push_back(mylog);
+        // TODO delete test phrases
+        LogWindow::getInstance()->addLog("Hello world");
+        LogWindow::getInstance()->addLog("Hello world", 0);
+        LogWindow::getInstance()->addLog("Hello world", 1);
+        LogWindow::getInstance()->addLog("Hello world", 2);
+        LogWindow::getInstance()->addLog("Hello world", 3);
     }
 
     void Window::showDockSpace()
@@ -251,6 +261,7 @@ namespace vOS
     void Window::show()
     {
         // Main loop
+        int counter = 0;
         while (!glfwWindowShouldClose(m_window))
         {
             glfwPollEvents();
@@ -263,6 +274,7 @@ namespace vOS
             showDockSpace();
 
             ImGui::ShowDemoWindow();
+
 
             // draw all of our windows
             for (auto& element: m_panels) {

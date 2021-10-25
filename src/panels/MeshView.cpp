@@ -3,11 +3,14 @@
 
 #include "MeshView.h"
 #include "../input/Input.h"
+#include "LogWindow.h"
 
 #include <algorithm>
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
+
+#include "../mesh/mesh_object.h"
 
 namespace vOS
 {
@@ -56,7 +59,6 @@ namespace vOS
         std::filesystem::path shaderPath = "shaders";
         m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
         m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_vertexArrayObject = new VertexArrayObject(vertices, indices);
 
         // set up the initial camera position, direction and orientation of the mesh
         glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -70,6 +72,7 @@ namespace vOS
                 0.1f,
                 100.0f
         );
+
         m_meshView = glm::lookAt(
                 glm::vec3{0.0f, 0.0f, 8.0f},
                 glm::vec3{0.0f, 0.0f, 0.0f},
@@ -79,7 +82,6 @@ namespace vOS
 
     MeshView::~MeshView()
     {
-        delete m_vertexArrayObject;
         delete m_meshFrameBuffer;
         delete m_meshShader;
     }
@@ -199,15 +201,18 @@ namespace vOS
             }
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
+            //LogWindow::getInstance()->addLog("Neue Position");
         }
     }
 
     void MeshView::renderMesh()
     {
+
+
         // render our mesh in polygon mode for debugging
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glEnable(GL_LINE_SMOOTH);
-        glLineWidth(5);
+        glLineWidth(1);
 
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
@@ -224,7 +229,8 @@ namespace vOS
         m_meshShader->setUniformMat4f("u_View", m_meshView);
 
         // now draw to the actual texture of the framebuffer
-        m_vertexArrayObject->draw();
+
+        MeshObject::getInstance()->draw();
 
         // unbind our framebuffer and shader
         m_meshShader->unbind();

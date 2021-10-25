@@ -36,7 +36,6 @@ namespace vOS
         int m_viewportPanelHeight;
 
         // opengl rendering
-        VertexArrayObject* m_vertexArrayObject;
         FrameBufferObject* m_meshFrameBuffer;
         Shader* m_meshShader;
     };

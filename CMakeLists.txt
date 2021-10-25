@@ -26,11 +26,12 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
         ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
-        ${VOLUMESHOS_SRC}/input/Input.cpp src/algorithms/dijkstra.cpp src/algorithms/dijkstra.h src/algorithms/VosWindow.cpp src/algorithms/VosWindow.h)
+        ${VOLUMESHOS_SRC}/input/Input.cpp src/mesh/mesh_object.cpp
+        ${VOLUMESHOS_EXT}/ImGuiFileDialog/ImGuiFileDialog.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh)
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh ImGuiFileDialog)
 
 # copy our resources to the build dir
 if(MSVC)

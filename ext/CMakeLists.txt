@@ -33,3 +33,13 @@ set(IMGUI_INCLUDE_DIR  ${CMAKE_CURRENT_LIST_DIR}/imgui ${CMAKE_CURRENT_LIST_DIR}
 target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})
 
 target_link_libraries(imgui PUBLIC glad glfw)
+
+# add ImGuiFileDialog library
+set(ImGuiFileDialog_DIR ImGuiFileDialog )
+set(ImGuiFileDialog_Headers ${ImGuiFileDialog_DIR}/ImGuiFileDialog.h)
+set(ImGuiFileDialog_Sources ${ImGuiFileDialog_DIR}/ImGuiFileDialog.cpp)
+
+add_library(ImGuiFileDialog ${ImGuiFileDialog_Headers} ${ImGuiFileDialog_Sources})
+target_include_directories(ImGuiFileDialog PUBLIC ${ImGuiFileDialog_DIR})
+
+target_link_libraries(ImGuiFileDialog PUBLIC imgui)
