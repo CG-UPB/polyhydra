@@ -1,31 +1,29 @@
 
-#include "Window.h"
 #include "algorithms/VosWindow.h"
 #include "algorithms/Dijkstra.h"
+vOS::VosWindow* window = nullptr;
 
 void pauseCallbackTest(){
-    std::cout << "Pause" << std::endl;
+    if(window != nullptr) window->Log()->addLog("Pause");
 }
 
 void unpauseCallbackTest(){
-    std::cout << "Unpause" << std::endl;
+    if(window != nullptr) window->Log()->addLog("Unpause");
 }
 
 int main() {
-
     vOS::Dijkstra dijkstra;
     dijkstra.run();
 
-    vOS::VosWindow* win = new vOS::VosWindow();
-    win->SetCallbackPauseDeactivated(unpauseCallbackTest);
-    win->SetCallbackPauseActivated(pauseCallbackTest);
-    win->PauseButtonFlank(true);
-    win->PauseButtonFlank(false);
-    win->PauseButtonFlank(true);
-    win->PauseButtonFlank(false);
+    window = new vOS::VosWindow();
 
-    vOS::Window window(1280, 720, "volumeshOS");
-    window.show();
+    for(int i = 0; i < 1000; i++)
+        window->Log()->addLog(std::to_string(i));
+
+    window->SetCallbackPauseActivated(pauseCallbackTest);
+    window->SetCallbackPauseDeactivated(unpauseCallbackTest);
+
+    delete window;
 
     return 0;
 }
