@@ -40,7 +40,7 @@ namespace vOS
         if (m_vertexArrayObject != nullptr) {
             delete m_vertexArrayObject;
         }
-        m_vertexArrayObject = new VertexArrayObject(vertices(), edges());
+        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
     }
 
     void MeshObject::write_to_file(std::string file_path){
@@ -84,19 +84,18 @@ namespace vOS
 
     std::vector<unsigned int> MeshObject::faces() {
 
-        std::vector<unsigned int> faces;
+        m_indices.clear();
 
         for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
             f_it != m_mesh->vertices_end(); ++f_it) {
             std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
-            //faces.push_back(face_vertexids[0].idx());
-            //faces.push_back(face_vertexids[1].idx());
-//            for(OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids){
-//
-//            }
+            for(OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids.first;
+            fv_it != face_vertexids.second; ++fv_it){
+                m_indices.push_back(fv_it->idx());
+            }
         }
 
-        return faces;
+        return m_indices;
     }
 
     void MeshObject::draw() {

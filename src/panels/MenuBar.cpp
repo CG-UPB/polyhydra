@@ -62,10 +62,8 @@ namespace vOS
 
                 std::cout << filePathName << std::endl;
                 // action
-                //m_mesh->read_from_file(std::string filePathName);
                 MeshObject *mesh = MeshObject::getInstance();
                 mesh->load_from_file(filePathName);
-                std::vector<unsigned int> edges = mesh->faces();
 
             }
             ImGuiFileDialog::Instance()->Close();
