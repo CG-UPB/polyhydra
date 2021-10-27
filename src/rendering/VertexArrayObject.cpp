@@ -40,7 +40,7 @@ namespace vOS {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
         //glDrawArrays(GL_POINTS, 0, m_numIndices);
-        glDrawElements(GL_LINES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }

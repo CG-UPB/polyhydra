@@ -4,6 +4,10 @@
 
 #include <array>
 #include <random>
+#include "../panels/LogWindow.h"
+#include <string>
+#include <thread>
+#include <chrono>
 
 #include <OpenVolumeMesh/Attribs/OpenVolumeMeshStatus.hh>
 
@@ -40,7 +44,8 @@ namespace vOS
         if (m_vertexArrayObject != nullptr) {
             delete m_vertexArrayObject;
         }
-        m_vertexArrayObject = new VertexArrayObject(vertices(), edges());
+        //faces();
+        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
     }
 
     void MeshObject::write_to_file(std::string file_path){
@@ -88,9 +93,19 @@ namespace vOS
 
         for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
             f_it != m_mesh->vertices_end(); ++f_it) {
-            //<FaceVertexIter, FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
+            std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
+            //LogWindow::getInstance()->addLog("First: " + std::to_string(face_vertexids.first->idx()),1);
+            //LogWindow::getInstance()->addLog("Second: " + std::to_string(face_vertexids.second->idx()),1);
             //faces.push_back(face_vertexids[0].idx());
             //faces.push_back(face_vertexids[1].idx());
+
+            for (OpenVolumeMesh::FaceVertexIter v_it = begin(face_vertexids); v_it != end(face_vertexids) ; ++v_it) {
+
+                //LogWindow::getInstance()->addLog("Vertex: " +std::to_string(v_it->idx()));
+                //std::cout <<  "Vertex: " << v_it->from_unsigned(v_it->uidx());
+                faces.push_back(v_it->idx());
+            }
+            //std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
 
         return faces;
