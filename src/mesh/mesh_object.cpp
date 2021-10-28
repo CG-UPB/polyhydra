@@ -44,7 +44,6 @@ namespace vOS
         if (m_vertexArrayObject != nullptr) {
             delete m_vertexArrayObject;
         }
-        //faces();
         m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
         calculateMeshOffset();
     }
@@ -125,26 +124,18 @@ namespace vOS
 
     std::vector<unsigned int> MeshObject::faces() {
 
-        std::vector<unsigned int> faces;
+        m_indices.clear();
 
         for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
             f_it != m_mesh->vertices_end(); ++f_it) {
             std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
-            //LogWindow::getInstance()->addLog("First: " + std::to_string(face_vertexids.first->idx()),1);
-            //LogWindow::getInstance()->addLog("Second: " + std::to_string(face_vertexids.second->idx()),1);
-            //faces.push_back(face_vertexids[0].idx());
-            //faces.push_back(face_vertexids[1].idx());
-
-            for (OpenVolumeMesh::FaceVertexIter v_it = begin(face_vertexids); v_it != end(face_vertexids) ; ++v_it) {
-
-                //LogWindow::getInstance()->addLog("Vertex: " +std::to_string(v_it->idx()));
-                //std::cout <<  "Vertex: " << v_it->from_unsigned(v_it->uidx());
-                faces.push_back(v_it->idx());
+            for(OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids.first;
+            fv_it != face_vertexids.second; ++fv_it){
+                m_indices.push_back(fv_it->idx());
             }
-            //std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
 
-        return faces;
+        return m_indices;
     }
 
     void MeshObject::draw() {
