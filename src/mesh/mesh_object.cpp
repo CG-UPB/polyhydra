@@ -46,11 +46,47 @@ namespace vOS
         }
         //faces();
         m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
+        calculateMeshOffset();
     }
 
     void MeshObject::write_to_file(std::string file_path){
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.writeFile(file_path, *m_mesh);
+    }
+
+    void MeshObject::calculateMeshOffset()
+    {
+        glm::vec3 min(m_vertices[0], m_vertices[1], m_vertices[2]);
+        glm::vec3 max(m_vertices[0], m_vertices[1], m_vertices[2]);
+        for (int i = 0; i < m_vertices.size(); i += 3)
+        {
+            glm::vec3 vertex(m_vertices[i], m_vertices[i + 1], m_vertices[i + 2]);
+            if (vertex.x < min.x)
+            {
+                min.x = vertex.x;
+            }
+            else if (vertex.x > max.x)
+            {
+                max.x = vertex.x;
+            }
+            if (vertex.y < min.y)
+            {
+                min.y = vertex.y;
+            }
+            else if (vertex.y > max.y)
+            {
+                max.y = vertex.y;
+            }
+            if (vertex.z < min.z)
+            {
+                min.z = vertex.z;
+            }
+            else if (vertex.z > max.z)
+            {
+                max.z = vertex.z;
+            }
+        }
+        m_meshOffsetFromCenter = min + (max - min) * 0.5f;
     }
 
     std::vector<float> MeshObject::vertices() {
@@ -126,6 +162,11 @@ namespace vOS
     void MeshObject::set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col){
         OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>("VertexHighlightColor");
         highlightColProp[*v_it] = col;
+    }
+
+    glm::vec3& MeshObject::getMeshOffset()
+    {
+        return m_meshOffsetFromCenter;
     }
 
 

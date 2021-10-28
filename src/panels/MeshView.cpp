@@ -22,40 +22,6 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        // test mesh cube vertices and indices
-        std::vector<float> vertices = {
-                // front
-                -1.0, -1.0, 1.0,
-                1.0, -1.0, 1.0,
-                1.0, 1.0, 1.0,
-                -1.0, 1.0, 1.0,
-                // back
-                -1.0, -1.0, -1.0,
-                1.0, -1.0, -1.0,
-                1.0, 1.0, -1.0,
-                -1.0, 1.0, -1.0
-        };
-        std::vector<unsigned int> indices = {
-                // front
-                0, 1, 2,
-                2, 3, 0,
-                // right
-                1, 5, 6,
-                6, 2, 1,
-                // back
-                7, 6, 5,
-                5, 4, 7,
-                // left
-                4, 0, 3,
-                3, 7, 4,
-                // bottom
-                4, 5, 1,
-                1, 0, 4,
-                // top
-                3, 2, 6,
-                6, 7, 3
-        };
-
         std::filesystem::path shaderPath = "shaders";
         m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
         m_meshFrameBuffer = new FrameBufferObject(width, height);
@@ -69,12 +35,12 @@ namespace vOS
         m_meshProjection = glm::perspective(
                 glm::radians(50.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                0.1f,
-                100.0f
+                0.001f,
+                100000.0f
         );
 
         m_meshView = glm::lookAt(
-                glm::vec3{0.0f, 0.0f, 8.0f},
+                glm::vec3{0.0f, 0.0f, 10.0f},
                 glm::vec3{0.0f, 0.0f, 0.0f},
                 glm::vec3{0.0f, 1.0f, 0.0f}
         );
@@ -100,8 +66,8 @@ namespace vOS
             m_meshProjection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    0.1f,
-                    100.0f
+                    0.001f,
+                    100000.0f
             );
         }
     }
@@ -223,8 +189,11 @@ namespace vOS
 
         m_meshShader->bind();
 
+        glm::mat4 positionOffset = glm::translate(-MeshObject::getInstance()->getMeshOffset());
+        glm::mat4 transform = m_meshWorld * m_meshTransform * positionOffset;
+
         // set all of our uniforms
-        m_meshShader->setUniformMat4f("u_Transform", m_meshWorld * m_meshTransform);
+        m_meshShader->setUniformMat4f("u_Transform", transform);
         m_meshShader->setUniformMat4f("u_Projection", m_meshProjection);
         m_meshShader->setUniformMat4f("u_View", m_meshView);
 
