@@ -270,6 +270,12 @@ namespace vOS
         ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+        ImGui::Text("vertices: %zu", MeshObject::getInstance()->m_mesh->n_vertices());
+        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+        ImGui::Text("edges: %zu", MeshObject::getInstance()->m_mesh->n_edges());
+        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+        ImGui::Text("faces: %zu", MeshObject::getInstance()->m_mesh->n_faces());
 
         ImGui::End();
     }

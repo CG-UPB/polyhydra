@@ -113,6 +113,7 @@ namespace vOS
             auto vertexHandle = queue.top().second;
             queue.pop();
 
+            // voh iterator
             for (auto edgeHandle : m_mesh.vertex_edges(vertexHandle))
             {
                 auto edgeVertices = m_mesh.edge_vertices(edgeHandle);
