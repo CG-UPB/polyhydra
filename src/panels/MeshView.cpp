@@ -4,6 +4,7 @@
 #include "MeshView.h"
 #include "../input/Input.h"
 #include "LogWindow.h"
+#include "../algorithms/VosWindow.h"
 
 #include <algorithm>
 
@@ -189,7 +190,7 @@ namespace vOS
 
         m_meshShader->bind();
 
-        glm::mat4 positionOffset = glm::translate(-MeshObject::getInstance()->getMeshOffset());
+        glm::mat4 positionOffset = glm::translate(- VosWindow::get_mesh_obj().get_mesh_offset());
         glm::mat4 transform = m_meshWorld * m_meshTransform * positionOffset;
 
         // set all of our uniforms
@@ -199,7 +200,7 @@ namespace vOS
 
         // now draw to the actual texture of the framebuffer
 
-        MeshObject::getInstance()->draw();
+        VosWindow::get_mesh_obj().draw();
 
         // unbind our framebuffer and shader
         m_meshShader->unbind();
@@ -240,11 +241,11 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::Text("vertices: %zu", MeshObject::getInstance()->m_mesh->n_vertices());
+        ImGui::Text("vertices: %zu", VosWindow::get_mesh_obj().m_mesh->n_vertices());
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::Text("edges: %zu", MeshObject::getInstance()->m_mesh->n_edges());
+        ImGui::Text("edges: %zu", VosWindow::get_mesh_obj().m_mesh->n_edges());
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::Text("faces: %zu", MeshObject::getInstance()->m_mesh->n_faces());
+        ImGui::Text("faces: %zu", VosWindow::get_mesh_obj().m_mesh->n_faces());
 
         ImGui::End();
     }

@@ -6,7 +6,7 @@
 #include "ImGuiFileDialog.h"
 #include <iostream>
 
-#include "../mesh/MeshObject.h"
+#include "../algorithms/VosWindow.h"
 #include "LogWindow.h"
 
 namespace vOS
@@ -64,8 +64,7 @@ namespace vOS
 
                 std::cout << filePathName << std::endl;
                 // action
-                MeshObject *mesh = MeshObject::getInstance();
-                mesh->load_from_file(filePathName);
+                VosWindow::get_mesh_obj().load_from_file(filePathName);
             }
             ImGuiFileDialog::Instance()->Close();
         }

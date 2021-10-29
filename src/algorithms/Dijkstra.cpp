@@ -108,7 +108,7 @@ namespace vOS
         std::priority_queue<Node, std::vector<Node>, std::greater<>> queue;
         std::vector<int> distances(m_mesh.n_vertices(), std::numeric_limits<int>::max());
 
-        VosWindow window(&m_mesh);
+        VosWindow::set_mesh(&m_mesh);
 
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0;
@@ -117,7 +117,7 @@ namespace vOS
         bool next_step_ready = false;
         while (!found && !queue.empty())
         {
-            next_step_ready = window.NextStepAllowed();
+            next_step_ready = VosWindow::next_step_allowed();
             if (next_step_ready)
             {
                 auto vertexHandle = queue.top().second;
@@ -151,7 +151,7 @@ namespace vOS
                     }
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
 
         std::cout << "Shortest path: " << std::endl;
@@ -169,7 +169,7 @@ namespace vOS
             std::cout << "Vertex: " << vertex.second.idx() << ", weight: " << vertex.first << std::endl;
         }
 
-        while(window.is_running());
+        while(VosWindow::is_running());
     }
 
     void Dijkstra::step()

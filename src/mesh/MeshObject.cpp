@@ -1,31 +1,14 @@
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include "MeshObject.h"
 
-
-#include <array>
-#include <random>
-#include "../panels/LogWindow.h"
-#include <string>
-#include <thread>
-#include <chrono>
-
 #include <OpenVolumeMesh/Attribs/OpenVolumeMeshStatus.hh>
+#include <OpenVolumeMesh/FileManager/FileManager.hh>
+#include "../panels/LogWindow.h"
+#include <array>
+#include <string>
+
 
 namespace vOS
 {
-    MeshObject *MeshObject::instance = 0;
-
-    MeshObject *MeshObject::getInstance()
-    {
-        if (instance == 0)
-        {
-            instance = new MeshObject();
-        }
-
-        return instance;
-
-    }
-
 
     MeshObject::MeshObject()
     {
@@ -56,6 +39,11 @@ namespace vOS
     {
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.writeFile(file_path, *m_mesh);
+    }
+
+    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
+    {
+        m_mesh = mesh;
     }
 
     void MeshObject::calculateMeshOffset()
@@ -90,7 +78,7 @@ namespace vOS
                 max.z = vertex.z;
             }
         }
-        m_meshOffsetFromCenter = min + (max - min) * 0.5f;
+        m_mesh_offset_from_center = min + (max - min) * 0.5f;
     }
 
     std::vector<float> MeshObject::vertices()
@@ -172,9 +160,9 @@ namespace vOS
         highlightColProp[*v_it] = col;
     }
 
-    glm::vec3& MeshObject::getMeshOffset()
+    glm::vec3& MeshObject::get_mesh_offset()
     {
-        return m_meshOffsetFromCenter;
+        return m_mesh_offset_from_center;
     }
 
 
