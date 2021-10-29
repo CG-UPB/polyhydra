@@ -3,20 +3,22 @@
 //
 
 #include "VosWindow.h"
+#include <memory>
 #include <thread>
 #include "../Window.h"
+#include "memory"
 
 namespace vOS{
 
-    VosWindow::VosWindow(){
+    VosWindow::VosWindow() {
         // Start main loop thread
         main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
-
     }
 
-    VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh){
+    VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh) {
         // Setup
         LinkMesh(mesh);
+        main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
     }
 
     VosWindow::~VosWindow(){
@@ -24,17 +26,26 @@ namespace vOS{
     }
 
     void VosWindow::Main_Loop() {
-        // Create window
-        m_debug_window= new Window(1280, 720, "volumeshOS");
+
+        m_running = true;
+        m_window = new Window(1280, 720, "volumeshOS");
+
+        m_initialized = true;
+
         // Render window
-        m_debug_window->show();
+        m_window->show();
+
+        delete m_window;
+        m_running = false;
     }
 
     bool VosWindow::LinkMesh(v3f *mesh) {
+        m_mesh_reference = mesh;
         return true;
     }
 
     bool VosWindow::RemoveMesH(v3f *mesh) {
+        m_mesh_reference = nullptr;
         return true;
     }
 
@@ -58,6 +69,16 @@ namespace vOS{
     }
 
     bool VosWindow::NextStepAllowed() {
-        return true;
+        return m_initialized;
+    }
+
+    void VosWindow::SetColor(OpenVolumeMesh::VertexHandle* vertices_array, float r, float g, float b, float a)
+    {
+
+    }
+
+    bool VosWindow::is_running()
+    {
+        return m_running;
     }
 }

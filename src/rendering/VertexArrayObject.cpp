@@ -30,17 +30,19 @@ namespace vOS {
         glBindVertexArray(0);
     }
 
-    VertexArrayObject::~VertexArrayObject() {
+    VertexArrayObject::~VertexArrayObject()
+    {
         glDeleteVertexArrays(1, &m_vao);
         glDeleteBuffers(1, &m_vbo);
         glDeleteBuffers(1, &m_ibo);
     }
 
-    void VertexArrayObject::draw() {
+    void VertexArrayObject::draw()
+    {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
         //glDrawArrays(GL_POINTS, 0, m_numIndices);
-        glDrawElements(GL_LINES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }

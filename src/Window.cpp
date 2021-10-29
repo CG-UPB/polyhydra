@@ -206,12 +206,6 @@ namespace vOS
         m_panels.push_back(new MeshView(720, 480));
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
-        // TODO delete test phrases
-        LogWindow::getInstance()->addLog("Hello world");
-        LogWindow::getInstance()->addLog("Hello world", 0);
-        LogWindow::getInstance()->addLog("Hello world", 1);
-        LogWindow::getInstance()->addLog("Hello world", 2);
-        LogWindow::getInstance()->addLog("Hello world", 3);
     }
 
     void Window::showDockSpace()
@@ -273,7 +267,7 @@ namespace vOS
 
             showDockSpace();
 
-            ImGui::ShowDemoWindow();
+            //ImGui::ShowDemoWindow();
 
 
             // draw all of our windows
