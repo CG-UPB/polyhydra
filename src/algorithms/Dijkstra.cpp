@@ -3,6 +3,9 @@
 #include "random"
 #include "iostream"
 #include "bits/stdc++.h"
+#include "VosWindow.h"
+#include <chrono>
+#include <thread>
 
 typedef std::pair<int, OpenVolumeMesh::VertexHandle> Node;
 
@@ -111,45 +114,57 @@ namespace vOS
         distances[currentVertex.second.idx()] = 0;
 
         bool found = false;
+        bool next_step_ready = false;
         while (!found && !queue.empty())
         {
-            auto vertexHandle = queue.top().second;
-            queue.pop();
-
-            // voh iterator
-            for (auto edgeHandle : m_mesh.vertex_edges(vertexHandle))
+            next_step_ready = window.NextStepAllowed();
+            if (next_step_ready)
             {
-                auto edgeVertices = m_mesh.edge_vertices(edgeHandle);
-                OpenVolumeMesh::VertexHandle nextVertexHandle;
-                if (edgeVertices[0].idx() == vertexHandle.idx())
-                {
-                    nextVertexHandle = edgeVertices[1];
-                }
-                else
-                {
-                    nextVertexHandle = edgeVertices[0];
-                }
+                auto vertexHandle = queue.top().second;
+                queue.pop();
 
-                int distToNext = m_weights[edgeHandle];
-                if (distances[nextVertexHandle.idx()] > distances[vertexHandle.idx()] + distToNext)
+                // voh iterator
+                for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
                 {
-                    distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
-                    queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
-                }
+                    auto edgeVertices = m_mesh.edge_vertices(edgeHandle);
+                    OpenVolumeMesh::VertexHandle nextVertexHandle;
+                    if (edgeVertices[0].idx() == vertexHandle.idx())
+                    {
+                        nextVertexHandle = edgeVertices[1];
+                    }
+                    else
+                    {
+                        nextVertexHandle = edgeVertices[0];
+                    }
 
-                if (queue.top().second.idx() == m_end.idx())
-                {
-                    found = true;
-                    break;
+                    int distToNext = m_weights[edgeHandle];
+                    if (distances[nextVertexHandle.idx()] > distances[vertexHandle.idx()] + distToNext)
+                    {
+                        distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
+                        queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
+                    }
+
+                    if (queue.top().second.idx() == m_end.idx())
+                    {
+                        found = true;
+                        break;
+                    }
                 }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
 
         std::cout << "Shortest path: " << std::endl;
+        bool first = true;
         while (!queue.empty())
         {
             auto vertex = queue.top();
+            /*
+            if(queue.empty() || first)
+                window.SetColor(&vertex.second, 0,0,1,1);
+            else
+                window.SetColor(&vertex.second, 1,0,0,1);
+            first = false;*/
             queue.pop();
             std::cout << "Vertex: " << vertex.second.idx() << ", weight: " << vertex.first << std::endl;
         }
