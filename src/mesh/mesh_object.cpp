@@ -4,6 +4,10 @@
 
 #include <array>
 #include <random>
+#include "../panels/LogWindow.h"
+#include <string>
+#include <thread>
+#include <chrono>
 
 #include <OpenVolumeMesh/Attribs/OpenVolumeMeshStatus.hh>
 
@@ -11,7 +15,8 @@ namespace vOS
 {
     MeshObject *MeshObject::instance = 0;
 
-    MeshObject *MeshObject::getInstance() {
+    MeshObject *MeshObject::getInstance()
+    {
         if (instance == 0)
         {
             instance = new MeshObject();
@@ -22,7 +27,8 @@ namespace vOS
     }
 
 
-    MeshObject::MeshObject() {
+    MeshObject::MeshObject()
+    {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
 
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
@@ -33,22 +39,62 @@ namespace vOS
 
     }
 
-    void MeshObject::load_from_file(std::string file_path){
+    void MeshObject::load_from_file(std::string file_path)
+    {
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
 
-        if (m_vertexArrayObject != nullptr) {
+        if (m_vertexArrayObject != nullptr)
+        {
             delete m_vertexArrayObject;
         }
-        m_vertexArrayObject = new VertexArrayObject(vertices(), edges());
+        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
+        calculateMeshOffset();
     }
 
-    void MeshObject::write_to_file(std::string file_path){
+    void MeshObject::write_to_file(std::string file_path)
+    {
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.writeFile(file_path, *m_mesh);
     }
 
-    std::vector<float> MeshObject::vertices() {
+    void MeshObject::calculateMeshOffset()
+    {
+        glm::vec3 min(m_vertices[0], m_vertices[1], m_vertices[2]);
+        glm::vec3 max(m_vertices[0], m_vertices[1], m_vertices[2]);
+        for (int i = 0; i < m_vertices.size(); i += 3)
+        {
+            glm::vec3 vertex(m_vertices[i], m_vertices[i + 1], m_vertices[i + 2]);
+            if (vertex.x < min.x)
+            {
+                min.x = vertex.x;
+            }
+            else if (vertex.x > max.x)
+            {
+                max.x = vertex.x;
+            }
+            if (vertex.y < min.y)
+            {
+                min.y = vertex.y;
+            }
+            else if (vertex.y > max.y)
+            {
+                max.y = vertex.y;
+            }
+            if (vertex.z < min.z)
+            {
+                min.z = vertex.z;
+            }
+            else if (vertex.z > max.z)
+            {
+                max.z = vertex.z;
+            }
+        }
+        m_meshOffsetFromCenter = min + (max - min) * 0.5f;
+    }
+
+    std::vector<float> MeshObject::vertices()
+    {
         //int dim = m_mesh->dim();
         int dim = 3;
         //std::vector<float> vertices (m_mesh->n_vertices() * dim);
@@ -57,10 +103,12 @@ namespace vOS
         m_vertices.reserve(m_mesh->n_vertices() * dim);
 
         for(OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
-            v_it != m_mesh->vertices_end(); ++v_it) {
+            v_it != m_mesh->vertices_end(); ++v_it)
+        {
 
             auto myPoint = m_mesh->vertex(*v_it);
-            for(int i = 0; i < dim; i++){
+            for(int i = 0; i < dim; i++)
+            {
                 m_vertices.push_back(myPoint[i]);
             }
         }
@@ -68,11 +116,13 @@ namespace vOS
         return m_vertices;
     }
 
-    std::vector<unsigned int> MeshObject::edges() {
+    std::vector<unsigned int> MeshObject::edges()
+    {
         m_indices.clear();
 
         for(OpenVolumeMesh::EdgeIter e_it = m_mesh->edges_begin();
-            e_it != m_mesh->edges_end(); ++e_it){
+            e_it != m_mesh->edges_end(); ++e_it)
+        {
             std::array<OpenVolumeMesh::VertexHandle, 2> edge_vertexids = m_mesh->edge_vertices(*e_it);
             m_indices.push_back(edge_vertexids[0].idx());
             m_indices.push_back(edge_vertexids[1].idx());
@@ -82,35 +132,49 @@ namespace vOS
     }
 
 
-    std::vector<unsigned int> MeshObject::faces() {
+    std::vector<unsigned int> MeshObject::faces()
+    {
 
-        std::vector<unsigned int> faces;
+        m_indices.clear();
 
         for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
-            f_it != m_mesh->vertices_end(); ++f_it) {
-            //<FaceVertexIter, FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
-            //faces.push_back(face_vertexids[0].idx());
-            //faces.push_back(face_vertexids[1].idx());
+            f_it != m_mesh->vertices_end(); ++f_it)
+        {
+            std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
+            for(OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids.first;
+            fv_it != face_vertexids.second; ++fv_it)
+            {
+                m_indices.push_back(fv_it->idx());
+            }
         }
 
-        return faces;
+        return m_indices;
     }
 
-    void MeshObject::draw() {
-        if (m_vertexArrayObject != nullptr) {
+    void MeshObject::draw()
+    {
+        if (m_vertexArrayObject != nullptr)
+        {
             m_vertexArrayObject->draw();
         }
     }
 
 
-    void MeshObject::set_highlight(OpenVolumeMesh::VertexIter v_it, bool b){
+    void MeshObject::set_highlight(OpenVolumeMesh::VertexIter v_it, bool b)
+    {
         OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp[*v_it] = b;
     }
 
-    void MeshObject::set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col){
+    void MeshObject::set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col)
+    {
         OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>("VertexHighlightColor");
         highlightColProp[*v_it] = col;
+    }
+
+    glm::vec3& MeshObject::getMeshOffset()
+    {
+        return m_meshOffsetFromCenter;
     }
 
 

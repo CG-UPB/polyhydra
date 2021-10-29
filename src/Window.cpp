@@ -273,7 +273,7 @@ namespace vOS
 
             showDockSpace();
 
-            ImGui::ShowDemoWindow();
+            //ImGui::ShowDemoWindow();
 
 
             // draw all of our windows

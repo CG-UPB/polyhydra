@@ -29,8 +29,9 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
         ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp src/mesh/mesh_object.cpp
-
-        ${VOLUMESHOS_EXT}/ImGuiFileDialog/ImGuiFileDialog.cpp)
+        ${VOLUMESHOS_EXT}/ImGuiFileDialog/ImGuiFileDialog.cpp
+        ${VOLUMESHOS_SRC}/input/Input.cpp
+        ${VOLUMESHOS_SRC}/algorithms/Dijkstra.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
