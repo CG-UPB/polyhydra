@@ -3,20 +3,22 @@
 //
 
 #include "VosWindow.h"
+#include <memory>
 #include <thread>
 #include "../Window.h"
+#include "memory"
 
 namespace vOS{
 
-    VosWindow::VosWindow(){
+    VosWindow::VosWindow() {
         // Start main loop thread
         main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
-
     }
 
-    VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh){
+    VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh) {
         // Setup
         LinkMesh(mesh);
+        main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
     }
 
     VosWindow::~VosWindow(){
@@ -61,5 +63,15 @@ namespace vOS{
 
     bool VosWindow::NextStepAllowed() {
         return true;
+    }
+
+    void VosWindow::SetColor(OpenVolumeMesh::VertexHandle* vertices_array, float r, float g, float b, float a)
+    {
+
+    }
+
+    bool VosWindow::is_running()
+    {
+        return m_running;
     }
 }

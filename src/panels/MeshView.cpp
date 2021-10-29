@@ -10,7 +10,7 @@
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
 
-#include "../mesh/mesh_object.h"
+#include "../mesh/MeshObject.h"
 
 namespace vOS
 {

@@ -9,17 +9,17 @@ typedef std::pair<int, OpenVolumeMesh::VertexHandle> Node;
 namespace vOS
 {
 
-    Dijkstra::Dijkstra(): m_weights(&m_mesh, "")
+    Dijkstra::Dijkstra() : m_weights(&m_mesh, "")
     {
         m_weights = m_mesh.request_edge_property<int>("Weight");
         m_weights->set_persistent(true);
 
         // Add eight vertices
         OpenVolumeMesh::VertexHandle v0 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f(-1.0, 0.0, 0.0));
-        OpenVolumeMesh::VertexHandle v1 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f( 0.0, 0.0, 1.0));
-        OpenVolumeMesh::VertexHandle v2 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f( 1.0, 0.0, 0.0));
-        OpenVolumeMesh::VertexHandle v3 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f( 0.0, 0.0,-1.0));
-        OpenVolumeMesh::VertexHandle v4 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f( 0.0, 1.0, 0.0));
+        OpenVolumeMesh::VertexHandle v1 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f(0.0, 0.0, 1.0));
+        OpenVolumeMesh::VertexHandle v2 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f(1.0, 0.0, 0.0));
+        OpenVolumeMesh::VertexHandle v3 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f(0.0, 0.0, -1.0));
+        OpenVolumeMesh::VertexHandle v4 = m_mesh.add_vertex(OpenVolumeMesh::Vec3f(0.0, 1.0, 0.0));
 
         std::vector<OpenVolumeMesh::VertexHandle> vertices;
 
@@ -83,7 +83,8 @@ namespace vOS
         m_mesh.add_cell(halffaces);
 
         // assign random weights to each edge
-        for(OpenVolumeMesh::EdgeIter e_it = m_mesh.edges_begin(); e_it != m_mesh.edges_end(); ++e_it) {
+        for (OpenVolumeMesh::EdgeIter e_it = m_mesh.edges_begin(); e_it != m_mesh.edges_end(); ++e_it)
+        {
             m_weights[*e_it] = std::rand() % 101 + 1;
         }
 
@@ -103,6 +104,8 @@ namespace vOS
         Node currentVertex = std::make_pair(0, m_start);
         std::priority_queue<Node, std::vector<Node>, std::greater<>> queue;
         std::vector<int> distances(m_mesh.n_vertices(), std::numeric_limits<int>::max());
+
+        VosWindow window(&m_mesh);
 
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0;
@@ -140,6 +143,7 @@ namespace vOS
                     break;
                 }
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
 
         std::cout << "Shortest path: " << std::endl;
@@ -149,6 +153,8 @@ namespace vOS
             queue.pop();
             std::cout << "Vertex: " << vertex.second.idx() << ", weight: " << vertex.first << std::endl;
         }
+
+        while(window.is_running());
     }
 
     void Dijkstra::step()

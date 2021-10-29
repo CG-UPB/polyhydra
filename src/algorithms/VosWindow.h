@@ -14,6 +14,7 @@
 #include <string>
 #include "../Window.h"
 #include "../panels/LogWindow.h"
+#include "memory"
 
 namespace vOS
 {
@@ -162,6 +163,8 @@ public:
      * Sets Callback Function which is called when the user performs a selection operation on cells
      */
     void SetCallbackCellSelection(cell_selection_callback csc) {OnCellSelection = csc;};
+
+    bool is_running();
 
 private:
 

@@ -1,5 +1,5 @@
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
-#include "mesh_object.h"
+#include "MeshObject.h"
 
 
 #include <array>
