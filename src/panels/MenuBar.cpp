@@ -54,9 +54,11 @@ namespace vOS
             ImGui::EndMenuBar();
         }
 
-        if (ImGuiFileDialog::Instance()->Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600))) {
+        if (ImGuiFileDialog::Instance()->Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
+        {
             // action if OK
-            if (ImGuiFileDialog::Instance()->IsOk()) {
+            if (ImGuiFileDialog::Instance()->IsOk())
+            {
                 std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
                 std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
 

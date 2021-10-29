@@ -1,15 +1,18 @@
 
 #include "algorithms/VosWindow.h"
 
-void pauseCallbackTest(){
+void pauseCallbackTest()
+{
     std::cout << "Pause" << std::endl;
 }
 
-void unpauseCallbackTest(){
+void unpauseCallbackTest()
+{
     std::cout << "Unpause" << std::endl;
 }
 
-int main() {
+int main()
+{
     vOS::VosWindow* window = new vOS::VosWindow();
 
     window->Open();
