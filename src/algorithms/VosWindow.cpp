@@ -28,7 +28,7 @@ namespace vOS{
     void VosWindow::Main_Loop() {
 
         m_running = true;
-        m_window = new Window(1280, 720, "volumeshOS");
+        m_window = new Window(1280, 720, "volumeshOS", this);
 
         m_initialized = true;
 
@@ -65,10 +65,10 @@ namespace vOS{
     }
 
     bool VosWindow::IsPaused() {
-        return false;
+        return m_window->get_menu_bar()->is_pressed();
     }
 
-    bool VosWindow::NextStepAllowed() {
+    bool VosWindow::is_initialized() {
         return m_initialized;
     }
 

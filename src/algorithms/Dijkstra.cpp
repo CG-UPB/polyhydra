@@ -117,7 +117,7 @@ namespace vOS
         bool next_step_ready = false;
         while (!found && !queue.empty())
         {
-            next_step_ready = window.NextStepAllowed();
+            next_step_ready = window.is_initialized();
             if (next_step_ready)
             {
                 auto vertexHandle = queue.top().second;

@@ -7,10 +7,16 @@
 #include <iostream>
 
 #include "../mesh/MeshObject.h"
+#include "../algorithms/VosWindow.h"
 #include "LogWindow.h"
 
 namespace vOS
 {
+    void MenuBar::set_vos_window(VosWindow* vos_pointer)
+    {
+        m_vos_window = vos_pointer;
+    }
+
     void MenuBar::show()
     {
         // this should of course be changed to serve a function, for now this is just a placeholder
@@ -68,6 +74,39 @@ namespace vOS
                 mesh->load_from_file(filePathName);
             }
             ImGuiFileDialog::Instance()->Close();
+        }
+
+        ///                              Timeline Buttons
+
+        // Pause Button
+        if(m_pause_toggled)
+        {
+            // Pause button is active, pressing it would undo pause
+
+            if(ImGui::Button("Unpause"))
+            {
+                m_pause_toggled = false;
+                m_vos_window->OnPauseActivated();
+            }
+        }else{
+            // Pause button is inactive, pressing it would pause
+
+            if(ImGui::Button("||"))
+            {
+                m_pause_toggled = true;
+                m_vos_window->OnPauseDeactivated();
+            }
+        }
+        // Reset Button
+        if(ImGui::Button("Reset"))
+        {
+            m_vos_window->OnResetPressed();
+        }
+
+        // Step Button
+        if(ImGui::Button("Step"))
+        {
+            m_vos_window->OnStepPressed();
         }
     }
 }
