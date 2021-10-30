@@ -20,9 +20,10 @@ namespace vOS
     {
 
     public:
-        Window(int width, int height, std::string title, VosWindow* vos_pointer);
+        Window(int width, int height, std::string title);
         ~Window();
         void show();
+        void set_vos_window(VosWindow* vos_pointer);
         MenuBar* get_menu_bar(){return m_menu_bar;}
     private:
 

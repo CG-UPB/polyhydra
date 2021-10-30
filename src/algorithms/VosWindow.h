@@ -202,7 +202,7 @@ private:
 
     // Variables
     v3f* m_mesh_reference;
-    Window* m_window;
+    vOS::Window* m_window;
     bool m_initialized= false;
     bool m_running;
 

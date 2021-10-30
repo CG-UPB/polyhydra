@@ -29,12 +29,18 @@ namespace vOS
     }
 
 
-    Window::Window(int width, int height, std::string title, VosWindow *vos_pointer): m_width(width), m_height(height), m_title(std::move(title)), m_vos_window(vos_pointer)
+    Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
     {
         initGLFW();
         initImGui();
         initImGuiStyle();
         initPanels();
+    }
+
+    void Window::set_vos_window(VosWindow* vos_pointer){
+        m_vos_window = vos_pointer;
+
+        m_menu_bar->set_vos_window(vos_pointer);
     }
 
     Window::~Window()
@@ -205,9 +211,10 @@ namespace vOS
     void Window::initPanels()
     {
         m_menu_bar = new MenuBar();
-        m_menu_bar->set_vos_window(m_vos_window);
+        m_panels.push_back(m_menu_bar);
         m_panels.push_back(new MeshView(720, 480));
         LogWindow* mylog = LogWindow::getInstance();
+        m_panels.push_back(mylog);
     }
 
     void Window::showDockSpace()

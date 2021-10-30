@@ -28,7 +28,8 @@ namespace vOS{
     void VosWindow::Main_Loop() {
 
         m_running = true;
-        m_window = new Window(1280, 720, "volumeshOS", this);
+        VosWindow* link_to_this_class = this;
+        m_window = new Window(1280, 720, "volumeshOS", reinterpret_cast<Window *>(link_to_this_class));
 
         m_initialized = true;
 
