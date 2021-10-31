@@ -11,22 +11,26 @@
 
 namespace vOS{
 
-    VosWindow::VosWindow() {
+    VosWindow::VosWindow()
+    {
         // Start main loop thread
         main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
     }
 
-    VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh) {
+    VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh)
+    {
         // Setup
         LinkMesh(mesh);
         main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
     }
 
-    VosWindow::~VosWindow(){
+    VosWindow::~VosWindow()
+    {
         main_loop_thread->join();
     }
 
-    void VosWindow::Main_Loop() {
+    void VosWindow::Main_Loop()
+    {
 
         m_running = true;
         VosWindow* link_to_this_class = this;
@@ -42,21 +46,25 @@ namespace vOS{
         m_running = false;
     }
 
-    bool VosWindow::LinkMesh(v3f *mesh) {
+    bool VosWindow::LinkMesh(v3f *mesh)
+    {
         m_mesh_reference = mesh;
         return true;
     }
 
-    bool VosWindow::RemoveMesH(v3f *mesh) {
+    bool VosWindow::RemoveMesH(v3f *mesh)
+    {
         m_mesh_reference = nullptr;
         return true;
     }
 
-    bool VosWindow::is_paused() {
+    bool VosWindow::is_paused()
+    {
         return m_window->get_menu_bar()->pause_is_pressed();
     }
 
-    bool VosWindow::is_ready() {
+    bool VosWindow::is_ready()
+    {
         return m_initialized;
     }
 
@@ -70,11 +78,13 @@ namespace vOS{
         return m_running;
     }
 
-    void VosWindow::set_callback_paused(void_callback vc) {
+    void VosWindow::set_callback_paused(void_callback vc)
+    {
         m_on_vos_paused = vc;
     }
 
-    void VosWindow::set_callback_unpaused(void_callback vc) {
+    void VosWindow::set_callback_unpaused(void_callback vc)
+    {
         m_on_vos_unpaused = vc;
     }
 
@@ -83,5 +93,8 @@ namespace vOS{
         Log()->addLog(fmt, level);
     }
 
-    void VosWindow::default_callback_function() { LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");}
+    void VosWindow::default_callback_function()
+    {
+        LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
+    }
 }
