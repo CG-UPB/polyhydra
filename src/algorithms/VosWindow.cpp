@@ -20,28 +20,28 @@ namespace vOS
     VosWindow::VosWindow()
     {
         // Start main loop thread
-        VosWindow::instance().main_loop_thread = new std::thread(&VosWindow::main_loop, this);
+        main_loop_thread = new std::thread(&VosWindow::main_loop, this);
     }
 
 
     VosWindow::~VosWindow()
     {
-        VosWindow::instance().main_loop_thread->join();
+        main_loop_thread->join();
     }
 
     void VosWindow::main_loop()
     {
 
-        VosWindow::instance().m_running = true;
-        VosWindow::instance().m_window = new Window(1280, 720, "volumeshOS");
+        m_running = true;
+        m_window = new Window(1280, 720, "volumeshOS");
 
-        VosWindow::instance().m_initialized = true;
+        m_initialized = true;
 
         // Render window
-        VosWindow::instance().m_window->show();
+        m_window->show();
 
-        delete VosWindow::instance().m_window;
-        VosWindow::instance().m_running = false;
+        delete m_window;
+        m_running = false;
     }
 
     void VosWindow::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
