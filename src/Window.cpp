@@ -37,12 +37,6 @@ namespace vOS
         initPanels();
     }
 
-    void Window::set_vos_window(VosWindow* vos_pointer){
-        m_vos_window = vos_pointer;
-
-        m_menu_bar->set_vos_window(vos_pointer);
-    }
-
     Window::~Window()
     {
         // delete window panels
@@ -58,6 +52,14 @@ namespace vOS
         glfwDestroyWindow(m_window);
         glfwTerminate();
     }
+
+
+    void Window::set_vos_window(VosWindow* vos_pointer){
+        m_vos_window = vos_pointer;
+
+        m_menu_bar->set_vos_window(vos_pointer);
+    }
+
 
     void Window::initGLFW()
     {

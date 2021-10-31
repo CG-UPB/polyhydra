@@ -11,7 +11,7 @@ namespace vOS
     public:
 
         void set_vos_window(VosWindow* vos_pointer);
-        bool is_pressed(){return m_pause_toggled;}
+        bool pause_is_pressed();
 
         // A Reference pointer to our Vos Window
         VosWindow* m_vos_window;

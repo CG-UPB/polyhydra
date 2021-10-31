@@ -101,6 +101,18 @@ namespace vOS
         m_end = end;
     }
 
+    void Dijkstra::PauseButtonPressed()
+    {
+        LogWindow::getInstance()->addLog("Paused");
+        m_pause = true;
+    }
+    void Dijkstra::PauseButtonReleased()
+    {
+        LogWindow::getInstance()->addLog("Unpaused");
+        m_pause = false;
+    }
+
+    void test23(){}
     void Dijkstra::run()
     {
 
@@ -109,6 +121,9 @@ namespace vOS
         std::vector<int> distances(m_mesh.n_vertices(), std::numeric_limits<int>::max());
 
         VosWindow window(&m_mesh);
+
+        window.set_callback_paused(std::bind( &Dijkstra::PauseButtonPressed, this));
+        window.set_callback_unpaused(std::bind( &Dijkstra::PauseButtonReleased, this));
 
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0;
@@ -154,7 +169,6 @@ namespace vOS
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
 
-        std::cout << "Shortest path: " << std::endl;
         bool first = true;
         while (!queue.empty())
         {
@@ -169,7 +183,11 @@ namespace vOS
             std::cout << "Vertex: " << vertex.second.idx() << ", weight: " << vertex.first << std::endl;
         }
 
-        while(window.is_running());
+        window.Log()->addLog("Press Pause");
+        while(!m_pause);
+        window.Log()->addLog("Press Unpause");
+        while(m_pause);
+        window.Log()->addLog("Dijkstra function ended");
     }
 
     void Dijkstra::step()

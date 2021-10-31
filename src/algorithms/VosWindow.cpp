@@ -6,6 +6,7 @@
 #include <memory>
 #include <thread>
 #include "../Window.h"
+#include "../panels/MenuBar.h"
 #include "memory"
 
 namespace vOS{
@@ -29,7 +30,8 @@ namespace vOS{
 
         m_running = true;
         VosWindow* link_to_this_class = this;
-        m_window = new Window(1280, 720, "volumeshOS", reinterpret_cast<Window *>(link_to_this_class));
+        m_window = new Window(1280, 720, "volumeshOS");
+        m_window->set_vos_window(link_to_this_class);
 
         m_initialized = true;
 
@@ -50,23 +52,8 @@ namespace vOS{
         return true;
     }
 
-    void VosWindow::SetCallbackPauseActivated(void_callback vc) {
-        VosWindow::OnPauseActivated = vc;
-    }
-
-    void VosWindow::SetCallbackPauseDeactivated(void_callback vc) {
-        VosWindow::OnResetPressed = vc;
-    }
-    void VosWindow::SetCallbackOnReset(void_callback vc) {
-        VosWindow::OnStepPressed = vc;
-    }
-
-    void VosWindow::SetCallbackOnStep(void_callback vc) {
-        VosWindow::OnPauseActivated = vc;
-    }
-
     bool VosWindow::IsPaused() {
-        return m_window->get_menu_bar()->is_pressed();
+        return m_window->get_menu_bar()->pause_is_pressed();
     }
 
     bool VosWindow::is_initialized() {
@@ -82,4 +69,14 @@ namespace vOS{
     {
         return m_running;
     }
+
+    void VosWindow::set_callback_paused(void_callback vc) {
+        m_on_vos_paused = vc;
+    }
+
+    void VosWindow::set_callback_unpaused(void_callback vc) {
+        m_on_vos_unpaused = vc;
+    }
+
+    void VosWindow::default_callback_function() { LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");}
 }

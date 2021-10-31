@@ -1,8 +1,6 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include "panels/MenuBar.h"
-#include "algorithms/VosWindow.h"
 
 #include <string>
 #include <vector>
@@ -15,6 +13,10 @@ namespace vOS
         virtual void show() = 0;
         virtual ~WindowPanel() = default;
     };
+
+    // Forward Declaration
+    class VosWindow;
+    class MenuBar;
 
     class Window
     {
