@@ -52,11 +52,11 @@ namespace vOS{
         return true;
     }
 
-    bool VosWindow::IsPaused() {
+    bool VosWindow::is_paused() {
         return m_window->get_menu_bar()->pause_is_pressed();
     }
 
-    bool VosWindow::is_initialized() {
+    bool VosWindow::is_ready() {
         return m_initialized;
     }
 
@@ -76,6 +76,11 @@ namespace vOS{
 
     void VosWindow::set_callback_unpaused(void_callback vc) {
         m_on_vos_unpaused = vc;
+    }
+
+    void VosWindow::add_log(const char* fmt, int level)
+    {
+        Log()->addLog(fmt, level);
     }
 
     void VosWindow::default_callback_function() { LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");}

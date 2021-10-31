@@ -128,11 +128,14 @@ namespace vOS
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0;
 
+        while(!window.is_ready()){}
+
+        window.Log()->addLog("Press Pause");
         bool found = false;
         bool next_step_ready = false;
         while (!found && !queue.empty())
         {
-            next_step_ready = window.is_initialized();
+            next_step_ready = window.is_ready();
             if (next_step_ready)
             {
                 auto vertexHandle = queue.top().second;
@@ -173,12 +176,13 @@ namespace vOS
         while (!queue.empty())
         {
             auto vertex = queue.top();
-            /*
+
             if(queue.empty() || first)
                 window.SetColor(&vertex.second, 0,0,1,1);
             else
                 window.SetColor(&vertex.second, 1,0,0,1);
-            first = false;*/
+            first = false;
+
             queue.pop();
             std::cout << "Vertex: " << vertex.second.idx() << ", weight: " << vertex.first << std::endl;
         }

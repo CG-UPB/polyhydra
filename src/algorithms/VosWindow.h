@@ -65,7 +65,14 @@ public:
     ~VosWindow();
 
 
+    /*
+     * Returns vos window log
+     */
     LogWindow* Log(){return LogWindow::getInstance();}
+    /*
+     * Adds the given string to the vos window log. Shortcut function, so that Log() does not have to be called
+     */
+    void add_log(const char* fmt, int level = 0);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////// Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,15 +120,15 @@ public:
 
     //////////////////////////////////////////////////// Queueries ///////////////////////////////////////////////////////////////////////////////////////////////////
     /*
-    * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button, an internal
-    * timer is not ready yet or some other underlying issue.
+    * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button,
+     * the window or mesh is missing or hasn't been fully initialized yet or some other underlying issue is present.
     */
-    bool is_initialized();
+    bool is_ready();
 
     /*
      * Asks whether Vos is paused
      */
-    bool IsPaused();
+    bool is_paused();
 
     ///////////////////////////////////////////////////// Buttons ////////////////////////////////////////////////////////////////////////////////////////////////////
 
