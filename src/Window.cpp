@@ -54,13 +54,6 @@ namespace vOS
     }
 
 
-    void Window::set_vos_window(VosWindow* vos_pointer){
-        m_vos_window = vos_pointer;
-
-        m_menu_bar->set_vos_window(vos_pointer);
-    }
-
-
     void Window::initGLFW()
     {
         // Setup window

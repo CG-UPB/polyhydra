@@ -60,8 +60,7 @@ namespace vOS
                 if(ImGui::Button(">"))
                 {
                     m_pause_toggled = false;
-                    if(m_vos_window != nullptr)
-                    m_vos_window->m_on_vos_unpaused();
+                    VosWindow::instance().m_on_vos_unpaused();
                 }
             }else{
                 // Pause button is inactive, pressing it would pause
@@ -69,22 +68,19 @@ namespace vOS
                 if(ImGui::Button("||"))
                 {
                     m_pause_toggled = true;
-                    if(m_vos_window != nullptr)
-                    m_vos_window->m_on_vos_paused();
+                        VosWindow::instance().m_on_vos_paused();
                 }
             }
             // Reset Button
             if(ImGui::Button("Reset"))
             {
-                if(m_vos_window != nullptr)
-                m_vos_window->m_on_reset();
+                    VosWindow::instance().m_on_reset();
             }
 
             // Step Button
             if(ImGui::Button("Step"))
             {
-                if(m_vos_window != nullptr)
-                m_vos_window->m_on_step();
+                VosWindow::instance().m_on_step();
             }
 
             ImGui::EndMenuBar();

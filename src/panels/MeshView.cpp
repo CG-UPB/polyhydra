@@ -236,7 +236,7 @@ namespace vOS
         );
 
         // show frame time and fps
-        ImGui::SetCursorPos(topLeft);
+        /*ImGui::SetCursorPos(topLeft);
         ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
@@ -246,7 +246,7 @@ namespace vOS
         ImGui::Text("edges: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_edges());
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("faces: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_faces());
-
+*/
         ImGui::End();
     }
 }

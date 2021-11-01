@@ -112,7 +112,6 @@ namespace vOS
         m_pause = false;
     }
 
-    void test23(){}
     void Dijkstra::run()
     {
 
@@ -120,7 +119,7 @@ namespace vOS
         std::priority_queue<Node, std::vector<Node>, std::greater<>> queue;
         std::vector<int> distances(m_mesh.n_vertices(), std::numeric_limits<int>::max());
 
-        VosWindow window = VosWindow::instance();
+        VosWindow& window = VosWindow::instance();
 
         window.set_mesh(&m_mesh);
 
@@ -181,9 +180,9 @@ namespace vOS
             auto vertex = queue.top();
 
             if(queue.empty() || first)
-                window.SetColor(&vertex.second, 0,0,1,1);
+                window.set_vertex_color(&vertex.second, 0,0,1,1);
             else
-                window.SetColor(&vertex.second, 1,0,0,1);
+                window.set_vertex_color(&vertex.second, 1,0,0,1);
             first = false;
 
             queue.pop();

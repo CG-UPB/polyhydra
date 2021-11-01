@@ -43,7 +43,8 @@ namespace vOS
         // Render window
         m_window->show();
 
-        delete m_window;
+        if(m_window != nullptr)
+            delete m_window;
         m_running = false;
     }
 
