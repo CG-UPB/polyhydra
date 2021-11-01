@@ -16,6 +16,7 @@ namespace vOS
         MeshObject();
         ~MeshObject() = default;
 
+        bool m_should_update;
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
         void load_from_file(std::string file_path);
@@ -34,7 +35,8 @@ namespace vOS
         void set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col);
     private:
 
-        void calculateMeshOffset();
+        void calculate_mesh_offset();
+        void update_vertex_buffer();
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;

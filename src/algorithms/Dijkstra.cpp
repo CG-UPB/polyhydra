@@ -108,7 +108,7 @@ namespace vOS
         std::priority_queue<Node, std::vector<Node>, std::greater<>> queue;
         std::vector<int> distances(m_mesh.n_vertices(), std::numeric_limits<int>::max());
 
-        VosWindow::set_mesh(&m_mesh);
+        VosWindow::instance().set_mesh(&m_mesh);
 
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0;

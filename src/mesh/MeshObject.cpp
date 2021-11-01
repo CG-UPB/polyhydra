@@ -13,6 +13,7 @@ namespace vOS
     MeshObject::MeshObject()
     {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
+        m_should_update = false;
 
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp->set_persistent(true);
@@ -27,12 +28,7 @@ namespace vOS
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
 
-        if (m_vertexArrayObject != nullptr)
-        {
-            delete m_vertexArrayObject;
-        }
-        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
-        calculateMeshOffset();
+        m_should_update = false;
     }
 
     void MeshObject::write_to_file(std::string file_path)
@@ -44,9 +40,21 @@ namespace vOS
     void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
     {
         m_mesh = mesh;
+        m_should_update = true;
+
     }
 
-    void MeshObject::calculateMeshOffset()
+    void MeshObject::update_vertex_buffer()
+    {
+        if (m_vertexArrayObject != nullptr)
+        {
+            delete m_vertexArrayObject;
+        }
+        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
+        calculate_mesh_offset();
+    }
+
+    void MeshObject::calculate_mesh_offset()
     {
         glm::vec3 min(m_vertices[0], m_vertices[1], m_vertices[2]);
         glm::vec3 max(m_vertices[0], m_vertices[1], m_vertices[2]);
@@ -141,6 +149,11 @@ namespace vOS
 
     void MeshObject::draw()
     {
+        if( m_should_update == true)
+        {
+            update_vertex_buffer();
+            m_should_update = false;
+        }
         if (m_vertexArrayObject != nullptr)
         {
             m_vertexArrayObject->draw();

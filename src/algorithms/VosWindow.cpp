@@ -20,9 +20,11 @@ namespace vOS
     VosWindow::VosWindow()
     {
         // Start main loop thread
-        main_loop_thread = new std::thread(&VosWindow::main_loop, this);
+        if (main_loop_thread  == nullptr)
+        {
+            main_loop_thread = new std::thread(&VosWindow::main_loop, this);
+        }
     }
-
 
     VosWindow::~VosWindow()
     {
@@ -46,12 +48,12 @@ namespace vOS
 
     void VosWindow::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
     {
-        VosWindow::instance().m_mesh_obj.set_mesh(mesh);
+        m_mesh_obj.set_mesh(mesh);
     }
 
     MeshObject& VosWindow::get_mesh_obj()
     {
-        return VosWindow::instance().m_mesh_obj;
+        return m_mesh_obj;
     }
 
     void VosWindow::set_callback_pause_activated(void_callback vc)

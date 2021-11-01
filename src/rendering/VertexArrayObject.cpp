@@ -11,6 +11,8 @@ namespace vOS {
     VertexArrayObject::VertexArrayObject(const std::vector<float> &vertices, const std::vector<unsigned int> &indices) {
         m_numIndices = (int) indices.size();
 
+
+
         glGenVertexArrays(1, &m_vao);
         glBindVertexArray(m_vao);
 
