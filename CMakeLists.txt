@@ -31,7 +31,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/input/Input.cpp src/mesh/MeshObject.cpp
         ${VOLUMESHOS_EXT}/ImGuiFileDialog/ImGuiFileDialog.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp
-        ${VOLUMESHOS_SRC}/algorithms/Dijkstra.cpp)
+        ${VOLUMESHOS_SRC}/algorithms/Dijkstra.cpp src/panels/PropertyView.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

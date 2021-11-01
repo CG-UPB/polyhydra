@@ -10,7 +10,7 @@ namespace vOS
     class MeshView: public WindowPanel
     {
     public:
-        MeshView(int width, int height);
+        MeshView(int width, int height, FrameBufferObject& fbo);
         ~MeshView() override;
         void show() override;
 

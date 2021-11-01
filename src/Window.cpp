@@ -9,11 +9,12 @@
 #include "imgui_impl_opengl3.h"
 
 #include "Window.h"
-#include "panels/MeshView.h"
 #include "input/Input.h"
-#include "panels/MenuBar.h"
 #include "fs/FileManager.h"
+#include "panels/MeshView.h"
+#include "panels/MenuBar.h"
 #include "panels/LogWindow.h"
+#include "panels/PropertyView.h"
 
 namespace vOS
 {
@@ -40,6 +41,11 @@ namespace vOS
         // delete window panels
         for (auto& element: m_panels) {
             delete element;
+        }
+
+        if (m_viewport_framebuffer != nullptr)
+        {
+            delete m_viewport_framebuffer;
         }
 
         // Cleanup
@@ -202,8 +208,14 @@ namespace vOS
 
     void Window::initPanels()
     {
+        int viewport_width = 720;
+        int viewport_height = 480;
+
+        m_viewport_framebuffer = new FrameBufferObject(viewport_width, viewport_height);
+
         m_panels.push_back(new MenuBar());
-        m_panels.push_back(new MeshView(720, 480));
+        m_panels.push_back(new MeshView(viewport_width, viewport_height, *m_viewport_framebuffer));
+        m_panels.push_back(new PropertyView(*m_viewport_framebuffer));
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
     }

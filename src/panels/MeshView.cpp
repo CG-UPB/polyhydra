@@ -14,17 +14,17 @@
 
 namespace vOS
 {
-    MeshView::MeshView(int width, int height):
+    MeshView::MeshView(int width, int height, FrameBufferObject& fbo):
             m_viewportPanelWidth(width),
             m_viewportPanelHeight(height),
             m_lastDown(false),
             m_lastX(0.0),
             m_lastY(0.0),
-            m_arcBallOn(false)
+            m_arcBallOn(false),
+            m_meshFrameBuffer(&fbo)
     {
         std::filesystem::path shaderPath = "shaders";
         m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
-        m_meshFrameBuffer = new FrameBufferObject(width, height);
 
         // set up the initial camera position, direction and orientation of the mesh
         glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));

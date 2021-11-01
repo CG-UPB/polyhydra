@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include "rendering/FrameBufferObject.h"
 
 namespace vOS
 {
@@ -36,5 +37,6 @@ namespace vOS
         std::string m_glslVersion;
         GLFWwindow* m_window;
         std::vector<WindowPanel*> m_panels;
+        FrameBufferObject* m_viewport_framebuffer;
     };
 }
