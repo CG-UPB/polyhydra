@@ -6,6 +6,7 @@
 #include <memory>
 #include <thread>
 #include "../Window.h"
+#include "../panels/MenuBar.h"
 #include "memory"
 
 namespace vOS
@@ -56,34 +57,14 @@ namespace vOS
         return m_mesh_obj;
     }
 
-    void VosWindow::set_callback_pause_activated(void_callback vc)
-    {
-        VosWindow::on_pause_activated = vc;
-    }
-
-    void VosWindow::set_callback_pauseDeactivated(void_callback vc)
-    {
-        VosWindow::on_reset_pressed = vc;
-    }
-
-    void VosWindow::set_callback_on_reset(void_callback vc)
-    {
-        VosWindow::on_step_pressed = vc;
-    }
-
-    void VosWindow::set_callback_on_step(void_callback vc)
-    {
-        VosWindow::on_pause_activated = vc;
-    }
-
     bool VosWindow::is_paused()
     {
-        return false;
+        return m_window->get_menu_bar()->pause_is_pressed();
     }
 
-    bool VosWindow::next_step_allowed()
+    bool VosWindow::is_ready()
     {
-        return VosWindow::instance().m_initialized;
+        return m_initialized;
     }
 
     void VosWindow::set_vertex_color(OpenVolumeMesh::VertexHandle *vertices_array, float r, float g, float b, float a)
@@ -94,5 +75,25 @@ namespace vOS
     bool VosWindow::is_running()
     {
         return VosWindow::instance().m_running;
+    }
+
+    void VosWindow::set_callback_paused(void_callback vc)
+    {
+        m_on_vos_paused = vc;
+    }
+
+    void VosWindow::set_callback_unpaused(void_callback vc)
+    {
+        m_on_vos_unpaused = vc;
+    }
+
+    void VosWindow::add_log(const char* fmt, int level)
+    {
+        Log()->addLog(fmt, level);
+    }
+
+    void VosWindow::default_callback_function()
+    {
+        LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
     }
 }

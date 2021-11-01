@@ -19,5 +19,10 @@ namespace vOS
         OpenVolumeMesh::VertexHandle m_end;
         OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
         OpenVolumeMesh::EdgePropertyT<int> m_weights;
+
+        void PauseButtonReleased();
+        void PauseButtonPressed();
+
+        bool m_pause = false;
     };
 }

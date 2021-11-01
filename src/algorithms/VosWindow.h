@@ -10,16 +10,16 @@
 #include <OpenVolumeMesh/Mesh/HexahedralMesh.hh>
 #include <OpenVolumeMesh/Mesh/PolyhedralMesh.hh>
 #include <thread>
-#include <list>
-#include <map>
 #include <string>
+#include <functional>
 #include "../Window.h"
 #include "../panels/LogWindow.h"
 #include "../mesh/MeshObject.h"
-#include "memory"
+
 
 namespace vOS
 {
+
 /*
  * Used by the programmer to visualize OVM Meshes using volumeshos
  * Can be used to highlight specific elements, color specific parts of the mesh and apply other configerations
@@ -51,32 +51,27 @@ namespace vOS
         // Renamed Classes for convenience
         using v3f = OpenVolumeMesh::GeometricPolyhedralMeshV3f;
 
-        typedef void(*button_callback)(int button_id, bool flanked);
+    typedef std::function<void(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode)> vertex_selection_callback;
+    typedef std::function<void(OpenVolumeMesh::EdgeHandle* edges_array, int length, Selection_Mode selection_mode)> edge_selection_callback;
+    typedef std::function<void(OpenVolumeMesh::FaceHandle* faces_array, int length, Selection_Mode selection_mode)> face_selection_callback;
+    typedef std::function<void(OpenVolumeMesh::CellHandle* cells_array, int length, Selection_Mode selection_mode)> cell_selection_callback;
 
-        typedef void(*parameter_callback)(int double_id, double value);
+    typedef std::function<void(double x, double y, double z, Translation_Mode translation_mode)> operation_translation_callback;
+    typedef std::function<void(Rendering_Mode rendering_mode)> operation_rendering_callback;
 
-        typedef void(*vertex_selection_callback)(OpenVolumeMesh::VertexHandle *vertices_array, int length,
-                                                 Selection_Mode selection_mode);
+    typedef std::function<void()> void_callback;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////// Logger ////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        typedef void(*edge_selection_callback)(OpenVolumeMesh::EdgeHandle *vertices_array, int length,
-                                               Selection_Mode selection_mode);
-
-        typedef void(*face_selection_callback)(OpenVolumeMesh::FaceHandle *vertices_array, int length,
-                                               Selection_Mode selection_mode);
-
-        typedef void(*cell_selection_callback)(OpenVolumeMesh::CellHandle *vertices_array, int length,
-                                               Selection_Mode selection_mode);
-
-        typedef void(*operation_translation_callback)(double x, double y, double z, Translation_Mode translation_mode);
-
-        typedef void(*operation_rendering_callback)(Rendering_Mode translation_mode);
-
-        typedef void(*void_callback)();
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////// Initialization ////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        LogWindow *Log(){ return LogWindow::getInstance(); }
+        /*
+         * Returns vos window log
+         */
+        LogWindow* Log(){return LogWindow::getInstance();}
+        /*
+         * Adds the given string to the vos window log. Shortcut function, so that Log() does not have to be called
+         */
+        void add_log(const char* fmt, int level = 0);
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////// Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,68 +108,88 @@ namespace vOS
         /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////// Queueries ///////////////////////////////////////////////////////////////////////////////////////////////////
-        /*
-        * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button, an internal
-        * timer is not ready yet or some other underlying issue.
-        */
-        static bool next_step_allowed();
+    //////////////////////////////////////////////////// Queueries ///////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+    * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button,
+     * the window or mesh is missing or hasn't been fully initialized yet or some other underlying issue is present.
+    */
+     bool is_ready();
 
-        /*
-         * Asks whether Vos is paused
-         */
-        static bool is_paused();
+    /*
+     * Asks whether Vos is paused
+     */
+     bool is_paused();
 
         ///////////////////////////////////////////////////// Buttons ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        /*
-         * Sets Callback Function which is called when the user presses the Pause Button inside Vos
-         */
-        void set_callback_pause_activated(void_callback vc);
+    /*
+     * Sets Callback Function which is called when the user presses the Pause Button inside Vos
+     * Remember using std::bind(function, this) to the callback function parameter
+     */
+    void set_callback_paused(void_callback vc);
 
-        /*
-         * Sets Callback Function which is called when the user releases the Pause Button inside Vos
-         */
-        void set_callback_pauseDeactivated(void_callback vc);
-
-        /*
-         * Sets Callback Function which is called when the user presses the Reset Button
-         */
-        void set_callback_on_reset(void_callback vc);
-
-        /*
-         * Sets Callback Function which is called when the user presses the Step Button
-         */
-        void set_callback_on_step(void_callback vc);
+    /*
+     * Sets Callback Function which is called when the user releases the Pause Button inside Vos
+     * Remember using std::bind(function, this) to the callback function parameter
+     */
+    void set_callback_unpaused(void_callback vc) ;
+    /*
+     * Sets Callback Function which is called when the user presses the Reset Button
+     * Remember using std::bind(function, this) to the callback function parameter
+     */
+    void set_callback_reset(void_callback vc) { m_on_reset = vc;};
+    /*
+     * Sets Callback Function which is called when the user presses the Step Button
+     * Remember using std::bind(function, this) to the callback function parameter
+     */
+    void set_callback_step(void_callback vc){ m_on_step = vc;};
 
         /////////////////////////////////////////////////// Selections //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        /*
-         * Sets Callback Function which is called when the user performs a selection operation on vertices
-         */
-        void set_callback_vertex_selection(vertex_selection_callback vsc){ OnVerticesSelection = vsc; };
-
-
-        /*
-         * Sets Callback Function which is called when the user performs a selection operation on edges
-         */
-        void set_callback_edge_selection(edge_selection_callback esc){ OnEdgeSelection = esc; };
-
-        /*
-         * Sets Callback Function which is called when the user performs a selection operation on faces
-         */
-        void set_callback_face_selection(face_selection_callback fsc){ OnFaceSelection = fsc; };
-
-        /*
-         * Sets Callback Function which is called when the user performs a selection operation on cells
-         */
-        void set_callback_cell_selection(cell_selection_callback csc){ OnCellSelection = csc; };
+    /*
+     * Sets Callback Function which is called when the user performs a selection operation on vertices
+     */
+    void SetCallbackVertexSelection(vertex_selection_callback vsc){m_on_vertex_selection = vsc;};
+    /*
+     * Sets Callback Function which is called when the user performs a selection operation on edges
+     */
+    void SetCallbackEdgeSelection(edge_selection_callback esc){m_on_edge_selection = esc;};
+    /*
+     * Sets Callback Function which is called when the user performs a selection operation on faces
+     */
+    void SetCallbackFaceSelection(face_selection_callback fsc){m_on_face_selection = fsc;};
+    /*
+     * Sets Callback Function which is called when the user performs a selection operation on cells
+     */
+    void SetCallbackCellSelection(cell_selection_callback csc) {m_on_cell_selection = csc;};
 
         static bool is_running();
 
         void main_loop();
 
     private:
+    /// User Input Reactions
+    // Called when Pause Button has been pressed and is active
+    void_callback m_on_vos_paused = default_callback_function;
+    // Called when Pause Button has been released and is inactive
+    void_callback m_on_vos_unpaused = default_callback_function;
+    // Called when Reset Button has been pressed
+    void_callback m_on_reset = default_callback_function;
+    // Called when Step Button has been pressed
+    void_callback m_on_step = default_callback_function;
+    // Called when a number of vertices have been selected
+    vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
+    // Called when a number of edges have been selected
+    edge_selection_callback m_on_edge_selection = default_edge_selection_function;
+    // Called when a number of faces have been selected
+    face_selection_callback m_on_face_selection = default_face_selection_function;
+    // Called when a number of cells have been selected
+    cell_selection_callback m_on_cell_selection = default_cell_selection_function;
+
+    operation_translation_callback m_on_translate_operation = default_translate_operation_function;
+    operation_rendering_callback m_on_rendering_operation = default_rendering_operation_function;
+    // Generally Called when the User does anything to the Mesh (debug)
+    void_callback m_on_general_update = default_callback_function;
 
         VosWindow();
         ~VosWindow();
@@ -192,6 +207,7 @@ namespace vOS
         MeshObject m_mesh_obj;
         bool m_initialized = false;
         bool m_running;
+        bool m_window_paused = false;
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////// Main Loop /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,68 +222,20 @@ namespace vOS
         /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////// Callback Buttons ////////////////////////////////////////////////////////////////////////////////////////////////
-        /*
-         * Called when the User Pressed or Released the Pause Button
-         */
-        void PauseButtonFlank(bool is_pressed)
-        { if (is_pressed) on_pause_activated(); else OnPauseDeactivated(); };
+    /////////////////////////////////////////////// Callback Functions ///////////////////////////////////////////////////////////////////////////////////////////////
 
-        /////////////////////////////////////////////// Callback Functions ///////////////////////////////////////////////////////////////////////////////////////////////
-        static void default_callback_function()
-        {
-            std::cout << "Debug: Default Callback Function Called" << std::endl;
-        };
+    /// Default Empty Callback Function
+    static void default_callback_function();
 
-        static void default_vertex_selection_function(OpenVolumeMesh::VertexHandle *vertices_array, int length,
-                                                      Selection_Mode selection_mode)
-        {};
+    static void default_vertex_selection_function(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode){};
+    static void default_edge_selection_function(OpenVolumeMesh::EdgeHandle* edge_array, int length, Selection_Mode selection_mode){};
+    static void default_face_selection_function(OpenVolumeMesh::FaceHandle* face_array, int length, Selection_Mode selection_mode){};
+    static void default_cell_selection_function(OpenVolumeMesh::CellHandle* cell_array, int length, Selection_Mode selection_mode){};
 
-        static void default_edge_selection_function(OpenVolumeMesh::EdgeHandle *edge_array, int length,
-                                                    Selection_Mode selection_mode)
-        {};
+    static void default_translate_operation_function(double x, double y, double z, Translation_Mode translation_mode){};
+    static void default_rendering_operation_function(Rendering_Mode rendering_mode){};
 
-        static void default_face_selection_function(OpenVolumeMesh::FaceHandle *face_array, int length,
-                                                    Selection_Mode selection_mode)
-        {};
-
-        static void default_cell_selection_function(OpenVolumeMesh::CellHandle *cell_array, int length,
-                                                    Selection_Mode selection_mode)
-        {};
-
-        static void
-        default_translate_operation_function(double x, double y, double z, Translation_Mode translation_mode)
-        {};
-
-        static void default_rendering_operation_function(Rendering_Mode rendering_mode)
-        {};
-
-        /// Call Back Functions
-        /// User Input Reactions
-        // Called when Pause Button has been pressed and is active
-        void_callback on_pause_activated = default_callback_function;
-        // Called when Pause Button has been released and is inactive
-        void_callback OnPauseDeactivated = default_callback_function;
-        // Called when Reset Button has been pressed
-        void_callback on_reset_pressed = default_callback_function;
-        // Called when Step Button has been pressed
-        void_callback on_step_pressed = default_callback_function;
-        // Called when internal Step Timer has reached < 0
-        void_callback OnStepTimerLap = default_callback_function;
-        // Called when a number of vertices have been selected
-        vertex_selection_callback OnVerticesSelection = default_vertex_selection_function;
-        // Called when a number of edges have been selected
-        edge_selection_callback OnEdgeSelection = default_edge_selection_function;
-        // Called when a number of faces have been selected
-        face_selection_callback OnFaceSelection = default_face_selection_function;
-        // Called when a number of cells have been selected
-        cell_selection_callback OnCellSelection = default_cell_selection_function;
-
-        operation_translation_callback OnTranslateOperation = default_translate_operation_function;
-        operation_rendering_callback OnRenderingOperation = default_rendering_operation_function;
-        // Generally Called when the User does anything to the Mesh (debug)
-        void_callback OnUpdate = default_callback_function;
-
+    /// Call Back Functions
 
     };
 

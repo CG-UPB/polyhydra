@@ -14,6 +14,7 @@
 #include "panels/MenuBar.h"
 #include "fs/FileManager.h"
 #include "panels/LogWindow.h"
+#include "algorithms/VosWindow.h"
 
 namespace vOS
 {
@@ -26,6 +27,7 @@ namespace vOS
     {
         fprintf(stderr, "Error: %s\n", description.c_str());
     }
+
 
     Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
     {
@@ -50,6 +52,14 @@ namespace vOS
         glfwDestroyWindow(m_window);
         glfwTerminate();
     }
+
+
+    void Window::set_vos_window(VosWindow* vos_pointer){
+        m_vos_window = vos_pointer;
+
+        m_menu_bar->set_vos_window(vos_pointer);
+    }
+
 
     void Window::initGLFW()
     {
@@ -202,7 +212,8 @@ namespace vOS
 
     void Window::initPanels()
     {
-        m_panels.push_back(new MenuBar());
+        m_menu_bar = new MenuBar();
+        m_panels.push_back(m_menu_bar);
         m_panels.push_back(new MeshView(720, 480));
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
