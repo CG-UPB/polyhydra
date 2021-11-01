@@ -1,4 +1,6 @@
 
+#include "glad/glad.h"
+
 #include "PropertyView.h"
 #include "../algorithms/VosWindow.h"
 
@@ -42,6 +44,9 @@ namespace vOS
         m_mesh_view.m_meshFrameBuffer->bind();
         m_shader->bind();
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
         // TODO: Get highlight vertices here
         auto vertices = VosWindow::instance().get_mesh_obj().vertices();
         for (int i = 0; i < vertices.size(); i += 3)
@@ -64,6 +69,8 @@ namespace vOS
 
             m_vao->draw();
         }
+
+        glDisable(GL_BLEND);
 
         m_shader->unbind();
         m_mesh_view.m_meshFrameBuffer->unbind();
