@@ -6,26 +6,34 @@
 #include <memory>
 #include <thread>
 #include "../Window.h"
+#include "../panels/MenuBar.h"
 #include "memory"
 
-namespace vOS{
+namespace vOS
+{
 
-    VosWindow::VosWindow() {
+    VosWindow& VosWindow::instance()
+    {
+        static VosWindow inst;
+        return inst;
+    }
+
+    VosWindow::VosWindow()
+    {
         // Start main loop thread
-        main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
+        if (main_loop_thread  == nullptr)
+        {
+            main_loop_thread = new std::thread(&VosWindow::main_loop, this);
+        }
     }
 
-    VosWindow::VosWindow(OpenVolumeMesh::GeometricPolyhedralMeshV3f* mesh) {
-        // Setup
-        LinkMesh(mesh);
-        main_loop_thread = new std::thread(&VosWindow::Main_Loop, this);
-    }
-
-    VosWindow::~VosWindow(){
+    VosWindow::~VosWindow()
+    {
         main_loop_thread->join();
     }
 
-    void VosWindow::Main_Loop() {
+    void VosWindow::main_loop()
+    {
 
         m_running = true;
         m_window = new Window(1280, 720, "volumeshOS");
@@ -35,50 +43,58 @@ namespace vOS{
         // Render window
         m_window->show();
 
-        delete m_window;
+        if(m_window != nullptr)
+            delete m_window;
         m_running = false;
     }
 
-    bool VosWindow::LinkMesh(v3f *mesh) {
-        m_mesh_reference = mesh;
-        return true;
+    void VosWindow::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
+    {
+        m_mesh_obj.set_mesh(mesh);
     }
 
-    bool VosWindow::RemoveMesH(v3f *mesh) {
-        m_mesh_reference = nullptr;
-        return true;
+    MeshObject& VosWindow::get_mesh_obj()
+    {
+        return m_mesh_obj;
     }
 
-    void VosWindow::SetCallbackPauseActivated(void_callback vc) {
-        VosWindow::OnPauseActivated = vc;
+    bool VosWindow::is_paused()
+    {
+        return m_window->get_menu_bar()->pause_is_pressed();
     }
 
-    void VosWindow::SetCallbackPauseDeactivated(void_callback vc) {
-        VosWindow::OnResetPressed = vc;
-    }
-    void VosWindow::SetCallbackOnReset(void_callback vc) {
-        VosWindow::OnStepPressed = vc;
-    }
-
-    void VosWindow::SetCallbackOnStep(void_callback vc) {
-        VosWindow::OnPauseActivated = vc;
-    }
-
-    bool VosWindow::IsPaused() {
-        return false;
-    }
-
-    bool VosWindow::NextStepAllowed() {
+    bool VosWindow::is_ready()
+    {
         return m_initialized;
     }
 
-    void VosWindow::SetColor(OpenVolumeMesh::VertexHandle* vertices_array, float r, float g, float b, float a)
+    void VosWindow::set_vertex_color(OpenVolumeMesh::VertexHandle *vertices_array, float r, float g, float b, float a)
     {
-
+        return;
     }
 
     bool VosWindow::is_running()
     {
-        return m_running;
+        return VosWindow::instance().m_running;
+    }
+
+    void VosWindow::set_callback_paused(void_callback vc)
+    {
+        m_on_vos_paused = vc;
+    }
+
+    void VosWindow::set_callback_unpaused(void_callback vc)
+    {
+        m_on_vos_unpaused = vc;
+    }
+
+    void VosWindow::add_log(const char* fmt, int level)
+    {
+        Log()->addLog(fmt, level);
+    }
+
+    void VosWindow::default_callback_function()
+    {
+        LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
     }
 }

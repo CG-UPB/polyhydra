@@ -101,6 +101,17 @@ namespace vOS
         m_end = end;
     }
 
+    void Dijkstra::PauseButtonPressed()
+    {
+        LogWindow::getInstance()->addLog("Paused");
+        m_pause = true;
+    }
+    void Dijkstra::PauseButtonReleased()
+    {
+        LogWindow::getInstance()->addLog("Unpaused");
+        m_pause = false;
+    }
+
     void Dijkstra::run()
     {
 
@@ -108,16 +119,25 @@ namespace vOS
         std::priority_queue<Node, std::vector<Node>, std::greater<>> queue;
         std::vector<int> distances(m_mesh.n_vertices(), std::numeric_limits<int>::max());
 
-        VosWindow window(&m_mesh);
+        VosWindow& window = VosWindow::instance();
+
+        window.set_mesh(&m_mesh);
+
+
+        window.set_callback_paused(std::bind( &Dijkstra::PauseButtonPressed, this));
+        window.set_callback_unpaused(std::bind( &Dijkstra::PauseButtonReleased, this));
 
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0;
 
+        while(!window.is_ready()){}
+
+        window.Log()->addLog("Press Pause");
         bool found = false;
         bool next_step_ready = false;
         while (!found && !queue.empty())
         {
-            next_step_ready = window.NextStepAllowed();
+            next_step_ready = window.is_ready();
             if (next_step_ready)
             {
                 auto vertexHandle = queue.top().second;
@@ -151,25 +171,29 @@ namespace vOS
                     }
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
 
-        std::cout << "Shortest path: " << std::endl;
         bool first = true;
         while (!queue.empty())
         {
             auto vertex = queue.top();
-            /*
+
             if(queue.empty() || first)
-                window.SetColor(&vertex.second, 0,0,1,1);
+                window.set_vertex_color(&vertex.second, 0,0,1,1);
             else
-                window.SetColor(&vertex.second, 1,0,0,1);
-            first = false;*/
+                window.set_vertex_color(&vertex.second, 1,0,0,1);
+            first = false;
+
             queue.pop();
             std::cout << "Vertex: " << vertex.second.idx() << ", weight: " << vertex.first << std::endl;
         }
 
-        while(window.is_running());
+        window.Log()->addLog("Press Pause");
+        while(!m_pause);
+        window.Log()->addLog("Press Unpause");
+        while(m_pause);
+        window.Log()->addLog("Dijkstra function ended");
     }
 
     void Dijkstra::step()

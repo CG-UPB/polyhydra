@@ -6,7 +6,7 @@
 #include "ImGuiFileDialog.h"
 #include <iostream>
 
-#include "../mesh/MeshObject.h"
+#include "../algorithms/VosWindow.h"
 #include "LogWindow.h"
 
 namespace vOS
@@ -50,6 +50,38 @@ namespace vOS
                 {}
                 ImGui::EndMenu();
             }
+            ///                              Timeline Buttons
+
+            // Pause Button
+            if(m_pause_toggled)
+            {
+                // Pause button is active, pressing it would undo pause
+
+                if(ImGui::Button(">"))
+                {
+                    m_pause_toggled = false;
+                    VosWindow::instance().m_on_vos_unpaused();
+                }
+            }else{
+                // Pause button is inactive, pressing it would pause
+
+                if(ImGui::Button("||"))
+                {
+                    m_pause_toggled = true;
+                        VosWindow::instance().m_on_vos_paused();
+                }
+            }
+            // Reset Button
+            if(ImGui::Button("Reset"))
+            {
+                    VosWindow::instance().m_on_reset();
+            }
+
+            // Step Button
+            if(ImGui::Button("Step"))
+            {
+                VosWindow::instance().m_on_step();
+            }
 
             ImGui::EndMenuBar();
         }
@@ -64,10 +96,14 @@ namespace vOS
 
                 std::cout << filePathName << std::endl;
                 // action
-                MeshObject *mesh = MeshObject::getInstance();
-                mesh->load_from_file(filePathName);
+                VosWindow::instance().get_mesh_obj().load_from_file(filePathName);
             }
             ImGuiFileDialog::Instance()->Close();
         }
+
+    }
+
+    bool MenuBar::pause_is_pressed(){
+        return m_pause_toggled;
     }
 }

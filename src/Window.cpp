@@ -11,6 +11,7 @@
 #include "Window.h"
 #include "input/Input.h"
 #include "fs/FileManager.h"
+#include "algorithms/VosWindow.h"
 #include "panels/MeshView.h"
 #include "panels/MenuBar.h"
 #include "panels/LogWindow.h"
@@ -27,6 +28,7 @@ namespace vOS
     {
         fprintf(stderr, "Error: %s\n", description.c_str());
     }
+
 
     Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
     {
@@ -56,6 +58,7 @@ namespace vOS
         glfwDestroyWindow(m_window);
         glfwTerminate();
     }
+
 
     void Window::initGLFW()
     {
@@ -210,10 +213,10 @@ namespace vOS
     {
         int viewport_width = 720;
         int viewport_height = 480;
-
         m_viewport_framebuffer = new FrameBufferObject(viewport_width, viewport_height);
 
-        m_panels.push_back(new MenuBar());
+        m_menu_bar = new MenuBar();
+        m_panels.push_back(m_menu_bar);
         m_panels.push_back(new MeshView(viewport_width, viewport_height, *m_viewport_framebuffer));
         m_panels.push_back(new PropertyView(*m_viewport_framebuffer));
         LogWindow* mylog = LogWindow::getInstance();
