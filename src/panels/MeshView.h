@@ -5,12 +5,14 @@
 #include "../rendering/Shader.h"
 #include "../rendering/VertexArrayObject.h"
 
+class PropertyView;
+
 namespace vOS
 {
     class MeshView: public WindowPanel
     {
     public:
-        MeshView(int width, int height, FrameBufferObject& fbo);
+        MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
 
@@ -38,5 +40,7 @@ namespace vOS
         // opengl rendering
         FrameBufferObject* m_meshFrameBuffer;
         Shader* m_meshShader;
+
+        friend class PropertyView;
     };
 }

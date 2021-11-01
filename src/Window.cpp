@@ -45,11 +45,6 @@ namespace vOS
             delete element;
         }
 
-        if (m_viewport_framebuffer != nullptr)
-        {
-            delete m_viewport_framebuffer;
-        }
-
         // Cleanup
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
@@ -211,14 +206,13 @@ namespace vOS
 
     void Window::initPanels()
     {
-        int viewport_width = 720;
-        int viewport_height = 480;
-        m_viewport_framebuffer = new FrameBufferObject(viewport_width, viewport_height);
-
         m_menu_bar = new MenuBar();
         m_panels.push_back(m_menu_bar);
-        m_panels.push_back(new MeshView(viewport_width, viewport_height, *m_viewport_framebuffer));
-        m_panels.push_back(new PropertyView(*m_viewport_framebuffer));
+
+        auto* mesh_view = new MeshView(720, 480);
+
+        m_panels.push_back(mesh_view);
+        m_panels.push_back(new PropertyView(*mesh_view));
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
     }

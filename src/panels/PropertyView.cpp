@@ -1,10 +1,14 @@
 
 #include "PropertyView.h"
+#include "../algorithms/VosWindow.h"
+
+#include "glm/gtx/transform.hpp"
+#include <iostream>
 
 namespace vOS
 {
 
-    vOS::PropertyView::PropertyView(const FrameBufferObject& fbo): m_framebuffer(fbo)
+    vOS::PropertyView::PropertyView(const MeshView& mesh_view): m_mesh_view(mesh_view)
     {
         std::vector<float> quad_vertices = {
                 -0.5, 0.5, 0.0,
@@ -35,6 +39,33 @@ namespace vOS
 
     void vOS::PropertyView::show()
     {
+        m_mesh_view.m_meshFrameBuffer->bind();
+        m_shader->bind();
 
+        // TODO: Get highlight vertices here
+        auto vertices = VosWindow::instance().get_mesh_obj().vertices();
+        for (int i = 0; i < vertices.size(); i += 3)
+        {
+            // set highlight properties
+            glm::vec4 vertex_pos = glm::vec4(vertices[i], vertices[i + 1], vertices[i + 2], 1.0f);
+            glm::vec4 highlight_color = glm::vec4(0.2, 1.0, 0.2, 1.0);
+            float highlight_scale = 0.03f;
+
+            // calculate vertex transform
+            glm::mat4 positionOffset = glm::translate(-VosWindow::instance().get_mesh_obj().get_mesh_offset());
+            glm::mat4 transform = m_mesh_view.m_meshWorld * m_mesh_view.m_meshTransform * positionOffset;
+
+            m_shader->setUniform1f("u_scale", highlight_scale);
+            m_shader->setUniform4f("u_position", vertex_pos);
+            m_shader->setUniformMat4f("u_transform", transform);
+            m_shader->setUniformMat4f("u_projection", m_mesh_view.m_meshProjection);
+            m_shader->setUniformMat4f("u_view", m_mesh_view.m_meshView);
+            m_shader->setUniform4f("u_highlight_color", highlight_color);
+
+            m_vao->draw();
+        }
+
+        m_shader->unbind();
+        m_mesh_view.m_meshFrameBuffer->unbind();
     }
 }
