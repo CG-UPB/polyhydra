@@ -48,6 +48,40 @@ namespace vOS
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
         // TODO: Get highlight vertices here
+
+        auto highlights = VosWindow::instance().get_mesh_obj().get_highlights();
+        for(int i = 0; i < highlights.size(); i++)
+        {
+            auto entry = highlights[i];
+
+            OpenVolumeMesh::VertexHandle v_h = std::get<0>(entry);
+            float red = std::get<1>(entry);
+            float green = std::get<2>(entry);
+            float blue = std::get<3>(entry);
+            float alpha = std::get<4>(entry);
+
+            auto vertex = VosWindow::instance().get_mesh_obj().m_mesh->vertex(v_h);
+
+            // set highlight properties
+            glm::vec4 vertex_pos = glm::vec4(vertex[0], vertex[1], vertex[2], 1.0f);
+            glm::vec4 highlight_color = glm::vec4(red, green, blue, alpha);
+            float highlight_scale = 0.03f;
+
+            // calculate vertex transform
+            glm::mat4 positionOffset = glm::translate(-VosWindow::instance().get_mesh_obj().get_mesh_offset());
+            glm::mat4 transform = m_mesh_view.m_meshWorld * m_mesh_view.m_meshTransform * positionOffset;
+
+            m_shader->setUniform1f("u_scale", highlight_scale);
+            m_shader->setUniform4f("u_position", vertex_pos);
+            m_shader->setUniformMat4f("u_transform", transform);
+            m_shader->setUniformMat4f("u_projection", m_mesh_view.m_meshProjection);
+            m_shader->setUniformMat4f("u_view", m_mesh_view.m_meshView);
+            m_shader->setUniform4f("u_highlight_color", highlight_color);
+
+            m_vao->draw();
+
+        }
+        /*
         auto vertices = VosWindow::instance().get_mesh_obj().vertices();
         for (int i = 0; i < vertices.size(); i += 3)
         {
@@ -68,8 +102,9 @@ namespace vOS
             m_shader->setUniform4f("u_highlight_color", highlight_color);
 
             m_vao->draw();
-        }
 
+        }
+        */
         glDisable(GL_BLEND);
 
         m_shader->unbind();

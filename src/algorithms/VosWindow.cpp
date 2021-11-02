@@ -68,9 +68,9 @@ namespace vOS
         return m_initialized;
     }
 
-    void VosWindow::set_vertex_color(OpenVolumeMesh::VertexHandle *vertices_array, float r, float g, float b, float a)
+    void VosWindow::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
     {
-        return;
+        m_mesh_obj.set_highlight(v_h, b, red, green, blue, alpha);
     }
 
     bool VosWindow::is_running()

@@ -18,7 +18,7 @@ namespace vOS
         {
             instance = new LogWindow();
         }
-        
+
         return instance;
 
     }

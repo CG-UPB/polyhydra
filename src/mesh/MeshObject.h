@@ -31,8 +31,8 @@ namespace vOS
 
         glm::vec3& get_mesh_offset();
 
-        void set_highlight(OpenVolumeMesh::VertexIter v_it, bool b);
-        void set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col);
+        void set_highlight(OpenVolumeMesh::VertexHandle v_h, bool bl, float r, float g, float b, float a);
+        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
     private:
 
         void calculate_mesh_offset();
@@ -40,6 +40,8 @@ namespace vOS
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;
+        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
+
         VertexArrayObject* m_vertexArrayObject = nullptr;
         glm::vec3 m_mesh_offset_from_center;
     };

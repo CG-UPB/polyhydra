@@ -15,6 +15,7 @@ namespace vOS
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
         m_should_update = false;
 
+
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp->set_persistent(true);
 
@@ -149,7 +150,7 @@ namespace vOS
 
     void MeshObject::draw()
     {
-        if( m_should_update == true)
+        if( m_should_update )
         {
             update_vertex_buffer();
             m_should_update = false;
@@ -161,16 +162,28 @@ namespace vOS
     }
 
 
-    void MeshObject::set_highlight(OpenVolumeMesh::VertexIter v_it, bool b)
+    void MeshObject::set_highlight(OpenVolumeMesh::VertexHandle v_h, bool b=true, float red=0.0, float green=0.0, float blue=0.0, float alpha=0.0)
     {
-        OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
-        highlightProp[*v_it] = b;
+        //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
+        if (b == true)
+        {
+            std::tuple<OpenVolumeMesh::VertexHandle , float, float, float, float> tuple = std::make_tuple(v_h, red, green, blue, alpha);
+            m_vertex_colors.push_back(tuple);
+        }
+        else if(b == false)
+        {
+            auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(), std::make_tuple(v_h, red, green, blue, alpha));
+            if (pos != m_vertex_colors.end())
+            {
+                m_vertex_colors.erase(pos);
+            }
+        }
+
     }
 
-    void MeshObject::set_highlight_color(OpenVolumeMesh::VertexIter v_it, OpenVolumeMesh::Vec3f col)
+    std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> MeshObject::get_highlights()
     {
-        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>("VertexHighlightColor");
-        highlightColProp[*v_it] = col;
+        return m_vertex_colors;
     }
 
     glm::vec3& MeshObject::get_mesh_offset()

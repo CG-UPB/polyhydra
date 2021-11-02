@@ -180,9 +180,9 @@ namespace vOS
             auto vertex = queue.top();
 
             if(queue.empty() || first)
-                window.set_vertex_color(&vertex.second, 0,0,1,1);
+                window.set_vertex_color(vertex.second, true, 0,0,1,1);
             else
-                window.set_vertex_color(&vertex.second, 1,0,0,1);
+                window.set_vertex_color(vertex.second, true, 1,0,0,1);
             first = false;
 
             queue.pop();
