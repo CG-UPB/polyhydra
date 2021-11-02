@@ -35,6 +35,7 @@ namespace vOS
             m_weights[*e_it] = dist;
         }
 
+        srand(time(nullptr));
         int start = std::rand() % m_mesh.n_vertices();
         int end = std::rand() % m_mesh.n_vertices();
 
@@ -75,20 +76,20 @@ namespace vOS
     void Dijkstra::run()
     {
 
-        Node currentVertex = std::make_pair(0, m_start);
-        std::priority_queue<Node, std::vector<Node>, std::greater<>> queue;
+        Node currentVertex = std::make_pair(0.0f, m_start);
+        std::priority_queue<Node, std::vector<Node>, std::greater<Node>> queue;
         std::vector<float> distances(m_mesh.n_vertices(), std::numeric_limits<float>::max());
+        std::vector<int> prev(m_mesh.n_vertices(), -1);
 
         VosWindow& window = VosWindow::instance();
 
         window.set_mesh(&m_mesh);
 
+        queue.push(currentVertex);
+        distances[currentVertex.second.idx()] = 0.0f;
 
         window.set_callback_paused(std::bind( &Dijkstra::PauseButtonPressed, this));
         window.set_callback_unpaused(std::bind( &Dijkstra::PauseButtonReleased, this));
-
-        queue.push(currentVertex);
-        distances[currentVertex.second.idx()] = 0;
 
         while(!window.is_ready()){}
 
@@ -122,6 +123,7 @@ namespace vOS
                     {
                         distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
                         queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
+                        prev[nextVertexHandle.idx()] = vertexHandle.idx();
                     }
 
                     if (queue.top().second.idx() == m_end.idx())
@@ -134,19 +136,27 @@ namespace vOS
             //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
 
-        bool first = true;
-        while (!queue.empty())
+        std::vector<int> res;
+        int temp = m_end.idx();
+        res.push_back(temp);
+        while (temp != m_start.idx())
         {
-            auto vertex = queue.top();
+            temp = prev[temp];
+            res.push_back(temp);
+        }
 
-            if(queue.empty() || first)
-                window.set_vertex_color(vertex.second, true, 0,0,1,1);
+        bool first = true;
+        for (int i = 0; i < res.size(); i++)
+        {
+            auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
+
+            if(i == res.size() - 1 || first)
+                window.set_vertex_color(vertex, true, 0,0,1,1);
             else
-                window.set_vertex_color(vertex.second, true, 1,0,0,1);
+                window.set_vertex_color(vertex, true, 1,0,0,1);
             first = false;
 
-            queue.pop();
-            std::cout << "Vertex: " << vertex.second.idx() << ", weight: " << vertex.first << std::endl;
+            std::cout << "Vertex: " << vertex.idx() << std::endl;
         }
 
         window.Log()->addLog("Press Pause");
