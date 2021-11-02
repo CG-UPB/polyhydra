@@ -5,7 +5,7 @@
 #include "../panels/LogWindow.h"
 #include <array>
 #include <string>
-
+#include "../algorithms/VosWindow.h"
 
 namespace vOS
 {
@@ -178,6 +178,10 @@ namespace vOS
             auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(), std::make_tuple(v_h, red, green, blue, alpha));
             if (pos != m_vertex_colors.end())
             {
+                while (VosWindow::instance().get_mesh_obj().m_is_rendering)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
                 m_vertex_colors.erase(pos);
             }
         }
@@ -186,6 +190,10 @@ namespace vOS
 
     void MeshObject::remove_highlights()
     {
+        while (VosWindow::instance().get_mesh_obj().m_is_rendering)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
         m_vertex_colors.clear();
     }
 

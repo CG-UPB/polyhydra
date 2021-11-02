@@ -16,6 +16,8 @@ namespace vOS
         MeshObject();
         ~MeshObject() = default;
 
+        bool m_is_rendering;
+
         bool m_should_update;
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
@@ -33,11 +35,12 @@ namespace vOS
 
         void set_highlight(OpenVolumeMesh::VertexHandle v_h, bool bl, float r, float g, float b, float a);
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
+        void remove_highlights();
+
     private:
 
         void calculate_mesh_offset();
         void update_vertex_buffer();
-        void remove_highlights();
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;

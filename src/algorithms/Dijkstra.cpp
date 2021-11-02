@@ -20,7 +20,7 @@ namespace vOS
         m_weights->set_persistent(true);
 
         OpenVolumeMesh::IO::FileManager file_manager;
-        //file_manager.readFile("/home/steffen/Downloads/OVM/Tet/bunny5824.1.ovm", m_mesh);
+        file_manager.readFile("/home/steffen/Downloads/OVM/Tet/bunny5824.1.ovm", m_mesh);
 
         // assign random weights to each edge
         for (OpenVolumeMesh::EdgeIter e_it = m_mesh.edges_begin(); e_it != m_mesh.edges_end(); ++e_it)
@@ -73,6 +73,11 @@ namespace vOS
         m_pause = false;
     }
 
+    void Dijkstra::step_button_pressed()
+    {
+        m_step = true;
+    }
+
     void Dijkstra::run()
     {
 
@@ -90,19 +95,25 @@ namespace vOS
 
         window.set_callback_paused(std::bind( &Dijkstra::PauseButtonPressed, this));
         window.set_callback_unpaused(std::bind( &Dijkstra::PauseButtonReleased, this));
+        window.set_callback_step(std::bind( &Dijkstra::step_button_pressed, this));
+
+        window.set_vertex_color(m_start, true, 0,0,1,1);
+        window.set_vertex_color(m_end, true, 0,0,1,1);
 
         while(!window.is_ready()){}
 
         window.Log()->addLog("Press Pause");
         bool found = false;
-        bool next_step_ready = false;
         while (!found && !queue.empty())
         {
-            next_step_ready = window.is_ready();
-            if (next_step_ready)
+            if (m_step)
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                //m_step = false;
                 auto vertexHandle = queue.top().second;
                 queue.pop();
+
+                window.set_vertex_color(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]), false, 1,0,0,1);
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -124,6 +135,7 @@ namespace vOS
                         distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
                         queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
                         prev[nextVertexHandle.idx()] = vertexHandle.idx();
+                        window.set_vertex_color(vertexHandle, true, 1,0,0,1);
                     }
 
                     if (queue.top().second.idx() == m_end.idx())
@@ -133,7 +145,6 @@ namespace vOS
                     }
                 }
             }
-            //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
 
         std::vector<int> res;
@@ -144,6 +155,8 @@ namespace vOS
             temp = prev[temp];
             res.push_back(temp);
         }
+
+        window.get_mesh_obj().remove_highlights();
 
         bool first = true;
         for (int i = 0; i < res.size(); i++)

@@ -278,11 +278,12 @@ namespace vOS
 
             //ImGui::ShowDemoWindow();
 
-
+            VosWindow::instance().get_mesh_obj().m_is_rendering = true;
             // draw all of our windows
             for (auto& element: m_panels) {
                 element->show();
             }
+            VosWindow::instance().get_mesh_obj().m_is_rendering = false;
 
             ImGui::End();
 
