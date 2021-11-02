@@ -37,6 +37,7 @@ namespace vOS
 
         void calculate_mesh_offset();
         void update_vertex_buffer();
+        void remove_highlights();
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;

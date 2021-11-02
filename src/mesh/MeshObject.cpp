@@ -29,7 +29,8 @@ namespace vOS
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
 
-        m_should_update = false;
+        remove_highlights();
+        m_should_update = true;
     }
 
     void MeshObject::write_to_file(std::string file_path)
@@ -41,12 +42,14 @@ namespace vOS
     void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
     {
         m_mesh = mesh;
+        remove_highlights();
         m_should_update = true;
 
     }
 
     void MeshObject::update_vertex_buffer()
     {
+
         if (m_vertexArrayObject != nullptr)
         {
             delete m_vertexArrayObject;
@@ -179,6 +182,11 @@ namespace vOS
             }
         }
 
+    }
+
+    void MeshObject::remove_highlights()
+    {
+        m_vertex_colors.clear();
     }
 
     std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> MeshObject::get_highlights()

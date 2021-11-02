@@ -6,6 +6,7 @@
 #include "VosWindow.h"
 #include <chrono>
 #include <thread>
+#include <OpenVolumeMesh/FileManager/FileManager.hh>
 
 typedef std::pair<int, OpenVolumeMesh::VertexHandle> Node;
 
@@ -85,14 +86,37 @@ namespace vOS
         halffaces.push_back(m_mesh.halfface_handle(f6, 0));
         m_mesh.add_cell(halffaces);
 
+        m_start = v0;
+        m_end = v0;
+
+        OpenVolumeMesh::IO::FileManager file_manager;
+        file_manager.readFile("/home/projektgruppe/CLionProjects/volumeshos/bunny5824.1.ovm", m_mesh);
+
+
         // assign random weights to each edge
         for (OpenVolumeMesh::EdgeIter e_it = m_mesh.edges_begin(); e_it != m_mesh.edges_end(); ++e_it)
         {
             m_weights[*e_it] = std::rand() % 101 + 1;
         }
 
-        m_start = v0;
-        m_end = v3;
+        int start = std::rand() % m_mesh.n_vertices();
+        int end = std::rand() % m_mesh.n_vertices();
+
+        for(OpenVolumeMesh::VertexIter v_it = m_mesh.vertices_begin();
+            v_it != m_mesh.vertices_end(); ++v_it)
+        {
+            if (v_it->idx() == start)
+            {
+                m_start = *v_it;
+                std::cout << "start: " << start << std::endl;
+            }
+            else if (v_it->idx() == end)
+            {
+                m_end = *v_it;
+                std::cout << "end: " << end << std::endl;;
+            }
+        }
+
     }
 
     void Dijkstra::init(OpenVolumeMesh::VertexHandle start, OpenVolumeMesh::VertexHandle end)
