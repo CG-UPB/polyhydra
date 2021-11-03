@@ -20,7 +20,7 @@ namespace vOS
         m_weights->set_persistent(true);
 
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile("/home/steffen/Downloads/OVM/Tet/bunny5824.1.ovm", m_mesh);
+        //file_manager.readFile("/home/steffen/Downloads/OVM/Tet/bunny5824.1.ovm", m_mesh);
 
         // assign random weights to each edge
         for (OpenVolumeMesh::EdgeIter e_it = m_mesh.edges_begin(); e_it != m_mesh.edges_end(); ++e_it)
@@ -106,9 +106,9 @@ namespace vOS
         bool found = false;
         while (!found && !queue.empty())
         {
-            if (m_step)
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            if (!m_pause)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 //m_step = false;
                 auto vertexHandle = queue.top().second;
                 queue.pop();

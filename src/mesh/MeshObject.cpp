@@ -171,6 +171,10 @@ namespace vOS
         if (b == true)
         {
             std::tuple<OpenVolumeMesh::VertexHandle , float, float, float, float> tuple = std::make_tuple(v_h, red, green, blue, alpha);
+            while (VosWindow::instance().get_mesh_obj().m_is_rendering)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
             m_vertex_colors.push_back(tuple);
         }
         else if(b == false)

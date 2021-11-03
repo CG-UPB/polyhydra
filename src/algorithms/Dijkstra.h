@@ -24,7 +24,7 @@ namespace vOS
         void PauseButtonPressed();
         void step_button_pressed();
 
-        bool m_pause = false;
+        bool m_pause = true;
         bool m_step = false;
     };
 }
