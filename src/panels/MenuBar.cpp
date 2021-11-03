@@ -96,7 +96,8 @@ namespace vOS
 
                 std::cout << filePathName << std::endl;
                 // action
-                VosWindow::instance().get_mesh_obj().load_from_file(filePathName);
+                //VosWindow::instance().get_mesh_obj().load_from_file(filePathName);
+                VosWindow::instance().set_loaded_file_path_name(filePathName);
             }
             ImGuiFileDialog::Instance()->Close();
         }

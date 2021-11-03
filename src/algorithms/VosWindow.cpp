@@ -93,6 +93,10 @@ namespace vOS
         Log()->addLog(fmt, level);
     }
 
+    bool VosWindow::is_closed() {
+        return is_running();
+    }
+
     void VosWindow::default_callback_function()
     {
         LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");

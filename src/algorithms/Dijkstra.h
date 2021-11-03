@@ -9,7 +9,7 @@ namespace vOS
     {
     public:
         Dijkstra();
-        void init(OpenVolumeMesh::VertexHandle start, OpenVolumeMesh::VertexHandle end);
+        void init();
         void run();
         void step();
 
@@ -23,8 +23,10 @@ namespace vOS
         void PauseButtonReleased();
         void PauseButtonPressed();
         void step_button_pressed();
+        void reset_button_pressed();
 
-        bool m_pause = true;
+        bool m_reset = false;
+        bool m_pause = false;
         bool m_step = false;
     };
 }

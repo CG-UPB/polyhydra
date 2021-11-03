@@ -108,6 +108,9 @@ namespace vOS
         /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        std::string get_loaded_file_name() {return m_loaded_file_path;};
+        void set_loaded_file_path_name(std::string path) { m_loaded_file_path = path;};
+
         //////////////////////////////////////////////////// Queueries ///////////////////////////////////////////////////////////////////////////////////////////////////
         /*
         * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button,
@@ -119,6 +122,11 @@ namespace vOS
          * Asks whether Vos is paused
          */
          bool is_paused();
+
+         /*
+          * Asks whether the Vos window has been closed by the user or not
+          */
+         bool is_closed();
 
         ///////////////////////////////////////////////////// Buttons ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -206,6 +214,8 @@ namespace vOS
         v3f *m_mesh_reference;
         Window *m_window;
         MeshObject m_mesh_obj;
+        std::string m_loaded_file_path = "";
+
         bool m_initialized = false;
         bool m_running;
         bool m_window_paused = false;
