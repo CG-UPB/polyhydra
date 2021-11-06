@@ -25,8 +25,15 @@ namespace vOS
         // used for the arc ball
         bool m_arcBallOn;
         bool m_lastDown;
+        bool m_W_button_pressed;
         double m_lastX;
         double m_lastY;
+
+        glm::vec3 m_light;
+        glm::vec3 m_camera;
+        glm::vec3 m_light_color;
+        glm::vec3 m_object_color;
+
 
         // current mvp and world matrix
         glm::mat4 m_meshTransform;

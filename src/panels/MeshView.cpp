@@ -27,6 +27,11 @@ namespace vOS
         m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
         m_meshFrameBuffer = new FrameBufferObject(width, height);
 
+        m_light = glm::vec3{0.0f, 0.0f, 10.0f};
+        m_camera = glm::vec3{0.0f, 0.0f, 10.0f};
+        m_light_color = glm::vec3{1.0f, 1.0f, 1.0f};
+        m_object_color = glm::vec3{1.0f, 0.5f, 0.2f};
+
         // set up the initial camera position, direction and orientation of the mesh
         glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
         glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
@@ -41,10 +46,12 @@ namespace vOS
         );
 
         m_meshView = glm::lookAt(
-                glm::vec3{0.0f, 0.0f, 10.0f},
+                m_camera,
                 glm::vec3{0.0f, 0.0f, 0.0f},
                 glm::vec3{0.0f, 1.0f, 0.0f}
         );
+
+        m_W_button_pressed = false;
     }
 
     MeshView::~MeshView()
@@ -168,6 +175,8 @@ namespace vOS
             }
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
+
+            m_camera = glm::inverse(m_meshView)[2];
             //LogWindow::getInstance()->addLog("Neue Position");
         }
     }
@@ -177,7 +186,22 @@ namespace vOS
 
 
         // render our mesh in polygon mode for debugging
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if(Input::isKeyDown(GLFW_KEY_W))
+        {
+            m_W_button_pressed = !m_W_button_pressed;
+        }
+
+        if(Input::isKeyReleased(GLFW_KEY_W))
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            //glEnable(GL_CULL_FACE);
+            //glEnable(GL_DEPTH_TEST);
+
+        }else
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        }
         glEnable(GL_LINE_SMOOTH);
         glLineWidth(1);
 
@@ -185,6 +209,8 @@ namespace vOS
         m_meshFrameBuffer->bind();
 
         // we need to clear our framebuffer as well
+
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -197,6 +223,15 @@ namespace vOS
         m_meshShader->setUniformMat4f("u_Transform", transform);
         m_meshShader->setUniformMat4f("u_Projection", m_meshProjection);
         m_meshShader->setUniformMat4f("u_View", m_meshView);
+
+
+        bool phong = true;
+        m_meshShader->setUniform1i("u_phong", phong);
+        m_meshShader->setUniform3f("u_lightPos", m_light);
+        m_meshShader->setUniform3f("u_camPos", m_camera);
+        m_meshShader->setUniform3f("u_lightColor", m_light_color);
+        m_meshShader->setUniform3f("u_objectColor", m_object_color);
+
 
         // now draw to the actual texture of the framebuffer
 

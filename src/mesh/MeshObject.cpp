@@ -1,6 +1,8 @@
 #include "MeshObject.h"
 
 #include <OpenVolumeMesh/Attribs/OpenVolumeMeshStatus.hh>
+#include <OpenVolumeMesh/Attribs/NormalAttrib.hh>
+#include <OpenVolumeMesh/Attribs/ColorAttrib.hh>
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include "../panels/LogWindow.h"
 #include <array>
@@ -19,7 +21,8 @@ namespace vOS
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp->set_persistent(true);
 
-        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>("VertexHighlightColor");
+        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
+                "VertexHighlightColor");
         highlightColProp->set_persistent(true);
 
     }
@@ -44,7 +47,6 @@ namespace vOS
         m_mesh = mesh;
         remove_highlights();
         m_should_update = true;
-
     }
 
     void MeshObject::update_vertex_buffer()
@@ -54,7 +56,9 @@ namespace vOS
         {
             delete m_vertexArrayObject;
         }
-        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
+        initialize_face_normals();
+        initialize_vertex_normals();
+        m_vertexArrayObject = new VertexArrayObject(vertices(), faces(), vertex_normals(), "normals");
         calculate_mesh_offset();
     }
 
@@ -68,24 +72,21 @@ namespace vOS
             if (vertex.x < min.x)
             {
                 min.x = vertex.x;
-            }
-            else if (vertex.x > max.x)
+            } else if (vertex.x > max.x)
             {
                 max.x = vertex.x;
             }
             if (vertex.y < min.y)
             {
                 min.y = vertex.y;
-            }
-            else if (vertex.y > max.y)
+            } else if (vertex.y > max.y)
             {
                 max.y = vertex.y;
             }
             if (vertex.z < min.z)
             {
                 min.z = vertex.z;
-            }
-            else if (vertex.z > max.z)
+            } else if (vertex.z > max.z)
             {
                 max.z = vertex.z;
             }
@@ -102,12 +103,12 @@ namespace vOS
         m_vertices.clear();
         m_vertices.reserve(m_mesh->n_vertices() * dim);
 
-        for(OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
-            v_it != m_mesh->vertices_end(); ++v_it)
+        for (OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
+             v_it != m_mesh->vertices_end(); ++v_it)
         {
 
             auto myPoint = m_mesh->vertex(*v_it);
-            for(int i = 0; i < dim; i++)
+            for (int i = 0; i < dim; i++)
             {
                 m_vertices.push_back(myPoint[i]);
             }
@@ -120,8 +121,8 @@ namespace vOS
     {
         m_indices.clear();
 
-        for(OpenVolumeMesh::EdgeIter e_it = m_mesh->edges_begin();
-            e_it != m_mesh->edges_end(); ++e_it)
+        for (OpenVolumeMesh::EdgeIter e_it = m_mesh->edges_begin();
+             e_it != m_mesh->edges_end(); ++e_it)
         {
             std::array<OpenVolumeMesh::VertexHandle, 2> edge_vertexids = m_mesh->edge_vertices(*e_it);
             m_indices.push_back(edge_vertexids[0].idx());
@@ -137,12 +138,13 @@ namespace vOS
 
         m_indices.clear();
 
-        for(OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
-            f_it != m_mesh->vertices_end(); ++f_it)
+        for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
+             f_it != m_mesh->faces_end(); ++f_it)
         {
-            std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(*f_it);
-            for(OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids.first;
-            fv_it != face_vertexids.second; ++fv_it)
+            std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(
+                    *f_it);
+            for (OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids.first;
+                 fv_it != face_vertexids.second; ++fv_it)
             {
                 m_indices.push_back(fv_it->idx());
             }
@@ -151,9 +153,19 @@ namespace vOS
         return m_indices;
     }
 
+    std::vector<float> MeshObject::vertex_normals()
+    {
+        return m_vertex_normals;
+    }
+
+    std::vector<float> MeshObject::face_normals()
+    {
+        return m_face_normals;
+    }
+
     void MeshObject::draw()
     {
-        if( m_should_update )
+        if (m_should_update)
         {
             update_vertex_buffer();
             m_should_update = false;
@@ -165,21 +177,24 @@ namespace vOS
     }
 
 
-    void MeshObject::set_highlight(OpenVolumeMesh::VertexHandle v_h, bool b=true, float red=0.0, float green=0.0, float blue=0.0, float alpha=0.0)
+    void MeshObject::set_highlight(OpenVolumeMesh::VertexHandle v_h, bool b = true, float red = 0.0, float green = 0.0,
+                                   float blue = 0.0, float alpha = 0.0)
     {
         //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         if (b == true)
         {
-            std::tuple<OpenVolumeMesh::VertexHandle , float, float, float, float> tuple = std::make_tuple(v_h, red, green, blue, alpha);
+            std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float> tuple = std::make_tuple(v_h, red,
+                                                                                                         green, blue,
+                                                                                                         alpha);
             while (VosWindow::instance().get_mesh_obj().m_is_rendering)
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             m_vertex_colors.push_back(tuple);
-        }
-        else if(b == false)
+        } else if (b == false)
         {
-            auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(), std::make_tuple(v_h, red, green, blue, alpha));
+            auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(),
+                                 std::make_tuple(v_h, red, green, blue, alpha));
             if (pos != m_vertex_colors.end())
             {
                 while (VosWindow::instance().get_mesh_obj().m_is_rendering)
@@ -206,11 +221,60 @@ namespace vOS
         return m_vertex_colors;
     }
 
-    glm::vec3& MeshObject::get_mesh_offset()
+    glm::vec3 &MeshObject::get_mesh_offset()
     {
         return m_mesh_offset_from_center;
     }
 
+    void MeshObject::initialize_face_normals()
+    {
+        m_face_normals.clear();
+
+        OpenVolumeMesh::NormalAttrib normals(*m_mesh);
+        normals.update_face_normals();
+        for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
+             f_it != m_mesh->faces_end(); ++f_it)
+        {
+            for(int i = 0; i < normals[*f_it].size(); i++)
+            {
+                m_face_normals.push_back(normals[*f_it][i]);
+            }
+        }
+
+    }
+
+    void MeshObject::initialize_vertex_normals()
+    {
+        m_vertex_normals.clear();
+
+        OpenVolumeMesh::NormalAttrib normals(*m_mesh);
+        normals.update_face_normals();
+        for (OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
+             v_it != m_mesh->vertices_end(); ++v_it)
+        {
+            float faces = 0;
+            float x = 0;
+            float y = 0;
+            float z = 0;
+
+            std::pair<OpenVolumeMesh::VertexFaceIter, OpenVolumeMesh::VertexFaceIter> vertex_faces = m_mesh->vertex_faces(*v_it);
+            for(OpenVolumeMesh::VertexFaceIter vf_it = vertex_faces.first;
+                vf_it != vertex_faces.second; ++vf_it)
+            {
+                auto normal = normals[*vf_it];
+                x = x + normal[0];
+                y = y + normal[1];
+                z = z + normal[2];
+
+                faces++;
+
+            }
+            m_vertex_normals.push_back(x);
+            m_vertex_normals.push_back(y);
+            m_vertex_normals.push_back(z);
+
+        }
+    }
 
 }
 

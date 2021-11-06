@@ -28,7 +28,7 @@ namespace vOS
                 1.0, 1.0,
                 1.0, 0.0
         };
-        m_vao = new VertexArrayObject(quad_vertices, quad_indices, quad_texture_coordinates);
+        m_vao = new VertexArrayObject(quad_vertices, quad_indices, quad_texture_coordinates, "texture");
         std::filesystem::path shaderPath = "shaders";
         m_shader = new Shader(shaderPath / "property.vert", shaderPath / "property.frag");
     }
