@@ -34,6 +34,18 @@ unsigned int vOS::FrameBufferObject::createTextureAttachment()
     return tex[0];
 }
 
+unsigned int vOS::FrameBufferObject::createDepthTextureAttachment()
+{
+    unsigned int tex[1];
+    glGenTextures(1, tex);
+    glBindTexture(GL_TEXTURE_2D, tex[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex[0], 0);
+    return tex[0];
+}
+
 vOS::FrameBufferObject::~FrameBufferObject()
 {
     cleanUp();
@@ -71,6 +83,7 @@ void vOS::FrameBufferObject::init(int width, int height)
     m_height = height;
     m_frameBufferID = createFrameBuffer();
     m_textureID = createTextureAttachment();
+    m_depth_texture_id = createDepthTextureAttachment();
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         fprintf(stderr, "Error: %u\n", glCheckFramebufferStatus(GL_FRAMEBUFFER));

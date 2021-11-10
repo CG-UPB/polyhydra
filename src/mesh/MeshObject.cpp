@@ -141,12 +141,18 @@ namespace vOS
         for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
              f_it != m_mesh->faces_end(); ++f_it)
         {
-            std::pair<OpenVolumeMesh::FaceVertexIter, OpenVolumeMesh::FaceVertexIter> face_vertexids = m_mesh->face_vertices(
-                    *f_it);
-            for (OpenVolumeMesh::FaceVertexIter fv_it = face_vertexids.first;
-                 fv_it != face_vertexids.second; ++fv_it)
+            for (auto halfface : m_mesh->face_halffaces(*f_it))
             {
-                m_indices.push_back(fv_it->idx());
+                if (!m_mesh->is_boundary(halfface))
+                {
+                    continue;
+                }
+                auto face_vertexids = m_mesh->halfface_vertices(halfface);
+                for (auto fv_it = face_vertexids.first;
+                     fv_it != face_vertexids.second; ++fv_it)
+                {
+                    m_indices.push_back(fv_it->idx());
+                }
             }
         }
 
@@ -248,27 +254,13 @@ namespace vOS
         m_vertex_normals.clear();
 
         OpenVolumeMesh::NormalAttrib normals(*m_mesh);
-        normals.update_face_normals();
+        normals.update_vertex_normals();
         for (OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
              v_it != m_mesh->vertices_end(); ++v_it)
         {
-            float faces = 0;
-            float x = 0;
-            float y = 0;
-            float z = 0;
-
-            std::pair<OpenVolumeMesh::VertexFaceIter, OpenVolumeMesh::VertexFaceIter> vertex_faces = m_mesh->vertex_faces(*v_it);
-            for(OpenVolumeMesh::VertexFaceIter vf_it = vertex_faces.first;
-                vf_it != vertex_faces.second; ++vf_it)
-            {
-                auto normal = normals[*vf_it];
-                x = x + normal[0];
-                y = y + normal[1];
-                z = z + normal[2];
-
-                faces++;
-
-            }
+            float x = normals[*v_it][0];
+            float y = normals[*v_it][1];
+            float z = normals[*v_it][2];
             m_vertex_normals.push_back(x);
             m_vertex_normals.push_back(y);
             m_vertex_normals.push_back(z);

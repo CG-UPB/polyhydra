@@ -44,6 +44,7 @@ namespace vOS
         m_mesh_view.m_meshFrameBuffer->bind();
         m_shader->bind();
 
+        glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 

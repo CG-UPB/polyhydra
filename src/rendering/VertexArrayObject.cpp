@@ -57,9 +57,8 @@ namespace vOS {
             glBindBuffer(GL_ARRAY_BUFFER, m_nbo);
             glBufferData(GL_ARRAY_BUFFER, (int) coordinates.size() * 4, coordinates.data(), GL_STATIC_DRAW);
 
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
             glEnableVertexAttribArray(1);
-            glBindBuffer(GL_ARRAY_BUFFER, m_nbo);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
