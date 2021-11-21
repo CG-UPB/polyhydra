@@ -8,22 +8,30 @@ namespace vOS
     class VertexArrayObject
     {
     public:
+
         VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
-        VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, const std::vector<float>& coordinates, std::string id);
+
         ~VertexArrayObject();
-        void update(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
-        void draw();
+
+        void update_vertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
+
+        void draw() const;
+
+        template<typename T>
+        void add_buffer(const std::vector<T>& data, int location, int element_count);
+
+        template<typename T>
+        void update_buffer(const std::vector<T>& data, int location);
 
     private:
+
+        int m_numIndices;
 
         unsigned int m_vao;
         unsigned int m_vbo;
         unsigned int m_ibo;
 
-        // optional
-        unsigned int m_tbo = -1;
-        unsigned int m_nbo = -1;
-
-        int m_numIndices;
+        // optional additional buffers
+        std::vector<unsigned int> m_buffers;
     };
 }

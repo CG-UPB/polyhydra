@@ -28,7 +28,9 @@ namespace vOS
                 1.0, 1.0,
                 1.0, 0.0
         };
-        m_vao = new VertexArrayObject(quad_vertices, quad_indices, quad_texture_coordinates, "texture");
+        m_vao = new VertexArrayObject(quad_vertices, quad_indices);
+        m_vao->add_buffer(quad_texture_coordinates, 1, 2);
+
         std::filesystem::path shaderPath = "shaders";
         m_shader = new Shader(shaderPath / "property.vert", shaderPath / "property.frag");
     }
@@ -72,12 +74,12 @@ namespace vOS
             glm::mat4 positionOffset = glm::translate(-VosWindow::instance().get_mesh_obj().get_mesh_offset());
             glm::mat4 transform = m_mesh_view.m_meshWorld * m_mesh_view.m_meshTransform * positionOffset;
 
-            m_shader->setUniform1f("u_scale", highlight_scale);
-            m_shader->setUniform4f("u_position", vertex_pos);
-            m_shader->setUniformMat4f("u_transform", transform);
-            m_shader->setUniformMat4f("u_projection", m_mesh_view.m_meshProjection);
-            m_shader->setUniformMat4f("u_view", m_mesh_view.m_meshView);
-            m_shader->setUniform4f("u_highlight_color", highlight_color);
+            m_shader->set_uniform_float("u_scale", highlight_scale);
+            m_shader->set_uniform_vec4f("u_position", vertex_pos);
+            m_shader->set_uniform_mat4f("u_transform", transform);
+            m_shader->set_uniform_mat4f("u_projection", m_mesh_view.m_meshProjection);
+            m_shader->set_uniform_mat4f("u_view", m_mesh_view.m_meshView);
+            m_shader->set_uniform_vec4f("u_highlight_color", highlight_color);
 
             m_vao->draw();
 
@@ -95,12 +97,12 @@ namespace vOS
             glm::mat4 positionOffset = glm::translate(-VosWindow::instance().get_mesh_obj().get_mesh_offset());
             glm::mat4 transform = m_mesh_view.m_meshWorld * m_mesh_view.m_meshTransform * positionOffset;
 
-            m_shader->setUniform1f("u_scale", highlight_scale);
+            m_shader->set_uniform_float("u_scale", highlight_scale);
             m_shader->setUniform4f("u_position", vertex_pos);
             m_shader->setUniformMat4f("u_transform", transform);
             m_shader->setUniformMat4f("u_projection", m_mesh_view.m_meshProjection);
-            m_shader->setUniformMat4f("u_view", m_mesh_view.m_meshView);
-            m_shader->setUniform4f("u_highlight_color", highlight_color);
+            m_shader->set_uniform_mat4f("u_view", m_mesh_view.m_meshView);
+            m_shader->set_uniform_vec4f("u_highlight_color", highlight_color);
 
             m_vao->draw();
 

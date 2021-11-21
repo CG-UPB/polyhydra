@@ -5,23 +5,26 @@ namespace vOS
     class FrameBufferObject
     {
     public:
+
         FrameBufferObject(int width, int height);
         ~FrameBufferObject();
+
         void resize(int width, int height);
+
         void bind();
         void unbind();
 
-        unsigned int getTextureID() const;
-        unsigned int getID() const;
+        [[nodiscard]] unsigned int get_texture_id() const;
+        [[nodiscard]] unsigned int get_id() const;
 
     private:
 
         void init(int width, int height);
-        void cleanUp();
+        void clean_up();
 
-        unsigned int createFrameBuffer();
-        unsigned int createTextureAttachment();
-        unsigned int createDepthTextureAttachment();
+        unsigned int create_framebuffer();
+        unsigned int create_texture_attachment();
+        unsigned int create_depth_texture_attachment();
 
         int m_width;
         int m_height;

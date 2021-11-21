@@ -58,7 +58,9 @@ namespace vOS
         }
         initialize_face_normals();
         initialize_vertex_normals();
-        m_vertexArrayObject = new VertexArrayObject(vertices(), faces(), vertex_normals(), "normals");
+        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
+        m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
+
         calculate_mesh_offset();
     }
 

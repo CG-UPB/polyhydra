@@ -3,26 +3,26 @@
 
 #include "VertexArrayObject.h"
 
-
 #include <iostream>
+#include <type_traits>
 
-namespace vOS {
+namespace vOS
+{
 
-    VertexArrayObject::VertexArrayObject(const std::vector<float> &vertices, const std::vector<unsigned int> &indices) {
+    VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
+    {
         m_numIndices = (int) indices.size();
-
-
 
         glGenVertexArrays(1, &m_vao);
         glBindVertexArray(m_vao);
 
         glGenBuffers(1, &m_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_DYNAMIC_DRAW);
 
         glGenBuffers(1, &m_ibo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int) indices.size() * 4, indices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int) indices.size() * 4, indices.data(), GL_DYNAMIC_DRAW);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
         glEnableVertexAttribArray(0);
@@ -32,53 +32,19 @@ namespace vOS {
         glBindVertexArray(0);
     }
 
-    VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices,
-                                         const std::vector<float>& coordinates, std::string id="texture"): VertexArrayObject(vertices, indices)
-    {
-        if(id == "texture")
-        {
-            glBindVertexArray(m_vao);
-
-            glGenBuffers(1, &m_tbo);
-            glBindBuffer(GL_ARRAY_BUFFER, m_tbo);
-            glBufferData(GL_ARRAY_BUFFER, (int) coordinates.size() * 4, coordinates.data(), GL_STATIC_DRAW);
-
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
-            glEnableVertexAttribArray(1);
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-        }
-        else if( id == "normals")
-        {
-            glBindVertexArray(m_vao);
-
-            glGenBuffers(1, &m_nbo);
-            glBindBuffer(GL_ARRAY_BUFFER, m_nbo);
-            glBufferData(GL_ARRAY_BUFFER, (int) coordinates.size() * 4, coordinates.data(), GL_STATIC_DRAW);
-
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-            glEnableVertexAttribArray(1);
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-        }
-
-    }
-
     VertexArrayObject::~VertexArrayObject()
     {
         glDeleteVertexArrays(1, &m_vao);
         glDeleteBuffers(1, &m_vbo);
         glDeleteBuffers(1, &m_ibo);
 
-        if (m_tbo != -1)
+        for (unsigned int buffer: m_buffers)
         {
-            glDeleteBuffers(1, &m_tbo);
+            glDeleteBuffers(1, &buffer);
         }
     }
 
-    void VertexArrayObject::draw()
+    void VertexArrayObject::draw() const
     {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
@@ -87,16 +53,61 @@ namespace vOS {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void VertexArrayObject::update(const std::vector<float> &vertices, const std::vector<unsigned int> &indices)
+    void VertexArrayObject::update_vertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
     {
         m_numIndices = (int) indices.size();
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int) indices.size() * 4, indices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int) indices.size() * 4, indices.data(), GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
+
+    template<typename T>
+    void VertexArrayObject::add_buffer(const std::vector<T>& data, int location, int element_count)
+    {
+        int gl_type;
+        if constexpr(std::is_same_v<T, float>)
+        { gl_type = GL_FLOAT; }
+        else if constexpr(std::is_same_v<T, int>)
+        { gl_type = GL_INT; }
+        else
+        { throw std::invalid_argument("Invalid data type for gl buffer"); }
+
+        m_buffers.push_back(-1);
+
+        glBindVertexArray(m_vao);
+
+        glGenBuffers(1, &m_buffers[m_buffers.size() - 1]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[m_buffers.size() - 1]);
+        glBufferData(GL_ARRAY_BUFFER, (int) data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
+
+        glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
+        glEnableVertexAttribArray(location);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    template<typename T>
+    void VertexArrayObject::update_buffer(const std::vector<T>& data, int location)
+    {
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[location - 1]);
+        glBufferData(GL_ARRAY_BUFFER, (int) data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    // these are necessary for the linker to find the templated function types, otherwise we would need to implement
+    // the template function in the header file, which would cause some problems
+    template void VertexArrayObject::add_buffer<float>(const std::vector<float>&, int, int);
+    template void VertexArrayObject::add_buffer<int>(const std::vector<int>&, int, int);
+
+    template void VertexArrayObject::update_buffer<float>(const std::vector<float>&, int);
+    template void VertexArrayObject::update_buffer<int>(const std::vector<int>&, int);
+
 }

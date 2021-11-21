@@ -227,17 +227,17 @@ namespace vOS
         glm::mat4 transform = m_meshWorld * m_meshTransform * positionOffset;
 
         // set all of our uniforms
-        m_meshShader->setUniformMat4f("u_Transform", transform);
-        m_meshShader->setUniformMat4f("u_Projection", m_meshProjection);
-        m_meshShader->setUniformMat4f("u_View", m_meshView);
+        m_meshShader->set_uniform_mat4f("u_Transform", transform);
+        m_meshShader->set_uniform_mat4f("u_Projection", m_meshProjection);
+        m_meshShader->set_uniform_mat4f("u_View", m_meshView);
 
 
         bool phong = true;
-        m_meshShader->setUniform1i("u_phong", phong);
-        m_meshShader->setUniform3f("u_lightPos", m_light);
-        m_meshShader->setUniform3f("u_camPos", m_camera);
-        m_meshShader->setUniform3f("u_lightColor", m_light_color);
-        m_meshShader->setUniform3f("u_objectColor", m_object_color);
+        m_meshShader->set_uniform_bool("u_phong", phong);
+        m_meshShader->set_uniform_vec3f("u_lightPos", m_light);
+        m_meshShader->set_uniform_vec3f("u_camPos", m_camera);
+        m_meshShader->set_uniform_vec3f("u_lightColor", m_light_color);
+        m_meshShader->set_uniform_vec3f("u_objectColor", m_object_color);
 
 
         // now draw to the actual texture of the framebuffer
@@ -269,7 +269,7 @@ namespace vOS
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->getTextureID()),
+                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},

@@ -56,17 +56,17 @@ namespace vOS
         glDeleteShader(fragmentID);
     }
 
-    void Shader::bind()
+    void Shader::bind() const
     {
         glUseProgram(m_shaderID);
     }
 
-    void Shader::unbind()
+    void Shader::unbind() const
     {
         glUseProgram(0);
     }
 
-    int Shader::getUniform(const std::string& name)
+    int Shader::get_uniform(const std::string& name)
     {
         auto location = m_locations.find(name);
         if (location == m_locations.end())
@@ -81,33 +81,38 @@ namespace vOS
         return m_locations[name];
     }
 
-    void Shader::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
+    void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& matrix)
     {
-        glUniformMatrix4fv(getUniform(name), 1, GL_FALSE, &matrix[0][0]);
+        glUniformMatrix4fv(get_uniform(name), 1, GL_FALSE, &matrix[0][0]);
     }
 
-    void Shader::setUniform1f(const std::string& name, float value)
+    void Shader::set_uniform_float(const std::string& name, float value)
     {
-        glUniform1f(getUniform(name), value);
+        glUniform1f(get_uniform(name), value);
     }
 
-    void Shader::setUniform2f(const std::string& name, glm::vec2& value)
+    void Shader::set_uniform_int(const std::string& name, int value)
     {
-        glUniform2f(getUniform(name), value.x, value.y);
+        glUniform1i(get_uniform(name), value);
     }
 
-    void Shader::setUniform3f(const std::string& name, glm::vec3& value)
+    void Shader::set_uniform_bool(const std::string& name, bool value)
     {
-        glUniform3f(getUniform(name), value.x, value.y, value.z);
+        glUniform1i(get_uniform(name), (int) value);
     }
 
-    void Shader::setUniform4f(const std::string& name, glm::vec4& value)
+    void Shader::set_uniform_vec2f(const std::string& name, const glm::vec2& value)
     {
-        glUniform4f(getUniform(name), value.x, value.y, value.z, value.w);
+        glUniform2f(get_uniform(name), value.x, value.y);
     }
 
-    void Shader::setUniform1i(const std::string& name, int value)
+    void Shader::set_uniform_vec3f(const std::string& name, const glm::vec3& value)
     {
-        glUniform1i(getUniform(name), value);
+        glUniform3f(get_uniform(name), value.x, value.y, value.z);
+    }
+
+    void Shader::set_uniform_vec4f(const std::string& name, const glm::vec4& value)
+    {
+        glUniform4f(get_uniform(name), value.x, value.y, value.z, value.w);
     }
 }
