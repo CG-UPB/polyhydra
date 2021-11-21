@@ -33,19 +33,37 @@ namespace vOS {
     }
 
     VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices,
-                                         const std::vector<float>& texture_coordinates): VertexArrayObject(vertices, indices)
+                                         const std::vector<float>& coordinates, std::string id="texture"): VertexArrayObject(vertices, indices)
     {
-        glBindVertexArray(m_vao);
+        if(id == "texture")
+        {
+            glBindVertexArray(m_vao);
 
-        glGenBuffers(1, &m_tbo);
-        glBindBuffer(GL_ARRAY_BUFFER, m_tbo);
-        glBufferData(GL_ARRAY_BUFFER, (int) texture_coordinates.size() * 4, texture_coordinates.data(), GL_STATIC_DRAW);
+            glGenBuffers(1, &m_tbo);
+            glBindBuffer(GL_ARRAY_BUFFER, m_tbo);
+            glBufferData(GL_ARRAY_BUFFER, (int) coordinates.size() * 4, coordinates.data(), GL_STATIC_DRAW);
 
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
-        glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+            glEnableVertexAttribArray(1);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+        else if( id == "normals")
+        {
+            glBindVertexArray(m_vao);
+
+            glGenBuffers(1, &m_nbo);
+            glBindBuffer(GL_ARRAY_BUFFER, m_nbo);
+            glBufferData(GL_ARRAY_BUFFER, (int) coordinates.size() * 4, coordinates.data(), GL_STATIC_DRAW);
+
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+            glEnableVertexAttribArray(1);
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+
     }
 
     VertexArrayObject::~VertexArrayObject()

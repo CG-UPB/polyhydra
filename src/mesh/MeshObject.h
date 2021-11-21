@@ -14,28 +14,33 @@ namespace vOS
     public:
 
         MeshObject();
+
         ~MeshObject() = default;
 
         bool m_is_rendering;
-
         bool m_should_update;
+
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
         void load_from_file(std::string file_path);
         void write_to_file(std::string file_path);
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
+        void set_highlight(OpenVolumeMesh::VertexHandle v_h, bool bl, float r, float g, float b, float a);
+        void remove_highlights();
+        void initialize_face_normals();
+        void initialize_vertex_normals();
 
         void draw();
 
         std::vector<float> vertices();
         std::vector<unsigned int> edges();
         std::vector<unsigned int> faces();
-
-        glm::vec3& get_mesh_offset();
-
-        void set_highlight(OpenVolumeMesh::VertexHandle v_h, bool bl, float r, float g, float b, float a);
+        std::vector<float> vertex_normals();
+        std::vector<float> face_normals();
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
-        void remove_highlights();
+
+
+        glm::vec3 &get_mesh_offset();
 
     private:
 
@@ -44,14 +49,14 @@ namespace vOS
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;
+        std::vector<float> m_vertex_normals;
+        std::vector<float> m_face_normals;
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
 
-        VertexArrayObject* m_vertexArrayObject = nullptr;
+        VertexArrayObject *m_vertexArrayObject = nullptr;
+
         glm::vec3 m_mesh_offset_from_center;
     };
-
-
-
 
 
 }

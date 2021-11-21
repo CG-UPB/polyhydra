@@ -21,6 +21,7 @@ namespace vOS
         // send uniform variables to the shader
         void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
         void setUniform1f(const std::string& name, float value);
+        void setUniform1i(const std::string& name, int value);
         void setUniform2f(const std::string& name, glm::vec2& value);
         void setUniform3f(const std::string& name, glm::vec3& value);
         void setUniform4f(const std::string& name, glm::vec4& value);

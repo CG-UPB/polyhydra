@@ -21,12 +21,14 @@ namespace vOS
 
         unsigned int createFrameBuffer();
         unsigned int createTextureAttachment();
+        unsigned int createDepthTextureAttachment();
 
         int m_width;
         int m_height;
 
         unsigned int m_frameBufferID;
         unsigned int m_textureID;
+        unsigned int m_depth_texture_id;
         int m_previousFrameBufferID;
         int m_previousViewPort[4];
     };

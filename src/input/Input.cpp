@@ -14,11 +14,13 @@ namespace vOS
     Input::Input(): m_currentMouseX(0.0), m_currentMouseY(0.0), m_currentScrollOffsetX(0.0), m_currentScrollOffsetY(0.0)
     {
         m_keyMap = new bool[65536] {false};
+        m_keyReleaseMap = new bool[65536] {false};
     }
 
     Input::~Input()
     {
         delete m_keyMap;
+        delete m_keyReleaseMap;
     }
 
     void Input::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -26,6 +28,11 @@ namespace vOS
         if (key >= 0 && key < 65536)
         {
             Input::getInstance().m_keyMap[key] = action == GLFW_PRESS;
+            if (action == GLFW_RELEASE)
+            {
+                Input::getInstance().m_keyReleaseMap[key] = !Input::getInstance().m_keyReleaseMap[key];
+
+            }
         }
     }
 
@@ -34,6 +41,7 @@ namespace vOS
         if (button >= 0 && button < 65536)
         {
             Input::getInstance().m_keyMap[button] = action == GLFW_PRESS;
+            Input::getInstance().m_keyReleaseMap[button] = action == GLFW_RELEASE;
         }
     }
 
@@ -53,6 +61,11 @@ namespace vOS
     {
         return Input::getInstance().m_keyMap[key];
 
+    }
+
+    bool Input::isKeyReleased(int key)
+    {
+        return Input::getInstance().m_keyReleaseMap[key];
     }
 
     double Input::getMouseX()

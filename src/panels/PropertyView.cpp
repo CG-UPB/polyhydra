@@ -28,7 +28,7 @@ namespace vOS
                 1.0, 1.0,
                 1.0, 0.0
         };
-        m_vao = new VertexArrayObject(quad_vertices, quad_indices, quad_texture_coordinates);
+        m_vao = new VertexArrayObject(quad_vertices, quad_indices, quad_texture_coordinates, "texture");
         std::filesystem::path shaderPath = "shaders";
         m_shader = new Shader(shaderPath / "property.vert", shaderPath / "property.frag");
     }
@@ -44,6 +44,7 @@ namespace vOS
         m_mesh_view.m_meshFrameBuffer->bind();
         m_shader->bind();
 
+        glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
