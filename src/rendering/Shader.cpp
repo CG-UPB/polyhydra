@@ -154,15 +154,15 @@ namespace vOS
             }
             auto& shader_source_path = shader_source_paths[name_without_extension];
 
+            std::filesystem::path* source;
             if (extension == "vert")
-            {
-                std::cout << "vertex path: " << file.path() << std::endl;
-                shader_source_path.vertex = file.path();
-            }
+            { source = &shader_source_path.vertex; }
             else if (extension == "frag")
-            {
-                shader_source_path.fragment = file.path();
-            }
+            { source = &shader_source_path.fragment; }
+            else
+            { throw std::runtime_error("Unknown shader file extension: " + extension); }
+
+            *source = file.path();
         }
 
         for (auto& shader_source_path : shader_source_paths)
