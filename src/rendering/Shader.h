@@ -11,8 +11,12 @@ namespace vOS
     {
     public:
 
-        Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
-        ~Shader() = default;
+        static void load_all();
+        static void delete_all();
+        static Shader* get(const std::string& shader_name);
+
+        static Shader* mesh_shader() { return get("mesh"); }
+        static Shader* property_shader() { return get("property"); }
 
         void bind() const;
         void unbind() const;
@@ -30,6 +34,11 @@ namespace vOS
         void set_uniform_vec4f(const std::string& name, const glm::vec4& value);
 
     private:
+
+        Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
+        ~Shader() = default;
+
+        static std::unordered_map<std::string, Shader*> s_shaders;
 
         unsigned int m_shaderID;
 

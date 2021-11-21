@@ -23,8 +23,7 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        std::filesystem::path shaderPath = "shaders";
-        m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
+        m_meshShader = Shader::mesh_shader();
         m_meshFrameBuffer = new FrameBufferObject(width, height);
 
         m_light = glm::vec3{0.0f, 0.0f, 10.0f};
@@ -57,7 +56,6 @@ namespace vOS
     MeshView::~MeshView()
     {
         delete m_meshFrameBuffer;
-        delete m_meshShader;
     }
 
     void MeshView::handleResize()

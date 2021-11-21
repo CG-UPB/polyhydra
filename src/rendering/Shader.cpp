@@ -6,20 +6,22 @@
 #include <iostream>
 
 #include "../fs/FileManager.h"
+#include "../util/StringUtil.h"
 
 namespace vOS
 {
+    std::unordered_map<std::string, Shader*> Shader::s_shaders;
 
     Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath)
     {
-        std::string vertexSource = FileManager::loadAsString(vertexPath);
-        std::string fragmentSource = FileManager::loadAsString(fragmentPath);
+        std::string vertexSource = FileManager::load_as_string(vertexPath, true);
+        std::string fragmentSource = FileManager::load_as_string(fragmentPath, true);
 
         m_shaderID = glCreateProgram();
         unsigned int vertexID = glCreateShader(GL_VERTEX_SHADER);
         unsigned int fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
 
-        const GLchar *vertBuf = vertexSource.c_str();
+        const GLchar* vertBuf = vertexSource.c_str();
         glShaderSource(vertexID, 1, &vertBuf, nullptr);
         glCompileShader(vertexID);
         int success;
@@ -31,7 +33,7 @@ namespace vOS
             std::cout << "Error when compiling vertex shader: " << infoLog << std::endl;
         }
 
-        const GLchar *fragBuf = fragmentSource.c_str();
+        const GLchar* fragBuf = fragmentSource.c_str();
         glShaderSource(fragmentID, 1, &fragBuf, nullptr);
         glCompileShader(fragmentID);
         glGetShaderiv(fragmentID, GL_COMPILE_STATUS, &success);
@@ -114,5 +116,69 @@ namespace vOS
     void Shader::set_uniform_vec4f(const std::string& name, const glm::vec4& value)
     {
         glUniform4f(get_uniform(name), value.x, value.y, value.z, value.w);
+    }
+
+    Shader* Shader::get(const std::string& shader_name)
+    {
+        auto shader = s_shaders.find(shader_name);
+        if (shader == s_shaders.end())
+        {
+            throw std::invalid_argument("Could not find shader: " + shader_name);
+        }
+        return s_shaders[shader_name];
+    }
+
+    void Shader::load_all()
+    {
+        struct ShaderSourcePath
+        {
+            std::filesystem::path vertex;
+            std::filesystem::path fragment;
+        };
+
+        std::unordered_map<std::string, ShaderSourcePath> shader_source_paths;
+
+        std::string separator(&std::filesystem::path::preferred_separator);
+        std::filesystem::path shader_path = "shaders";
+        for (auto& file: std::filesystem::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
+        {
+            auto path_split = split_str(file.path().string(), separator);
+            auto name_with_extension = split_str(path_split[path_split.size() - 1], ".");
+            std::string name_without_extension = name_with_extension[0];
+            std::string extension = name_with_extension[1];
+
+            auto it = shader_source_paths.find(name_without_extension);
+            if (it == shader_source_paths.end())
+            {
+                shader_source_paths[name_without_extension] = ShaderSourcePath();
+            }
+            auto& shader_source_path = shader_source_paths[name_without_extension];
+
+            if (extension == "vert")
+            {
+                std::cout << "vertex path: " << file.path() << std::endl;
+                shader_source_path.vertex = file.path();
+            }
+            else if (extension == "frag")
+            {
+                shader_source_path.fragment = file.path();
+            }
+        }
+
+        for (auto& shader_source_path : shader_source_paths)
+        {
+            s_shaders[shader_source_path.first] = new Shader(
+                    shader_source_path.second.vertex,
+                    shader_source_path.second.fragment
+            );
+        }
+    }
+
+    void Shader::delete_all()
+    {
+        for (auto& shader : s_shaders)
+        {
+            delete shader.second;
+        }
     }
 }

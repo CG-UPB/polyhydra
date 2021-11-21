@@ -30,15 +30,12 @@ namespace vOS
         };
         m_vao = new VertexArrayObject(quad_vertices, quad_indices);
         m_vao->add_buffer(quad_texture_coordinates, 1, 2);
-
-        std::filesystem::path shaderPath = "shaders";
-        m_shader = new Shader(shaderPath / "property.vert", shaderPath / "property.frag");
+        m_shader = Shader::property_shader();
     }
 
     PropertyView::~PropertyView()
     {
         delete m_vao;
-        delete m_shader;
     }
 
     void vOS::PropertyView::show()
@@ -49,8 +46,6 @@ namespace vOS
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-        // TODO: Get highlight vertices here
 
         auto highlights = VosWindow::instance().get_mesh_obj().get_highlights();
         for(int i = 0; i < highlights.size(); i++)
@@ -84,30 +79,6 @@ namespace vOS
             m_vao->draw();
 
         }
-        /*
-        auto vertices = VosWindow::instance().get_mesh_obj().vertices();
-        for (int i = 0; i < vertices.size(); i += 3)
-        {
-            // set highlight properties
-            glm::vec4 vertex_pos = glm::vec4(vertices[i], vertices[i + 1], vertices[i + 2], 1.0f);
-            glm::vec4 highlight_color = glm::vec4(0.2, 1.0, 0.2, 1.0);
-            float highlight_scale = 0.03f;
-
-            // calculate vertex transform
-            glm::mat4 positionOffset = glm::translate(-VosWindow::instance().get_mesh_obj().get_mesh_offset());
-            glm::mat4 transform = m_mesh_view.m_meshWorld * m_mesh_view.m_meshTransform * positionOffset;
-
-            m_shader->set_uniform_float("u_scale", highlight_scale);
-            m_shader->setUniform4f("u_position", vertex_pos);
-            m_shader->setUniformMat4f("u_transform", transform);
-            m_shader->setUniformMat4f("u_projection", m_mesh_view.m_meshProjection);
-            m_shader->set_uniform_mat4f("u_view", m_mesh_view.m_meshView);
-            m_shader->set_uniform_vec4f("u_highlight_color", highlight_color);
-
-            m_vao->draw();
-
-        }
-        */
         glDisable(GL_BLEND);
 
         m_shader->unbind();
