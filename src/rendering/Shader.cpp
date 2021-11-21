@@ -105,4 +105,9 @@ namespace vOS
     {
         glUniform4f(getUniform(name), value.x, value.y, value.z, value.w);
     }
+
+    void Shader::setUniform1i(const std::string& name, int value)
+    {
+        glUniform1i(getUniform(name), value);
+    }
 }

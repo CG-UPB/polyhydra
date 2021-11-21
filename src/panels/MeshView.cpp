@@ -3,11 +3,15 @@
 
 #include "MeshView.h"
 #include "../input/Input.h"
+#include "LogWindow.h"
+#include "../algorithms/VosWindow.h"
 
 #include <algorithm>
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
+
+#include "../mesh/MeshObject.h"
 
 namespace vOS
 {
@@ -19,44 +23,14 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        // test mesh cube vertices and indices
-        std::vector<float> vertices = {
-                // front
-                -1.0, -1.0, 1.0,
-                1.0, -1.0, 1.0,
-                1.0, 1.0, 1.0,
-                -1.0, 1.0, 1.0,
-                // back
-                -1.0, -1.0, -1.0,
-                1.0, -1.0, -1.0,
-                1.0, 1.0, -1.0,
-                -1.0, 1.0, -1.0
-        };
-        std::vector<unsigned int> indices = {
-                // front
-                0, 1, 2,
-                2, 3, 0,
-                // right
-                1, 5, 6,
-                6, 2, 1,
-                // back
-                7, 6, 5,
-                5, 4, 7,
-                // left
-                4, 0, 3,
-                3, 7, 4,
-                // bottom
-                4, 5, 1,
-                1, 0, 4,
-                // top
-                3, 2, 6,
-                6, 7, 3
-        };
-
         std::filesystem::path shaderPath = "shaders";
         m_meshShader = new Shader(shaderPath / "mesh.vert", shaderPath / "mesh.frag");
         m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_vertexArrayObject = new VertexArrayObject(vertices, indices);
+
+        m_light = glm::vec3{0.0f, 0.0f, 10.0f};
+        m_camera = glm::vec3{0.0f, 0.0f, 10.0f};
+        m_light_color = glm::vec3{1.0f, 1.0f, 1.0f};
+        m_object_color = glm::vec3{1.0f, 0.5f, 0.2f};
 
         // set up the initial camera position, direction and orientation of the mesh
         glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -67,19 +41,21 @@ namespace vOS
         m_meshProjection = glm::perspective(
                 glm::radians(50.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                0.1f,
-                100.0f
+                0.001f,
+                100000.0f
         );
+
         m_meshView = glm::lookAt(
-                glm::vec3{0.0f, 0.0f, 8.0f},
+                m_camera,
                 glm::vec3{0.0f, 0.0f, 0.0f},
                 glm::vec3{0.0f, 1.0f, 0.0f}
         );
+
+        m_W_button_pressed = false;
     }
 
     MeshView::~MeshView()
     {
-        delete m_vertexArrayObject;
         delete m_meshFrameBuffer;
         delete m_meshShader;
     }
@@ -98,8 +74,8 @@ namespace vOS
             m_meshProjection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    0.1f,
-                    100.0f
+                    0.001f,
+                    100000.0f
             );
         }
     }
@@ -199,32 +175,74 @@ namespace vOS
             }
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
+
+            m_camera = glm::inverse(m_meshView)[2];
+            //LogWindow::getInstance()->addLog("Neue Position");
         }
     }
 
     void MeshView::renderMesh()
     {
+
+
         // render our mesh in polygon mode for debugging
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if(Input::isKeyDown(GLFW_KEY_W))
+        {
+            m_W_button_pressed = !m_W_button_pressed;
+        }
+
+        if(Input::isKeyReleased(GLFW_KEY_W))
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            //glEnable(GL_CULL_FACE);
+            //glEnable(GL_DEPTH_TEST);
+
+        }else
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        }
         glEnable(GL_LINE_SMOOTH);
-        glLineWidth(5);
+        glLineWidth(1);
+
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
 
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
         // we need to clear our framebuffer as well
+
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_meshShader->bind();
 
+        glm::mat4 positionOffset = glm::translate(- VosWindow::instance().get_mesh_obj().get_mesh_offset());
+        glm::mat4 transform = m_meshWorld * m_meshTransform * positionOffset;
+
         // set all of our uniforms
-        m_meshShader->setUniformMat4f("u_Transform", m_meshWorld * m_meshTransform);
+        m_meshShader->setUniformMat4f("u_Transform", transform);
         m_meshShader->setUniformMat4f("u_Projection", m_meshProjection);
         m_meshShader->setUniformMat4f("u_View", m_meshView);
 
+
+        bool phong = true;
+        m_meshShader->setUniform1i("u_phong", phong);
+        m_meshShader->setUniform3f("u_lightPos", m_light);
+        m_meshShader->setUniform3f("u_camPos", m_camera);
+        m_meshShader->setUniform3f("u_lightColor", m_light_color);
+        m_meshShader->setUniform3f("u_objectColor", m_object_color);
+
+
         // now draw to the actual texture of the framebuffer
-        m_vertexArrayObject->draw();
+
+        VosWindow::instance().get_mesh_obj().draw();
 
         // unbind our framebuffer and shader
         m_meshShader->unbind();
@@ -264,6 +282,16 @@ namespace vOS
         ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+
+        if (VosWindow::instance().get_mesh_obj().m_mesh != nullptr)
+        {
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("vertices: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_vertices());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("edges: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_edges());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("faces: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_faces());
+        }
 
         ImGui::End();
     }

@@ -2,16 +2,20 @@
 #include <glad/glad.h>
 
 #include <utility>
+#include <iostream>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
 #include "Window.h"
-#include "panels/MeshView.h"
 #include "input/Input.h"
-#include "panels/MenuBar.h"
 #include "fs/FileManager.h"
+#include "algorithms/VosWindow.h"
+#include "panels/MeshView.h"
+#include "panels/MenuBar.h"
+#include "panels/LogWindow.h"
+#include "panels/PropertyView.h"
 
 namespace vOS
 {
@@ -24,6 +28,7 @@ namespace vOS
     {
         fprintf(stderr, "Error: %s\n", description.c_str());
     }
+
 
     Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
     {
@@ -48,6 +53,7 @@ namespace vOS
         glfwDestroyWindow(m_window);
         glfwTerminate();
     }
+
 
     void Window::initGLFW()
     {
@@ -80,6 +86,7 @@ namespace vOS
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
         //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
+        glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
         // Create window with graphics context
         m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
@@ -120,6 +127,7 @@ namespace vOS
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
+
 
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
@@ -199,8 +207,15 @@ namespace vOS
 
     void Window::initPanels()
     {
-        m_panels.push_back(new MenuBar());
-        m_panels.push_back(new MeshView(720, 480));
+        m_menu_bar = new MenuBar();
+        m_panels.push_back(m_menu_bar);
+
+        auto* mesh_view = new MeshView(720, 480);
+
+        m_panels.push_back(mesh_view);
+        m_panels.push_back(new PropertyView(*mesh_view));
+        LogWindow* mylog = LogWindow::getInstance();
+        m_panels.push_back(mylog);
     }
 
     void Window::showDockSpace()
@@ -250,6 +265,7 @@ namespace vOS
     void Window::show()
     {
         // Main loop
+        int counter = 0;
         while (!glfwWindowShouldClose(m_window))
         {
             glfwPollEvents();
@@ -261,12 +277,14 @@ namespace vOS
 
             showDockSpace();
 
-            ImGui::ShowDemoWindow();
+            //ImGui::ShowDemoWindow();
 
+            VosWindow::instance().get_mesh_obj().m_is_rendering = true;
             // draw all of our windows
             for (auto& element: m_panels) {
                 element->show();
             }
+            VosWindow::instance().get_mesh_obj().m_is_rendering = false;
 
             ImGui::End();
 
@@ -277,7 +295,7 @@ namespace vOS
 
             glViewport(0, 0, displayWidth, displayHeight);
             glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glfwSwapBuffers(m_window);

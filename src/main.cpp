@@ -1,10 +1,10 @@
 
-#include "Window.h"
+#include "algorithms/Dijkstra.h"
 
-int main() {
-
-    vOS::Window window(1280, 720, "volumeshOS");
-    window.show();
+int main()
+{
+    vOS::Dijkstra dijkstra;
+    dijkstra.run();
 
     return 0;
 }

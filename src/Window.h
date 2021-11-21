@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include "rendering/FrameBufferObject.h"
 
 namespace vOS
 {
@@ -14,6 +15,10 @@ namespace vOS
         virtual ~WindowPanel() = default;
     };
 
+    // Forward Declaration
+    class VosWindow;
+    class MenuBar;
+
     class Window
     {
 
@@ -21,7 +26,7 @@ namespace vOS
         Window(int width, int height, std::string title);
         ~Window();
         void show();
-
+        MenuBar* get_menu_bar(){return m_menu_bar;}
     private:
 
         void initGLFW();
@@ -29,6 +34,8 @@ namespace vOS
         void initImGuiStyle();
         void initPanels();
         void showDockSpace();
+
+        MenuBar* m_menu_bar;
 
         int m_width;
         int m_height;
