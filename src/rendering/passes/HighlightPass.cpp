@@ -1,6 +1,8 @@
 
+#include "glad/glad.h"
+
 #include "HighlightPass.h"
-#include "../CommonShapes.h"
+#include "../shapes/CommonMeshes.h"
 #include "../../algorithms/VosWindow.h"
 
 #include "glm/gtx/transform.hpp"
@@ -9,8 +11,8 @@ namespace vOS
 {
     HighlightPass::HighlightPass()
     {
-        m_vao = new VertexArrayObject(CommonShapes::Quad::vertices(), CommonShapes::Quad::indices());
-        m_vao->add_buffer(CommonShapes::Quad::uvs(), 1, 2);
+        m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
+        m_vao->add_buffer(CommonMeshes::PlaneXY::uvs(), 1, 2);
         m_highlight_shader = Shader::property_shader();
     }
 

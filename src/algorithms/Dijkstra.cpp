@@ -41,8 +41,8 @@ namespace vOS
         int start = std::rand() % m_mesh.n_vertices();
         int end = std::rand() % m_mesh.n_vertices();
 
-        for(OpenVolumeMesh::VertexIter v_it = m_mesh.vertices_begin();
-            v_it != m_mesh.vertices_end(); ++v_it)
+        for (OpenVolumeMesh::VertexIter v_it = m_mesh.vertices_begin();
+             v_it != m_mesh.vertices_end(); ++v_it)
         {
             if (v_it->idx() == start)
             {
@@ -62,6 +62,7 @@ namespace vOS
         LogWindow::getInstance()->addLog("Paused");
         m_pause = true;
     }
+
     void Dijkstra::PauseButtonReleased()
     {
         LogWindow::getInstance()->addLog("Unpaused");
@@ -88,19 +89,18 @@ namespace vOS
 
         while(window.get_loaded_file_name() == ""){}
         file_manager.readFile(window.get_loaded_file_name(), m_mesh);
-
         window.set_mesh(&m_mesh);
 
 
-        window.set_callback_paused(std::bind( &Dijkstra::PauseButtonPressed, this));
-        window.set_callback_unpaused(std::bind( &Dijkstra::PauseButtonReleased, this));
-        window.set_callback_step(std::bind( &Dijkstra::step_button_pressed, this));
+        window.set_callback_paused(std::bind(&Dijkstra::PauseButtonPressed, this));
+        window.set_callback_unpaused(std::bind(&Dijkstra::PauseButtonReleased, this));
+        window.set_callback_step(std::bind(&Dijkstra::step_button_pressed, this));
         window.set_callback_reset(std::bind(&Dijkstra::reset_button_pressed, this));
 
         /* Dijstra Beginning */
         bool logic = window.is_running();
 
-        while(logic)
+        while (logic)
         {
             window.get_mesh_obj().remove_highlights();
             init();
@@ -115,12 +115,16 @@ namespace vOS
             queue.push(currentVertex);
             distances[currentVertex.second.idx()] = 0.0f;
 
-            window.set_vertex_color(m_start, true, 0, 0, 1, 1);
-            window.set_vertex_color(m_end, true, 0, 0, 1, 1);
+            //window.set_vertex_color(m_start, true, 0, 0, 1, 1);
+            //window.set_vertex_color(m_end, true, 0, 0, 1, 1);
 
             bool found = false;
 
-            while (!window.is_ready()) {}
+            while (!window.is_ready())
+            {}
+
+            window.add_box(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2], 0.2f, 0.2f, 1.0f);
+            window.add_box(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2], 0.2f, 0.2f, 1.0f);
 
             while (!found && !queue.empty() && !m_reset)
             {
@@ -131,76 +135,93 @@ namespace vOS
                     auto vertexHandle = queue.top().second;
                     queue.pop();
 
-                        window.set_vertex_color(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]), false, 1, 0, 0, 1);
+                    window.set_vertex_color(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]), false, 1, 0, 0, 1);
 
-                        // voh iterator
-                        for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle)) {
-                            auto edgeVertices = m_mesh.edge_vertices(edgeHandle);
-                            OpenVolumeMesh::VertexHandle nextVertexHandle;
-                            if (edgeVertices[0].idx() == vertexHandle.idx()) {
-                                nextVertexHandle = edgeVertices[1];
-                            } else {
-                                nextVertexHandle = edgeVertices[0];
-                            }
+                    // voh iterator
+                    for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
+                    {
+                        auto edgeVertices = m_mesh.edge_vertices(edgeHandle);
+                        OpenVolumeMesh::VertexHandle nextVertexHandle;
+                        if (edgeVertices[0].idx() == vertexHandle.idx())
+                        {
+                            nextVertexHandle = edgeVertices[1];
+                        }
+                        else
+                        {
+                            nextVertexHandle = edgeVertices[0];
+                        }
 
-                            float distToNext = m_weights[edgeHandle];
-                            if (distances[nextVertexHandle.idx()] > distances[vertexHandle.idx()] + distToNext) {
-                                distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
-                                queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
-                                prev[nextVertexHandle.idx()] = vertexHandle.idx();
-                                window.set_vertex_color(vertexHandle, true, 1, 0, 0, 1);
-                            }
+                        float distToNext = m_weights[edgeHandle];
+                        if (distances[nextVertexHandle.idx()] > distances[vertexHandle.idx()] + distToNext)
+                        {
+                            distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
+                            queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
+                            prev[nextVertexHandle.idx()] = vertexHandle.idx();
+                            window.set_vertex_color(vertexHandle, true, 1, 0, 0, 1);
+                        }
 
-                            if (queue.top().second.idx() == m_end.idx()) {
-                                found = true;
-                                break;
-                            }
+                        if (queue.top().second.idx() == m_end.idx())
+                        {
+                            found = true;
+                            break;
                         }
                     }
                 }
-
-                if(!m_reset) {
-
-                    std::vector<int> res;
-                    int temp = m_end.idx();
-                    res.push_back(temp);
-                    while (temp != m_start.idx()) {
-                        temp = prev[temp];
-                        res.push_back(temp);
-                    }
-
-                    window.get_mesh_obj().remove_highlights();
-
-                    bool first = true;
-                    for (int i = 0; i < res.size(); i++) {
-                        auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
-
-                        if (i == res.size() - 1 || first)
-                            window.set_vertex_color(vertex, true, 0, 0, 1, 1);
-                        else
-                            window.set_vertex_color(vertex, true, 1, 0, 0, 1);
-                        first = false;
-
-                        std::cout << "Vertex: " << vertex.idx() << std::endl;
-                    }
-                    window.Log()->addLog("Dijkstra function ended");
-
-                    while(!m_reset)
-                    {
-                        if(!window.is_running())
-                            break;
-                    }
-                    window.Log()->addLog("Continue");
-
-                }
-                if(window.is_running())
-                {
-                    window.Log()->addLog("Reset Variables");
-                    m_reset = false;
-                    m_step = false;
-                }else
-                    logic = false;
             }
+
+            if (!m_reset)
+            {
+
+                std::vector<int> res;
+                int temp = m_end.idx();
+                res.push_back(temp);
+                while (temp != m_start.idx())
+                {
+                    temp = prev[temp];
+                    res.push_back(temp);
+                }
+
+                window.get_mesh_obj().remove_highlights();
+
+                bool first = true;
+                for (int i = 0; i < res.size(); i++)
+                {
+                    auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
+
+                    if (i == res.size() - 1 || first)
+                    {
+                        //window.set_vertex_color(vertex, true, 0, 0, 1, 1);
+                        window.add_box(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1], m_mesh.vertex(vertex)[2],
+                                       0.2f, 0.2f, 1.0f);
+                    }
+                    else
+                    {
+                        //window.set_vertex_color(vertex, true, 1, 0, 0, 1);
+                        window.add_box(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1], m_mesh.vertex(vertex)[2]);
+                    }
+                    first = false;
+
+                    std::cout << "Vertex: " << vertex.idx() << std::endl;
+                }
+                window.Log()->addLog("Dijkstra function ended");
+
+                while (!m_reset)
+                {
+                    if (!window.is_running())
+                        break;
+                }
+                window.Log()->addLog("Continue");
+
+            }
+            if (window.is_running())
+            {
+                window.Log()->addLog("Reset Variables");
+                m_reset = false;
+                m_step = false;
+            }
+            else
+                logic = false;
+        }
     }
 
     void Dijkstra::step()

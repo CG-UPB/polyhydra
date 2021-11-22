@@ -4,6 +4,7 @@
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
+#include "../rendering/passes/ShapePass.h"
 
 namespace vOS
 {
@@ -37,5 +38,6 @@ namespace vOS
         BackgroundPass m_background_pass;
         MeshPass m_mesh_pass;
         HighlightPass m_highlight_pass;
+        ShapePass m_shape_pass;
     };
 }

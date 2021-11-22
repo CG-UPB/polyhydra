@@ -10,8 +10,10 @@
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
+#include "glm/gtx/vec_swizzle.hpp"
 
 #include "../mesh/MeshObject.h"
+#include "../rendering/shapes/Box.h"
 
 namespace vOS
 {
@@ -25,7 +27,6 @@ namespace vOS
     {
         m_meshFrameBuffer = new FrameBufferObject(width, height);
 
-        m_render_data.light.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
         m_render_data.mesh.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -48,6 +49,10 @@ namespace vOS
                 glm::vec3{0.0f, 0.0f, 0.0f},
                 glm::vec3{0.0f, 1.0f, 0.0f}
         );
+
+        glm::mat4 inverse = glm::inverse(m_render_data.camera.view);
+        glm::vec3 view_dir = {inverse[2][0], inverse[2][1], inverse[2][2]};
+        m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 10.0f;
     }
 
     MeshView::~MeshView()
@@ -85,6 +90,11 @@ namespace vOS
         vMax.x += ImGui::GetWindowPos().x;
         vMax.y += ImGui::GetWindowPos().y;
         glm::vec2 mousePos = {Input::getMouseX(), Input::getMouseY()};
+
+        if (!ImGui::IsWindowHovered() && !m_arcBallOn)
+        {
+            return;
+        }
 
         bool isDown = Input::isKeyDown(GLFW_MOUSE_BUTTON_LEFT);
 
@@ -126,12 +136,13 @@ namespace vOS
 
             // when the camera is upside down, left and right dragging is swapped, so we need to check which direction
             // the camera is facing and negate the rotation direction if needed
-            glm::mat4 inverseView = glm::inverse(m_render_data.camera.view);
+            glm::mat4 inverseView = glm::inverse(m_render_data.camera.world);
             glm::vec3 viewDir = {inverseView[2][0], inverseView[2][1], inverseView[2][2]};
             float rotX = rotSpeed * scaleX;
+            float rotY = rotSpeed * scaleY;
             if (viewDir.z < 0)
             {
-                rotX *= -1.0f;
+                rotY *= -1.0f;
             }
 
             // rotate the world (all objects) around the y axis
@@ -155,25 +166,22 @@ namespace vOS
             // rotate the camera around the x axis
             if (dy < 0)
             {
-                m_render_data.camera.view = glm::rotate(
-                        m_render_data.camera.view,
-                        glm::radians(-rotSpeed * scaleY),
+                m_render_data.camera.world = glm::rotate(
+                        m_render_data.camera.world,
+                        glm::radians(-rotY),
                         glm::vec3(1.0f, 0.0f, 0.0f)
                 );
             }
             else if (dy > 0)
             {
-                m_render_data.camera.view = glm::rotate(
-                        m_render_data.camera.view,
-                        glm::radians(rotSpeed * scaleY),
+                m_render_data.camera.world = glm::rotate(
+                        m_render_data.camera.world,
+                        glm::radians(rotY),
                         glm::vec3(1.0f, 0.0f, 0.0f)
                 );
             }
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
-
-            m_render_data.camera.position = glm::inverse(m_render_data.camera.view)[2];
-            //LogWindow::getInstance()->addLog("Neue Position");
         }
     }
 
@@ -201,6 +209,10 @@ namespace vOS
         if (mesh.get_vao() != nullptr)
         {
             m_mesh_pass.render(*mesh.get_vao(), m_render_data);
+        }
+        m_shape_pass.render(*mesh.get_vao(), m_render_data);
+        if (mesh.get_vao() != nullptr)
+        {
             m_highlight_pass.render(*mesh.get_vao(), m_render_data);
         }
 

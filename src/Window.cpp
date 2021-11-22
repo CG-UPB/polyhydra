@@ -89,6 +89,7 @@ namespace vOS
         //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
         glfwWindowHint(GLFW_DEPTH_BITS, 24);
+        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
         // Create window with graphics context
         m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);

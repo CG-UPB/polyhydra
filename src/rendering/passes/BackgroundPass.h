@@ -17,7 +17,8 @@ namespace vOS
 
     private:
 
-        glm::vec4 m_background_color;
+        glm::vec4 m_top_color;
+        glm::vec4 m_bottom_color;
 
         VertexArrayObject* m_vao;
         Shader* m_background_shader;

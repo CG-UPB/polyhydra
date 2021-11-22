@@ -5,9 +5,6 @@ out vec4 FragColor;
 in vec3 v_Pos;
 in vec3 v_Normal;
 
-uniform mat4 u_Transform;
-uniform mat4 u_Projection;
-uniform mat4 u_View;
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;

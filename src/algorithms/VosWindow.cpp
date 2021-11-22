@@ -8,6 +8,8 @@
 #include "../Window.h"
 #include "../panels/MenuBar.h"
 #include "memory"
+#include "../rendering/shapes/Box.h"
+#include "../rendering/passes/ShapePass.h"
 
 namespace vOS
 {
@@ -100,5 +102,17 @@ namespace vOS
     void VosWindow::default_callback_function()
     {
         LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
+    }
+
+    unsigned int VosWindow::add_box(float x, float y, float z, float red, float green, float blue)
+    {
+        while (m_mesh_obj.m_is_rendering)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        Box* box = new Box(0.05f, 0.05f, 0.05f);
+        box->set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)));
+        box->set_base_color(glm::vec4(red, green, blue, 1.0f));
+        return ShapePass::add_shape(box);
     }
 }
