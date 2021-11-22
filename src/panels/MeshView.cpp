@@ -23,29 +23,28 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        m_meshShader = Shader::mesh_shader();
         m_meshFrameBuffer = new FrameBufferObject(width, height);
 
-        m_light = glm::vec3{0.0f, 0.0f, 10.0f};
-        m_camera = glm::vec3{0.0f, 0.0f, 10.0f};
-        m_light_color = glm::vec3{1.0f, 1.0f, 1.0f};
-        m_object_color = glm::vec3{1.0f, 0.5f, 0.2f};
+        m_render_data.light.position = glm::vec3{0.0f, 0.0f, 10.0f};
+        m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
+        m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
+        m_render_data.mesh.color = glm::vec3{1.0f, 1.0f, 1.0f};
 
         // set up the initial camera position, direction and orientation of the mesh
         glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
         glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
         glm::mat4 rotation = glm::mat4(1.0f);
-        m_meshTransform = position * rotation * scale;
-        m_meshWorld = glm::mat4(1.0f);
-        m_meshProjection = glm::perspective(
+        m_render_data.mesh.transform = position * rotation * scale;
+        m_render_data.camera.world = glm::mat4(1.0f);
+        m_render_data.camera.projection = glm::perspective(
                 glm::radians(50.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                 0.001f,
                 100000.0f
         );
 
-        m_meshView = glm::lookAt(
-                m_camera,
+        m_render_data.camera.view = glm::lookAt(
+                m_render_data.camera.position,
                 glm::vec3{0.0f, 0.0f, 0.0f},
                 glm::vec3{0.0f, 1.0f, 0.0f}
         );
@@ -69,7 +68,7 @@ namespace vOS
             m_viewportPanelWidth = (int) width;
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_meshProjection = glm::perspective(
+            m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                     0.001f,
@@ -109,10 +108,11 @@ namespace vOS
 
             // scroll scaling of the mesh
             float scaleSpeed = 0.1f;
-            m_meshTransform = glm::scale(
-                    m_meshTransform,
+            glm::mat4 transform = glm::scale(
+                    m_render_data.mesh.transform,
                     glm::vec3(1.0f + (float) Input::getScrollOffsetY() * scaleSpeed)
             );
+            m_render_data.mesh.transform = transform;
         }
         m_lastDown = isDown;
 
@@ -128,7 +128,7 @@ namespace vOS
 
             // when the camera is upside down, left and right dragging is swapped, so we need to check which direction
             // the camera is facing and negate the rotation direction if needed
-            glm::mat4 inverseView = glm::inverse(m_meshView);
+            glm::mat4 inverseView = glm::inverse(m_render_data.camera.view);
             glm::vec3 viewDir = {inverseView[2][0], inverseView[2][1], inverseView[2][2]};
             float rotX = rotSpeed * scaleX;
             if (viewDir.z < 0)
@@ -139,16 +139,16 @@ namespace vOS
             // rotate the world (all objects) around the y axis
             if (dx < 0)
             {
-                m_meshWorld = glm::rotate(
-                        m_meshWorld,
+                m_render_data.camera.world = glm::rotate(
+                        m_render_data.camera.world,
                         glm::radians(-rotX),
                         glm::vec3(0.0f, 1.0f, 0.0f)
                 );
             }
             else if (dx > 0)
             {
-                m_meshWorld = glm::rotate(
-                        m_meshWorld,
+                m_render_data.camera.world = glm::rotate(
+                        m_render_data.camera.world,
                         glm::radians(rotX),
                         glm::vec3(0.0f, 1.0f, 0.0f)
                 );
@@ -157,16 +157,16 @@ namespace vOS
             // rotate the camera around the x axis
             if (dy < 0)
             {
-                m_meshView = glm::rotate(
-                        m_meshView,
+                m_render_data.camera.view = glm::rotate(
+                        m_render_data.camera.view,
                         glm::radians(-rotSpeed * scaleY),
                         glm::vec3(1.0f, 0.0f, 0.0f)
                 );
             }
             else if (dy > 0)
             {
-                m_meshView = glm::rotate(
-                        m_meshView,
+                m_render_data.camera.view = glm::rotate(
+                        m_render_data.camera.view,
                         glm::radians(rotSpeed * scaleY),
                         glm::vec3(1.0f, 0.0f, 0.0f)
                 );
@@ -174,80 +174,38 @@ namespace vOS
             m_lastX = mousePos.x;
             m_lastY = mousePos.y;
 
-            m_camera = glm::inverse(m_meshView)[2];
+            m_render_data.camera.position = glm::inverse(m_render_data.camera.view)[2];
             //LogWindow::getInstance()->addLog("Neue Position");
         }
     }
 
     void MeshView::renderMesh()
     {
-
-
-        // render our mesh in polygon mode for debugging
-        if(Input::isKeyDown(GLFW_KEY_W))
+        if(ImGui::IsKeyPressed(GLFW_KEY_W))
         {
-            m_W_button_pressed = !m_W_button_pressed;
+            m_mesh_pass.set_wireframe_mode(!m_mesh_pass.get_wireframe_mode());
         }
-
-        if(Input::isKeyReleased(GLFW_KEY_W))
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            //glEnable(GL_CULL_FACE);
-            //glEnable(GL_DEPTH_TEST);
-
-        }else
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        }
-        glEnable(GL_LINE_SMOOTH);
-        glLineWidth(1);
-
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
-        glCullFace(GL_BACK);
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
 
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
         // we need to clear our framebuffer as well
-
-
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_meshShader->bind();
+        auto& mesh = VosWindow::instance().get_mesh_obj();
+        m_render_data.mesh.offset = mesh.get_mesh_offset();
 
-        glm::mat4 positionOffset = glm::translate(- VosWindow::instance().get_mesh_obj().get_mesh_offset());
-        glm::mat4 transform = m_meshWorld * m_meshTransform * positionOffset;
+        mesh.update_vertex_buffer();
 
-        // set all of our uniforms
-        m_meshShader->set_uniform_mat4f("u_Transform", transform);
-        m_meshShader->set_uniform_mat4f("u_Projection", m_meshProjection);
-        m_meshShader->set_uniform_mat4f("u_View", m_meshView);
+        // render all passes
+        if (mesh.get_vao() != nullptr)
+        {
+            m_mesh_pass.render(*mesh.get_vao(), m_render_data);
+            m_highlight_pass.render(*mesh.get_vao(), m_render_data);
+        }
 
-
-        bool phong = true;
-        m_meshShader->set_uniform_bool("u_phong", phong);
-        m_meshShader->set_uniform_vec3f("u_lightPos", m_light);
-        m_meshShader->set_uniform_vec3f("u_camPos", m_camera);
-        m_meshShader->set_uniform_vec3f("u_lightColor", m_light_color);
-        m_meshShader->set_uniform_vec3f("u_objectColor", m_object_color);
-
-
-        // now draw to the actual texture of the framebuffer
-
-        VosWindow::instance().get_mesh_obj().draw();
-
-        // unbind our framebuffer and shader
-        m_meshShader->unbind();
         m_meshFrameBuffer->unbind();
-
-        // disable polygon mode again
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
     void MeshView::show()

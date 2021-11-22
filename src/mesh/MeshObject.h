@@ -18,7 +18,6 @@ namespace vOS
         ~MeshObject() = default;
 
         bool m_is_rendering;
-        bool m_should_update;
 
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
@@ -29,8 +28,7 @@ namespace vOS
         void remove_highlights();
         void initialize_face_normals();
         void initialize_vertex_normals();
-
-        void draw();
+        void update_vertex_buffer();
 
         std::vector<float> vertices();
         std::vector<unsigned int> edges();
@@ -41,11 +39,10 @@ namespace vOS
 
 
         glm::vec3 &get_mesh_offset();
+        [[nodiscard]] VertexArrayObject* get_vao() const;
 
     private:
-
         void calculate_mesh_offset();
-        void update_vertex_buffer();
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;
@@ -56,6 +53,8 @@ namespace vOS
         VertexArrayObject *m_vertexArrayObject = nullptr;
 
         glm::vec3 m_mesh_offset_from_center;
+
+        bool m_should_update;
     };
 
 

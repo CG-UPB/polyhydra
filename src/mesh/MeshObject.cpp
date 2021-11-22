@@ -51,17 +51,20 @@ namespace vOS
 
     void MeshObject::update_vertex_buffer()
     {
-
-        if (m_vertexArrayObject != nullptr)
+        if (m_should_update)
         {
-            delete m_vertexArrayObject;
-        }
-        initialize_face_normals();
-        initialize_vertex_normals();
-        m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
-        m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
+            if (m_vertexArrayObject != nullptr)
+            {
+                delete m_vertexArrayObject;
+            }
+            initialize_face_normals();
+            initialize_vertex_normals();
+            m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
+            m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
 
-        calculate_mesh_offset();
+            calculate_mesh_offset();
+        }
+        m_should_update = false;
     }
 
     void MeshObject::calculate_mesh_offset()
@@ -171,20 +174,6 @@ namespace vOS
         return m_face_normals;
     }
 
-    void MeshObject::draw()
-    {
-        if (m_should_update)
-        {
-            update_vertex_buffer();
-            m_should_update = false;
-        }
-        if (m_vertexArrayObject != nullptr)
-        {
-            m_vertexArrayObject->draw();
-        }
-    }
-
-
     void MeshObject::set_highlight(OpenVolumeMesh::VertexHandle v_h, bool b = true, float red = 0.0, float green = 0.0,
                                    float blue = 0.0, float alpha = 0.0)
     {
@@ -268,6 +257,11 @@ namespace vOS
             m_vertex_normals.push_back(z);
 
         }
+    }
+
+    VertexArrayObject* MeshObject::get_vao() const
+    {
+        return m_vertexArrayObject;
     }
 
 }

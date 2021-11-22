@@ -15,7 +15,6 @@
 #include "panels/MeshView.h"
 #include "panels/MenuBar.h"
 #include "panels/LogWindow.h"
-#include "panels/PropertyView.h"
 
 namespace vOS
 {
@@ -212,11 +211,7 @@ namespace vOS
     {
         m_menu_bar = new MenuBar();
         m_panels.push_back(m_menu_bar);
-
-        auto* mesh_view = new MeshView(720, 480);
-
-        m_panels.push_back(mesh_view);
-        m_panels.push_back(new PropertyView(*mesh_view));
+        m_panels.push_back(new MeshView(720, 480));
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
     }

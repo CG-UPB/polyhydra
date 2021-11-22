@@ -1,16 +1,14 @@
 
 #include "glad/glad.h"
 
-#include "PropertyView.h"
-#include "../algorithms/VosWindow.h"
+#include "HighlightPass.h"
+#include "../../algorithms/VosWindow.h"
 
 #include "glm/gtx/transform.hpp"
-#include <iostream>
 
 namespace vOS
 {
-
-    vOS::PropertyView::PropertyView(const MeshView& mesh_view): m_mesh_view(mesh_view)
+    HighlightPass::HighlightPass()
     {
         std::vector<float> quad_vertices = {
                 -0.5, 0.5, 0.0,
@@ -30,22 +28,24 @@ namespace vOS
         };
         m_vao = new VertexArrayObject(quad_vertices, quad_indices);
         m_vao->add_buffer(quad_texture_coordinates, 1, 2);
-        m_shader = Shader::property_shader();
+        m_highlight_shader = Shader::property_shader();
     }
 
-    PropertyView::~PropertyView()
+    HighlightPass::~HighlightPass()
     {
         delete m_vao;
     }
 
-    void vOS::PropertyView::show()
+    void HighlightPass::render(const VertexArrayObject& vao, const RenderData& data)
     {
-        m_mesh_view.m_meshFrameBuffer->bind();
-        m_shader->bind();
+        m_highlight_shader->bind();
 
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+        glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
+        glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
 
         auto highlights = VosWindow::instance().get_mesh_obj().get_highlights();
         for(int i = 0; i < highlights.size(); i++)
@@ -65,23 +65,18 @@ namespace vOS
             glm::vec4 highlight_color = glm::vec4(red, green, blue, alpha);
             float highlight_scale = 0.03f;
 
-            // calculate vertex transform
-            glm::mat4 positionOffset = glm::translate(-VosWindow::instance().get_mesh_obj().get_mesh_offset());
-            glm::mat4 transform = m_mesh_view.m_meshWorld * m_mesh_view.m_meshTransform * positionOffset;
-
-            m_shader->set_uniform_float("u_scale", highlight_scale);
-            m_shader->set_uniform_vec4f("u_position", vertex_pos);
-            m_shader->set_uniform_mat4f("u_transform", transform);
-            m_shader->set_uniform_mat4f("u_projection", m_mesh_view.m_meshProjection);
-            m_shader->set_uniform_mat4f("u_view", m_mesh_view.m_meshView);
-            m_shader->set_uniform_vec4f("u_highlight_color", highlight_color);
+            m_highlight_shader->set_uniform_float("u_scale", highlight_scale);
+            m_highlight_shader->set_uniform_vec4f("u_position", vertex_pos);
+            m_highlight_shader->set_uniform_mat4f("u_transform", transform);
+            m_highlight_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+            m_highlight_shader->set_uniform_mat4f("u_view", data.camera.view);
+            m_highlight_shader->set_uniform_vec4f("u_highlight_color", highlight_color);
 
             m_vao->draw();
 
         }
         glDisable(GL_BLEND);
 
-        m_shader->unbind();
-        m_mesh_view.m_meshFrameBuffer->unbind();
+        m_highlight_shader->unbind();
     }
 }
