@@ -33,7 +33,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/input/Input.cpp
         ${VOLUMESHOS_SRC}/algorithms/Dijkstra.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/MeshPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/HighlightPass.cpp)
+        ${VOLUMESHOS_SRC}/rendering/passes/HighlightPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/BackgroundPass.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

@@ -15,8 +15,10 @@ namespace vOS
         static void delete_all();
         static Shader* get(const std::string& shader_name);
 
+        // convenience shader references
         static Shader* mesh_shader() { return get("mesh"); }
         static Shader* property_shader() { return get("property"); }
+        static Shader* background_shader() { return get("background"); }
 
         void bind() const;
         void unbind() const;

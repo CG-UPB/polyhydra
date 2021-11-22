@@ -1,5 +1,7 @@
 #pragma once
 
+#include "glad/glad.h"
+
 #include "../VertexArrayObject.h"
 #include "../Shader.h"
 #include "../FrameBufferObject.h"

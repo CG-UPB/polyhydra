@@ -1,7 +1,6 @@
 
-#include "glad/glad.h"
-
 #include "HighlightPass.h"
+#include "../CommonShapes.h"
 #include "../../algorithms/VosWindow.h"
 
 #include "glm/gtx/transform.hpp"
@@ -10,24 +9,8 @@ namespace vOS
 {
     HighlightPass::HighlightPass()
     {
-        std::vector<float> quad_vertices = {
-                -0.5, 0.5, 0.0,
-                -0.5, -0.5, 0.0,
-                0.5, -0.5, 0.0,
-                0.5, 0.5, 0.0
-        };
-        std::vector<unsigned int> quad_indices = {
-                0, 1, 2,
-                2, 3, 0
-        };
-        std::vector<float> quad_texture_coordinates = {
-                0.0, 0.0,
-                0.0, 1.0,
-                1.0, 1.0,
-                1.0, 0.0
-        };
-        m_vao = new VertexArrayObject(quad_vertices, quad_indices);
-        m_vao->add_buffer(quad_texture_coordinates, 1, 2);
+        m_vao = new VertexArrayObject(CommonShapes::Quad::vertices(), CommonShapes::Quad::indices());
+        m_vao->add_buffer(CommonShapes::Quad::uvs(), 1, 2);
         m_highlight_shader = Shader::property_shader();
     }
 

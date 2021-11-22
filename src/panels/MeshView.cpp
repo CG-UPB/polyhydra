@@ -48,8 +48,6 @@ namespace vOS
                 glm::vec3{0.0f, 0.0f, 0.0f},
                 glm::vec3{0.0f, 1.0f, 0.0f}
         );
-
-        m_W_button_pressed = false;
     }
 
     MeshView::~MeshView()
@@ -199,6 +197,7 @@ namespace vOS
         mesh.update_vertex_buffer();
 
         // render all passes
+        m_background_pass.render(*mesh.get_vao(), m_render_data);
         if (mesh.get_vao() != nullptr)
         {
             m_mesh_pass.render(*mesh.get_vao(), m_render_data);
@@ -210,6 +209,8 @@ namespace vOS
 
     void MeshView::show()
     {
+        auto padding = ImGui::GetStyle().WindowPadding;
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0.0f, 0.0f});
         ImGui::Begin("Mesh");
 
         // handle the things related to our mesh rendering canvas
@@ -219,7 +220,6 @@ namespace vOS
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
-        auto padding = ImGui::GetStyle().WindowPadding;
         topLeft.x += padding.x;
         topLeft.y += padding.y;
 
@@ -250,5 +250,6 @@ namespace vOS
         }
 
         ImGui::End();
+        ImGui::PopStyleVar();
     }
 }
