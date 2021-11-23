@@ -13,6 +13,7 @@
 #include "fs/FileManager.h"
 #include "algorithms/VosWindow.h"
 #include "panels/LogWindow.h"
+#include "rendering/Shader.h"
 
 namespace vOS
 {
@@ -33,7 +34,6 @@ namespace vOS
         initImGui();
         initImGuiStyle();
         Shader::load_all();
-        initPanels();
     }
 
     ImguiRenderer::~ImguiRenderer()

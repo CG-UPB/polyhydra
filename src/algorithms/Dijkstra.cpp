@@ -88,8 +88,8 @@ namespace vOS
         OpenVolumeMesh::IO::FileManager file_manager;
 
         //while(window.get_loaded_file_name() == ""){}
-        std::string path = "/home/projektgruppe/Downloads/Tet/armadillo20428.1.ovm";
-        file_manager.readFile(path, m_mesh);
+        //std::string path = "/home/steffen/Downloads/OVM/Tet/vase-lion13536.1.ovm";
+        //file_manager.readFile(path, m_mesh);
 
         window.set_mesh(&m_mesh);
 

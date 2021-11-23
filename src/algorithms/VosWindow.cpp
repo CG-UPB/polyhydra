@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "../panels/LogWindow.h"
-#include "../panels/PropertyView.h"
 #include "../panels/MeshView.h"
 #include "../ImguiRenderer.h"
 #include "../panels/MenuBar.h"
