@@ -50,38 +50,6 @@ namespace vOS
                 {}
                 ImGui::EndMenu();
             }
-            ///                              Timeline Buttons
-
-            // Pause Button
-            if(m_pause_toggled)
-            {
-                // Pause button is active, pressing it would undo pause
-
-                if(ImGui::Button(">"))
-                {
-                    m_pause_toggled = false;
-                    VosWindow::instance().m_on_vos_unpaused();
-                }
-            }else{
-                // Pause button is inactive, pressing it would pause
-
-                if(ImGui::Button("||"))
-                {
-                    m_pause_toggled = true;
-                        VosWindow::instance().m_on_vos_paused();
-                }
-            }
-            // Reset Button
-            if(ImGui::Button("Reset"))
-            {
-                    VosWindow::instance().m_on_reset();
-            }
-
-            // Step Button
-            if(ImGui::Button("Step"))
-            {
-                VosWindow::instance().m_on_step();
-            }
 
             ImGui::EndMenuBar();
         }
@@ -102,9 +70,5 @@ namespace vOS
             ImGuiFileDialog::Instance()->Close();
         }
 
-    }
-
-    bool MenuBar::pause_is_pressed(){
-        return m_pause_toggled;
     }
 }

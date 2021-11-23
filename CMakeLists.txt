@@ -19,7 +19,7 @@ add_subdirectory(${VOLUMESHOS_EXT})
 
 set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/main.cpp
-        ${VOLUMESHOS_SRC}/Window.cpp
+        ${VOLUMESHOS_SRC}/ImguiRenderer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshView.cpp
         ${VOLUMESHOS_SRC}/rendering/Shader.cpp
         ${VOLUMESHOS_SRC}/fs/FileManager.cpp
@@ -32,7 +32,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/mesh/MeshObject.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp
         ${VOLUMESHOS_SRC}/algorithms/Dijkstra.cpp
-        ${VOLUMESHOS_SRC}/panels/PropertyView.cpp)
+        ${VOLUMESHOS_SRC}/panels/PropertyView.cpp src/panels/CustomUIPanel.cpp src/panels/CustomUIPanel.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

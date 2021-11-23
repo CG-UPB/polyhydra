@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Window.h"
+#include "../ImguiRenderer.h"
 #include "imgui.h"
 #include <cstdarg>
 #include <string.h>

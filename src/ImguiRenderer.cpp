@@ -8,14 +8,11 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "Window.h"
+#include "ImguiRenderer.h"
 #include "input/Input.h"
 #include "fs/FileManager.h"
 #include "algorithms/VosWindow.h"
-#include "panels/MeshView.h"
-#include "panels/MenuBar.h"
 #include "panels/LogWindow.h"
-#include "panels/PropertyView.h"
 
 namespace vOS
 {
@@ -30,32 +27,26 @@ namespace vOS
     }
 
 
-    Window::Window(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
+    ImguiRenderer::ImguiRenderer(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
     {
         initGLFW();
         initImGui();
         initImGuiStyle();
-        initPanels();
     }
 
-    Window::~Window()
+    ImguiRenderer::~ImguiRenderer()
     {
-        // delete window panels
-        for (auto& element: m_panels) {
-            delete element;
-        }
-
         // Cleanup
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        glfwDestroyWindow(get_window());
 
-        glfwDestroyWindow(m_window);
         glfwTerminate();
     }
 
 
-    void Window::initGLFW()
+    void ImguiRenderer::initGLFW()
     {
         // Setup window
         glfwSetErrorCallback(glfwErrorCallback);
@@ -112,7 +103,7 @@ namespace vOS
         }
     }
 
-    void Window::initImGui()
+    void ImguiRenderer::initImGui()
     {
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
@@ -134,7 +125,7 @@ namespace vOS
         ImGui_ImplOpenGL3_Init(m_glslVersion.c_str());
     }
 
-    void Window::initImGuiStyle()
+    void ImguiRenderer::initImGuiStyle()
     {
         std::filesystem::path fontPath = FileManager::getResourcePath() / "fonts" / "Roboto-Medium.ttf";
         ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 18.0f);
@@ -205,20 +196,7 @@ namespace vOS
         colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     }
 
-    void Window::initPanels()
-    {
-        m_menu_bar = new MenuBar();
-        m_panels.push_back(m_menu_bar);
-
-        auto* mesh_view = new MeshView(720, 480);
-
-        m_panels.push_back(mesh_view);
-        m_panels.push_back(new PropertyView(*mesh_view));
-        LogWindow* mylog = LogWindow::getInstance();
-        m_panels.push_back(mylog);
-    }
-
-    void Window::showDockSpace()
+    void ImguiRenderer::show_dock_space()
     {
         // Note: Switch this to true to enable dockspace
         static bool dockSpaceOpen = true;
@@ -262,46 +240,43 @@ namespace vOS
         style.WindowMinSize.x = minWinSizeX;
     }
 
-    void Window::show()
-    {
-        // Main loop
-        int counter = 0;
-        while (!glfwWindowShouldClose(m_window))
-        {
-            glfwPollEvents();
-
-            // Start the Dear ImGui frame
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-
-            showDockSpace();
-
-            //ImGui::ShowDemoWindow();
-
-            VosWindow::instance().get_mesh_obj().m_is_rendering = true;
-            // draw all of our windows
-            for (auto& element: m_panels) {
-                element->show();
-            }
-            VosWindow::instance().get_mesh_obj().m_is_rendering = false;
-
-            ImGui::End();
-
-            // Rendering
-            ImGui::Render();
-            int displayWidth, displayHeight;
-            glfwGetFramebufferSize(m_window, &displayWidth, &displayHeight);
-
-            glViewport(0, 0, displayWidth, displayHeight);
-            glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-            glfwSwapBuffers(m_window);
-
-            Input::resetOffset();
-        }
+    bool ImguiRenderer::window_closed() {
+        return glfwWindowShouldClose(get_window());
     }
+
+    void ImguiRenderer::pre_render_step() {
+
+        glfwPollEvents();
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        show_dock_space();
+
+        //ImGui::ShowDemoWindow();
+    }
+
+    void ImguiRenderer::post_render_step() {
+
+        ImGui::End();
+
+        // Rendering
+        ImGui::Render();
+        int displayWidth, displayHeight;
+        glfwGetFramebufferSize(get_window(), &displayWidth, &displayHeight);
+
+        glViewport(0, 0, displayWidth, displayHeight);
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(get_window());
+
+        Input::resetOffset();
+
+    }
+
 }
 

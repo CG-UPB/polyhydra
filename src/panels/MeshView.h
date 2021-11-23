@@ -1,9 +1,10 @@
 #pragma once
 
-#include "../Window.h"
+#include "../ImguiRenderer.h"
 #include "../rendering/FrameBufferObject.h"
 #include "../rendering/Shader.h"
 #include "../rendering/VertexArrayObject.h"
+#include "../algorithms/VosWindow.h"
 
 class PropertyView;
 

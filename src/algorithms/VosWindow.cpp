@@ -5,9 +5,22 @@
 #include "VosWindow.h"
 #include <memory>
 #include <thread>
-#include "../Window.h"
-#include "../panels/MenuBar.h"
 #include "memory"
+#include "../input/Input.h"
+#include <utility>
+
+#include "../panels/LogWindow.h"
+#include "../panels/PropertyView.h"
+#include "../panels/MeshView.h"
+#include "../ImguiRenderer.h"
+#include "../panels/MenuBar.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "../panels/CustomUIPanel.h"
+
+
+
 
 namespace vOS
 {
@@ -20,32 +33,136 @@ namespace vOS
 
     VosWindow::VosWindow()
     {
-        // Start main loop thread
-        if (main_loop_thread  == nullptr)
-        {
-            main_loop_thread = new std::thread(&VosWindow::main_loop, this);
-        }
+        // Create Custom UI Panel Object
+        m_custom_ui = new CustomUIPanel();
     }
 
     VosWindow::~VosWindow()
     {
-        main_loop_thread->join();
     }
 
-    void VosWindow::main_loop()
+    void VosWindow::initPanels()
     {
+        m_menu_bar = new MenuBar();
+        m_panels.push_back(m_menu_bar);
 
-        m_running = true;
-        m_window = new Window(1280, 720, "volumeshOS");
+        auto* mesh_view = new MeshView(720, 480);
+
+        m_panels.push_back(mesh_view);
+        m_panels.push_back(new PropertyView(*mesh_view));
+        m_panels.push_back(m_custom_ui);
+        LogWindow* mylog = LogWindow::getInstance();
+        m_panels.push_back(mylog);
+    }
+
+    void VosWindow::debugging_template_ui() {
+
+        // Pause Button
+        if(m_pause_toggled)
+        {
+            // Pause button is active, pressing it would undo pause
+
+            if(ImGui::Button(">"))
+            {
+                m_pause_toggled = false;
+                VosWindow::instance().m_on_vos_unpaused();
+            }
+        }else{
+            // Pause button is inactive, pressing it would pause
+
+            if(ImGui::Button("||"))
+            {
+                m_pause_toggled = true;
+                VosWindow::instance().m_on_vos_paused();
+            }
+        }
+        // Reset Button
+        if(ImGui::Button("Reset"))
+        {
+            VosWindow::instance().m_on_reset();
+        }
+
+        // Step Button
+        if(ImGui::Button("Step"))
+        {
+            VosWindow::instance().m_on_step();
+        }
+
+    }
+
+    void VosWindow::open()
+    {
+        m_window_open = true;
+        m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
+
+        // Create default UI Panels
+        initPanels();
 
         m_initialized = true;
+    }
 
-        // Render window
-        m_window->show();
+    void VosWindow::render_loop() {
 
-        if(m_window != nullptr)
-            delete m_window;
-        m_running = false;
+        // Render window forever
+        while(m_window_open)
+        {
+            render();
+        }
+    }
+
+    bool VosWindow::render_manual() {
+
+        // Don't render if the window is not running
+        if(!is_running())
+            return false;
+
+        // Render single frame
+        render();
+
+        // Give feedback on success of rendered frame
+        return m_window_open;
+    }
+    void VosWindow::close() {
+
+        // Destroy Imgui Elements
+        for (auto& element: m_panels) {
+            if(element == LogWindow::getInstance())
+                continue;
+            delete element;
+        }
+
+        if(m_imgui_renderer != nullptr)
+            delete m_imgui_renderer;
+        m_window_open = false;
+    }
+
+    void VosWindow::render() {
+
+        // Activate Mutex Guard
+
+        // Query whether the window has been closed by the user or not
+        bool window_closed = m_imgui_renderer->window_closed();
+
+        if (window_closed) {
+            std::cout << "Window Closed" << std::endl;
+            m_window_open = false;
+            return;
+        }
+
+        // Pre Render Setup
+        get_mesh_obj().m_is_rendering = true;
+        m_imgui_renderer->pre_render_step();
+
+        // Draw all of our panels
+        for (auto &element: m_panels) {
+            element->show();
+        }
+
+        // Post Render Stuff
+        m_imgui_renderer->post_render_step();
+        get_mesh_obj().m_is_rendering = false;
+
+        // Deactivate Mutex Guard
     }
 
     void VosWindow::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
@@ -56,11 +173,6 @@ namespace vOS
     MeshObject& VosWindow::get_mesh_obj()
     {
         return m_mesh_obj;
-    }
-
-    bool VosWindow::is_paused()
-    {
-        return m_window->get_menu_bar()->pause_is_pressed();
     }
 
     bool VosWindow::is_ready()
@@ -75,7 +187,7 @@ namespace vOS
 
     bool VosWindow::is_running()
     {
-        return VosWindow::instance().m_running;
+        return m_window_open;
     }
 
     void VosWindow::set_callback_paused(void_callback vc)
@@ -88,10 +200,6 @@ namespace vOS
         m_on_vos_unpaused = vc;
     }
 
-    void VosWindow::add_log(const char* fmt, int level)
-    {
-        Log()->addLog(fmt, level);
-    }
 
     bool VosWindow::is_closed() {
         return is_running();

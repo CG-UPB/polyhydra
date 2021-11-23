@@ -194,7 +194,7 @@ namespace vOS
                                                                                                          alpha);
             while (VosWindow::instance().get_mesh_obj().m_is_rendering)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                //std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             m_vertex_colors.push_back(tuple);
         } else if (b == false)
@@ -205,7 +205,7 @@ namespace vOS
             {
                 while (VosWindow::instance().get_mesh_obj().m_is_rendering)
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    //std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
                 m_vertex_colors.erase(pos);
             }
@@ -217,7 +217,7 @@ namespace vOS
     {
         while (VosWindow::instance().get_mesh_obj().m_is_rendering)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
         m_vertex_colors.clear();
     }

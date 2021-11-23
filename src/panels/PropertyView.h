@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Window.h"
+#include "../ImguiRenderer.h"
 #include "../rendering/Shader.h"
 #include "../rendering/VertexArrayObject.h"
 #include "../rendering/FrameBufferObject.h"

@@ -86,8 +86,9 @@ namespace vOS
 
         OpenVolumeMesh::IO::FileManager file_manager;
 
-        while(window.get_loaded_file_name() == ""){}
-        file_manager.readFile(window.get_loaded_file_name(), m_mesh);
+        //while(window.get_loaded_file_name() == ""){}
+        std::string path = "/home/projektgruppe/Downloads/Tet/armadillo20428.1.ovm";
+        file_manager.readFile(path, m_mesh);
 
         window.set_mesh(&m_mesh);
 
@@ -97,11 +98,16 @@ namespace vOS
         window.set_callback_step(std::bind( &Dijkstra::step_button_pressed, this));
         window.set_callback_reset(std::bind(&Dijkstra::reset_button_pressed, this));
 
+        window.set_custom_imgui(std::bind( &VosWindow::debugging_template_ui, &window));
+
+        window.open();
+
         /* Dijstra Beginning */
         bool logic = window.is_running();
 
-        while(logic)
-        {
+
+        while(logic) {
+            LogWindow::getInstance()->addLog("Start Dijkstra");
             window.get_mesh_obj().remove_highlights();
             init();
 
@@ -120,50 +126,50 @@ namespace vOS
 
             bool found = false;
 
-            while (!window.is_ready()) {}
-
-            while (!found && !queue.empty() && !m_reset)
-            {
-                if (!m_pause || (m_pause && m_step))
-                {
+            while (!found && !queue.empty() && !m_reset && logic) {
+                if (!m_pause || (m_pause && m_step)) {
 
                     m_step = false;
                     auto vertexHandle = queue.top().second;
                     queue.pop();
 
-                        window.set_vertex_color(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]), false, 1, 0, 0, 1);
+                    window.set_vertex_color(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]), false, 1, 0, 0, 1);
 
-                        // voh iterator
-                        for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle)) {
-                            auto edgeVertices = m_mesh.edge_vertices(edgeHandle);
-                            OpenVolumeMesh::VertexHandle nextVertexHandle;
-                            if (edgeVertices[0].idx() == vertexHandle.idx()) {
-                                nextVertexHandle = edgeVertices[1];
-                            } else {
-                                nextVertexHandle = edgeVertices[0];
-                            }
+                    // voh iterator
+                    for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle)) {
+                        auto edgeVertices = m_mesh.edge_vertices(edgeHandle);
+                        OpenVolumeMesh::VertexHandle nextVertexHandle;
+                        if (edgeVertices[0].idx() == vertexHandle.idx()) {
+                            nextVertexHandle = edgeVertices[1];
+                        } else {
+                            nextVertexHandle = edgeVertices[0];
+                        }
 
-                            float distToNext = m_weights[edgeHandle];
-                            if (distances[nextVertexHandle.idx()] > distances[vertexHandle.idx()] + distToNext) {
-                                distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
-                                queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
-                                prev[nextVertexHandle.idx()] = vertexHandle.idx();
-                                window.set_vertex_color(vertexHandle, true, 1, 0, 0, 1);
-                            }
+                        float distToNext = m_weights[edgeHandle];
+                        if (distances[nextVertexHandle.idx()] > distances[vertexHandle.idx()] + distToNext) {
+                            distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
+                            queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
+                            prev[nextVertexHandle.idx()] = vertexHandle.idx();
+                            window.set_vertex_color(vertexHandle, true, 1, 0, 0, 1);
+                        }
 
-                            if (queue.top().second.idx() == m_end.idx()) {
-                                found = true;
-                                break;
-                            }
+                        if (queue.top().second.idx() == m_end.idx()) {
+                            found = true;
+                            break;
                         }
                     }
                 }
 
-                if(!m_reset) {
+                logic = window.render_manual();
+            }
+
+            if(logic){
+                if (!m_reset) {
 
                     std::vector<int> res;
                     int temp = m_end.idx();
                     res.push_back(temp);
+
                     while (temp != m_start.idx()) {
                         temp = prev[temp];
                         res.push_back(temp);
@@ -183,24 +189,27 @@ namespace vOS
 
                         std::cout << "Vertex: " << vertex.idx() << std::endl;
                     }
-                    window.Log()->addLog("Dijkstra function ended");
+                    LogWindow::getInstance()->addLog("Dijkstra function ended");
 
-                    while(!m_reset)
-                    {
-                        if(!window.is_running())
+                    while (!m_reset) {
+                        if (!window.is_running())
                             break;
                     }
-                    window.Log()->addLog("Continue");
+                    LogWindow::getInstance()->addLog("Continue");
 
                 }
-                if(window.is_running())
-                {
-                    window.Log()->addLog("Reset Variables");
+                if (window.is_running()) {
+                    LogWindow::getInstance()->addLog("Reset Variables");
                     m_reset = false;
                     m_step = false;
-                }else
+                } else
                     logic = false;
             }
+
+
+        }
+        std::cout << "End Dijkstra" << std::endl;
+        window.close();
     }
 
     void Dijkstra::step()
