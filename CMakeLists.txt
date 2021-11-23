@@ -19,7 +19,7 @@ add_subdirectory(${VOLUMESHOS_EXT})
 
 set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/main.cpp
-        ${VOLUMESHOS_SRC}/Window.cpp
+        ${VOLUMESHOS_SRC}/ImguiRenderer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshView.cpp
         ${VOLUMESHOS_SRC}/rendering/Shader.cpp
         ${VOLUMESHOS_SRC}/fs/FileManager.cpp
@@ -36,7 +36,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/HighlightPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/BackgroundPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.cpp
-        ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp)
+        ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
+        ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

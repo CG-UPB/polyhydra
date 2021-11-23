@@ -8,40 +8,39 @@
 
 namespace vOS
 {
+
+    // Forward Declaration
+    class VosWindow;
+
     class WindowPanel
     {
     public:
         virtual void show() = 0;
         virtual ~WindowPanel() = default;
     };
-
-    // Forward Declaration
-    class VosWindow;
     class MenuBar;
 
-    class Window
+    class ImguiRenderer
     {
 
     public:
-        Window(int width, int height, std::string title);
-        ~Window();
-        void show();
-        MenuBar* get_menu_bar(){return m_menu_bar;}
+        ImguiRenderer(int width, int height, std::string title);
+        ~ImguiRenderer();
+        void show_dock_space();
+        bool window_closed();
+        void pre_render_step();
+        void post_render_step();
+        GLFWwindow* get_window(){return m_window;}
     private:
 
         void initGLFW();
         void initImGui();
         void initImGuiStyle();
-        void initPanels();
-        void showDockSpace();
-
-        MenuBar* m_menu_bar;
 
         int m_width;
         int m_height;
         std::string m_title;
         std::string m_glslVersion;
         GLFWwindow* m_window;
-        std::vector<WindowPanel*> m_panels;
     };
 }
