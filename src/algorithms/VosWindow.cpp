@@ -57,6 +57,7 @@ namespace vOS
 
     void VosWindow::debugging_template_ui() {
 
+        ImGui::Begin("Custom UI");
         // Pause Button
         if(m_pause_toggled)
         {
@@ -88,6 +89,7 @@ namespace vOS
             VosWindow::instance().m_on_step();
         }
 
+        ImGui::End();
     }
 
     void VosWindow::open()
