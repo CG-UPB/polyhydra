@@ -21,6 +21,8 @@ namespace vOS
         void handleMouseControl();
         void renderMesh();
 
+        glm::vec3 get_arc_ball_vector(float x, float y) const;
+
         // used for the arc ball
         bool m_arcBallOn;
         bool m_lastDown;

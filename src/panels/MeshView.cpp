@@ -7,6 +7,7 @@
 #include "../algorithms/VosWindow.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
@@ -80,6 +81,26 @@ namespace vOS
         }
     }
 
+    glm::vec3 MeshView::get_arc_ball_vector(float x, float y) const
+    {
+        glm::vec3 res = glm::vec3(
+                x / (float) m_viewportPanelWidth * 2.0f - 1.0f,
+                y / (float) m_viewportPanelHeight * 2.0f - 1.0f,
+                0.0f
+        );
+        res.y = -res.y;
+        float squared = res.x * res.x + res.y * res.y;
+        if (squared <= 1.0f)
+        {
+            res.z = (float) sqrt(1.0 - squared);
+        }
+        else
+        {
+            res = glm::normalize(res);
+        }
+        return res;
+    }
+
     void MeshView::handleMouseControl()
     {
         // check where the imgui window is inside the main window, and how big it is
@@ -124,65 +145,26 @@ namespace vOS
         }
         m_lastDown = isDown;
 
-        // arc ball rotation based on this article: https://nerdhut.de/2019/12/04/arcball-camera-opengl/
         if (m_arcBallOn)
         {
+            float speed = 0.05;
+
             double dx = mousePos.x - m_lastX;
             double dy = mousePos.y - m_lastY;
 
-            float scaleX = (float) std::abs(dx) / (float) m_viewportPanelWidth;
-            float scaleY = (float) std::abs(dy) / (float) m_viewportPanelHeight;
-            float rotSpeed = 350.0f;
-
-            // when the camera is upside down, left and right dragging is swapped, so we need to check which direction
-            // the camera is facing and negate the rotation direction if needed
-            glm::mat4 inverseView = glm::inverse(m_render_data.camera.world);
-            glm::vec3 viewDir = {inverseView[2][0], inverseView[2][1], inverseView[2][2]};
-            float rotX = rotSpeed * scaleX;
-            float rotY = rotSpeed * scaleY;
-            if (viewDir.z < 0)
+            if (std::abs(dx) > 0.0 || std::abs(dy) > 0.0)
             {
-                rotY *= -1.0f;
+                glm::vec3 a = get_arc_ball_vector((float) m_lastX, (float) m_lastY);
+                glm::vec3 b = get_arc_ball_vector(mousePos.x, mousePos.y);
+                float angle = (float) std::acos(std::min(1.0f, glm::dot(a, b)));
+                glm::vec3 axis_camera = glm::cross(a, b);
+                glm::mat3 camera_to_object = glm::inverse(glm::mat3(m_render_data.camera.view) * glm::mat3(m_render_data.camera.world));
+                glm::vec3 axis_object = camera_to_object * axis_camera;
+                m_render_data.camera.world = glm::rotate(m_render_data.camera.world, glm::degrees(angle) * speed, axis_object);
             }
-
-            // rotate the world (all objects) around the y axis
-            if (dx < 0)
-            {
-                m_render_data.camera.world = glm::rotate(
-                        m_render_data.camera.world,
-                        glm::radians(-rotX),
-                        glm::vec3(0.0f, 1.0f, 0.0f)
-                );
-            }
-            else if (dx > 0)
-            {
-                m_render_data.camera.world = glm::rotate(
-                        m_render_data.camera.world,
-                        glm::radians(rotX),
-                        glm::vec3(0.0f, 1.0f, 0.0f)
-                );
-            }
-
-            // rotate the camera around the x axis
-            if (dy < 0)
-            {
-                m_render_data.camera.world = glm::rotate(
-                        m_render_data.camera.world,
-                        glm::radians(-rotY),
-                        glm::vec3(1.0f, 0.0f, 0.0f)
-                );
-            }
-            else if (dy > 0)
-            {
-                m_render_data.camera.world = glm::rotate(
-                        m_render_data.camera.world,
-                        glm::radians(rotY),
-                        glm::vec3(1.0f, 0.0f, 0.0f)
-                );
-            }
-            m_lastX = mousePos.x;
-            m_lastY = mousePos.y;
         }
+        m_lastX = mousePos.x;
+        m_lastY = mousePos.y;
     }
 
     void MeshView::renderMesh()
