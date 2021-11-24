@@ -2,7 +2,7 @@
 // Created by jan on 15.10.21.
 //
 
-#include "VosWindow.h"
+#include "Window.h"
 #include <memory>
 #include <thread>
 #include "memory"
@@ -18,31 +18,30 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "panels/CustomUIPanel.h"
-#include "rendering/shapes/Box.h"
 #include "rendering/passes/ShapePass.h"
 
 
 namespace vOS
 {
-    FileDialog* VosWindow::m_file_dialog;
+    FileDialog* Window::m_file_dialog;
 
-    VosWindow& VosWindow::instance()
+    Window& Window::instance()
     {
-        static VosWindow inst;
+        static Window inst;
         return inst;
     }
 
-    VosWindow::VosWindow()
+    Window::Window()
     {
         // Create Custom UI Panel Object
         m_custom_ui = new CustomUIPanel();
     }
 
-    VosWindow::~VosWindow()
+    Window::~Window()
     {
     }
 
-    void VosWindow::initPanels()
+    void Window::initPanels()
     {
         m_file_dialog = new FileDialog();
         m_menu_bar = new MenuBar();
@@ -57,7 +56,7 @@ namespace vOS
         m_panels.push_back(mylog);
     }
 
-    void VosWindow::open()
+    void Window::open()
     {
         m_window_open = true;
         m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
@@ -68,7 +67,7 @@ namespace vOS
         m_initialized = true;
     }
 
-    void VosWindow::run(void_callback vc) {
+    void Window::run(void_callback vc) {
         set_custom_imgui(vc);
 
         open();
@@ -83,7 +82,7 @@ namespace vOS
         close();
     }
 
-    void VosWindow::run() {
+    void Window::run() {
 
         open();
 
@@ -97,7 +96,7 @@ namespace vOS
         close();
     }
 
-    void VosWindow::close() {
+    void Window::close() {
 
         // Destroy Imgui Elements
         for (auto& element: m_panels) {
@@ -111,7 +110,7 @@ namespace vOS
         m_window_open = false;
     }
 
-    void VosWindow::render() {
+    void Window::render() {
 
         // Activate Mutex Guard
 
@@ -140,51 +139,59 @@ namespace vOS
         // Deactivate Mutex Guard
     }
 
-    void VosWindow::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
     {
         m_mesh_obj.set_mesh(mesh);
     }
 
-    MeshObject& VosWindow::get_mesh_obj()
+    MeshObject& Window::get_mesh_obj()
     {
         return m_mesh_obj;
     }
 
-    bool VosWindow::is_ready()
+    bool Window::is_ready()
     {
         return m_initialized;
     }
 
-    void VosWindow::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
+    void Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
     {
         m_mesh_obj.set_highlight(v_h, b, red, green, blue, alpha);
     }
 
-    bool VosWindow::is_running()
+    bool Window::is_running()
     {
         return m_window_open;
     }
 
 
 
-    bool VosWindow::is_closed() {
+    bool Window::is_closed() {
         return is_running();
     }
 
-    void VosWindow::default_callback_function()
+    void Window::default_callback_function()
     {
         LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
     }
 
-    unsigned int VosWindow::add_box(float x, float y, float z, float red, float green, float blue)
+    unsigned int Window::add_shape(Shape* shape){
+        // TODO Add good exception handling
+        if(shape == nullptr)
+            return -1;
+
+        return ShapePass::add_shape(shape);
+    }
+    /*
+    unsigned int Window::add_box(float x, float y, float z, float red, float green, float blue)
     {
         Box* box = new Box(0.05f, 0.05f, 0.05f);
         box->set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)));
         box->set_base_color(glm::vec4(red, green, blue, 1.0f));
         return ShapePass::add_shape(box);
-    }
+    }*/
 
-    bool VosWindow::ShowFileDialog(std::string& path, const std::string& extension)
+    bool Window::ShowFileDialog(std::string& path, const std::string& extension)
     {
         m_file_dialog->open(extension);
         if (m_file_dialog->is_ok())

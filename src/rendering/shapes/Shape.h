@@ -25,6 +25,14 @@ namespace vOS
             return m_transform;
         }
 
+        void set_position(const glm::vec3& pos){
+            m_position = pos;
+        }
+
+        [[nodiscard]] const glm::vec3& get_position() const {
+            return m_position;
+        }
+
         void set_transform(const glm::mat4& transform) {
             m_transform = transform;
         }
@@ -50,5 +58,6 @@ namespace vOS
         bool m_visible = true;
         glm::vec4 m_base_color;
         glm::mat4 m_transform;
+        glm::vec3 m_position;
     };
 }

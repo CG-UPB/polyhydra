@@ -4,7 +4,7 @@
 #include "MeshView.h"
 #include "../input/Input.h"
 #include "LogWindow.h"
-#include "../VosWindow.h"
+#include "../Window.h"
 
 #include <algorithm>
 #include <cmath>
@@ -181,7 +181,7 @@ namespace vOS
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto& mesh = VosWindow::instance().get_mesh_obj();
+        auto& mesh = Window::instance().get_mesh_obj();
         m_render_data.mesh.offset = mesh.get_mesh_offset();
 
         mesh.update_vertex_buffer();
@@ -233,14 +233,14 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
-        if (VosWindow::instance().get_mesh_obj().m_mesh != nullptr)
+        if (Window::instance().get_mesh_obj().m_mesh != nullptr)
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_vertices());
+            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj().m_mesh->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_edges());
+            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj().m_mesh->n_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", VosWindow::instance().get_mesh_obj().m_mesh->n_faces());
+            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj().m_mesh->n_faces());
         }
 
         ImGui::End();

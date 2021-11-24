@@ -3,7 +3,7 @@
 #include "random"
 #include "iostream"
 #include "bits/stdc++.h"
-#include "../VosWindow.h"
+#include "../Window.h"
 #include <chrono>
 #include <thread>
 #include <math.h>
@@ -123,11 +123,11 @@ namespace vOS
         if (m_open_file)
         {
             std::string path;
-            if (VosWindow::ShowFileDialog(path))
+            if (Window::ShowFileDialog(path))
             {
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
-                VosWindow::instance().set_mesh(&m_mesh);
+                Window::instance().set_mesh(&m_mesh);
                 std::cout << path << std::endl;
 
                 run();
@@ -140,14 +140,14 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        VosWindow::instance().run(std::bind( &Dijkstra::debugging_template_ui, this));
+        Window::instance().run(std::bind( &Dijkstra::debugging_template_ui, this));
     }
 
     void Dijkstra::run()
     {
 
         /* One Time only Setup */
-        VosWindow& window = VosWindow::instance();
+        Window& window = Window::instance();
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
         window.get_mesh_obj().remove_highlights();
@@ -166,9 +166,11 @@ namespace vOS
 
         bool found = false;
 
-        window.add_box(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2], 0.2f, 0.2f,
-                       1.0f);
-        window.add_box(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2], 0.2f, 0.2f, 1.0f);
+        vOS::Box* box = new vOS::Box(0.05f, 0.05f, 0.05f);
+
+       // window.add_shape(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2], 0.2f, 0.2f,
+       //                1.0f);
+       // window.add_shape(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2], 0.2f, 0.2f, 1.0f);
 
         while (!found && !queue.empty() && !m_reset)
         {
@@ -234,13 +236,13 @@ namespace vOS
                 if (i == res.size() - 1 || first)
                 {
                     //window.set_vertex_color(vertex, true, 0, 0, 1, 1);
-                    window.add_box(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1], m_mesh.vertex(vertex)[2],
-                                   0.2f, 0.2f, 1.0f);
+                    //window.add_box(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1], m_mesh.vertex(vertex)[2],
+                    //               0.2f, 0.2f, 1.0f);
                 } else
                 {
                     //window.set_vertex_color(vertex, true, 1, 0, 0, 1);
-                    window.add_box(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],
-                                   m_mesh.vertex(vertex)[2]);
+                    //window.add_box(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],
+                    //               m_mesh.vertex(vertex)[2]);
                 }
                 first = false;
 

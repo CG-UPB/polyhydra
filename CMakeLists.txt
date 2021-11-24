@@ -25,7 +25,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/fs/FileManager.cpp
         ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
-        ${VOLUMESHOS_SRC}/VosWindow.cpp
+        ${VOLUMESHOS_SRC}/Window.cpp
         ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
         ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp

@@ -7,7 +7,7 @@
 #include "../panels/LogWindow.h"
 #include <array>
 #include <string>
-#include "../VosWindow.h"
+#include "../Window.h"
 
 namespace vOS
 {

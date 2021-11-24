@@ -3,8 +3,8 @@
 // Created by jan on 15.10.21.
 //
 
-#ifndef VOLUMESHOS_VOSWINDOW_H
-#define VOLUMESHOS_VOSWINDOW_H
+#ifndef VOLUMESHOS_WINDOW_H
+#define VOLUMESHOS_WINDOW_H
 
 #include <iostream>
 #include <OpenVolumeMesh/Mesh/HexahedralMesh.hh>
@@ -16,7 +16,8 @@
 #include "panels/CustomUIPanel.h"
 #include "panels/LogWindow.h"
 #include "panels/FileDialog.h"
-
+#include "rendering/shapes/Shape.h"
+#include "rendering/shapes/Box.h"
 
 namespace vOS
 {
@@ -29,7 +30,7 @@ namespace vOS
  * TODO: Uses GeomtericPolyhedralMeshV3f exlusively at the moment, waiting for Wrapper Class
  * TODO: Allows a single Mesh Visualization at the moment
  */
-    class VosWindow
+    class Window
     {
 
 
@@ -47,7 +48,7 @@ namespace vOS
             DRAW, HIDE, HIGHLIGHT
         };
 
-        static VosWindow& instance();
+        static Window& instance();
 
         // Renamed Classes for convenience
         using v3f = OpenVolumeMesh::GeometricPolyhedralMeshV3f;
@@ -74,7 +75,7 @@ namespace vOS
 
         MeshObject& get_mesh_obj();
 
-        unsigned int add_box(float x, float y, float z, float red = 1.0f, float green = 0.2f, float blue = 0.2f);
+        unsigned int add_shape(Shape* shape);
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////// Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,8 +164,8 @@ namespace vOS
         void_callback m_on_general_update = default_callback_function;
 
     private:
-        VosWindow();
-        ~VosWindow();
+        Window();
+        ~Window();
 
         // Debugging //////////////////////////////////////////////////////////////////////////////////////////////////
         bool m_pause_toggled = false;
@@ -218,4 +219,4 @@ namespace vOS
 }
 
 
-#endif //VOLUMESHOS_VOSWINDOW_H
+#endif //VOLUMESHOS_WINDOW_H

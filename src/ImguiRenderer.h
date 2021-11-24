@@ -10,7 +10,7 @@ namespace vOS
 {
 
     // Forward Declaration
-    class VosWindow;
+    class Window;
 
     class WindowPanel
     {

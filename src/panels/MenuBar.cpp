@@ -6,7 +6,7 @@
 #include "ImGuiFileDialog.h"
 #include <iostream>
 
-#include "../VosWindow.h"
+#include "../Window.h"
 #include "LogWindow.h"
 
 namespace vOS
