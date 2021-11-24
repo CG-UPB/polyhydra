@@ -18,6 +18,7 @@ namespace vOS
     // Forward Declaration
     class VosWindow;
     class MenuBar;
+    class ToolBox;
 
     class Window
     {
@@ -36,6 +37,7 @@ namespace vOS
         void showDockSpace();
 
         MenuBar* m_menu_bar;
+        ToolBox* m_toolbar;
 
         int m_width;
         int m_height;

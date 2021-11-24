@@ -15,7 +15,9 @@
 #include "panels/MeshView.h"
 #include "panels/MenuBar.h"
 #include "panels/LogWindow.h"
+#include "panels/ToolBox.h"
 #include "panels/PropertyView.h"
+#include "panels/Test.h"
 
 namespace vOS
 {
@@ -216,6 +218,10 @@ namespace vOS
         m_panels.push_back(new PropertyView(*mesh_view));
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
+        LogWindow::getInstance()->addLog("testLog");
+        //m_toolbar = new ToolBox();
+        Test* mytest = Test::getInstance();
+        m_panels.push_back(mytest);
     }
 
     void Window::showDockSpace()
