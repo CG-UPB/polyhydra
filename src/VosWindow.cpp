@@ -68,27 +68,35 @@ namespace vOS
         m_initialized = true;
     }
 
-    void VosWindow::render_loop() {
+    void VosWindow::run(void_callback vc) {
+        set_custom_imgui(vc);
 
-        // Render window forever
+        open();
+
+        // Render window forever until window is closed by user
         while(m_window_open)
         {
+            // Render single frame
             render();
         }
+
+        close();
     }
 
-    bool VosWindow::render_manual() {
+    void VosWindow::run() {
 
-        // Don't render if the window is not running
-        if(!is_running())
-            return false;
+        open();
 
-        // Render single frame
-        render();
+        // Render window forever until window is closed by user
+        while(m_window_open)
+        {
+            // Render single frame
+            render();
+        }
 
-        // Give feedback on success of rendered frame
-        return m_window_open;
+        close();
     }
+
     void VosWindow::close() {
 
         // Destroy Imgui Elements
@@ -157,15 +165,6 @@ namespace vOS
         return m_window_open;
     }
 
-    void VosWindow::set_callback_paused(void_callback vc)
-    {
-        m_on_vos_paused = vc;
-    }
-
-    void VosWindow::set_callback_unpaused(void_callback vc)
-    {
-        m_on_vos_unpaused = vc;
-    }
 
 
     bool VosWindow::is_closed() {

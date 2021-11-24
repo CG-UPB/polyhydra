@@ -10,7 +10,7 @@ namespace vOS
     public:
         Dijkstra();
         void init();
-        void init_vos();
+        void start();
         void run();
         void step();
 
@@ -21,8 +21,8 @@ namespace vOS
         OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
         OpenVolumeMesh::EdgePropertyT<float> m_weights;
 
-        void PauseButtonReleased();
-        void PauseButtonPressed();
+        void pause_button_released();
+        void pause_button_pressed();
         void step_button_pressed();
         void reset_button_pressed();
         void debugging_template_ui();
@@ -32,5 +32,6 @@ namespace vOS
         bool m_step = false;
         bool m_pause_toggled = false;
         bool m_open_file = false;
+
     };
 }

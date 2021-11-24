@@ -117,29 +117,7 @@ namespace vOS
           */
          bool is_closed();
 
-        //Buttons //////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /*
-         * Sets Callback Function which is called when the user presses the Pause Button inside Vos
-         * Remember using std::bind(function, this) to the callback function parameter
-         */
-        void set_callback_paused(void_callback vc);
-
-        /*
-         * Sets Callback Function which is called when the user releases the Pause Button inside Vos
-         * Remember using std::bind(function, this) to the callback function parameter
-         */
-        void set_callback_unpaused(void_callback vc) ;
-        /*
-         * Sets Callback Function which is called when the user presses the Reset Button
-         * Remember using std::bind(function, this) to the callback function parameter
-         */
-        void set_callback_reset(void_callback vc) { m_on_reset = vc;};
-        /*
-         * Sets Callback Function which is called when the user presses the Step Button
-         * Remember using std::bind(function, this) to the callback function parameter
-         */
-        void set_callback_step(void_callback vc){ m_on_step = vc;};
+        bool is_running();
 
         // Selections //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -160,28 +138,16 @@ namespace vOS
          */
         void set_callback_cell_selection(cell_selection_callback csc) { m_on_cell_selection = csc;};
 
-        bool is_running();
 
-        void open();
+        void run();
 
-        void render_loop();
-        bool render_manual();
-
-        void close();
-
+        void run(void_callback vc);
         // Custom ImGui Methods
 
         static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm");
 
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
-        // Called when Pause Button has been pressed and is active
-        void_callback m_on_vos_paused = default_callback_function;
-        // Called when Pause Button has been released and is inactive
-        void_callback m_on_vos_unpaused = default_callback_function;
-        // Called when Reset Button has been pressed
-        void_callback m_on_reset = default_callback_function;
-        // Called when Step Button has been pressed
-        void_callback m_on_step = default_callback_function;
+
         // Called when a number of vertices have been selected
         vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
         // Called when a number of edges have been selected
@@ -230,6 +196,9 @@ namespace vOS
 
         void render();
 
+        void open();
+
+        void close();
         // Callback Interface //////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Callback Functions //////////////////////////////////////////////////////////////////////////////////////////////////

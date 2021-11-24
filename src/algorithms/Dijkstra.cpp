@@ -57,13 +57,13 @@ namespace vOS
         }
     }
 
-    void Dijkstra::PauseButtonPressed()
+    void Dijkstra::pause_button_pressed()
     {
         LogWindow::getInstance()->addLog("Paused");
         m_pause = true;
     }
 
-    void Dijkstra::PauseButtonReleased()
+    void Dijkstra::pause_button_released()
     {
         LogWindow::getInstance()->addLog("Unpaused");
         m_pause = false;
@@ -91,7 +91,7 @@ namespace vOS
             if (ImGui::Button(">"))
             {
                 m_pause_toggled = false;
-                VosWindow::instance().m_on_vos_unpaused();
+                pause_button_released();
             }
         } else
         {
@@ -100,19 +100,19 @@ namespace vOS
             if (ImGui::Button("||"))
             {
                 m_pause_toggled = true;
-                VosWindow::instance().m_on_vos_paused();
+                pause_button_pressed();
             }
         }
         // Reset Button
         if (ImGui::Button("Reset"))
         {
-            VosWindow::instance().m_on_reset();
+            reset_button_pressed();
         }
 
         // Step Button
         if (ImGui::Button("Step"))
         {
-            VosWindow::instance().m_on_step();
+            step_button_pressed();
         }
 
         if (ImGui::Button("Open File"))
@@ -129,6 +129,7 @@ namespace vOS
                 file_manager.readFile(path, m_mesh);
                 VosWindow::instance().set_mesh(&m_mesh);
                 std::cout << path << std::endl;
+
                 run();
                 m_open_file = false;
             }
@@ -137,18 +138,9 @@ namespace vOS
         ImGui::End();
     }
 
-    void Dijkstra::init_vos()
+    void Dijkstra::start()
     {
-        VosWindow& window = VosWindow::instance();
-        window.set_callback_paused(std::bind(&Dijkstra::PauseButtonPressed, this));
-        window.set_callback_unpaused(std::bind(&Dijkstra::PauseButtonReleased, this));
-        window.set_callback_step(std::bind(&Dijkstra::step_button_pressed, this));
-        window.set_callback_reset(std::bind(&Dijkstra::reset_button_pressed, this));
-
-        window.set_custom_imgui(std::bind( &Dijkstra::debugging_template_ui, this));
-
-        window.open();
-        window.render_loop();
+        VosWindow::instance().run(std::bind( &Dijkstra::debugging_template_ui, this));
     }
 
     void Dijkstra::run()
@@ -218,7 +210,6 @@ namespace vOS
                     }
                 }
             }
-            //logic = window.render_manual();
         }
 
         if (!m_reset)
@@ -266,7 +257,6 @@ namespace vOS
             m_step = false;
         }
         std::cout << "End Dijkstra" << std::endl;
-        //window.close();
     }
 
     void Dijkstra::step()
