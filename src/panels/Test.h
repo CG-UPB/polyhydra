@@ -31,6 +31,7 @@ namespace vOS
         bool m_edge_selection;
         int m_current_selection_mode;
         int m_timer_treshold = 3;
-        float m_color;
+        float m_separation_value = 0.0f;
+        float m_color = 0.5f;
     };
 }
