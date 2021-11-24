@@ -67,13 +67,14 @@ namespace vOS
         m_initialized = true;
     }
 
-    void Window::run(void_callback vc) {
+    void Window::run(void_callback vc)
+    {
         set_custom_imgui(vc);
 
         open();
 
         // Render window forever until window is closed by user
-        while(m_window_open)
+        while (m_window_open)
         {
             // Render single frame
             render();
@@ -82,12 +83,13 @@ namespace vOS
         close();
     }
 
-    void Window::run() {
+    void Window::run()
+    {
 
         open();
 
         // Render window forever until window is closed by user
-        while(m_window_open)
+        while (m_window_open)
         {
             // Render single frame
             render();
@@ -96,28 +98,32 @@ namespace vOS
         close();
     }
 
-    void Window::close() {
+    void Window::close()
+    {
 
         // Destroy Imgui Elements
-        for (auto& element: m_panels) {
-            if(element == LogWindow::getInstance())
+        for (auto& element: m_panels)
+        {
+            if (element == LogWindow::getInstance())
                 continue;
             delete element;
         }
 
-        if(m_imgui_renderer != nullptr)
+        if (m_imgui_renderer != nullptr)
             delete m_imgui_renderer;
         m_window_open = false;
     }
 
-    void Window::render() {
+    void Window::render()
+    {
 
         // Activate Mutex Guard
 
         // Query whether the window has been closed by the user or not
         bool window_closed = m_imgui_renderer->window_closed();
 
-        if (window_closed) {
+        if (window_closed)
+        {
             std::cout << "Window Closed" << std::endl;
             m_window_open = false;
             return;
@@ -128,7 +134,8 @@ namespace vOS
         m_imgui_renderer->pre_render_step();
 
         // Draw all of our panels
-        for (auto &element: m_panels) {
+        for (auto& element: m_panels)
+        {
             element->show();
         }
 
@@ -139,7 +146,7 @@ namespace vOS
         // Deactivate Mutex Guard
     }
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
     {
         m_mesh_obj.set_mesh(mesh);
     }
@@ -154,7 +161,8 @@ namespace vOS
         return m_initialized;
     }
 
-    void Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
+    void
+    Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
     {
         m_mesh_obj.set_highlight(v_h, b, red, green, blue, alpha);
     }
@@ -165,8 +173,8 @@ namespace vOS
     }
 
 
-
-    bool Window::is_closed() {
+    bool Window::is_closed()
+    {
         return is_running();
     }
 
@@ -175,13 +183,15 @@ namespace vOS
         LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
     }
 
-    unsigned int Window::add_shape(Shape* shape){
+    unsigned int Window::add_shape(Shape* shape)
+    {
         // TODO Add good exception handling
-        if(shape == nullptr)
+        if (shape == nullptr)
             return -1;
 
         return ShapePass::add_shape(shape);
     }
+
     /*
     unsigned int Window::add_box(float x, float y, float z, float red, float green, float blue)
     {

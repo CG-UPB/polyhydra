@@ -6,11 +6,7 @@ namespace vOS
 {
 
     Box::Box(float size_x, float size_y, float size_z): m_size(size_x, size_y, size_z)
-    {
-        m_shader = Shader::basic_shape_shader();
-        set_transform(glm::translate(glm::vec3(1.0, 0.0, 0.0)) * glm::scale(glm::vec3(0.2, 0.2, 0.2)));
-        set_base_color(glm::vec4(1.0, 0.2, 0.2, 1.0));
-    }
+    {}
 
     Box::~Box()
     {

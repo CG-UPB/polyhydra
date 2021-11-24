@@ -84,7 +84,7 @@ namespace vOS
     glm::vec3 MeshView::get_arc_ball_vector(float x, float y) const
     {
         glm::vec3 res = glm::vec3(
-                x / (float) m_viewportPanelWidth * 2.0f - 1.0f,
+                x/ (float) m_viewportPanelWidth * 2.0f - 1.0f,
                 y / (float) m_viewportPanelHeight * 2.0f - 1.0f,
                 0.0f
         );
