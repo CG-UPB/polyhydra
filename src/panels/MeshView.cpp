@@ -4,7 +4,7 @@
 #include "MeshView.h"
 #include "../input/Input.h"
 #include "LogWindow.h"
-#include "../algorithms/VosWindow.h"
+#include "../VosWindow.h"
 
 #include <algorithm>
 #include <cmath>

@@ -4,7 +4,7 @@
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
-#include "../algorithms/VosWindow.h"
+#include "../VosWindow.h"
 #include "../rendering/passes/ShapePass.h"
 
 namespace vOS

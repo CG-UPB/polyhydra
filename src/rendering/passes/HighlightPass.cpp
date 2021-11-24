@@ -3,7 +3,7 @@
 
 #include "HighlightPass.h"
 #include "../shapes/CommonMeshes.h"
-#include "../../algorithms/VosWindow.h"
+#include "../../VosWindow.h"
 
 #include "glm/gtx/transform.hpp"
 

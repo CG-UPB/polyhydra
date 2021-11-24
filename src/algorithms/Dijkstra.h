@@ -10,6 +10,7 @@ namespace vOS
     public:
         Dijkstra();
         void init();
+        void init_vos();
         void run();
         void step();
 
@@ -24,9 +25,12 @@ namespace vOS
         void PauseButtonPressed();
         void step_button_pressed();
         void reset_button_pressed();
+        void debugging_template_ui();
 
         bool m_reset = false;
         bool m_pause = false;
         bool m_step = false;
+        bool m_pause_toggled = false;
+        bool m_open_file = false;
     };
 }

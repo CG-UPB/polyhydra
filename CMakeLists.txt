@@ -25,7 +25,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/fs/FileManager.cpp
         ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
-        ${VOLUMESHOS_SRC}/algorithms/VosWindow.cpp
+        ${VOLUMESHOS_SRC}/VosWindow.cpp
         ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
         ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp
@@ -37,7 +37,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/BackgroundPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
-        ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp)
+        ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp
+        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

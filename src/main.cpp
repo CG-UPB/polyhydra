@@ -4,7 +4,7 @@
 int main()
 {
     vOS::Dijkstra dijkstra;
-    dijkstra.run();
+    dijkstra.init_vos();
 
     return 0;
 }

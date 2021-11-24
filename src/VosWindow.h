@@ -11,10 +11,11 @@
 #include <OpenVolumeMesh/Mesh/PolyhedralMesh.hh>
 #include <string>
 #include <functional>
-#include "../ImguiRenderer.h"
-#include "../mesh/MeshObject.h"
-#include "../panels/CustomUIPanel.h"
-#include "../panels/LogWindow.h"
+#include "ImguiRenderer.h"
+#include "mesh/MeshObject.h"
+#include "panels/CustomUIPanel.h"
+#include "panels/LogWindow.h"
+#include "panels/FileDialog.h"
 
 
 namespace vOS
@@ -59,6 +60,8 @@ namespace vOS
         typedef std::function<void(double x, double y, double z, Translation_Mode translation_mode)> operation_translation_callback;
         typedef std::function<void(Rendering_Mode rendering_mode)> operation_rendering_callback;
 
+        typedef std::function<void(const std::string& file)> file_dialog_callback;
+
         typedef std::function<void()> void_callback;
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,9 +95,6 @@ namespace vOS
          * Applies given material shader to all elements with given property
          */
         void apply_material(std::string property, std::string material_path){};
-
-
-        void debugging_template_ui();
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,6 +169,10 @@ namespace vOS
 
         void close();
 
+        // Custom ImGui Methods
+
+        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm");
+
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
         // Called when Pause Button has been pressed and is active
         void_callback m_on_vos_paused = default_callback_function;
@@ -216,6 +220,7 @@ namespace vOS
         MeshObject m_mesh_obj;
 
         MenuBar* m_menu_bar;
+        static FileDialog* m_file_dialog;
         std::vector<WindowPanel*> m_panels;
 
         MenuBar* get_menu_bar(){return m_menu_bar;}

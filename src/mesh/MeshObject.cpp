@@ -7,7 +7,7 @@
 #include "../panels/LogWindow.h"
 #include <array>
 #include <string>
-#include "../algorithms/VosWindow.h"
+#include "../VosWindow.h"
 
 namespace vOS
 {
@@ -183,10 +183,6 @@ namespace vOS
             std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float> tuple = std::make_tuple(v_h, red,
                                                                                                          green, blue,
                                                                                                          alpha);
-            while (VosWindow::instance().get_mesh_obj().m_is_rendering)
-            {
-                //std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
             m_vertex_colors.push_back(tuple);
         } else if (b == false)
         {
@@ -194,10 +190,6 @@ namespace vOS
                                  std::make_tuple(v_h, red, green, blue, alpha));
             if (pos != m_vertex_colors.end())
             {
-                while (VosWindow::instance().get_mesh_obj().m_is_rendering)
-                {
-                    //std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                }
                 m_vertex_colors.erase(pos);
             }
         }
@@ -206,10 +198,6 @@ namespace vOS
 
     void MeshObject::remove_highlights()
     {
-        while (VosWindow::instance().get_mesh_obj().m_is_rendering)
-        {
-            //std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
         m_vertex_colors.clear();
     }
 

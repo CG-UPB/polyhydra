@@ -6,23 +6,25 @@
 #include <memory>
 #include <thread>
 #include "memory"
-#include "../input/Input.h"
+#include "input/Input.h"
 #include <utility>
+#include <OpenVolumeMesh/FileManager/FileManager.hh>
 
-#include "../panels/LogWindow.h"
-#include "../panels/MeshView.h"
-#include "../ImguiRenderer.h"
-#include "../panels/MenuBar.h"
+#include "panels/LogWindow.h"
+#include "panels/MeshView.h"
+#include "ImguiRenderer.h"
+#include "panels/MenuBar.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "../panels/CustomUIPanel.h"
-#include "../rendering/shapes/Box.h"
-#include "../rendering/passes/ShapePass.h"
+#include "panels/CustomUIPanel.h"
+#include "rendering/shapes/Box.h"
+#include "rendering/passes/ShapePass.h"
 
 
 namespace vOS
 {
+    FileDialog* VosWindow::m_file_dialog;
 
     VosWindow& VosWindow::instance()
     {
@@ -42,52 +44,17 @@ namespace vOS
 
     void VosWindow::initPanels()
     {
+        m_file_dialog = new FileDialog();
         m_menu_bar = new MenuBar();
         m_panels.push_back(m_menu_bar);
 
         auto* mesh_view = new MeshView(720, 480);
 
         m_panels.push_back(mesh_view);
+        m_panels.push_back(m_file_dialog);
         m_panels.push_back(m_custom_ui);
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
-    }
-
-    void VosWindow::debugging_template_ui() {
-
-        ImGui::Begin("Custom UI");
-        // Pause Button
-        if(m_pause_toggled)
-        {
-            // Pause button is active, pressing it would undo pause
-
-            if(ImGui::Button(">"))
-            {
-                m_pause_toggled = false;
-                VosWindow::instance().m_on_vos_unpaused();
-            }
-        }else{
-            // Pause button is inactive, pressing it would pause
-
-            if(ImGui::Button("||"))
-            {
-                m_pause_toggled = true;
-                VosWindow::instance().m_on_vos_paused();
-            }
-        }
-        // Reset Button
-        if(ImGui::Button("Reset"))
-        {
-            VosWindow::instance().m_on_reset();
-        }
-
-        // Step Button
-        if(ImGui::Button("Step"))
-        {
-            VosWindow::instance().m_on_step();
-        }
-
-        ImGui::End();
     }
 
     void VosWindow::open()
@@ -212,13 +179,20 @@ namespace vOS
 
     unsigned int VosWindow::add_box(float x, float y, float z, float red, float green, float blue)
     {
-        while (m_mesh_obj.m_is_rendering)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
         Box* box = new Box(0.05f, 0.05f, 0.05f);
         box->set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)));
         box->set_base_color(glm::vec4(red, green, blue, 1.0f));
         return ShapePass::add_shape(box);
+    }
+
+    bool VosWindow::ShowFileDialog(std::string& path, const std::string& extension)
+    {
+        m_file_dialog->open(extension);
+        if (m_file_dialog->is_ok())
+        {
+            path = m_file_dialog->get_file_path();
+            m_file_dialog->set_open(false);
+        }
+        return m_file_dialog->is_ok();
     }
 }

@@ -11,7 +11,7 @@
 #include "ImguiRenderer.h"
 #include "input/Input.h"
 #include "fs/FileManager.h"
-#include "algorithms/VosWindow.h"
+#include "VosWindow.h"
 #include "panels/LogWindow.h"
 #include "rendering/Shader.h"
 
