@@ -123,7 +123,7 @@ namespace vOS
         if (m_open_file)
         {
             std::string path;
-            if (Window::ShowFileDialog(path))
+            if (Window::instance().show_file_dialogue(path))
             {
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);

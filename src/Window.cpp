@@ -5,6 +5,7 @@
 #include "Window.h"
 #include <memory>
 #include <thread>
+#include <mutex>
 #include "memory"
 #include "input/Input.h"
 #include <utility>
@@ -23,11 +24,13 @@
 
 namespace vOS
 {
-    FileDialog* Window::m_file_dialog;
 
     Window& Window::instance()
     {
+        static std::mutex s_mutex;
+        s_mutex.lock();
         static Window inst;
+        s_mutex.unlock();
         return inst;
     }
 
@@ -35,6 +38,8 @@ namespace vOS
     {
         // Create Custom UI Panel Object
         m_custom_ui = new CustomUIPanel();
+
+        m_file_dialog = new FileDialog();
     }
 
     Window::~Window()
@@ -71,22 +76,14 @@ namespace vOS
     {
         set_custom_imgui(vc);
 
-        open();
-
-        // Render window forever until window is closed by user
-        while (m_window_open)
-        {
-            // Render single frame
-            render();
-        }
-
-        close();
+        run();
     }
 
     void Window::run()
     {
-
+        meta_mutex.lock();
         open();
+        meta_mutex.unlock();
 
         // Render window forever until window is closed by user
         while (m_window_open)
@@ -95,7 +92,9 @@ namespace vOS
             render();
         }
 
+        meta_mutex.lock();
         close();
+        meta_mutex.unlock();
     }
 
     void Window::close()
@@ -116,9 +115,7 @@ namespace vOS
 
     void Window::render()
     {
-
-        // Activate Mutex Guard
-
+        meta_mutex.lock();
         // Query whether the window has been closed by the user or not
         bool window_closed = m_imgui_renderer->window_closed();
 
@@ -126,31 +123,89 @@ namespace vOS
         {
             std::cout << "Window Closed" << std::endl;
             m_window_open = false;
+            meta_mutex.unlock();
             return;
         }
+        meta_mutex.unlock();
 
+        rendering_mutex.lock();
         // Pre Render Setup
         get_mesh_obj().m_is_rendering = true;
         m_imgui_renderer->pre_render_step();
+        rendering_mutex.unlock();
 
         // Draw all of our panels
+        // The Custom Imgui UI will be run here too
+        // Panels are not mutex guarded to avoid deadlocks from the custom imgui function
         for (auto& element: m_panels)
         {
             element->show();
         }
 
+        custom_imgui_mutex.lock();
+        // Set new Custom UI Function after the previous custom ui function has run to its end
+        if(m_new_custom_ui_function_set){
+            m_new_custom_ui_function_set = false;
+
+            if(m_temporary_new_custom_ui_function == nullptr)
+                m_temporary_new_custom_ui_function = default_callback_function;
+            m_custom_ui->set_custom_callback((m_temporary_new_custom_ui_function));
+        }
+        custom_imgui_mutex.unlock();
+
         // Post Render Stuff
+        rendering_mutex.lock();
         m_imgui_renderer->post_render_step();
         get_mesh_obj().m_is_rendering = false;
+        rendering_mutex.unlock();
 
-        // Deactivate Mutex Guard
+    }
+
+    // Setter Methods (Programmer to Vos) /////////////////////////////////////////////////////////
+
+    void Window::set_custom_imgui(void_callback vc) {
+        custom_imgui_mutex.lock();
+        m_temporary_new_custom_ui_function = vc;
+        m_new_custom_ui_function_set = true;
+        custom_imgui_mutex.unlock();
+    }
+    void Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
+    {
+        rendering_mutex.lock();
+        m_mesh_obj.set_highlight(v_h, b, red, green, blue, alpha);
+        rendering_mutex.unlock();
     }
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
     {
+        rendering_mutex.lock();
         m_mesh_obj.set_mesh(mesh);
+        rendering_mutex.unlock();
     }
 
+    unsigned int Window::add_shape(Shape* shape)
+    {
+        // TODO Add good exception handling
+        if (shape == nullptr)
+            return -1;
+
+        rendering_mutex.lock();
+        unsigned int id = ShapePass::add_shape(shape);
+        rendering_mutex.unlock();
+        return id;
+    }
+
+    bool Window::show_file_dialogue(std::string& path, const std::string& extension)
+    {
+        m_file_dialog->open(extension);
+        if (m_file_dialog->is_ok())
+        {
+            path = m_file_dialog->get_file_path();
+            m_file_dialog->set_open(false);
+        }
+        return m_file_dialog->is_ok();
+    }
+    // Read Methods ///////////////////////////////////////////////////////////////////////////////
     MeshObject& Window::get_mesh_obj()
     {
         return m_mesh_obj;
@@ -161,11 +216,6 @@ namespace vOS
         return m_initialized;
     }
 
-    void
-    Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
-    {
-        m_mesh_obj.set_highlight(v_h, b, red, green, blue, alpha);
-    }
 
     bool Window::is_running()
     {
@@ -178,20 +228,6 @@ namespace vOS
         return is_running();
     }
 
-    void Window::default_callback_function()
-    {
-        LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
-    }
-
-    unsigned int Window::add_shape(Shape* shape)
-    {
-        // TODO Add good exception handling
-        if (shape == nullptr)
-            return -1;
-
-        return ShapePass::add_shape(shape);
-    }
-
     /*
     unsigned int Window::add_box(float x, float y, float z, float red, float green, float blue)
     {
@@ -201,14 +237,4 @@ namespace vOS
         return ShapePass::add_shape(box);
     }*/
 
-    bool Window::ShowFileDialog(std::string& path, const std::string& extension)
-    {
-        m_file_dialog->open(extension);
-        if (m_file_dialog->is_ok())
-        {
-            path = m_file_dialog->get_file_path();
-            m_file_dialog->set_open(false);
-        }
-        return m_file_dialog->is_ok();
-    }
 }

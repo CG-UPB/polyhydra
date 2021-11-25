@@ -18,6 +18,7 @@
 #include "panels/FileDialog.h"
 #include "rendering/shapes/Shape.h"
 #include "rendering/shapes/Box.h"
+#include <mutex>
 
 namespace vOS
 {
@@ -104,7 +105,11 @@ namespace vOS
         std::string get_loaded_file_name() {return m_loaded_file_path;};
         void set_loaded_file_path_name(std::string path) { m_loaded_file_path = path;};
 
-        void set_custom_imgui(void_callback vc) { m_custom_ui->set_custom_callback((vc)); };
+        /*
+         * Sets custom function that will be called along other Vos UI panel elements
+         * Updates will be adopted after the current rendering frame has ended
+         */
+        void set_custom_imgui(void_callback vc);
 
         // Queueries //////////////////////////////////////////////////////////////////////////////////////////////////
         /*
@@ -145,7 +150,8 @@ namespace vOS
         void run(void_callback vc);
         // Custom ImGui Methods
 
-        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm");
+        bool show_file_dialogue(std::string& path, const std::string& extension = ".ovm");
+        FileDialog* get_file_dialog(){return m_file_dialog;}
 
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -178,6 +184,18 @@ namespace vOS
         bool m_window_open;
         bool m_window_paused = false;
 
+        // Custom UI Function
+        void_callback m_temporary_new_custom_ui_function;
+        bool m_new_custom_ui_function_set = false;
+
+        // Mutex and thread safety
+        /// Set to guard GL when reading from and rendering our mesh
+        std::mutex rendering_mutex;
+        /// Set to guard Window.cpp when initializing or destroying data and when choosing dataflow paths
+        std::mutex meta_mutex;
+        /// Set to guard setting the custom Imgui Function
+        std::mutex custom_imgui_mutex;
+
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
         CustomUIPanel* m_custom_ui;
@@ -187,7 +205,7 @@ namespace vOS
         MeshObject m_mesh_obj;
 
         MenuBar* m_menu_bar;
-        static FileDialog* m_file_dialog;
+        FileDialog* m_file_dialog;
         std::vector<WindowPanel*> m_panels;
 
         MenuBar* get_menu_bar(){return m_menu_bar;}
@@ -204,7 +222,7 @@ namespace vOS
 
         // Callback Functions //////////////////////////////////////////////////////////////////////////////////////////////////
         /// Default Empty Callback Function
-        static void default_callback_function();
+        static void default_callback_function(){};
 
         static void default_vertex_selection_function(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode){};
         static void default_edge_selection_function(OpenVolumeMesh::EdgeHandle* edge_array, int length, Selection_Mode selection_mode){};
