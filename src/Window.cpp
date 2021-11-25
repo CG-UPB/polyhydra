@@ -71,13 +71,13 @@ namespace vOS
 
         m_initialized = true;
     }
-
+/*
     void Window::run(void_callback vc)
     {
         set_custom_imgui(vc);
 
         run();
-    }
+    }*/
 
     void Window::run()
     {
@@ -202,6 +202,7 @@ namespace vOS
         {
             path = m_file_dialog->get_file_path();
             m_file_dialog->set_open(false);
+            set_loaded_file_path_name((path));
         }
         return m_file_dialog->is_ok();
     }
@@ -213,6 +214,8 @@ namespace vOS
 
     bool Window::is_ready()
     {
+        meta_mutex.lock();
+        meta_mutex.unlock();
         return m_initialized;
     }
 

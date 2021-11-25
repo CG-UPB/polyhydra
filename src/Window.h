@@ -147,7 +147,7 @@ namespace vOS
 
         void run();
 
-        void run(void_callback vc);
+        //void run(void_callback vc);
         // Custom ImGui Methods
 
         bool show_file_dialogue(std::string& path, const std::string& extension = ".ovm");
