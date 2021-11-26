@@ -143,9 +143,13 @@ namespace vOS
 
         m_indices.clear();
 
+        int count = 0;
+        std::vector<int> vert_idx;
+
         for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
              f_it != m_mesh->faces_end(); ++f_it)
         {
+
             for (auto halfface : m_mesh->face_halffaces(*f_it))
             {
                 if (!m_mesh->is_boundary(halfface))
@@ -153,11 +157,49 @@ namespace vOS
                     continue;
                 }
                 auto face_vertexids = m_mesh->halfface_vertices(halfface);
+
+                count = 0;
+                vert_idx.clear();
+
+                //count how many vertices the face has
                 for (auto fv_it = face_vertexids.first;
                      fv_it != face_vertexids.second; ++fv_it)
                 {
-                    m_indices.push_back(fv_it->idx());
+                    count ++;
+                    vert_idx.push_back(fv_it->idx());
                 }
+
+                //save indices depending on count
+                if (count == 3)
+                {
+                    // create 1 triangles out of 3 indices
+                    m_indices.push_back(vert_idx[0]);
+                    m_indices.push_back(vert_idx[1]);
+                    m_indices.push_back(vert_idx[2]);
+                }
+                else if (count == 4)
+                {
+                    // create 2 triangles out of 4 indices
+                    m_indices.push_back(vert_idx[0]);
+                    m_indices.push_back(vert_idx[1]);
+                    m_indices.push_back(vert_idx[2]);
+
+                    m_indices.push_back(vert_idx[0]);
+                    m_indices.push_back(vert_idx[2]);
+                    m_indices.push_back(vert_idx[3]);
+
+                }
+                // unpredictable behaviour
+                else
+                {
+                    for(int i = 0; i < count; i++)
+                    {
+                        m_indices.push_back(vert_idx[i]);
+                    }
+                }
+
+
+
             }
         }
 
