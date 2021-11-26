@@ -44,7 +44,7 @@ namespace vOS
 
     void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
     {
-        m_mesh = mesh;
+        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>(*mesh);
         remove_highlights();
         m_should_update = true;
     }
