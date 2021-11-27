@@ -27,6 +27,7 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_meshFrameBuffer = new FrameBufferObject(width, height);
+        m_selectionFrameBuffer= new FrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -59,6 +60,7 @@ namespace vOS
     MeshView::~MeshView()
     {
         delete m_meshFrameBuffer;
+        delete m_selectionFrameBuffer;
     }
 
     void MeshView::handleResize()
@@ -72,6 +74,7 @@ namespace vOS
             m_viewportPanelWidth = (int) width;
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_selectionFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
@@ -201,6 +204,40 @@ namespace vOS
         m_meshFrameBuffer->unbind();
     }
 
+    void MeshView::renderSelection()
+    {
+        // now render our mesh scene to the framebuffer texture
+        m_selectionFrameBuffer->bind();
+
+        // we need to clear our framebuffer as well
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto& mesh = Window::instance().get_mesh_obj();
+
+        if (mesh.get_vao() != nullptr)
+        {
+            m_selection_pass.render(*mesh.get_vao(), m_render_data);
+        }
+
+
+        if(ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        {
+
+            glFlush();
+            glFinish();
+
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+            unsigned char data[4];
+            glReadPixels(m_lastX, m_lastY,1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            int pickedID = data[0] + data[1] * 256 + data[2] * 256*256;
+            std::cout << pickedID << std::endl;
+        }
+
+        m_selectionFrameBuffer->unbind();
+    }
+
     void MeshView::show()
     {
         auto padding = ImGui::GetStyle().WindowPadding;
@@ -211,6 +248,7 @@ namespace vOS
         handleResize();
         handleMouseControl();
         renderMesh();
+        renderSelection();
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();

@@ -48,6 +48,7 @@ namespace vOS
         std::vector<unsigned int> m_indices;
         std::vector<float> m_vertex_normals;
         std::vector<float> m_face_normals;
+        std::vector<unsigned int> m_face_ids;
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
 
         VertexArrayObject *m_vertexArrayObject = nullptr;

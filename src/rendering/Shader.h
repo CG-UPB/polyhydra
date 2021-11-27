@@ -20,6 +20,7 @@ namespace vOS
         static Shader* property_shader() { return get("property"); }
         static Shader* background_shader() { return get("background"); }
         static Shader* basic_shape_shader() { return get("basic_shape"); }
+        static Shader* selection_shader() { return get("selection"); }
 
         void bind() const;
         void unbind() const;

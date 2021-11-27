@@ -61,6 +61,11 @@ namespace vOS
             initialize_vertex_normals();
             m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
             m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
+            m_vertexArrayObject->add_buffer(m_face_ids,2,3);
+            for (auto i = std::begin(m_face_ids); i < std::end(m_face_ids); ++i)
+            {
+                std::cout << *i << std::endl;
+            }
 
             calculate_mesh_offset();
         }
@@ -188,6 +193,8 @@ namespace vOS
                     m_indices.push_back(vert_idx[2]);
                     m_indices.push_back(vert_idx[3]);
 
+
+
                 }
                 // unpredictable behaviour
                 else
@@ -198,7 +205,10 @@ namespace vOS
                     }
                 }
 
-
+                for(int i = 0; i < 3; i++)
+                {
+                    m_face_ids.push_back(f_it->idx());
+                }
 
             }
         }
@@ -220,18 +230,16 @@ namespace vOS
                                    float blue = 0.0, float alpha = 0.0)
     {
         //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
-        if (b == true)
+        if (b)
         {
             std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float> tuple = std::make_tuple(v_h, red,
                                                                                                          green, blue,
                                                                                                          alpha);
             m_vertex_colors.push_back(tuple);
-        } else if (b == false)
-        {
+        } else {
             auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(),
                                  std::make_tuple(v_h, red, green, blue, alpha));
-            if (pos != m_vertex_colors.end())
-            {
+            if (pos != m_vertex_colors.end()) {
                 m_vertex_colors.erase(pos);
             }
         }
