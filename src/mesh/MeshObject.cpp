@@ -117,10 +117,10 @@ namespace vOS
              v_it != m_mesh->vertices_end(); ++v_it)
         {
 
-            auto myPoint = m_mesh->vertex(*v_it);
+            auto vertex_coords = m_mesh->vertex(*v_it);
             for (int i = 0; i < dim; i++)
             {
-                m_vertices.push_back(myPoint[i]);
+                m_vertices.push_back(vertex_coords[i]);
             }
         }
 
@@ -161,14 +161,14 @@ namespace vOS
                 {
                     continue;
                 }
-                auto face_vertexids = m_mesh->halfface_vertices(halfface);
+                auto face_vertex_ids = m_mesh->halfface_vertices(halfface);
 
                 count = 0;
                 vert_idx.clear();
 
                 //count how many vertices the face has
-                for (auto fv_it = face_vertexids.first;
-                     fv_it != face_vertexids.second; ++fv_it)
+                for (auto fv_it = face_vertex_ids.first;
+                     fv_it != face_vertex_ids.second; ++fv_it)
                 {
                     count ++;
                     vert_idx.push_back(fv_it->idx());

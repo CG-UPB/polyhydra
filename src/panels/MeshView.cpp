@@ -229,10 +229,21 @@ namespace vOS
 
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+            // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+            // viewport[3] equals viewport height
+            GLint viewport[4];
+            glGetIntegerv(GL_VIEWPORT, viewport);
+
+            // read Pixel data/color from framebuffer
+            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
             unsigned char data[4];
-            glReadPixels(m_lastX, m_lastY,1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glReadPixels(m_lastX - screen_pos.x, viewport[3] - (m_lastY - screen_pos.y),1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+            // evaluate ID out of color
             int pickedID = data[0] + data[1] * 256 + data[2] * 256*256;
+
             std::cout << pickedID << std::endl;
+            std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
         }
 
         m_selectionFrameBuffer->unbind();
@@ -257,7 +268,7 @@ namespace vOS
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id()),
+                reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
