@@ -10,6 +10,7 @@
 #include <OpenVolumeMesh/Mesh/HexahedralMesh.hh>
 #include <OpenVolumeMesh/Mesh/PolyhedralMesh.hh>
 #include <string>
+#include <list>
 #include <functional>
 #include "ImguiRenderer.h"
 #include "mesh/MeshObject.h"
@@ -18,6 +19,7 @@
 #include "panels/FileDialog.h"
 #include "rendering/shapes/Shape.h"
 #include "rendering/shapes/Box.h"
+#include "panels/MeshView.h"
 #include <mutex>
 
 namespace vOS
@@ -31,6 +33,7 @@ namespace vOS
  * TODO: Uses GeomtericPolyhedralMeshV3f exlusively at the moment, waiting for Wrapper Class
  * TODO: Allows a single Mesh Visualization at the moment
  */
+class MeshView;
     class Window
     {
 
@@ -54,32 +57,33 @@ namespace vOS
         // Renamed Classes for convenience
         using v3f = OpenVolumeMesh::GeometricPolyhedralMeshV3f;
 
+        typedef std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>* operation_set_highlight;
+        typedef std::tuple<Shape*, unsigned int, bool>* operation_shape;
         typedef std::function<void(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode)> vertex_selection_callback;
         typedef std::function<void(OpenVolumeMesh::EdgeHandle* edges_array, int length, Selection_Mode selection_mode)> edge_selection_callback;
         typedef std::function<void(OpenVolumeMesh::FaceHandle* faces_array, int length, Selection_Mode selection_mode)> face_selection_callback;
         typedef std::function<void(OpenVolumeMesh::CellHandle* cells_array, int length, Selection_Mode selection_mode)> cell_selection_callback;
 
-        typedef std::function<void(double x, double y, double z, Translation_Mode translation_mode)> operation_translation_callback;
-        typedef std::function<void(Rendering_Mode rendering_mode)> operation_rendering_callback;
+        //typedef std::function<void(double x, double y, double z, Translation_Mode translation_mode)> operation_translation_callback;
+        //typedef std::function<void(Rendering_Mode rendering_mode)> operation_rendering_callback;
 
         typedef std::function<void(const std::string& file)> file_dialog_callback;
 
         typedef std::function<void()> void_callback;
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////// Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         void set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha);
 
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
 
-        MeshObject& get_mesh_obj();
+        void remove_all_highlights();
+
+        void remove_shape(unsigned int id);
 
         unsigned int add_shape(Shape* shape);
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////// Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        //   Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
         /*
@@ -150,7 +154,7 @@ namespace vOS
         //void run(void_callback vc);
         // Custom ImGui Methods
 
-        bool show_file_dialogue(std::string& path, const std::string& extension = ".ovm");
+        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm");
         FileDialog* get_file_dialog(){return m_file_dialog;}
 
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,8 +168,8 @@ namespace vOS
         // Called when a number of cells have been selected
         cell_selection_callback m_on_cell_selection = default_cell_selection_function;
 
-        operation_translation_callback m_on_translate_operation = default_translate_operation_function;
-        operation_rendering_callback m_on_rendering_operation = default_rendering_operation_function;
+        //operation_translation_callback m_on_translate_operation = default_translate_operation_function;
+        //operation_rendering_callback m_on_rendering_operation = default_rendering_operation_function;
         // Generally Called when the User does anything to the Mesh (debug)
         void_callback m_on_general_update = default_callback_function;
 
@@ -179,6 +183,7 @@ namespace vOS
         // Variables //////////////////////////////////////////////////////////////////////////////////////////////////
 
         std::string m_loaded_file_path = "";
+        unsigned int shape_id_counter = 0;
 
         bool m_initialized = false;
         bool m_window_open;
@@ -195,6 +200,13 @@ namespace vOS
         std::mutex meta_mutex;
         /// Set to guard setting the custom Imgui Function
         std::mutex custom_imgui_mutex;
+        /// Set to guard altering data on the meshes
+        std::mutex operation_mutex;
+
+        // Operations /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        std::list<operation_set_highlight> operation_list_vertex_highlights;
+        std::list<operation_shape> operation_list_shapes;
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -203,6 +215,7 @@ namespace vOS
         v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
         MeshObject m_mesh_obj;
+        MeshView* m_mesh_view;
 
         MenuBar* m_menu_bar;
         FileDialog* m_file_dialog;

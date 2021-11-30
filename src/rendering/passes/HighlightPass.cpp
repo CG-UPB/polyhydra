@@ -32,10 +32,10 @@ namespace vOS
         glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
         glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
 
-        auto highlights = Window::instance().get_mesh_obj().get_highlights();
+        auto highlights = data.mesh.mesh->get_highlights();
         for(int i = 0; i < highlights.size(); i++)
         {
-            auto entry = highlights[i];
+            auto entry = *highlights[i];
 
             OpenVolumeMesh::VertexHandle v_h = std::get<0>(entry);
             float red = std::get<1>(entry);
@@ -43,7 +43,7 @@ namespace vOS
             float blue = std::get<3>(entry);
             float alpha = std::get<4>(entry);
 
-            auto vertex = Window::instance().get_mesh_obj().m_mesh->vertex(v_h);
+            auto vertex = data.mesh.mesh->m_mesh->vertex(v_h);
 
             // set highlight properties
             glm::vec4 vertex_pos = glm::vec4(vertex[0], vertex[1], vertex[2], 1.0f);

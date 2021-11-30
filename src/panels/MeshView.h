@@ -15,7 +15,7 @@ namespace vOS
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
-
+        void set_mesh_object(MeshObject* mesh_pointer) {m_mesh = mesh_pointer;};
     private:
 
         void handleResize();
@@ -23,6 +23,7 @@ namespace vOS
         void renderMesh();
 
         glm::vec3 get_arc_ball_vector(float x, float y) const;
+        MeshObject* m_mesh;
 
         // used for the arc ball
         bool m_arcBallOn;

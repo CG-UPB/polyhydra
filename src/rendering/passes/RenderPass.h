@@ -3,6 +3,7 @@
 #include "../VertexArrayObject.h"
 #include "../Shader.h"
 #include "../FrameBufferObject.h"
+#include "../../mesh/MeshObject.h"
 
 #include "glm/gtx/transform.hpp"
 
@@ -21,6 +22,7 @@ namespace vOS
             glm::vec3 color;
         } light;
         struct Mesh {
+            MeshObject* mesh;
             glm::vec3 offset;
             glm::mat4 transform;
             glm::vec3 color;

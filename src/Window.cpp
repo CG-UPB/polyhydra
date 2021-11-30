@@ -6,6 +6,7 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include <list>
 #include "memory"
 #include "input/Input.h"
 #include <utility>
@@ -52,9 +53,10 @@ namespace vOS
         m_menu_bar = new MenuBar();
         m_panels.push_back(m_menu_bar);
 
-        auto* mesh_view = new MeshView(720, 480);
+        m_mesh_view = new MeshView(720, 480);
+        m_mesh_view->set_mesh_object(&m_mesh_obj);
 
-        m_panels.push_back(mesh_view);
+        m_panels.push_back(m_mesh_view);
         m_panels.push_back(m_file_dialog);
         m_panels.push_back(m_custom_ui);
         LogWindow* mylog = LogWindow::getInstance();
@@ -130,7 +132,7 @@ namespace vOS
 
         rendering_mutex.lock();
         // Pre Render Setup
-        get_mesh_obj().m_is_rendering = true;
+        m_mesh_obj.m_is_rendering = true;
         m_imgui_renderer->pre_render_step();
         rendering_mutex.unlock();
 
@@ -141,6 +143,26 @@ namespace vOS
         {
             element->show();
         }
+        // After rendering has been done, we can  commit changes to the mesh and other commands
+
+        // Alterations
+
+        // Vertex Highlights
+        operation_mutex.lock();
+        for(operation_set_highlight highlight : operation_list_vertex_highlights){
+            m_mesh_obj.set_highlight(highlight);
+        }
+        operation_list_vertex_highlights.clear();
+
+        // Shapes
+
+        for(operation_shape shape  : operation_list_shapes){
+
+            ShapePass::add_shape(shape);
+        }
+        operation_list_shapes.clear();
+
+        operation_mutex.unlock();
 
         custom_imgui_mutex.lock();
         // Set new Custom UI Function after the previous custom ui function has run to its end
@@ -156,7 +178,7 @@ namespace vOS
         // Post Render Stuff
         rendering_mutex.lock();
         m_imgui_renderer->post_render_step();
-        get_mesh_obj().m_is_rendering = false;
+        m_mesh_obj.m_is_rendering = false;
         rendering_mutex.unlock();
 
     }
@@ -171,9 +193,14 @@ namespace vOS
     }
     void Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
     {
-        rendering_mutex.lock();
-        m_mesh_obj.set_highlight(v_h, b, red, green, blue, alpha);
-        rendering_mutex.unlock();
+        operation_mutex.lock();
+
+        std::tuple<OpenVolumeMesh::VertexHandle, float,float,float,float,bool> tuple= std::make_tuple(v_h,red, green, blue,alpha,b);
+        operation_set_highlight highlight = &tuple;
+
+        operation_list_vertex_highlights.push_back(highlight);
+
+        operation_mutex.unlock();
     }
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
@@ -189,28 +216,43 @@ namespace vOS
         if (shape == nullptr)
             return -1;
 
-        rendering_mutex.lock();
-        unsigned int id = ShapePass::add_shape(shape);
-        rendering_mutex.unlock();
-        return id;
+        operation_mutex.lock();
+
+        unsigned int shape_id = shape_id_counter++;
+        std::tuple<Shape*, unsigned int, bool> tuple= std::make_tuple(shape, shape_id,true);
+        operation_shape shape_operation = &tuple;
+        operation_list_shapes.push_back(shape_operation);
+
+        operation_mutex.unlock();
+
+        return shape_id;
     }
 
-    bool Window::show_file_dialogue(std::string& path, const std::string& extension)
+    void Window::remove_all_highlights(){
+        operation_mutex.lock();
+        rendering_mutex.lock();
+        m_mesh_obj.remove_highlights();
+        rendering_mutex.unlock();
+        operation_mutex.unlock();
+    }
+
+    void Window::remove_shape(unsigned int id){
+        // TODO: No method available for this yet
+    }
+
+    bool Window::ShowFileDialog(std::string& path, const std::string& extension)
     {
-        m_file_dialog->open(extension);
-        if (m_file_dialog->is_ok())
+
+        instance().m_file_dialog->open(extension);
+        if (instance().m_file_dialog->is_ok())
         {
-            path = m_file_dialog->get_file_path();
-            m_file_dialog->set_open(false);
-            set_loaded_file_path_name((path));
+            path = instance().m_file_dialog->get_file_path();
+            instance().m_file_dialog->set_open(false);
+            instance().set_loaded_file_path_name((path));
         }
-        return m_file_dialog->is_ok();
+        return instance().m_file_dialog->is_ok();
     }
     // Read Methods ///////////////////////////////////////////////////////////////////////////////
-    MeshObject& Window::get_mesh_obj()
-    {
-        return m_mesh_obj;
-    }
 
     bool Window::is_ready()
     {

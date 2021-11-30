@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderPass.h"
+#include "../../mesh/MeshObject.h"
 
 namespace vOS
 {

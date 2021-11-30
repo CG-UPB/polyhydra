@@ -24,7 +24,7 @@ namespace vOS
         void load_from_file(std::string file_path);
         void write_to_file(std::string file_path);
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
-        void set_highlight(OpenVolumeMesh::VertexHandle v_h, bool bl, float r, float g, float b, float a);
+        void set_highlight(std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>* tuple);
         void remove_highlights();
         void initialize_face_normals();
         void initialize_vertex_normals();
@@ -35,7 +35,7 @@ namespace vOS
         std::vector<unsigned int> faces();
         std::vector<float> vertex_normals();
         std::vector<float> face_normals();
-        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
+        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>*> get_highlights();
 
 
         glm::vec3 &get_mesh_offset();
@@ -48,7 +48,7 @@ namespace vOS
         std::vector<unsigned int> m_indices;
         std::vector<float> m_vertex_normals;
         std::vector<float> m_face_normals;
-        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
+        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>*> m_vertex_colors;
 
         VertexArrayObject *m_vertexArrayObject = nullptr;
 

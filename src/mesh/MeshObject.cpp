@@ -174,20 +174,18 @@ namespace vOS
         return m_face_normals;
     }
 
-    void MeshObject::set_highlight(OpenVolumeMesh::VertexHandle v_h, bool b = true, float red = 0.0, float green = 0.0,
-                                   float blue = 0.0, float alpha = 0.0)
+    void MeshObject::set_highlight(std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>* tuple)
     {
         //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
-        if (b == true)
+        if (std::get<5>(*tuple) == true)
         {
-            std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float> tuple = std::make_tuple(v_h, red,
-                                                                                                         green, blue,
-                                                                                                         alpha);
+            // Add
             m_vertex_colors.push_back(tuple);
-        } else if (b == false)
+        } else if (std::get<5>(*tuple) == false)
         {
+            // Remove
             auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(),
-                                 std::make_tuple(v_h, red, green, blue, alpha));
+                                 tuple);
             if (pos != m_vertex_colors.end())
             {
                 m_vertex_colors.erase(pos);
@@ -201,7 +199,7 @@ namespace vOS
         m_vertex_colors.clear();
     }
 
-    std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> MeshObject::get_highlights()
+    std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>*> MeshObject::get_highlights()
     {
         return m_vertex_colors;
     }

@@ -123,7 +123,7 @@ namespace vOS
         if (m_open_file)
         {
             std::string path;
-            if (Window::instance().show_file_dialogue(path))
+            if (Window::instance().ShowFileDialog(path))
             {
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
@@ -144,7 +144,7 @@ namespace vOS
 
         if(linear)
         {
-            // Run Dijkstra linearily
+            // Run Dijkstra linearly
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
             Window::instance().run();
         }else{
@@ -166,7 +166,7 @@ namespace vOS
         Window& window = Window::instance();
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.get_mesh_obj().remove_highlights();
+        window.remove_all_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -247,7 +247,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj().remove_highlights();
+            window.remove_all_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)
@@ -327,7 +327,7 @@ namespace vOS
         if (m_open_file)
         {
             std::string path;
-            if (Window::instance().show_file_dialogue(path))
+            if (Window::instance().ShowFileDialog(path))
             {
 
                 m_open_file = false;
@@ -350,7 +350,7 @@ namespace vOS
         std::cout << window.get_loaded_file_name() << std::endl;
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.get_mesh_obj().remove_highlights();
+        window.remove_all_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -435,7 +435,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj().remove_highlights();
+            window.remove_all_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)

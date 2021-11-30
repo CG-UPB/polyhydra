@@ -26,6 +26,8 @@ namespace vOS
 
         for (Shape* shape : s_shapes)
         {
+            continue;
+
             Shader& shader = *shape->get_shader();
             shader.bind();
 
@@ -47,10 +49,15 @@ namespace vOS
         }
     }
 
-    unsigned int ShapePass::add_shape(Shape* shape)
+    unsigned int ShapePass::add_shape(std::tuple<Shape*, unsigned int, bool>* shape)
     {
-        s_shapes.push_back(shape);
-        return s_shapes.size() - 1;
+        Shape* shape_pointer = std::get<0>(*shape);
+        unsigned int shape_id = std::get<1>(*shape);
+        bool add = std::get<2>(*shape);
+
+        s_shapes.push_back(shape_pointer);
+
+        return shape_id;
     }
 
     const Shape& ShapePass::get_shape(unsigned int shape_id)
