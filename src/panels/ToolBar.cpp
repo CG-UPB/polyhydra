@@ -1,5 +1,5 @@
 
-#include "Test.h"
+#include "ToolBar.h"
 #include "../input/Input.h"
 #include <algorithm>
 #include "imgui.h"
@@ -12,24 +12,24 @@
 namespace vOS
 {
 
-    Test* Test::instance = 0;
+    ToolBar* ToolBar::instance = 0;
 
     // Singleton
-    Test* Test::getInstance()
+    ToolBar* ToolBar::getInstance()
     {
         if (instance == 0)
         {
-            instance = new Test();
+            instance = new ToolBar();
         }
 
         return instance;
 
     }
 
-    Test::Test() {}
+    ToolBar::ToolBar() {}
 
     // Destruktor
-    Test::~Test()
+    ToolBar::~ToolBar()
     {
         //delete instance;
     }
@@ -56,7 +56,7 @@ namespace vOS
     }
 
     // show log window and corresponding buttons
-    void Test::show()
+    void ToolBar::show()
     {
         if(!ImGui::Begin("Toolbox"))
         {
@@ -92,7 +92,7 @@ namespace vOS
         {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("Test");
+            ImGui::TextUnformatted("ToolBar");
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
@@ -104,14 +104,37 @@ namespace vOS
                 ImGui::TableNextColumn();
                 ImGui::Text("Slider:");
                 //TODO: create a Slider
+                static float slider_f = 0.5f;
+                ImGui::SliderFloat("", &slider_f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
                 ImGui::Text("Peel:");
                 //TODO: create peel-slider
-
+                static float slider_f1 = 0.5f;
+                ImGui::SliderFloat(" ", &slider_f1, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
                 // TODO: Create isolation feature if we want to have
                 // Therefore a picker has to work
                 ImGui::Text("Start Isolation:");
+                bool isolationStarted = false;
+                static int clicked = 0;
+                if(ImGui::Button("Isolationstart"))
+                {
+                    isolationStarted = true;
+                    clicked++;
+                }
+                if (clicked & 1)
+                {
+                    ImGui::SameLine();
+                    ImGui::Text("Thanks for clicking me!");
+                }
                 //...
                 ImGui::Text("Finish Isolation:");
+                if(ImGui::Button("Isolationend"))
+                {
+                    if (isolationStarted)
+                    {
+                        isolationStarted = false;
+                        clicked++;
+                    }
+                }
                 ImGui::EndTable();
             }
         }

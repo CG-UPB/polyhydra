@@ -8,11 +8,11 @@
 
 namespace vOS
 {
-    class Test final: public WindowPanel
+    class ToolBar final: public WindowPanel
     {
     public:
-        ~Test();
-        static Test* getInstance();
+        ~ToolBar();
+        static ToolBar* getInstance();
         void clear();
         void addLog(const char* fmt, int level = 0);
         void addLog(std::string fmt, int level = 0);
@@ -22,9 +22,9 @@ namespace vOS
         ImVector<int>   lineOffsets;
         std::string levels[4];
     private:
-        Test();
+        ToolBar();
 
-        static Test* instance;
+        static ToolBar* instance;
         bool autoScroll;
         std::vector<ImVec4> colors;
         bool m_vertex_selection;
