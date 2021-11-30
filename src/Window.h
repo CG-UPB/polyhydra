@@ -10,6 +10,7 @@
 #include <OpenVolumeMesh/Mesh/HexahedralMesh.hh>
 #include <OpenVolumeMesh/Mesh/PolyhedralMesh.hh>
 #include <string>
+#include <map>
 #include <functional>
 #include "ImguiRenderer.h"
 #include "mesh/MeshObject.h"
@@ -71,9 +72,9 @@ namespace vOS
 
         void set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha);
 
-        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
+        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index=0);
 
-        MeshObject& get_mesh_obj();
+        MeshObject& get_mesh_obj(int index = 0);
 
         unsigned int add_shape(Shape* shape);
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +185,8 @@ namespace vOS
 
         v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
+
+        std::map<int, MeshObject*> m_mesh_objects;
         MeshObject m_mesh_obj;
 
         MenuBar* m_menu_bar;

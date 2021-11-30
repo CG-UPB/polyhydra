@@ -23,9 +23,9 @@
 
 namespace vOS
 {
-    FileDialog* Window::m_file_dialog;
+    FileDialog *Window::m_file_dialog;
 
-    Window& Window::instance()
+    Window &Window::instance()
     {
         static Window inst;
         return inst;
@@ -47,12 +47,12 @@ namespace vOS
         m_menu_bar = new MenuBar();
         m_panels.push_back(m_menu_bar);
 
-        auto* mesh_view = new MeshView(720, 480);
+        auto *mesh_view = new MeshView(720, 480);
 
         m_panels.push_back(mesh_view);
         m_panels.push_back(m_file_dialog);
         m_panels.push_back(m_custom_ui);
-        LogWindow* mylog = LogWindow::getInstance();
+        LogWindow *mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
     }
 
@@ -102,7 +102,7 @@ namespace vOS
     {
 
         // Destroy Imgui Elements
-        for (auto& element: m_panels)
+        for (auto &element: m_panels)
         {
             if (element == LogWindow::getInstance())
                 continue;
@@ -134,7 +134,7 @@ namespace vOS
         m_imgui_renderer->pre_render_step();
 
         // Draw all of our panels
-        for (auto& element: m_panels)
+        for (auto &element: m_panels)
         {
             element->show();
         }
@@ -146,13 +146,36 @@ namespace vOS
         // Deactivate Mutex Guard
     }
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index)
     {
-        m_mesh_obj.set_mesh(mesh);
+        auto mesh_obj = new MeshObject();
+        mesh_obj->set_mesh(mesh);
+
+        bool replaced = false;
+        // check if index of mesh already exist: yes -> replace it, no -> just insert it
+        for(auto & m: m_mesh_objects)
+        {
+            if (m.first == index)
+            {
+                m.second = mesh_obj;
+                replaced = true;
+            }
+        }
+        if (!replaced)
+        {
+            m_mesh_objects.insert({index, mesh_obj});
+        }
     }
 
-    MeshObject& Window::get_mesh_obj()
+    MeshObject &Window::get_mesh_obj(int index)
     {
+        for (auto &m: m_mesh_objects)
+        {
+            if (m.first == index)
+            {
+                return *m.second;
+            }
+        }
         return m_mesh_obj;
     }
 
@@ -183,7 +206,7 @@ namespace vOS
         LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
     }
 
-    unsigned int Window::add_shape(Shape* shape)
+    unsigned int Window::add_shape(Shape *shape)
     {
         // TODO Add good exception handling
         if (shape == nullptr)
@@ -201,7 +224,7 @@ namespace vOS
         return ShapePass::add_shape(box);
     }*/
 
-    bool Window::ShowFileDialog(std::string& path, const std::string& extension)
+    bool Window::ShowFileDialog(std::string &path, const std::string &extension)
     {
         m_file_dialog->open(extension);
         if (m_file_dialog->is_ok())

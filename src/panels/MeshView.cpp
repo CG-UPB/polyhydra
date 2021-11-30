@@ -268,7 +268,7 @@ namespace vOS
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id()),
+                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
