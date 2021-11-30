@@ -17,7 +17,7 @@
 #include "panels/LogWindow.h"
 #include "panels/ToolBox.h"
 #include "panels/PropertyView.h"
-#include "panels/Test.h"
+#include "panels/ToolBar.h"
 
 namespace vOS
 {
@@ -220,7 +220,7 @@ namespace vOS
         m_panels.push_back(mylog);
         LogWindow::getInstance()->addLog("testLog");
         //m_toolbar = new ToolBox();
-        Test* mytest = Test::getInstance();
+        ToolBar* mytest = ToolBar::getInstance();
         m_panels.push_back(mytest);
     }
 

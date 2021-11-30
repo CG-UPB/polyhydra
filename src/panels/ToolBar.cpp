@@ -34,15 +34,11 @@ namespace vOS
         //delete instance;
     }
 
-    enum Selection{
-        Vertex = 0,
-        Edge = 1,
-        Face = 2
-    };
+
 
     // Helper to display a little (?) mark which shows a tooltip when hovered.
     // In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
-    static void HelpMarker(const char* desc)
+    static void HelpMarkerWithQuestionMark(const char* desc)
     {
         ImGui::TextDisabled("(?)");
         if (ImGui::IsItemHovered())
@@ -71,19 +67,29 @@ namespace vOS
             //TODO:Make clear how to get image of the actual mesh object (with transparent background)
         }
         ImGui::SameLine();
-        HelpMarker("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
+        HelpMarkerWithQuestionMark("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
                    "choose a file in which you want to save your image of the actual Mesh");
 
         if (ImGui::BeginPopup("Selection")) {
             //ImGui::Checkbox("Vertex-Selection", &m_vertex_selection);
             if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
+            {
                 m_current_selection_mode = Vertex;
-
+                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Vertex);
+            }
+            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
             if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
+            {
                 m_current_selection_mode = Edge;
-
+                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Edge);
+            }
+            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
             if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
+            {
                 m_current_selection_mode = Face;
+                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Face);
+            }
+            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
             ImGui::EndPopup();
         }
         if (ImGui::Button("Selection"))
@@ -92,7 +98,8 @@ namespace vOS
         {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("ToolBar");
+            ImGui::TextUnformatted("By pushing this button diverse options for Selection of elements where shown. "
+                                   "You can decide which one you want to use");
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
@@ -102,41 +109,58 @@ namespace vOS
             if(ImGui::BeginTable("split1", 1))
             {
                 ImGui::TableNextColumn();
-                ImGui::Text("Slider:");
-                //TODO: create a Slider
-                static float slider_f = 0.5f;
-                ImGui::SliderFloat("", &slider_f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
+                ImGui::Text("Slicer:");
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
+                                                              "inview of the mesh");
+                ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
+                GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
                 ImGui::Text("Peel:");
-                //TODO: create peel-slider
-                static float slider_f1 = 0.5f;
-                ImGui::SliderFloat(" ", &slider_f1, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
-                // TODO: Create isolation feature if we want to have
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
+                ImGui::SliderFloat(" ", &m_slider_peel, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
+                GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
                 // Therefore a picker has to work
                 ImGui::Text("Start Isolation:");
-                bool isolationStarted = false;
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("With this button you can start a selection of a "
+                                                              "variable number of vertices, edges or faces, which you "
+                                                              "want to visualize for their own. To stop the selection "
+                                                              "you have to press the button below");
                 static int clicked = 0;
                 if(ImGui::Button("Isolationstart"))
                 {
-                    isolationStarted = true;
-                    clicked++;
+                    if(!m_isolation_started)
+                    {
+                        m_isolation_started = true;
+                        GlobalViewerSettings::getInstance()->m_set_current_isolation_state(m_isolation_started);
+                        clicked++;
+                    }
                 }
                 if (clicked & 1)
                 {
                     ImGui::SameLine();
-                    ImGui::Text("Thanks for clicking me!");
+                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),"Isolation-Selection is Active");
                 }
                 //...
                 ImGui::Text("Finish Isolation:");
                 if(ImGui::Button("Isolationend"))
                 {
-                    if (isolationStarted)
+                    if (m_isolation_started)
                     {
-                        isolationStarted = false;
+                        m_isolation_started = false;
+                        GlobalViewerSettings::getInstance()->m_set_current_isolation_state(m_isolation_started);
                         clicked++;
                     }
                 }
                 ImGui::EndTable();
             }
+        }
+        if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
+        {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("By pushing this button diverse options for Filtering the mesh where shown. "
+                                   "There are multiple options to get a better view of the mesh");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
         }
 
         if (ImGui::CollapsingHeader("Rendering Options"))
@@ -146,34 +170,44 @@ namespace vOS
                 ImGui::TableNextColumn();
                 ImGui::Text("Color:");
                 ImGui::ColorEdit4("", (float*)&m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                ImGui::SameLine(); HelpMarker(
+                GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color);
+                ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
                 // Select an item type
                 const char* item_names[] =
                         {
                                 "Roundings", "Fissures", "Lines", "Flat Lines"
                         };
-                static int item_type = 2;
                 ImGui::Text("Separation:");
-                ImGui::Combo("", &item_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
+                ImGui::Combo("", &m_separation_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
+                GlobalViewerSettings::getInstance()->m_set_current_separation_type(m_separation_type);
                 //TODO: Fix the next line that it works:
                 //ImGui::SliderFloat("",&m_separation_value, 0.0f, 1.0f,"ratio = %.3f");
                 ImGui::SameLine();
-                HelpMarker("You can choose between multiple Separation-types. This could be useful, if you want to watch inside of the mesh");
+                HelpMarkerWithQuestionMark("You can choose between multiple Separation-types. This could be useful, if you want to watch inside of the mesh");
                 ImGui::Text("Lighting:");
                 const char* lighting_names[] =
                         {
                                 "best(AO)", "fast(SSAO)", "local only", "none"
                         };
-                static int lighting_type = 3;
-                ImGui::Combo(" ", &lighting_type, lighting_names, IM_ARRAYSIZE(lighting_names), IM_ARRAYSIZE(lighting_names));
+                ImGui::Combo(" ", &m_lighting_type, lighting_names, IM_ARRAYSIZE(lighting_names), IM_ARRAYSIZE(lighting_names));
+                GlobalViewerSettings::getInstance()->m_set_current_lighting_type(m_lighting_type);
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("You can decide which lighthing you want to use");
                 //TODO:ADD All Elements we want to provide for Rendering
                 //TODO:Link the buttons with the options on the Mesh
 
                 ImGui::EndTable();
             }
         }
-
+        if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
+        {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("By pushing this button diverse options for Rendering the mesh. "
+                                   "There are multiple options for different rendering of the mesh");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
         ImGui::End();
     }
 } // namespace vOS

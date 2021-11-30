@@ -16,11 +16,11 @@ namespace vOS
 
     }
 
-    GlobalViewerSettings::GlobalViewerSettings() {}
-
     // Destruktor
     GlobalViewerSettings::~GlobalViewerSettings()
     {
         //delete instance;
     }
+
+    GlobalViewerSettings::GlobalViewerSettings() {};
 }

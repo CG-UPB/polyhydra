@@ -5,33 +5,35 @@
 #include <cstdarg>
 #include <string.h>
 #include <vector>
+#include "../settings/GlobalViewerSettings.h"
 
 namespace vOS
 {
+    enum Selection{
+        Vertex = 0,
+        Edge = 1,
+        Face = 2
+    };
+
     class ToolBar final: public WindowPanel
     {
     public:
         ~ToolBar();
         static ToolBar* getInstance();
-        void clear();
-        void addLog(const char* fmt, int level = 0);
-        void addLog(std::string fmt, int level = 0);
         void show() override;
-        ImGuiTextBuffer Buf;
-        ImGuiTextFilter filter;
-        ImVector<int>   lineOffsets;
-        std::string levels[4];
+
     private:
         ToolBar();
 
         static ToolBar* instance;
-        bool autoScroll;
-        std::vector<ImVec4> colors;
-        bool m_vertex_selection;
-        bool m_edge_selection;
-        int m_current_selection_mode;
         int m_timer_treshold = 3;
-        float m_separation_value = 0.0f;
+
+        int m_current_selection_mode;
         float m_color = 0.5f;
+        float m_slider_slicer = 0.5f;
+        float m_slider_peel = 0.5f;
+        bool m_isolation_started = false;
+        int m_separation_type = 2;
+        int m_lighting_type = 3;
     };
 }
