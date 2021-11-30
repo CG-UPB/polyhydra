@@ -173,6 +173,21 @@ namespace vOS
                 GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color[0],m_color[1],m_color[2],m_color[3]);
                 ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
+                
+                // Select an item type
+                const char* rendering_mode_names[] =
+                        {
+                                "WireFrame", "Phong"
+                        };
+                ImGui::Text("Rendering Mode:");
+                ImGui::Combo("  ", &m_rendering_mode, rendering_mode_names, IM_ARRAYSIZE(rendering_mode_names), IM_ARRAYSIZE(rendering_mode_names));
+                GlobalViewerSettings::getInstance()->m_set_current_rendering_mode(m_rendering_mode);
+                //TODO: Fix the next line that it works:
+                //ImGui::SliderFloat("",&m_separation_value, 0.0f, 1.0f,"ratio = %.3f");
+                ImGui::SameLine();
+                HelpMarkerWithQuestionMark("You can choose between multiple Separation-types. This could be useful, if you want to watch inside of the mesh");
+                
+                
                 // Select an item type
                 const char* item_names[] =
                         {

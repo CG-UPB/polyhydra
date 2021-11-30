@@ -169,11 +169,23 @@ namespace vOS
 
     void MeshView::renderMesh()
     {
+        int renderingMode = GlobalViewerSettings::getInstance()->m_get_current_rendering_mode();
+        if(renderingMode == 0)
+        {
+            m_mesh_pass.set_wireframe_mode(true);
+            m_mesh_pass.set_use_phong(false);
+        }  
+        else if(renderingMode == 1)
+        {
+            m_mesh_pass.set_wireframe_mode(false);
+            m_mesh_pass.set_use_phong(true);
+        }
+
         if(ImGui::IsKeyPressed(GLFW_KEY_W))
         {
             m_mesh_pass.set_wireframe_mode(!m_mesh_pass.get_wireframe_mode());
+            m_mesh_pass.set_use_phong(!m_mesh_pass.get_use_phong());
         }
-
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
