@@ -54,6 +54,8 @@ namespace vOS
         m_panels.push_back(m_custom_ui);
         LogWindow* mylog = LogWindow::getInstance();
         m_panels.push_back(mylog);
+        ToolBar* mytoolbar = ToolBar::getInstance();
+        m_panels.push_back(mytoolbar);
     }
 
     void Window::open()

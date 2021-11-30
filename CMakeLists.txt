@@ -38,7 +38,9 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
         ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp
-        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp)
+        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp
+        ${VOLUMESHOS_SRC}/panels/ToolBar.cpp
+        ${VOLUMESHOS_SRC}/settings/GlobalViewerSettings.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

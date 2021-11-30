@@ -18,6 +18,7 @@
 #include "panels/FileDialog.h"
 #include "rendering/shapes/Shape.h"
 #include "rendering/shapes/Box.h"
+#include "panels/ToolBar.h"
 
 namespace vOS
 {

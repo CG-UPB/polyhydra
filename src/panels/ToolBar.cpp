@@ -169,8 +169,8 @@ namespace vOS
             {
                 ImGui::TableNextColumn();
                 ImGui::Text("Color:");
-                ImGui::ColorEdit4("", (float*)&m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color);
+                ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+                GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color[0],m_color[1],m_color[2],m_color[3]);
                 ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
                 // Select an item type

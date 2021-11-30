@@ -177,6 +177,9 @@ namespace vOS
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
+        float* color = GlobalViewerSettings::getInstance()->m_get_current_mesh_rendering_color();
+        m_render_data.mesh.color = glm::vec3{color[0], color[1], color[2]};
+
         // we need to clear our framebuffer as well
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
