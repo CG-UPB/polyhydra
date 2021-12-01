@@ -1,6 +1,7 @@
 #include <OpenVolumeMesh/Geometry/VectorT.hh>
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
 #include <vector>
+#include <map>
 #include "../rendering/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 
@@ -9,6 +10,23 @@
 
 namespace vOS
 {
+    struct Color
+    {
+        Color(float _r, float _g, float _b) : r(_r), g(_g), b(_b), a(1){}
+        Color(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a){}
+        float r;
+        float g;
+        float b;
+        float a;
+    };
+
+    struct Highlight
+    {
+        Highlight(Color c, OpenVolumeMesh::VertexHandle vh) : color(c), v_h(vh){}
+        Color color;
+        OpenVolumeMesh::VertexHandle v_h;
+    };
+
     class MeshObject
     {
     public:
@@ -24,7 +42,8 @@ namespace vOS
         void load_from_file(std::string file_path);
         void write_to_file(std::string file_path);
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
-        void set_highlight(std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool> tuple);
+        void add_highlight(Highlight tuple);
+        void remove_highlight(OpenVolumeMesh::VertexHandle vh);
         void remove_highlights();
         void initialize_face_normals();
         void initialize_vertex_normals();
@@ -35,7 +54,7 @@ namespace vOS
         std::vector<unsigned int> faces();
         std::vector<float> vertex_normals();
         std::vector<float> face_normals();
-        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>> get_highlights();
+        std::map<OpenVolumeMesh::VertexHandle, Highlight> get_highlights();
 
 
         glm::vec3 &get_mesh_offset();
@@ -48,7 +67,8 @@ namespace vOS
         std::vector<unsigned int> m_indices;
         std::vector<float> m_vertex_normals;
         std::vector<float> m_face_normals;
-        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>> m_vertex_colors;
+
+        std::map<OpenVolumeMesh::VertexHandle, Highlight> highlight_map;
 
         VertexArrayObject *m_vertexArrayObject = nullptr;
 

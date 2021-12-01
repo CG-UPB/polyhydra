@@ -51,16 +51,11 @@ namespace vOS
     {
         m_file_dialog = new FileDialog();
         m_menu_bar = new MenuBar();
-        m_panels.push_back(m_menu_bar);
 
         m_mesh_view = new MeshView(720, 480);
         m_mesh_view->set_mesh_object(&m_mesh_obj);
 
-        m_panels.push_back(m_mesh_view);
-        m_panels.push_back(m_file_dialog);
-        m_panels.push_back(m_custom_ui);
-        LogWindow* mylog = LogWindow::getInstance();
-        m_panels.push_back(mylog);
+        m_log_window = LogWindow::getInstance();
     }
 
     void Window::open()
@@ -103,12 +98,11 @@ namespace vOS
     {
 
         // Destroy Imgui Elements
-        for (auto& element: m_panels)
-        {
-            if (element == LogWindow::getInstance())
-                continue;
-            delete element;
-        }
+        delete m_file_dialog;
+        delete m_menu_bar;
+        delete m_mesh_view;
+        delete m_custom_ui;
+
 
         if (m_imgui_renderer != nullptr)
             delete m_imgui_renderer;
@@ -130,20 +124,41 @@ namespace vOS
         }
         rendering_mutex.unlock();
 
-        rendering_mutex.lock();
+        // Bizarre Observation ???:
+        // Removing the rendering mutex from our panels, will result in the dijkstra algorithm to finish immediatly, before even a single render
+        // step has been done
+        // Having the mutex guard is extremely slow, though everything renders at a nice 60fps, the algorithm takes forever to complete
+        // However, outputting anything to the console in either thread significantly increases the algorithm speed without reducing the fps
+        // although it will be very abrupt in how many calculations are being done each step
+
+        //static int i;
+        //std::cout << "I render "<< i++ << std::endl;
         // Pre Render Setup
         m_mesh_obj.m_is_rendering = true;
+
+        // Do NOT lock the pre render step, Imgui tries to bind to 60 fps which will result in every thread having to adhere to Imgui's fps mechanism
         m_imgui_renderer->pre_render_step();
+
+        rendering_mutex.lock();
+        // Draw all of our panels and renderers
+
+        // File Dialog
+        m_file_dialog->show();
+
+        // Menu Bar
+        m_menu_bar->show();
+
+        // Mesh View
+        m_mesh_view->show();
+
+        // Log Window
+        m_log_window->show();
+
         rendering_mutex.unlock();
 
-        // Draw all of our panels
-        // The Custom Imgui UI will be run here too
-        // Panels are not mutex guarded to avoid deadlocks from the custom imgui function
-        for (auto& element: m_panels)
-        {
-            element->show();
-        }
-        rendering_mutex.unlock();
+        // Custom UI
+        // Custom UI is not guarded with mutex guards, to avoid self-deadlocking in linear threads / when no threads are used
+        m_custom_ui->show();
 
         rendering_mutex.lock();
         // Set new Custom UI Function after the previous custom ui function has run to its end
@@ -171,16 +186,30 @@ namespace vOS
         m_new_custom_ui_function_set = true;
         rendering_mutex.unlock();
     }
-    void Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
+    void Window::highlight_vertex(OpenVolumeMesh::VertexHandle v_h, Color color)
     {
-        // Greedy Approach
-
+        //static int i;
         rendering_mutex.lock();
+        //std::cout << "I did stuff "<< i++ << std::endl;
 
-        m_mesh_obj.set_highlight(std::make_tuple(v_h,red, green, blue,alpha,b));
+        Highlight highlight(color, v_h);
+
+        m_mesh_obj.add_highlight(highlight);
 
         rendering_mutex.unlock();
+    }
+    void Window::highlight_vertex(OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha)
+    {
+        Color color(red,green,blue,alpha);
+        highlight_vertex(v_h, color);
+    }
 
+    void Window::remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h) {
+        rendering_mutex.lock();
+
+        m_mesh_obj.remove_highlight((v_h));
+
+        rendering_mutex.unlock();
     }
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
@@ -200,17 +229,19 @@ namespace vOS
 
         rendering_mutex.lock();
 
+        // Give the shape a unique ID
         unsigned int shape_id = shape_id_counter++;
+        shape->set_id((shape_id));
 
-        ShapePass::add_shape(std::make_tuple(shape, shape_id,true));
-
+        // Add shape to the ShapePass
+        ShapePass::add_shape(shape);
         rendering_mutex.unlock();
 
         // Command Queue Approach
         return shape_id;
     }
 
-    void Window::remove_all_highlights(){
+    void Window::remove_all_vertex_highlights(){
         // Greedy Approach
 
         rendering_mutex.lock();

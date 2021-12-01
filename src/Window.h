@@ -73,11 +73,12 @@ class MeshView;
 
         // Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        void set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha);
+        void highlight_vertex(OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha);
+        void highlight_vertex(OpenVolumeMesh::VertexHandle v_h, Color color);
+        void remove_all_vertex_highlights();
+        void remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h);
 
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
-
-        void remove_all_highlights();
 
         void remove_shape(unsigned int id);
 
@@ -204,16 +205,16 @@ class MeshView;
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
+        // Panels
+        FileDialog* m_file_dialog;
+        MenuBar* m_menu_bar;
+        MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;
+        LogWindow* m_log_window;
 
         v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
         MeshObject m_mesh_obj;
-        MeshView* m_mesh_view;
-
-        MenuBar* m_menu_bar;
-        FileDialog* m_file_dialog;
-        std::vector<WindowPanel*> m_panels;
 
         MenuBar* get_menu_bar(){return m_menu_bar;}
 

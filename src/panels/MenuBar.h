@@ -5,9 +5,9 @@ namespace vOS
 {
     class MenuBar: public WindowPanel
     {
+    public:
         void show() override;
         ~MenuBar() override = default;
-    public:
 
     };
 }

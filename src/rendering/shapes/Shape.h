@@ -6,6 +6,7 @@
 
 namespace vOS
 {
+
     class Shape
     {
     public:
@@ -79,11 +80,15 @@ namespace vOS
             return m_shader;
         }
 
+        int get_id(){return id;}
+        void set_id(int _id){id = _id;}
+
     protected:
 
         Shader* m_shader = Shader::basic_shape_shader();
 
     private:
+        int id = 0;
 
         bool m_visible = true;
         glm::vec4 m_base_color = glm::vec4(1.0f);

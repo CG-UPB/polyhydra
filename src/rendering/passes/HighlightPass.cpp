@@ -33,15 +33,15 @@ namespace vOS
         glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
 
         auto highlights = data.mesh.mesh->get_highlights();
-        for(int i = 0; i < highlights.size(); i++)
+        for(auto it = highlights.begin(); it != highlights.end(); it++)
         {
-            auto entry = highlights[i];
+            auto entry = it->second;
 
-            OpenVolumeMesh::VertexHandle v_h = std::get<0>(entry);
-            float red = std::get<1>(entry);
-            float green = std::get<2>(entry);
-            float blue = std::get<3>(entry);
-            float alpha = std::get<4>(entry);
+            OpenVolumeMesh::VertexHandle v_h = entry.v_h;
+            float red = entry.color.r;
+            float green = entry.color.g;
+            float blue = entry.color.b;
+            float alpha = entry.color.a;
 
             auto vertex = data.mesh.mesh->m_mesh->vertex(v_h);
 

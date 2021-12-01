@@ -48,15 +48,9 @@ namespace vOS
         }
     }
 
-    unsigned int ShapePass::add_shape(std::tuple<Shape*, unsigned int, bool> shape)
+    void ShapePass::add_shape(Shape* shape)
     {
-        Shape* shape_pointer = std::get<0>(shape);
-        unsigned int shape_id = std::get<1>(shape);
-        bool add = std::get<2>(shape);
-
-        s_shapes.push_back(shape_pointer);
-
-        return shape_id;
+        s_shapes.push_back(shape);
     }
 
     const Shape& ShapePass::get_shape(unsigned int shape_id)

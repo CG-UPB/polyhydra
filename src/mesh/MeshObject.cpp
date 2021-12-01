@@ -174,34 +174,53 @@ namespace vOS
         return m_face_normals;
     }
 
-    void MeshObject::set_highlight(std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool> tuple)
+    void MeshObject::add_highlight(Highlight highlight)
     {
+        // Remove Highlight if it already exists
+        remove_highlight(highlight.v_h);
+
+        // Add Highlight to Map
+        highlight_map.insert({highlight.v_h,  highlight});
+        /*
         //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         if (std::get<5>(tuple) == true)
         {
             // Add
-            m_vertex_colors.push_back(tuple);
+            m_vertex_highlights.push_back(tuple);
         } else if (std::get<5>(tuple) == false)
         {
             // Remove
-            auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(),
+            auto pos = std::find(m_vertex_highlights.begin(), m_vertex_highlights.end(),
                                  tuple);
-            if (pos != m_vertex_colors.end())
+            if (pos != m_vertex_highlights.end())
             {
-                m_vertex_colors.erase(pos);
+                m_vertex_highlights.erase(pos);
             }
         }
+        */
+    }
 
+
+    void MeshObject::remove_highlight(OpenVolumeMesh::VertexHandle vh) {
+
+        auto search = highlight_map.find(vh);
+        if (search != highlight_map.end()) {
+            // Element Exists
+            highlight_map.erase(search);
+        }else{
+            // Element does not exist
+            // ...
+        }
     }
 
     void MeshObject::remove_highlights()
     {
-        m_vertex_colors.clear();
+        //highlight_map.clear();
     }
 
-    std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>> MeshObject::get_highlights()
+    std::map<OpenVolumeMesh::VertexHandle, Highlight> MeshObject::get_highlights()
     {
-        return m_vertex_colors;
+        return highlight_map;
     }
 
     glm::vec3 &MeshObject::get_mesh_offset()

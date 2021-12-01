@@ -166,7 +166,7 @@ namespace vOS
         Window& window = Window::instance();
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.remove_all_highlights();
+        window.remove_all_vertex_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -177,8 +177,8 @@ namespace vOS
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0.0f;
 
-        //window.set_vertex_color(m_start, true, 0, 0, 1, 1);
-        //window.set_vertex_color(m_end, true, 0, 0, 1, 1);
+        //window.highlight_vertex(m_start, true, 0, 0, 1, 1);
+        //window.highlight_vertex(m_end, true, 0, 0, 1, 1);
 
         bool found = false;
 
@@ -202,7 +202,7 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                window.set_vertex_color(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]), false, 1, 0, 0, 1);
+                window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -223,7 +223,7 @@ namespace vOS
                         distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
                         queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
                         prev[nextVertexHandle.idx()] = vertexHandle.idx();
-                        window.set_vertex_color(vertexHandle, true, 1, 0, 0, 1);
+                        window.highlight_vertex(vertexHandle, 1, 0, 0, 1);
                     }
 
                     if (queue.top().second.idx() == m_end.idx())
@@ -247,7 +247,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.remove_all_highlights();
+            window.remove_all_vertex_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)
@@ -258,11 +258,11 @@ namespace vOS
                 box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
                 if (i == res.size() - 1 || first)
                 {
-                    //window.set_vertex_color(vertex, true, 0, 0, 1, 1);
+                    //window.highlight_vertex(vertex, true, 0, 0, 1, 1);
                     box->set_base_color(0.2f, 0.2f, 1.0f);
                 } else
                 {
-                    //window.set_vertex_color(vertex, true, 1, 0, 0, 1);
+                    //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
                     box->set_base_color(1.0f, 0.2f, 0.2f);
                 }
                 window.add_shape(box);
@@ -350,7 +350,7 @@ namespace vOS
         std::cout << window.get_loaded_file_name() << std::endl;
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.remove_all_highlights();
+        window.remove_all_vertex_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -361,8 +361,8 @@ namespace vOS
         queue.push(currentVertex);
         distances[currentVertex.second.idx()] = 0.0f;
 
-        //window.set_vertex_color(m_start, true, 0, 0, 1, 1);
-        //window.set_vertex_color(m_end, true, 0, 0, 1, 1);
+        //window.highlight_vertex(m_start, true, 0, 0, 1, 1);
+        //window.highlight_vertex(m_end, true, 0, 0, 1, 1);
 
         bool found = false;
 
@@ -390,7 +390,7 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                window.set_vertex_color(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]), false, 1, 0, 0, 1);
+                window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -411,7 +411,7 @@ namespace vOS
                         distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
                         queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
                         prev[nextVertexHandle.idx()] = vertexHandle.idx();
-                        window.set_vertex_color(vertexHandle, true, 1, 0, 0, 1);
+                        window.highlight_vertex(vertexHandle, 1, 0, 0, 1);
                     }
 
                     if (queue.top().second.idx() == m_end.idx())
@@ -435,7 +435,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.remove_all_highlights();
+            window.remove_all_vertex_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)
@@ -446,11 +446,11 @@ namespace vOS
                 box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
                 if (i == res.size() - 1 || first)
                 {
-                    //window.set_vertex_color(vertex, true, 0, 0, 1, 1);
+                    //window.highlight_vertex(vertex, true, 0, 0, 1, 1);
                     box->set_base_color(0.2f, 0.2f, 1.0f);
                 } else
                 {
-                    //window.set_vertex_color(vertex, true, 1, 0, 0, 1);
+                    //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
                     box->set_base_color(1.0f, 0.2f, 0.2f);
                 }
                 window.add_shape(box);
