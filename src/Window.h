@@ -57,8 +57,8 @@ class MeshView;
         // Renamed Classes for convenience
         using v3f = OpenVolumeMesh::GeometricPolyhedralMeshV3f;
 
-        typedef std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool>* operation_set_highlight;
-        typedef std::tuple<Shape*, unsigned int, bool>* operation_shape;
+        typedef std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool> operation_set_highlight;
+        typedef std::tuple<Shape*, unsigned int, bool> operation_shape;
         typedef std::function<void(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode)> vertex_selection_callback;
         typedef std::function<void(OpenVolumeMesh::EdgeHandle* edges_array, int length, Selection_Mode selection_mode)> edge_selection_callback;
         typedef std::function<void(OpenVolumeMesh::FaceHandle* faces_array, int length, Selection_Mode selection_mode)> face_selection_callback;

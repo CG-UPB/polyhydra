@@ -164,6 +164,7 @@ namespace vOS
 
         operation_mutex.unlock();
 
+
         custom_imgui_mutex.lock();
         // Set new Custom UI Function after the previous custom ui function has run to its end
         if(m_new_custom_ui_function_set){
@@ -196,7 +197,7 @@ namespace vOS
         operation_mutex.lock();
 
         std::tuple<OpenVolumeMesh::VertexHandle, float,float,float,float,bool> tuple= std::make_tuple(v_h,red, green, blue,alpha,b);
-        operation_set_highlight highlight = &tuple;
+        operation_set_highlight highlight = tuple;
 
         operation_list_vertex_highlights.push_back(highlight);
 
@@ -219,8 +220,11 @@ namespace vOS
         operation_mutex.lock();
 
         unsigned int shape_id = shape_id_counter++;
+
         std::tuple<Shape*, unsigned int, bool> tuple= std::make_tuple(shape, shape_id,true);
-        operation_shape shape_operation = &tuple;
+
+        operation_shape shape_operation = tuple;
+
         operation_list_shapes.push_back(shape_operation);
 
         operation_mutex.unlock();

@@ -35,7 +35,7 @@ namespace vOS
         auto highlights = data.mesh.mesh->get_highlights();
         for(int i = 0; i < highlights.size(); i++)
         {
-            auto entry = *highlights[i];
+            auto entry = highlights[i];
 
             OpenVolumeMesh::VertexHandle v_h = std::get<0>(entry);
             float red = std::get<1>(entry);
