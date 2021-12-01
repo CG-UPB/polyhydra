@@ -215,35 +215,47 @@ namespace vOS
 
         auto& mesh = Window::instance().get_mesh_obj();
 
-        if (mesh.get_vao() != nullptr)
+        if (mesh.get_vao() != nullptr )
         {
             m_selection_pass.render(*mesh.get_vao(), m_render_data);
-        }
 
+            if(ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
 
-        if(ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-        {
+                glFlush();
+                glFinish();
 
-            glFlush();
-            glFinish();
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+                // viewport[3] equals viewport height
+                GLint viewport[4];
+                glGetIntegerv(GL_VIEWPORT, viewport);
 
-            // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-            // viewport[3] equals viewport height
-            GLint viewport[4];
-            glGetIntegerv(GL_VIEWPORT, viewport);
+                // read Pixel data/color from framebuffer
+                ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+                unsigned char data[4];
+                glReadPixels(m_lastX - screen_pos.x, viewport[3] - (m_lastY - screen_pos.y),1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-            // read Pixel data/color from framebuffer
-            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-            unsigned char data[4];
-            glReadPixels(m_lastX - screen_pos.x, viewport[3] - (m_lastY - screen_pos.y),1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                // evaluate ID out of color
+                int pickedID = data[0] + data[1] * 256 + data[2] * 256*256; //+ data[3] *256*256*256;
 
-            // evaluate ID out of color
-            int pickedID = data[0] + data[1] * 256 + data[2] * 256*256;
+                std::cout << pickedID << std::endl;
+                unsigned int faceID = mesh.to_faceID(pickedID) - 1;
+                std::cout << faceID << std::endl;
 
-            std::cout << pickedID << std::endl;
-            std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
+                OpenVolumeMesh::FaceHandle face(faceID);
+                if (face.is_valid())
+                {
+
+                    auto pick_pos = mesh.m_mesh->barycenter(face);
+                    Shape *shape = new Box();
+                    shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                    ShapePass::add_shape(shape);
+                    std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
+                }
+
+            }
         }
 
         m_selectionFrameBuffer->unbind();
@@ -268,7 +280,7 @@ namespace vOS
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id()),
+                reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},

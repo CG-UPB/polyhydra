@@ -61,7 +61,7 @@ namespace vOS
             initialize_vertex_normals();
             m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
             m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
-            m_vertexArrayObject->add_buffer(m_face_ids,2,3);
+            //m_vertexArrayObject->add_buffer(m_face_ids,2,3);
             for (auto i = std::begin(m_face_ids); i < std::end(m_face_ids); ++i)
             {
                 std::cout << *i << std::endl;
@@ -205,15 +205,22 @@ namespace vOS
                     }
                 }
 
-                for(int i = 0; i < 3; i++)
-                {
-                    m_face_ids.push_back(f_it->idx());
-                }
+                m_face_ids.push_back(f_it->idx());
+
 
             }
         }
 
         return m_indices;
+    }
+
+    unsigned int MeshObject::to_faceID(int value)
+    {
+        if(m_face_ids.size() > value)
+        {
+            return m_face_ids[value] + 1;
+        }
+        return 0;
     }
 
     std::vector<float> MeshObject::vertex_normals()
@@ -301,6 +308,8 @@ namespace vOS
     {
         return m_vertexArrayObject;
     }
+
+
 
 }
 

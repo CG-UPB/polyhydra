@@ -29,6 +29,7 @@ namespace vOS
         void initialize_face_normals();
         void initialize_vertex_normals();
         void update_vertex_buffer();
+        unsigned int to_faceID(int value);
 
         std::vector<float> vertices();
         std::vector<unsigned int> edges();
