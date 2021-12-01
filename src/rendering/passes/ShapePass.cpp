@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "glad/glad.h"
 
 #include "ShapePass.h"
@@ -23,6 +24,7 @@ namespace vOS
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
+
 
         for (Shape* shape : s_shapes)
         {

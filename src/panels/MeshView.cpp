@@ -219,9 +219,8 @@ namespace vOS
         {
             m_selection_pass.render(*mesh.get_vao(), m_render_data);
 
-            if(ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
             {
-
                 glFlush();
                 glFinish();
 
@@ -249,9 +248,11 @@ namespace vOS
                 {
 
                     auto pick_pos = mesh.m_mesh->barycenter(face);
-                    Shape *shape = new Box();
+                    Box *shape = new Box(0.2f, 0.2f, 0.2f);
                     shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                    shape->set_base_color(1.0f, 0.0f, 0.0f);
                     ShapePass::add_shape(shape);
+                    std::cout << "pos x: " << pick_pos[0] <<", y: " << pick_pos[1] <<", z: " << pick_pos[2] << std::endl;
                     std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
                 }
 
@@ -280,7 +281,7 @@ namespace vOS
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id()),
+                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
