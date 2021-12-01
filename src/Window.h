@@ -196,12 +196,6 @@ class MeshView;
         // Mutex and thread safety
         /// Set to guard GL when reading from and rendering our mesh
         std::mutex rendering_mutex;
-        /// Set to guard Window.cpp when initializing or destroying data and when choosing dataflow paths
-        std::mutex meta_mutex;
-        /// Set to guard setting the custom Imgui Function
-        std::mutex custom_imgui_mutex;
-        /// Set to guard altering data on the meshes
-        std::mutex operation_mutex;
 
         // Operations /////////////////////////////////////////////////////////////////////////////////////////////////
 

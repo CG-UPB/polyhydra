@@ -140,7 +140,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = true;
+        bool linear = false;
 
         if(linear)
         {

@@ -83,9 +83,9 @@ namespace vOS
 
     void Window::run()
     {
-        meta_mutex.lock();
+        rendering_mutex.lock();
         open();
-        meta_mutex.unlock();
+        rendering_mutex.unlock();
 
         // Render window forever until window is closed by user
         while (m_window_open)
@@ -94,9 +94,9 @@ namespace vOS
             render();
         }
 
-        meta_mutex.lock();
+        rendering_mutex.lock();
         close();
-        meta_mutex.unlock();
+        rendering_mutex.unlock();
     }
 
     void Window::close()
@@ -117,7 +117,7 @@ namespace vOS
 
     void Window::render()
     {
-        meta_mutex.lock();
+        rendering_mutex.lock();
         // Query whether the window has been closed by the user or not
         bool window_closed = m_imgui_renderer->window_closed();
 
@@ -125,10 +125,10 @@ namespace vOS
         {
             std::cout << "Window Closed" << std::endl;
             m_window_open = false;
-            meta_mutex.unlock();
+            rendering_mutex.unlock();
             return;
         }
-        meta_mutex.unlock();
+        rendering_mutex.unlock();
 
         rendering_mutex.lock();
         // Pre Render Setup
@@ -143,29 +143,9 @@ namespace vOS
         {
             element->show();
         }
-        // After rendering has been done, we can  commit changes to the mesh and other commands
+        rendering_mutex.unlock();
 
-        // Alterations
-
-        // Vertex Highlights
-        operation_mutex.lock();
-        for(operation_set_highlight highlight : operation_list_vertex_highlights){
-            m_mesh_obj.set_highlight(highlight);
-        }
-        operation_list_vertex_highlights.clear();
-
-        // Shapes
-
-        for(operation_shape shape  : operation_list_shapes){
-
-            ShapePass::add_shape(shape);
-        }
-        operation_list_shapes.clear();
-
-        operation_mutex.unlock();
-
-
-        custom_imgui_mutex.lock();
+        rendering_mutex.lock();
         // Set new Custom UI Function after the previous custom ui function has run to its end
         if(m_new_custom_ui_function_set){
             m_new_custom_ui_function_set = false;
@@ -174,10 +154,9 @@ namespace vOS
                 m_temporary_new_custom_ui_function = default_callback_function;
             m_custom_ui->set_custom_callback((m_temporary_new_custom_ui_function));
         }
-        custom_imgui_mutex.unlock();
 
         // Post Render Stuff
-        rendering_mutex.lock();
+
         m_imgui_renderer->post_render_step();
         m_mesh_obj.m_is_rendering = false;
         rendering_mutex.unlock();
@@ -187,21 +166,21 @@ namespace vOS
     // Setter Methods (Programmer to Vos) /////////////////////////////////////////////////////////
 
     void Window::set_custom_imgui(void_callback vc) {
-        custom_imgui_mutex.lock();
+        rendering_mutex.lock();
         m_temporary_new_custom_ui_function = vc;
         m_new_custom_ui_function_set = true;
-        custom_imgui_mutex.unlock();
+        rendering_mutex.unlock();
     }
     void Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
     {
-        operation_mutex.lock();
+        // Greedy Approach
 
-        std::tuple<OpenVolumeMesh::VertexHandle, float,float,float,float,bool> tuple= std::make_tuple(v_h,red, green, blue,alpha,b);
-        operation_set_highlight highlight = tuple;
+        rendering_mutex.lock();
 
-        operation_list_vertex_highlights.push_back(highlight);
+        m_mesh_obj.set_highlight(std::make_tuple(v_h,red, green, blue,alpha,b));
 
-        operation_mutex.unlock();
+        rendering_mutex.unlock();
+
     }
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
@@ -217,27 +196,27 @@ namespace vOS
         if (shape == nullptr)
             return -1;
 
-        operation_mutex.lock();
+        // Greedy Approach
+
+        rendering_mutex.lock();
 
         unsigned int shape_id = shape_id_counter++;
 
-        std::tuple<Shape*, unsigned int, bool> tuple= std::make_tuple(shape, shape_id,true);
+        ShapePass::add_shape(std::make_tuple(shape, shape_id,true));
 
-        operation_shape shape_operation = tuple;
+        rendering_mutex.unlock();
 
-        operation_list_shapes.push_back(shape_operation);
-
-        operation_mutex.unlock();
-
+        // Command Queue Approach
         return shape_id;
     }
 
     void Window::remove_all_highlights(){
-        operation_mutex.lock();
+        // Greedy Approach
+
         rendering_mutex.lock();
+
         m_mesh_obj.remove_highlights();
         rendering_mutex.unlock();
-        operation_mutex.unlock();
     }
 
     void Window::remove_shape(unsigned int id){
@@ -260,8 +239,8 @@ namespace vOS
 
     bool Window::is_ready()
     {
-        meta_mutex.lock();
-        meta_mutex.unlock();
+        rendering_mutex.lock();
+        rendering_mutex.unlock();
         return m_initialized;
     }
 
