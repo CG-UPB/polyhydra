@@ -127,7 +127,12 @@ namespace vOS
             {
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
-                Window::instance().set_mesh(&m_mesh);
+                Window::instance().set_mesh(&m_mesh, 0);
+
+//                OpenVolumeMesh::GeometricPolyhedralMeshV3f mesh;
+//                file_manager.readFile("/home/kali/CLionProjects/volumeshos/buddha14880.1.ovm", mesh);
+//                Window::instance().set_mesh(&mesh, 1);
+
                 std::cout << path << std::endl;
 
                 run();

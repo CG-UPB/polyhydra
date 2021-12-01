@@ -130,7 +130,6 @@ namespace vOS
         }
 
         // Pre Render Setup
-        get_mesh_obj().m_is_rendering = true;
         m_imgui_renderer->pre_render_step();
 
         // Draw all of our panels
@@ -141,7 +140,6 @@ namespace vOS
 
         // Post Render Stuff
         m_imgui_renderer->post_render_step();
-        get_mesh_obj().m_is_rendering = false;
 
         // Deactivate Mutex Guard
     }
@@ -149,32 +147,35 @@ namespace vOS
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index)
     {
         auto mesh_obj = new MeshObject();
+        set_mesh_active(index);
         mesh_obj->set_mesh(mesh);
 
-        bool replaced = false;
         // check if index of mesh already exist: yes -> replace it, no -> just insert it
-        for(auto & m: m_mesh_objects)
+        auto search = m_mesh_objects.find(index);
+        if(search != m_mesh_objects.end())
         {
-            if (m.first == index)
-            {
-                m.second = mesh_obj;
-                replaced = true;
-            }
+            search->second = mesh_obj;
         }
-        if (!replaced)
+        else
         {
             m_mesh_objects.insert({index, mesh_obj});
         }
     }
 
+    void Window::set_mesh_active(int index)
+    {
+        auto search = m_mesh_objects.find(index);
+        if(search != m_mesh_objects.end())
+        {
+            m_mesh_obj = *(search->second);
+        }
+    }
+
     MeshObject &Window::get_mesh_obj(int index)
     {
-        for (auto &m: m_mesh_objects)
+        if (index >= 0)
         {
-            if (m.first == index)
-            {
-                return *m.second;
-            }
+            set_mesh_active(index);
         }
         return m_mesh_obj;
     }

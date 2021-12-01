@@ -170,10 +170,8 @@ namespace vOS
         m_lastY = mousePos.y;
     }
 
-    void MeshView::renderMesh()
-    {
-        if(ImGui::IsKeyPressed(GLFW_KEY_W))
-        {
+    void MeshView::renderMesh() {
+        if (ImGui::IsKeyPressed(GLFW_KEY_W)) {
             m_mesh_pass.set_wireframe_mode(!m_mesh_pass.get_wireframe_mode());
         }
 
@@ -183,22 +181,23 @@ namespace vOS
         // we need to clear our framebuffer as well
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        auto& mesh = Window::instance().get_mesh_obj();
-        m_render_data.mesh.offset = mesh.get_mesh_offset();
-
-        mesh.update_vertex_buffer();
-
-        // render all passes
-        m_background_pass.render(*mesh.get_vao(), m_render_data);
-        if (mesh.get_vao() != nullptr)
+        m_background_pass.render(*Window::instance().get_mesh_obj().get_vao(), m_render_data);
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
-            m_mesh_pass.render(*mesh.get_vao(), m_render_data);
-        }
-        m_shape_pass.render(*mesh.get_vao(), m_render_data);
-        if (mesh.get_vao() != nullptr)
-        {
-            m_highlight_pass.render(*mesh.get_vao(), m_render_data);
+            auto &mesh = *m.second;
+            m_render_data.mesh.offset = mesh.get_mesh_offset();
+
+            mesh.update_vertex_buffer();
+
+            // render all passes
+
+            if (mesh.get_vao() != nullptr) {
+                m_mesh_pass.render(*mesh.get_vao(), m_render_data);
+            }
+            m_shape_pass.render(*mesh.get_vao(), m_render_data);
+            if (mesh.get_vao() != nullptr) {
+                m_highlight_pass.render(*mesh.get_vao(), m_render_data);
+            }
         }
 
         m_meshFrameBuffer->unbind();
@@ -239,21 +238,21 @@ namespace vOS
                 // evaluate ID out of color
                 int pickedID = data[0] + data[1] * 256 + data[2] * 256*256; //+ data[3] *256*256*256;
 
-                std::cout << pickedID << std::endl;
+                // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
+                // there is no valid ID (e.g when clicking background)
                 unsigned int faceID = mesh.to_faceID(pickedID) - 1;
-                std::cout << faceID << std::endl;
 
                 OpenVolumeMesh::FaceHandle face(faceID);
                 if (face.is_valid())
                 {
 
                     auto pick_pos = mesh.m_mesh->barycenter(face);
-                    Box *shape = new Box(0.2f, 0.2f, 0.2f);
+                    Box *shape = new Box(0.05f, 0.05f, 0.05f);
                     shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
                     shape->set_base_color(1.0f, 0.0f, 0.0f);
                     ShapePass::add_shape(shape);
-                    std::cout << "pos x: " << pick_pos[0] <<", y: " << pick_pos[1] <<", z: " << pick_pos[2] << std::endl;
-                    std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
+                    //std::cout << "pos x: " << pick_pos[0] <<", y: " << pick_pos[1] <<", z: " << pick_pos[2] << std::endl;
+                    //std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
                 }
 
             }
@@ -272,7 +271,7 @@ namespace vOS
         handleResize();
         handleMouseControl();
         renderMesh();
-        renderSelection();
+        //renderSelection();
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
