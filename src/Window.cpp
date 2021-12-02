@@ -21,28 +21,23 @@
 #include "rendering/passes/ShapePass.h"
 
 
-namespace vOS
-{
+namespace vOS {
     FileDialog *Window::m_file_dialog;
 
-    Window &Window::instance()
-    {
+    Window &Window::instance() {
         static Window inst;
         return inst;
     }
 
-    Window::Window()
-    {
+    Window::Window() {
         // Create Custom UI Panel Object
         m_custom_ui = new CustomUIPanel();
     }
 
-    Window::~Window()
-    {
+    Window::~Window() {
     }
 
-    void Window::initPanels()
-    {
+    void Window::initPanels() {
         m_file_dialog = new FileDialog();
         m_menu_bar = new MenuBar();
         m_panels.push_back(m_menu_bar);
@@ -56,10 +51,10 @@ namespace vOS
         m_panels.push_back(mylog);
     }
 
-    void Window::open()
-    {
+    void Window::open() {
         m_window_open = true;
         m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
+        m_mesh_obj = new MeshObject();
 
         // Create default UI Panels
         initPanels();
@@ -67,15 +62,13 @@ namespace vOS
         m_initialized = true;
     }
 
-    void Window::run(void_callback vc)
-    {
+    void Window::run(void_callback vc) {
         set_custom_imgui(vc);
 
         open();
 
         // Render window forever until window is closed by user
-        while (m_window_open)
-        {
+        while (m_window_open) {
             // Render single frame
             render();
         }
@@ -83,14 +76,12 @@ namespace vOS
         close();
     }
 
-    void Window::run()
-    {
+    void Window::run() {
 
         open();
 
         // Render window forever until window is closed by user
-        while (m_window_open)
-        {
+        while (m_window_open) {
             // Render single frame
             render();
         }
@@ -98,12 +89,10 @@ namespace vOS
         close();
     }
 
-    void Window::close()
-    {
+    void Window::close() {
 
         // Destroy Imgui Elements
-        for (auto &element: m_panels)
-        {
+        for (auto &element: m_panels) {
             if (element == LogWindow::getInstance())
                 continue;
             delete element;
@@ -114,16 +103,14 @@ namespace vOS
         m_window_open = false;
     }
 
-    void Window::render()
-    {
+    void Window::render() {
 
         // Activate Mutex Guard
 
         // Query whether the window has been closed by the user or not
         bool window_closed = m_imgui_renderer->window_closed();
 
-        if (window_closed)
-        {
+        if (window_closed) {
             std::cout << "Window Closed" << std::endl;
             m_window_open = false;
             return;
@@ -133,8 +120,7 @@ namespace vOS
         m_imgui_renderer->pre_render_step();
 
         // Draw all of our panels
-        for (auto &element: m_panels)
-        {
+        for (auto &element: m_panels) {
             element->show();
         }
 
@@ -144,71 +130,67 @@ namespace vOS
         // Deactivate Mutex Guard
     }
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index)
-    {
-        auto mesh_obj = new MeshObject();
-        set_mesh_active(index);
+
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index) {
+        auto* mesh_obj = new MeshObject();
         mesh_obj->set_mesh(mesh);
 
         // check if index of mesh already exist: yes -> replace it, no -> just insert it
         auto search = m_mesh_objects.find(index);
-        if(search != m_mesh_objects.end())
-        {
+        if (search != m_mesh_objects.end()) {
+            // delete old pointer
+            delete search->second;
             search->second = mesh_obj;
+        } else {
+            m_mesh_objects.insert({index, mesh_obj});
+        }
+        set_mesh_active(index);
+    }
+
+    void Window::set_mesh_active(int index) {
+        auto search = m_mesh_objects.find(index);
+        if (search != m_mesh_objects.end())
+        {
+            m_mesh_obj = search->second;
+        }
+    }
+
+    MeshObject* Window::get_mesh_obj(int index) {
+        auto search = m_mesh_objects.find(index);
+        if (search != m_mesh_objects.end())
+        {
+            return search->second;
         }
         else
         {
-            m_mesh_objects.insert({index, mesh_obj});
+            return m_mesh_obj;
         }
     }
 
-    void Window::set_mesh_active(int index)
-    {
-        auto search = m_mesh_objects.find(index);
-        if(search != m_mesh_objects.end())
-        {
-            m_mesh_obj = *(search->second);
-        }
-    }
-
-    MeshObject &Window::get_mesh_obj(int index)
-    {
-        if (index >= 0)
-        {
-            set_mesh_active(index);
-        }
-        return m_mesh_obj;
-    }
-
-    bool Window::is_ready()
-    {
+    bool Window::is_ready() {
         return m_initialized;
     }
 
     void
-    Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue, float alpha)
-    {
-        m_mesh_obj.set_highlight(v_h, b, red, green, blue, alpha);
+    Window::set_vertex_color(OpenVolumeMesh::VertexHandle v_h, bool b, float red, float green, float blue,
+                             float alpha) {
+        m_mesh_obj->set_highlight(v_h, b, red, green, blue, alpha);
     }
 
-    bool Window::is_running()
-    {
+    bool Window::is_running() {
         return m_window_open;
     }
 
 
-    bool Window::is_closed()
-    {
+    bool Window::is_closed() {
         return is_running();
     }
 
-    void Window::default_callback_function()
-    {
+    void Window::default_callback_function() {
         LogWindow::getInstance()->addLog("Debug: Default Callback Function Called");
     }
 
-    unsigned int Window::add_shape(Shape *shape)
-    {
+    unsigned int Window::add_shape(Shape *shape) {
         // TODO Add good exception handling
         if (shape == nullptr)
             return -1;
@@ -225,11 +207,9 @@ namespace vOS
         return ShapePass::add_shape(box);
     }*/
 
-    bool Window::ShowFileDialog(std::string &path, const std::string &extension)
-    {
+    bool Window::ShowFileDialog(std::string &path, const std::string &extension) {
         m_file_dialog->open(extension);
-        if (m_file_dialog->is_ok())
-        {
+        if (m_file_dialog->is_ok()) {
             path = m_file_dialog->get_file_path();
             m_file_dialog->set_open(false);
         }

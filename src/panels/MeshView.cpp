@@ -171,6 +171,8 @@ namespace vOS
     }
 
     void MeshView::renderMesh() {
+
+
         if (ImGui::IsKeyPressed(GLFW_KEY_W)) {
             m_mesh_pass.set_wireframe_mode(!m_mesh_pass.get_wireframe_mode());
         }
@@ -181,22 +183,29 @@ namespace vOS
         // we need to clear our framebuffer as well
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(*Window::instance().get_mesh_obj().get_vao(), m_render_data);
+        m_background_pass.render(*Window::instance().get_mesh_obj()->get_vao(), m_render_data);
+
+
+//        if (ImGui::IsKeyPressed(GLFW_KEY_S)) {
+//            Window::instance().set_mesh_active(0);
+//        }
+//        if (ImGui::IsKeyPressed(GLFW_KEY_F)) {
+//            Window::instance().set_mesh_active(1);
+//        }
+
+        m_render_data.mesh.offset = Window::instance().get_mesh_obj()->get_mesh_offset();
+
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
-            auto &mesh = *m.second;
-            m_render_data.mesh.offset = mesh.get_mesh_offset();
+            auto mesh = m.second;
 
-            mesh.update_vertex_buffer();
+            mesh->update_vertex_buffer();
 
             // render all passes
-
-            if (mesh.get_vao() != nullptr) {
-                m_mesh_pass.render(*mesh.get_vao(), m_render_data);
-            }
-            m_shape_pass.render(*mesh.get_vao(), m_render_data);
-            if (mesh.get_vao() != nullptr) {
-                m_highlight_pass.render(*mesh.get_vao(), m_render_data);
+            if (mesh->get_vao() != nullptr) {
+                m_mesh_pass.render(*mesh->get_vao(), m_render_data);
+                m_shape_pass.render(*mesh->get_vao(), m_render_data);
+                m_highlight_pass.render(*mesh->get_vao(), m_render_data);
             }
         }
 
@@ -212,11 +221,11 @@ namespace vOS
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto& mesh = Window::instance().get_mesh_obj();
+        auto mesh = Window::instance().get_mesh_obj();
 
-        if (mesh.get_vao() != nullptr )
+        if (mesh->get_vao() != nullptr )
         {
-            m_selection_pass.render(*mesh.get_vao(), m_render_data);
+            m_selection_pass.render(*mesh->get_vao(), m_render_data);
 
             if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
             {
@@ -240,19 +249,19 @@ namespace vOS
 
                 // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                 // there is no valid ID (e.g when clicking background)
-                unsigned int faceID = mesh.to_faceID(pickedID) - 1;
+                unsigned int faceID = mesh->to_faceID(pickedID) - 1;
 
                 OpenVolumeMesh::FaceHandle face(faceID);
                 if (face.is_valid())
                 {
 
-                    auto pick_pos = mesh.m_mesh->barycenter(face);
-                    Box *shape = new Box(0.05f, 0.05f, 0.05f);
+                    auto pick_pos = mesh->m_mesh->barycenter(face);
+                    Box *shape = new Box(0.1f, 0.1f, 0.1f);
                     shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
                     shape->set_base_color(1.0f, 0.0f, 0.0f);
                     ShapePass::add_shape(shape);
-                    //std::cout << "pos x: " << pick_pos[0] <<", y: " << pick_pos[1] <<", z: " << pick_pos[2] << std::endl;
-                    //std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
+                    std::cout << "pos x: " << pick_pos[0] <<", y: " << pick_pos[1] <<", z: " << pick_pos[2] << std::endl;
+                    std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
                 }
 
             }
@@ -271,7 +280,7 @@ namespace vOS
         handleResize();
         handleMouseControl();
         renderMesh();
-        //renderSelection();
+        renderSelection();
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -294,14 +303,14 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
-        if (Window::instance().get_mesh_obj().m_mesh != nullptr)
+        if (Window::instance().get_mesh_obj()->m_mesh != nullptr)
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj().m_mesh->n_vertices());
+            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj()->m_mesh->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj().m_mesh->n_edges());
+            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj()->m_mesh->n_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj().m_mesh->n_faces());
+            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj()->m_mesh->n_faces());
         }
 
         ImGui::End();
