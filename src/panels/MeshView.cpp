@@ -212,10 +212,11 @@ namespace vOS
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto& mesh = Window::instance().get_mesh_obj();
-
-        if (mesh.get_vao() != nullptr )
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
+            auto &mesh = *m.second;
+            m_render_data.mesh.offset = mesh.get_mesh_offset();
+
             m_selection_pass.render(*mesh.get_vao(), m_render_data);
 
             if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
@@ -233,14 +234,22 @@ namespace vOS
                 // read Pixel data/color from framebuffer
                 ImVec2 screen_pos = ImGui::GetCursorScreenPos();
                 unsigned char data[4];
-                glReadPixels(m_lastX - screen_pos.x, viewport[3] - (m_lastY - screen_pos.y),1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                glReadPixels(
+                        (int) (m_lastX - screen_pos.x),
+                        (int) (viewport[3] - (m_lastY - screen_pos.y)),
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_UNSIGNED_BYTE,
+                        data
+                );
 
                 // evaluate ID out of color
                 int pickedID = data[0] + data[1] * 256 + data[2] * 256*256; //+ data[3] *256*256*256;
 
                 // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                 // there is no valid ID (e.g when clicking background)
-                unsigned int faceID = mesh.to_faceID(pickedID) - 1;
+                int faceID = (int) mesh.to_faceID(pickedID) - 1;
 
                 OpenVolumeMesh::FaceHandle face(faceID);
                 if (face.is_valid())
@@ -251,8 +260,6 @@ namespace vOS
                     shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
                     shape->set_base_color(1.0f, 0.0f, 0.0f);
                     ShapePass::add_shape(shape);
-                    //std::cout << "pos x: " << pick_pos[0] <<", y: " << pick_pos[1] <<", z: " << pick_pos[2] << std::endl;
-                    //std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
                 }
 
             }
@@ -271,7 +278,7 @@ namespace vOS
         handleResize();
         handleMouseControl();
         renderMesh();
-        //renderSelection();
+        renderSelection();
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();

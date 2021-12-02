@@ -4,7 +4,7 @@
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
-#include "../rendering/passes/SelectionPasss.h"
+#include "../rendering/passes/SelectionPass.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 

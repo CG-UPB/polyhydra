@@ -1,4 +1,4 @@
-#include "SelectionPasss.h"
+#include "SelectionPass.h"
 #include "glad/glad.h"
 
 #include "MeshPass.h"
