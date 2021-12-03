@@ -42,6 +42,16 @@ namespace vOS
         glm::vec3 &get_mesh_offset();
         [[nodiscard]] VertexArrayObject* get_vao() const;
 
+        /**
+         * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
+         * we would have to update the vertex array with the data every time we render.
+         *
+         * @return the instanced sphere vao for this mesh
+         */
+        [[nodiscard]] VertexArrayObject* get_sphere_vao() const;
+
+        [[nodiscard]] int get_num_vertices() const;
+
     private:
         void calculate_mesh_offset();
 
@@ -54,7 +64,8 @@ namespace vOS
         std::vector<unsigned int> m_face_ids;
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
 
-        VertexArrayObject *m_vertexArrayObject = nullptr;
+        VertexArrayObject* m_vertexArrayObject = nullptr;
+        VertexArrayObject* m_sphere_vao = nullptr;
 
         glm::vec3 m_mesh_offset_from_center;
 

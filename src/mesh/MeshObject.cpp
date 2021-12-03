@@ -8,6 +8,7 @@
 #include <array>
 #include <string>
 #include "../Window.h"
+#include "../rendering/shapes/CommonMeshes.h"
 
 namespace vOS
 {
@@ -61,12 +62,15 @@ namespace vOS
             initialize_face_normals();
             initialize_vertex_normals();
             m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
-            m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
-            //m_vertexArrayObject->add_buffer(m_face_ids,2,3);
-            for (auto i = std::begin(m_face_ids); i < std::end(m_face_ids); ++i)
+            m_vertexArrayObject->add_attribute(vertex_normals(), 1, 3);
+
+            if (m_sphere_vao != nullptr)
             {
-                std::cout << *i << std::endl;
+                delete m_sphere_vao;
             }
+            // add an attribute for each vertex position, so we can render the spheres instanced
+            m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::vertices(), CommonMeshes::Sphere::indices());
+            m_sphere_vao->add_attribute(m_vertices, 1, 3, true);
 
             calculate_mesh_offset();
         }
@@ -310,6 +314,15 @@ namespace vOS
         return m_vertexArrayObject;
     }
 
+    VertexArrayObject* MeshObject::get_sphere_vao() const
+    {
+        return m_sphere_vao;
+    }
+
+    int MeshObject::get_num_vertices() const
+    {
+        return (int) m_mesh->n_vertices();
+    }
 
 
 }

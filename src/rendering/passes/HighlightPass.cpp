@@ -12,7 +12,7 @@ namespace vOS
     HighlightPass::HighlightPass()
     {
         m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
-        m_vao->add_buffer(CommonMeshes::PlaneXY::uvs(), 1, 2);
+        m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
         m_highlight_shader = Shader::property_shader();
     }
 

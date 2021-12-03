@@ -12,7 +12,7 @@ namespace vOS
         m_bottom_color(glm::vec4(0.3, 0.3, 0.3, 1.0))
     {
         m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f), CommonMeshes::PlaneXY::indices());
-        m_vao->add_buffer(CommonMeshes::PlaneXY::uvs(), 1, 2);
+        m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
         m_background_shader = Shader::background_shader();
     }
 

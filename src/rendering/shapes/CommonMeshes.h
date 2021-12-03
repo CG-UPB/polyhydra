@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "IcoSphereMesh.h"
 
 namespace vOS
 {
@@ -146,6 +147,32 @@ namespace vOS
                 res.insert(res.end(), back.begin(), back.end());
                 res.insert(res.end(), front.begin(), front.end());
                 return res;
+            }
+        };
+
+        struct Sphere {
+
+        private:
+
+            // this mesh won't change, so only generate it once to save performance
+            static IcoSphereMesh& default_sphere()
+            {
+                static IcoSphereMesh s_default_sphere = IcoSphereMesh(2);
+                return s_default_sphere;
+            }
+
+        public:
+
+            static const std::vector<float>& vertices() {
+                return default_sphere().vertices();
+            }
+
+            static const std::vector<unsigned int>& indices() {
+                return default_sphere().indices();
+            }
+
+            static const std::vector<float>& normals() {
+                return default_sphere().normals();
             }
         };
     };
