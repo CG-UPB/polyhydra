@@ -2,7 +2,7 @@
 #include "glad/glad.h"
 
 #include "HighlightPass.h"
-#include "../shapes/CommonMeshes.h"
+#include "../meshes/CommonMeshes.h"
 #include "../../Window.h"
 
 #include "glm/gtx/transform.hpp"

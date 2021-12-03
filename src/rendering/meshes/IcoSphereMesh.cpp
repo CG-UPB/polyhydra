@@ -113,9 +113,9 @@ namespace vOS
         float nz = z / length;
 
         // add vertex position
-        m_vertices.push_back(nx);
-        m_vertices.push_back(ny);
-        m_vertices.push_back(nz);
+        m_vertices.push_back(nx * 0.5f);
+        m_vertices.push_back(ny * 0.5f);
+        m_vertices.push_back(nz * 0.5f);
 
         // since it is a unit sphere, the normal is equal to the vertex position
         m_normals.push_back(nx);

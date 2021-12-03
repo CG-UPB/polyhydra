@@ -15,6 +15,7 @@
 
 #include "../mesh/MeshObject.h"
 #include "../rendering/shapes/Sphere.h"
+#include "../rendering/shapes/Cylinder.h"
 
 namespace vOS
 {
@@ -256,7 +257,7 @@ namespace vOS
                 {
 
                     auto pick_pos = mesh.m_mesh->barycenter(face);
-                    auto* shape = new Sphere();
+                    auto* shape = new Cylinder();
                     shape->set_scale(0.02f, 0.02f, 0.02f);
                     shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
                     shape->set_base_color(0.0f, 1.0f, 0.0f);
@@ -288,7 +289,7 @@ namespace vOS
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id()),
+                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},

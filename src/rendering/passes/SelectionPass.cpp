@@ -2,7 +2,7 @@
 #include "glad/glad.h"
 
 #include "MeshPass.h"
-#include "../shapes/CommonMeshes.h"
+#include "../meshes/CommonMeshes.h"
 
 namespace vOS {
     SelectionPass::SelectionPass(): m_selection_shader(Shader::selection_shader())
@@ -35,9 +35,12 @@ namespace vOS {
         // draw spheres for each vertex
         m_selection_shape_shader->bind();
 
+        //std::cout << "scale: " << glm::length(transform[0]) << std::endl;
+
         m_selection_shape_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_shape_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shape_shader->set_uniform_mat4f("u_view", data.camera.view);
+        m_selection_shape_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
 
         m_sphere_vao->draw_instanced(m_num_vertices);
 

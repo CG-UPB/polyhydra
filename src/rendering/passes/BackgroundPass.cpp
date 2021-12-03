@@ -2,7 +2,7 @@
 #include "glad/glad.h"
 
 #include "BackgroundPass.h"
-#include "../shapes/CommonMeshes.h"
+#include "../meshes/CommonMeshes.h"
 
 namespace vOS
 {

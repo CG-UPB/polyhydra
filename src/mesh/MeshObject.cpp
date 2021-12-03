@@ -8,7 +8,7 @@
 #include <array>
 #include <string>
 #include "../Window.h"
-#include "../rendering/shapes/CommonMeshes.h"
+#include "../rendering/meshes/CommonMeshes.h"
 
 namespace vOS
 {
@@ -70,7 +70,8 @@ namespace vOS
             }
             // add an attribute for each vertex position, so we can render the spheres instanced
             m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::vertices(), CommonMeshes::Sphere::indices());
-            m_sphere_vao->add_attribute(m_vertices, 1, 3, true);
+            m_sphere_vao->add_attribute(m_vertex_normals, 1, 3, true);
+            m_sphere_vao->add_attribute(m_vertices, 2, 3, true);
 
             calculate_mesh_offset();
         }

@@ -1,7 +1,7 @@
 
 #include "Sphere.h"
 
-#include "CommonMeshes.h"
+#include "../meshes/CommonMeshes.h"
 
 namespace vOS
 {

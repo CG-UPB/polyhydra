@@ -40,8 +40,10 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp
         ${VOLUMESHOS_SRC}/panels/FileDialog.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/shapes/IcoSphereMesh.cpp
-        ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.cpp)
+        ${VOLUMESHOS_SRC}/rendering/meshes/IcoSphereMesh.cpp
+        ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.cpp
+        ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
+        ${VOLUMESHOS_SRC}/rendering/shapes/Cylinder.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
