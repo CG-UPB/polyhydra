@@ -186,12 +186,12 @@ namespace vOS
         m_background_pass.render(*Window::instance().get_mesh_obj()->get_vao(), m_render_data);
 
 
-//        if (ImGui::IsKeyPressed(GLFW_KEY_S)) {
-//            Window::instance().set_mesh_active(0);
-//        }
-//        if (ImGui::IsKeyPressed(GLFW_KEY_F)) {
-//            Window::instance().set_mesh_active(1);
-//        }
+        if (ImGui::IsKeyPressed(GLFW_KEY_S)) {
+            Window::instance().set_mesh_active(0);
+        }
+        if (ImGui::IsKeyPressed(GLFW_KEY_F)) {
+            Window::instance().set_mesh_active(1);
+        }
 
         m_render_data.mesh.offset = Window::instance().get_mesh_obj()->get_mesh_offset();
 
@@ -221,49 +221,74 @@ namespace vOS
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto mesh = Window::instance().get_mesh_obj();
 
-        if (mesh->get_vao() != nullptr )
+        // render selection_pass for each mesh
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
-            m_selection_pass.render(*mesh->get_vao(), m_render_data);
+            auto mesh = m.second;
 
-            if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+            if (mesh->get_vao() != nullptr )
             {
-                glFlush();
-                glFinish();
+                m_render_data.mesh.selection_offset = std::get<0>(mesh->selection_offset());
+                m_selection_pass.render(*mesh->get_vao(), m_render_data);
+            }
+        }
 
-                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-                // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-                // viewport[3] equals viewport height
-                GLint viewport[4];
-                glGetIntegerv(GL_VIEWPORT, viewport);
+        // check for actual picking
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+            glFlush();
+            glFinish();
 
-                // read Pixel data/color from framebuffer
-                ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-                unsigned char data[4];
-                glReadPixels(m_lastX - screen_pos.x, viewport[3] - (m_lastY - screen_pos.y),1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-                // evaluate ID out of color
-                int pickedID = data[0] + data[1] * 256 + data[2] * 256*256; //+ data[3] *256*256*256;
+            // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+            // viewport[3] equals viewport height
+            GLint viewport[4];
+            glGetIntegerv(GL_VIEWPORT, viewport);
 
-                // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
-                // there is no valid ID (e.g when clicking background)
-                unsigned int faceID = mesh->to_faceID(pickedID) - 1;
+            // read Pixel data/color from framebuffer
+            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+            unsigned char data[4];
+            glReadPixels(m_lastX - screen_pos.x, viewport[3] - (m_lastY - screen_pos.y), 1, 1, GL_RGBA,
+                         GL_UNSIGNED_BYTE, data);
 
-                OpenVolumeMesh::FaceHandle face(faceID);
-                if (face.is_valid())
+            // evaluate ID out of color
+            int pickedID = data[0] + data[1] * 256 + data[2] * 256 * 256; //+ data[3] *256*256*256;
+
+            // evaluate which in which mesh the color was selected
+            auto mesh = Window::instance().get_mesh_obj();
+            int from = 0;
+            int to = 0;
+            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            {
+                mesh = m.second;
+                from = std::get<0>(mesh->selection_offset());
+                to = std::get<1>(mesh->selection_offset());
+
+                if(pickedID >= from && pickedID <= to)
                 {
+                    std::cout << "Mesh "<< m.first << " was picked" << std::endl;
 
-                    auto pick_pos = mesh->m_mesh->barycenter(face);
-                    Box *shape = new Box(0.1f, 0.1f, 0.1f);
-                    shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                    shape->set_base_color(1.0f, 0.0f, 0.0f);
-                    ShapePass::add_shape(shape);
-                    std::cout << "pos x: " << pick_pos[0] <<", y: " << pick_pos[1] <<", z: " << pick_pos[2] << std::endl;
-                    std::cout << "x: " << m_lastX - screen_pos.x <<", y: " << m_lastY - screen_pos.y  << std::endl;
+                    // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
+                    // there is no valid ID (e.g when clicking background)
+                    unsigned int faceID = mesh->to_faceID(pickedID - from) - 1;
+
+                    OpenVolumeMesh::FaceHandle face(faceID);
+                    if (face.is_valid()) {
+
+                        auto pick_pos = mesh->m_mesh->barycenter(face);
+                        Box *shape = new Box(0.1f, 0.1f, 0.1f);
+                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                        shape->set_base_color(1.0f, 0.0f, 0.0f);
+                        ShapePass::add_shape(shape);
+                        std::cout << "pos x: " << pick_pos[0] << ", y: " << pick_pos[1] << ", z: " << pick_pos[2]
+                                  << std::endl;
+                        std::cout << "x: " << m_lastX - screen_pos.x << ", y: " << m_lastY - screen_pos.y << std::endl;
+                    }
+
+                    continue;
                 }
-
             }
         }
 

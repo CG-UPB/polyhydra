@@ -14,11 +14,9 @@ namespace vOS
     public:
 
         MeshObject();
-        MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh);
+        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh);
 
         ~MeshObject() = default;
-
-        int m_selection_offset;
 
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
@@ -28,7 +26,7 @@ namespace vOS
         void set_highlight(OpenVolumeMesh::VertexHandle v_h, bool bl, float r, float g, float b, float a);
         void remove_highlights();
         void update_vertex_buffer();
-        unsigned int to_faceID(int value);
+        unsigned int to_faceID(unsigned int value);
 
         void init_vertices();
         void init_edges();
@@ -42,8 +40,10 @@ namespace vOS
         std::vector<unsigned int> faces(){ return m_faces;};
         std::vector<float> vertex_normals(){ return m_vertex_normals;};
         std::vector<float> face_normals(){ return m_face_normals;};
-        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
+        std::tuple<int, int> selection_offset(){ return m_selection_offset;};
+        void set_selection_offset(int start);
 
+        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
 
         glm::vec3 &get_mesh_offset();
         [[nodiscard]] VertexArrayObject* get_vao() const;
@@ -60,18 +60,15 @@ namespace vOS
         std::vector<float> m_vertex_normals;
         std::vector<float> m_face_normals;
         std::vector<unsigned int> m_face_ids;
+        std::tuple<int, int> m_selection_offset;
+        glm::vec3 m_mesh_offset_from_center;
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
 
         VertexArrayObject *m_vertexArrayObject = nullptr;
 
-        glm::vec3 m_mesh_offset_from_center;
-
         bool m_should_update;
 
-
     };
-
-
 }
 
 #endif //VOLUMESHOS_MESH_OBJECT_H

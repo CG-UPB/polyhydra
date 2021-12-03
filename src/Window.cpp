@@ -145,6 +145,18 @@ namespace vOS {
             m_mesh_objects.insert({index, mesh_obj});
         }
         set_mesh_active(index);
+
+        calculate_selection_offsets();
+    }
+
+    void Window::calculate_selection_offsets()
+    {
+        int offset = 0;
+        for(const auto& mesh_obj : m_mesh_objects)
+        {
+            mesh_obj.second->set_selection_offset(offset);
+            offset =  std::get<1>(mesh_obj.second->selection_offset()) + 1;
+        }
     }
 
     void Window::set_mesh_active(int index) {

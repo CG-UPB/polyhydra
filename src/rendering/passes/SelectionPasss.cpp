@@ -25,6 +25,7 @@ namespace vOS {
         m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
+        m_selection_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
 
         vao.draw();
 

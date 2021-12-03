@@ -1,10 +1,12 @@
 #version 330 core
 
+uniform int u_selection_offset;
+
 out vec4 FragColor;
 
 void main()
 {
-    int id = gl_PrimitiveID;
+    int id = u_selection_offset + gl_PrimitiveID;
     // insert identifying color in here
     int r = (id & 0x000000FF) >>  0;
     int g = (id & 0x0000FF00) >>  8;

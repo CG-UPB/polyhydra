@@ -205,6 +205,8 @@ namespace vOS {
 
         MenuBar *get_menu_bar() { return m_menu_bar; }
 
+        void calculate_selection_offsets();
+
         // Main Loop //
         void initPanels();
 
@@ -213,6 +215,7 @@ namespace vOS {
         void open();
 
         void close();
+
         // Callback Interface //////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Callback Functions //////////////////////////////////////////////////////////////////////////////////////////////////

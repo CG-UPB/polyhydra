@@ -57,8 +57,6 @@ namespace vOS
         init_vertex_normals();
         init_face_normals();
 
-        m_selection_offset = calculate_selection_size();
-
         remove_highlights();
         m_should_update = true;
     }
@@ -221,7 +219,7 @@ namespace vOS
         }
     }
 
-    unsigned int MeshObject::to_faceID(int value)
+    unsigned int MeshObject::to_faceID(unsigned int value)
     {
         if(m_face_ids.size() > value)
         {
@@ -308,9 +306,12 @@ namespace vOS
     }
 
     int MeshObject::calculate_selection_size() {
-        return 0;
+        return m_face_ids.size();
     }
 
-
+    void MeshObject::set_selection_offset(int start)
+    {
+        m_selection_offset = {start, start + calculate_selection_size() -1};
+    }
 }
 
