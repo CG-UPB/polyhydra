@@ -29,6 +29,6 @@ namespace vOS
 
     class RenderPass
     {
-        virtual void render(const VertexArrayObject& vao, const RenderData& data) = 0;
+        virtual void render(VertexArrayObject* vao, const RenderData& data) = 0;
     };
 }

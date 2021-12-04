@@ -17,7 +17,7 @@ namespace vOS
         void set_use_phong(bool use);
         [[nodiscard]] bool get_use_phong() const;
 
-        void render(const VertexArrayObject& vao, const RenderData& data) override;
+        void render(VertexArrayObject* vao, const RenderData& data) override;
 
     private:
 

@@ -182,7 +182,7 @@ namespace vOS
         // we need to clear our framebuffer as well
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(*Window::instance().get_mesh_obj().get_vao(), m_render_data);
+        m_background_pass.render(nullptr, m_render_data);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto &mesh = *m.second;
@@ -193,11 +193,11 @@ namespace vOS
             // render all passes
 
             if (mesh.get_vao() != nullptr) {
-                m_mesh_pass.render(*mesh.get_vao(), m_render_data);
+                m_mesh_pass.render(mesh.get_vao(), m_render_data);
             }
-            m_shape_pass.render(*mesh.get_vao(), m_render_data);
+            m_shape_pass.render(nullptr, m_render_data);
             if (mesh.get_vao() != nullptr) {
-                m_highlight_pass.render(*mesh.get_vao(), m_render_data);
+                m_highlight_pass.render(nullptr, m_render_data);
             }
         }
 
@@ -210,7 +210,7 @@ namespace vOS
         m_selectionFrameBuffer->bind();
 
         // we need to clear our framebuffer as well
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
@@ -220,54 +220,106 @@ namespace vOS
 
             m_selection_pass.render_mesh(&mesh, m_render_data);
 
-            if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                glFlush();
-                glFinish();
+            glFlush();
+            glFinish();
 
-                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-                // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-                // viewport[3] equals viewport height
-                GLint viewport[4];
-                glGetIntegerv(GL_VIEWPORT, viewport);
+            // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+            // viewport[3] equals viewport height
+            GLint viewport[4];
+            glGetIntegerv(GL_VIEWPORT, viewport);
 
-                // read Pixel data/color from framebuffer
-                ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-                unsigned char data[4];
-                glReadPixels(
-                        (int) (m_lastX - screen_pos.x),
-                        (int) (viewport[3] - (m_lastY - screen_pos.y)),
-                        1,
-                        1,
-                        GL_RGBA,
-                        GL_UNSIGNED_BYTE,
-                        data
-                );
+            // read Pixel data/color from framebuffer
+            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+            unsigned char data[4];
+            glReadPixels(
+                    (int) (m_lastX - screen_pos.x),
+                    (int) (viewport[3] - (m_lastY - screen_pos.y)),
+                    1,
+                    1,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    data
+            );
 
-                // evaluate ID out of color
-                int pickedID = data[0] + data[1] * 256 + data[2] * 256*256; //+ data[3] *256*256*256;
+            int type = data[0] & 3;
 
-                // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
-                // there is no valid ID (e.g when clicking background)
-                int faceID = (int) mesh.to_faceID(pickedID) - 1;
-
-                OpenVolumeMesh::FaceHandle face(faceID);
-                if (face.is_valid())
-                {
-
-                    auto pick_pos = mesh.m_mesh->barycenter(face);
-                    auto* shape = new Cylinder();
-                    shape->set_scale(0.02f, 0.02f, 0.02f);
-                    shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                    shape->set_base_color(0.0f, 1.0f, 0.0f);
-                    ShapePass::add_shape(shape);
-                }
-
-            }
+            // evaluate ID out of color
+            int pickedID = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
+            handleSelection(mesh, type, pickedID);
         }
 
         m_selectionFrameBuffer->unbind();
+
+        m_meshFrameBuffer->bind();
+        m_selection_hover_pass.render(nullptr, m_render_data);
+        m_meshFrameBuffer->unbind();
+    }
+
+    void MeshView::handleSelection(MeshObject& mesh, int type, int picked_id)
+    {
+        if (type == SELECTION_TYPE_FACE)
+        {
+            // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
+            // there is no valid ID (e.g when clicking background)
+            int face_id = (int) mesh.to_faceID(picked_id) - 1;
+
+            m_selection_hover_pass.select(mesh, type, face_id);
+
+            OpenVolumeMesh::FaceHandle face(face_id);
+            if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+
+                auto pick_pos = mesh.m_mesh->barycenter(face);
+                auto* shape = new Cylinder();
+                shape->set_scale(0.02f, 0.02f, 0.02f);
+                shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                shape->set_base_color(1.0f, 0.0f, 0.0f);
+                ShapePass::add_shape(shape);
+            }
+        }
+        else if (type == SELECTION_TYPE_VERTEX)
+        {
+            int vertex_id = picked_id;
+
+            m_selection_hover_pass.select(mesh, type, vertex_id);
+
+            OpenVolumeMesh::VertexHandle vertex(vertex_id);
+            if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                auto pick_pos = mesh.m_mesh->vertex(vertex);
+                auto* shape = new Sphere();
+                shape->set_scale(0.02f, 0.02f, 0.02f);
+                shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                shape->set_base_color(0.0f, 1.0f, 0.0f);
+                ShapePass::add_shape(shape);
+            }
+        }
+        else if (type == SELECTION_TYPE_EDGE)
+        {
+            int edge_id = (int) mesh.to_edgeID(picked_id) - 1;
+
+            m_selection_hover_pass.select(mesh, type, edge_id);
+
+            OpenVolumeMesh::EdgeHandle edge(edge_id);
+            if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                auto vertices = mesh.m_mesh->edge_vertices(edge);
+                auto v0 = mesh.m_mesh->vertex(vertices[0]);
+                auto v1 = mesh.m_mesh->vertex(vertices[1]);
+                auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
+                auto* shape = new Box();
+                shape->set_scale(0.02f, 0.02f, 0.02f);
+                shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                shape->set_base_color(0.0f, 0.0f, 1.0f);
+                ShapePass::add_shape(shape);
+            }
+        }
+        else
+        {
+            m_selection_hover_pass.select(mesh, 0, 0);
+        }
     }
 
     void MeshView::show()

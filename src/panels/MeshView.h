@@ -5,6 +5,7 @@
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
 #include "../rendering/passes/SelectionPass.h"
+#include "../rendering/passes/SelectionHoverPass.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 
@@ -23,8 +24,13 @@ namespace vOS
         void handleMouseControl();
         void renderMesh();
         void renderSelection();
+        void handleSelection(MeshObject& mesh, int type, int picked_id);
 
-        glm::vec3 get_arc_ball_vector(float x, float y) const;
+        [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
+
+        static const int SELECTION_TYPE_VERTEX = 1;
+        static const int SELECTION_TYPE_EDGE = 2;
+        static const int SELECTION_TYPE_FACE = 3;
 
         // used for the arc ball
         bool m_arcBallOn;
@@ -46,5 +52,6 @@ namespace vOS
         HighlightPass m_highlight_pass;
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
+        SelectionHoverPass m_selection_hover_pass;
     };
 }

@@ -43,7 +43,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/meshes/IcoSphereMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
-        ${VOLUMESHOS_SRC}/rendering/shapes/Cylinder.cpp)
+        ${VOLUMESHOS_SRC}/rendering/shapes/Cylinder.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/SelectionHoverPass.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

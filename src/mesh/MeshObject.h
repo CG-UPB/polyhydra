@@ -30,6 +30,7 @@ namespace vOS
         void initialize_vertex_normals();
         void update_vertex_buffer();
         unsigned int to_faceID(int value);
+        unsigned int to_edgeID(int value);
 
         std::vector<float> vertices();
         std::vector<unsigned int> edges();
@@ -49,8 +50,10 @@ namespace vOS
          * @return the instanced sphere vao for this mesh
          */
         [[nodiscard]] VertexArrayObject* get_sphere_vao() const;
+        [[nodiscard]] int get_num_visible_vertices() const;
 
-        [[nodiscard]] int get_num_vertices() const;
+        [[nodiscard]] VertexArrayObject* get_cylinder_vao() const;
+        [[nodiscard]] int get_num_visible_edges() const;
 
     private:
         void calculate_mesh_offset();
@@ -62,10 +65,12 @@ namespace vOS
         std::vector<float> m_vertex_normals;
         std::vector<float> m_face_normals;
         std::vector<unsigned int> m_face_ids;
-        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
+        std::vector<unsigned int> m_edge_ids;
 
+        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
         VertexArrayObject* m_vertexArrayObject = nullptr;
         VertexArrayObject* m_sphere_vao = nullptr;
+        VertexArrayObject* m_cylinder_vao = nullptr;
 
         glm::vec3 m_mesh_offset_from_center;
 

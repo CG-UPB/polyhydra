@@ -10,7 +10,7 @@ namespace vOS
         HighlightPass();
         ~HighlightPass();
 
-        void render(const VertexArrayObject& vao, const RenderData& data) override;
+        void render(VertexArrayObject* vao, const RenderData& data) override;
 
     private:
 

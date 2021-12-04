@@ -55,23 +55,88 @@ namespace vOS
     {
         if (m_should_update)
         {
-            if (m_vertexArrayObject != nullptr)
-            {
-                delete m_vertexArrayObject;
-            }
+            delete m_vertexArrayObject;
             initialize_face_normals();
             initialize_vertex_normals();
             m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
             m_vertexArrayObject->add_attribute(vertex_normals(), 1, 3);
 
-            if (m_sphere_vao != nullptr)
-            {
-                delete m_sphere_vao;
-            }
+            delete m_sphere_vao;
             // add an attribute for each vertex position, so we can render the spheres instanced
             m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::vertices(), CommonMeshes::Sphere::indices());
             m_sphere_vao->add_attribute(m_vertex_normals, 1, 3, true);
             m_sphere_vao->add_attribute(m_vertices, 2, 3, true);
+
+            delete m_cylinder_vao;
+            m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
+            // collect from-vertex and to-vertex for each edge
+            std::vector<float> from_vertices;
+            std::vector<float> to_vertices;
+            m_edge_ids.clear();
+            for (int i = 0; i < m_indices.size(); i += 3)
+            {
+                auto vh0 = OpenVolumeMesh::VertexHandle( m_indices[i + 0]);
+                auto vh1 = OpenVolumeMesh::VertexHandle( m_indices[i + 1]);
+                auto vh2 = OpenVolumeMesh::VertexHandle( m_indices[i + 2]);
+
+                for (auto heh : m_mesh->outgoing_halfedges(vh0))
+                {
+                    auto out = m_mesh->to_vertex_handle(heh);
+                    if (out == vh1)
+                    {
+                        m_edge_ids.push_back(m_mesh->edge_handle(heh).idx());
+                        break;
+                    }
+                }
+                for (auto heh : m_mesh->outgoing_halfedges(vh1))
+                {
+                    auto out = m_mesh->to_vertex_handle(heh);
+                    if (out == vh2)
+                    {
+                        m_edge_ids.push_back(m_mesh->edge_handle(heh).idx());
+                        break;
+                    }
+                }
+                for (auto heh : m_mesh->outgoing_halfedges(vh2))
+                {
+                    auto out = m_mesh->to_vertex_handle(heh);
+                    if (out == vh0)
+                    {
+                        m_edge_ids.push_back(m_mesh->edge_handle(heh).idx());
+                        break;
+                    }
+                }
+
+                auto v0 = m_mesh->vertex(vh0);
+                auto v1 = m_mesh->vertex(vh1);
+                auto v2 = m_mesh->vertex(vh2);
+
+                from_vertices.push_back(v0[0]);
+                from_vertices.push_back(v0[1]);
+                from_vertices.push_back(v0[2]);
+
+                to_vertices.push_back(v1[0]);
+                to_vertices.push_back(v1[1]);
+                to_vertices.push_back(v1[2]);
+
+                from_vertices.push_back(v1[0]);
+                from_vertices.push_back(v1[1]);
+                from_vertices.push_back(v1[2]);
+
+                to_vertices.push_back(v2[0]);
+                to_vertices.push_back(v2[1]);
+                to_vertices.push_back(v2[2]);
+
+                from_vertices.push_back(v2[0]);
+                from_vertices.push_back(v2[1]);
+                from_vertices.push_back(v2[2]);
+
+                to_vertices.push_back(v0[0]);
+                to_vertices.push_back(v0[1]);
+                to_vertices.push_back(v0[2]);
+            }
+            m_cylinder_vao->add_attribute(from_vertices, 1, 3, true);
+            m_cylinder_vao->add_attribute(to_vertices, 2, 3, true);
 
             calculate_mesh_offset();
         }
@@ -229,6 +294,15 @@ namespace vOS
         return 0;
     }
 
+    unsigned int MeshObject::to_edgeID(int value)
+    {
+        if(m_edge_ids.size() > value)
+        {
+            return m_edge_ids[value] + 1;
+        }
+        return 0;
+    }
+
     std::vector<float> MeshObject::vertex_normals()
     {
         return m_vertex_normals;
@@ -320,11 +394,19 @@ namespace vOS
         return m_sphere_vao;
     }
 
-    int MeshObject::get_num_vertices() const
+    int MeshObject::get_num_visible_vertices() const
     {
-        return (int) m_mesh->n_vertices();
+        return (int) m_vertices.size() / 3;
     }
 
+    VertexArrayObject* MeshObject::get_cylinder_vao() const
+    {
+        return m_cylinder_vao;
+    }
 
+    int MeshObject::get_num_visible_edges() const
+    {
+        return (int) m_indices.size();
+    }
 }
 

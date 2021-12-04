@@ -16,7 +16,7 @@ namespace vOS
         }
     }
 
-    void ShapePass::render(const VertexArrayObject& vao, const RenderData& data)
+    void ShapePass::render(VertexArrayObject* vao, const RenderData& data)
     {
         glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
         glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;

@@ -5,6 +5,9 @@
 
 namespace vOS
 {
+    /**
+     * This class represents a Sphere, generated from an Icosahedron.
+     */
     class IcoSphereMesh
     {
 

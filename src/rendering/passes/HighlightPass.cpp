@@ -21,7 +21,7 @@ namespace vOS
         delete m_vao;
     }
 
-    void HighlightPass::render(const VertexArrayObject& vao, const RenderData& data)
+    void HighlightPass::render(VertexArrayObject* vao, const RenderData& data)
     {
         m_highlight_shader->bind();
 
