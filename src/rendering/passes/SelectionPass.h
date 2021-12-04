@@ -12,7 +12,7 @@ namespace vOS
         ~SelectionPass() = default;
 
         void render(VertexArrayObject* vao, const RenderData& data) override;
-        void render_mesh(MeshObject* mesh, const RenderData& data);
+        void render_mesh(MeshObject* mesh, RenderData& data);
 
     private:
 

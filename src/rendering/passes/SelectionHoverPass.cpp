@@ -109,41 +109,47 @@ namespace vOS
         else if (m_selected_type == SELECTION_TYPE_VERTEX)
         {
             OpenVolumeMesh::VertexHandle vertex(m_selected_id);
-            auto pos = mesh.m_mesh->vertex(vertex);
-            m_selected_vertex_position.x = pos[0];
-            m_selected_vertex_position.y = pos[1];
-            m_selected_vertex_position.z = pos[2];
-            m_selected_vertex_position.w = 1.0f;
+            if (vertex.is_valid())
+            {
+                auto pos = mesh.m_mesh->vertex(vertex);
+                m_selected_vertex_position.x = pos[0];
+                m_selected_vertex_position.y = pos[1];
+                m_selected_vertex_position.z = pos[2];
+                m_selected_vertex_position.w = 1.0f;
+            }
         }
         else if (m_selected_type == SELECTION_TYPE_EDGE)
         {
             OpenVolumeMesh::EdgeHandle edge(m_selected_id);
-            auto edge_vertices = mesh.m_mesh->edge_vertices(edge);
-            auto v0 = mesh.m_mesh->vertex(edge_vertices[0]);
-            auto v1 = mesh.m_mesh->vertex(edge_vertices[1]);
-            glm::vec3 pos0 = glm::vec3(v0[0], v0[1], v0[2]);
-            glm::vec3 pos1 = glm::vec3(v1[0], v1[1], v1[2]);
-
-            float dot = pos0.x * pos1.x + pos0.y * pos1.y;
-            float det = pos0.x * pos1.x - pos0.y * pos1.y;
-            m_selected_edge_angle = std::atan2(det, dot);
-
-            glm::vec3 edge_normal = glm::normalize(glm::cross(pos1 - pos0, glm::vec3(0.0, 0.0, 1.0)));
-            //m_selected_edge_angle = glm::acos(glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), edge_normal));
-            std::cout << "angle: " << glm::degrees(m_selected_edge_angle) << std::endl;
-            m_selected_edge_position.x = pos0.x + (pos1.x - pos0.x) * 0.5f;
-            m_selected_edge_position.y = pos0.y + (pos1.y - pos0.y) * 0.5f;
-            m_selected_edge_position.z = pos0.z + (pos1.z - pos0.z) * 0.5f;
-            m_selected_edge_position.w = 1.0f;
-            float width = glm::length(pos1 - pos0);
-            if (m_edge_vao == nullptr)
+            if (edge.is_valid())
             {
-                m_edge_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 1.0f), CommonMeshes::PlaneXY::indices());
-                m_edge_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
-            }
-            else
-            {
-                m_edge_vao->update_vertices(CommonMeshes::PlaneXY::vertices(2.0f, 1.0f), CommonMeshes::PlaneXY::indices());
+                auto edge_vertices = mesh.m_mesh->edge_vertices(edge);
+                auto v0 = mesh.m_mesh->vertex(edge_vertices[0]);
+                auto v1 = mesh.m_mesh->vertex(edge_vertices[1]);
+                glm::vec3 pos0 = glm::vec3(v0[0], v0[1], v0[2]);
+                glm::vec3 pos1 = glm::vec3(v1[0], v1[1], v1[2]);
+
+                float dot = pos0.x * pos1.x + pos0.y * pos1.y;
+                float det = pos0.x * pos1.x - pos0.y * pos1.y;
+                m_selected_edge_angle = std::atan2(det, dot);
+
+                glm::vec3 edge_normal = glm::normalize(glm::cross(pos1 - pos0, glm::vec3(0.0, 0.0, 1.0)));
+                //m_selected_edge_angle = glm::acos(glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), edge_normal));
+                std::cout << "angle: " << glm::degrees(m_selected_edge_angle) << std::endl;
+                m_selected_edge_position.x = pos0.x + (pos1.x - pos0.x) * 0.5f;
+                m_selected_edge_position.y = pos0.y + (pos1.y - pos0.y) * 0.5f;
+                m_selected_edge_position.z = pos0.z + (pos1.z - pos0.z) * 0.5f;
+                m_selected_edge_position.w = 1.0f;
+                float width = glm::length(pos1 - pos0);
+                if (m_edge_vao == nullptr)
+                {
+                    m_edge_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 1.0f), CommonMeshes::PlaneXY::indices());
+                    m_edge_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
+                }
+                else
+                {
+                    m_edge_vao->update_vertices(CommonMeshes::PlaneXY::vertices(2.0f, 1.0f), CommonMeshes::PlaneXY::indices());
+                }
             }
         }
     }
@@ -153,15 +159,18 @@ namespace vOS
         MeshData res;
 
         OpenVolumeMesh::FaceHandle face(face_id);
-        int index = 0;
-        for (auto v_h : mesh.m_mesh->face_vertices(face))
+        if (face.is_valid())
         {
-            auto vertex = mesh.m_mesh->vertex(v_h);
-            res.vertices.push_back(vertex[0]);
-            res.vertices.push_back(vertex[1]);
-            res.vertices.push_back(vertex[2]);
+            int index = 0;
+            for (auto v_h : mesh.m_mesh->face_vertices(face))
+            {
+                auto vertex = mesh.m_mesh->vertex(v_h);
+                res.vertices.push_back(vertex[0]);
+                res.vertices.push_back(vertex[1]);
+                res.vertices.push_back(vertex[2]);
 
-            res.indices.push_back(index++);
+                res.indices.push_back(index++);
+            }
         }
         return res;
     }

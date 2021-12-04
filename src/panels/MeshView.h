@@ -24,7 +24,7 @@ namespace vOS
         void handleMouseControl();
         void renderMesh();
         void renderSelection();
-        void handleSelection(MeshObject& mesh, int type, int picked_id);
+        void handleSelection(int type, int picked_id);
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
 

@@ -3,6 +3,8 @@
 flat in int v_discard;
 flat in int v_instance_id;
 
+uniform int u_selection_offset;
+
 out vec4 fragment_color;
 
 ivec4 get_id_bits(int id)
@@ -22,6 +24,6 @@ void main()
     {
         discard;
     }
-    ivec4 id_color = get_id_bits(v_instance_id);
+    ivec4 id_color = get_id_bits(v_instance_id + u_selection_offset);
     fragment_color = vec4(float(id_color.r) / 255.0, float(id_color.g) / 255.0, float(id_color.b) / 255.0, float(id_color.a) / 255.0);
 }

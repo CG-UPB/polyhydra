@@ -82,11 +82,11 @@ namespace vOS
             std::vector<float> from_vertices;
             std::vector<float> to_vertices;
             m_edge_ids.clear();
-            for (int i = 0; i < m_indices.size(); i += 3)
+            for (int i = 0; i < m_faces.size(); i += 3)
             {
-                auto vh0 = OpenVolumeMesh::VertexHandle( m_indices[i + 0]);
-                auto vh1 = OpenVolumeMesh::VertexHandle( m_indices[i + 1]);
-                auto vh2 = OpenVolumeMesh::VertexHandle( m_indices[i + 2]);
+                auto vh0 = OpenVolumeMesh::VertexHandle( m_faces[i + 0]);
+                auto vh1 = OpenVolumeMesh::VertexHandle( m_faces[i + 1]);
+                auto vh2 = OpenVolumeMesh::VertexHandle( m_faces[i + 2]);
 
                 for (auto heh : m_mesh->outgoing_halfedges(vh0))
                 {
@@ -296,7 +296,7 @@ namespace vOS
         return 0;
     }
 
-    unsigned int MeshObject::to_edgeID(int value)
+    unsigned int MeshObject::to_edgeID(unsigned int value)
     {
         if(m_edge_ids.size() > value)
         {
@@ -402,7 +402,7 @@ namespace vOS
 
     int MeshObject::get_num_visible_edges() const
     {
-        return (int) m_indices.size();
+        return (int) m_faces.size();
     }
 
     void MeshObject::set_selection_offset(int start)

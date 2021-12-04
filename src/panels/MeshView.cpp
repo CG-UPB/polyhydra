@@ -197,23 +197,22 @@ namespace vOS
             Window::instance().set_mesh_active(1);
         }
 
+        m_render_data.mesh.offset = Window::instance().get_mesh_obj()->get_mesh_offset();
+
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
-            auto &mesh = *m.second;
-            m_render_data.mesh.offset = mesh.get_mesh_offset();
+            auto mesh = m.second;
 
-            mesh.update_vertex_buffer();
+            mesh->update_vertex_buffer();
 
             // render all passes
 
-            if (mesh.get_vao() != nullptr) {
-                m_mesh_pass.render(mesh.get_vao(), m_render_data);
-            }
-            m_shape_pass.render(nullptr, m_render_data);
-            if (mesh.get_vao() != nullptr) {
-                m_highlight_pass.render(nullptr, m_render_data);
+            if (mesh->get_vao() != nullptr) {
+                m_mesh_pass.render(mesh->get_vao(), m_render_data);
             }
         }
+        m_highlight_pass.render(nullptr, m_render_data);
+        m_shape_pass.render(nullptr, m_render_data);
 
         m_meshFrameBuffer->unbind();
     }
@@ -229,9 +228,8 @@ namespace vOS
 
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
-            auto &mesh = *m.second;
-            m_render_data.mesh.offset = mesh.get_mesh_offset();
-            m_selection_pass.render_mesh(&mesh, m_render_data);
+            auto mesh = m.second;
+            m_selection_pass.render_mesh(mesh, m_render_data);
         }
 
         glFlush();
@@ -273,32 +271,35 @@ namespace vOS
     void MeshView::handleSelection(int type, int picked_id)
     {
         // evaluate which in which mesh the color was selected
-        auto& mesh = *Window::instance().get_mesh_obj();
         int from = 0;
         int to = 0;
+        bool any_mesh_hovered = false;
         for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list())
         {
-            mesh = *m.second;
-            from = std::get<0>(mesh.selection_offset());
-            to = std::get<1>(mesh.selection_offset());
+            auto mesh = m.second;
+            from = std::get<0>(mesh->selection_offset());
+            to = std::get<1>(mesh->selection_offset());
 
             if (picked_id >= from && picked_id <= to)
             {
-                std::cout << "Mesh " << m.first << " was picked" << std::endl;
+
+                any_mesh_hovered = true;
+//                std::cout << "Mesh " << m.first << " was picked" << std::endl;
+//                std::cout << "from: " << from << ", to: " << to << std::endl;
 
                 if (type == SELECTION_TYPE_FACE)
                 {
                     // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                     // there is no valid ID (e.g when clicking background)
-                    int face_id = (int) mesh.to_faceID(picked_id) - 1;
+                    int face_id = (int) mesh->to_faceID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(mesh, type, face_id);
+                    m_selection_hover_pass.select(*mesh, type, face_id);
 
                     OpenVolumeMesh::FaceHandle face(face_id);
                     if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
 
-                        auto pick_pos = mesh.m_mesh->barycenter(face);
+                        auto pick_pos = mesh->m_mesh->barycenter(face);
                         auto* shape = new Cylinder();
                         shape->set_scale(0.02f, 0.02f, 0.02f);
                         shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
@@ -308,14 +309,14 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
                 {
-                    int vertex_id = picked_id;
+                    int vertex_id = picked_id - from;
 
-                    m_selection_hover_pass.select(mesh, type, vertex_id);
+                    m_selection_hover_pass.select(*mesh, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        auto pick_pos = mesh.m_mesh->vertex(vertex);
+                        auto pick_pos = mesh->m_mesh->vertex(vertex);
                         auto* shape = new Sphere();
                         shape->set_scale(0.02f, 0.02f, 0.02f);
                         shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
@@ -325,16 +326,16 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_EDGE)
                 {
-                    int edge_id = (int) mesh.to_edgeID(picked_id) - 1;
+                    int edge_id = (int) mesh->to_edgeID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(mesh, type, edge_id);
+                    m_selection_hover_pass.select(*mesh, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        auto vertices = mesh.m_mesh->edge_vertices(edge);
-                        auto v0 = mesh.m_mesh->vertex(vertices[0]);
-                        auto v1 = mesh.m_mesh->vertex(vertices[1]);
+                        auto vertices = mesh->m_mesh->edge_vertices(edge);
+                        auto v0 = mesh->m_mesh->vertex(vertices[0]);
+                        auto v1 = mesh->m_mesh->vertex(vertices[1]);
                         auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
                         auto* shape = new Box();
                         shape->set_scale(0.02f, 0.02f, 0.02f);
@@ -343,13 +344,14 @@ namespace vOS
                         ShapePass::add_shape(shape);
                     }
                 }
-                else
-                {
-                    m_selection_hover_pass.select(mesh, 0, 0);
-                }
 
-                continue;
+                break;
             }
+        }
+
+        if (!any_mesh_hovered)
+        {
+            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(), 0, 0);
         }
     }
 

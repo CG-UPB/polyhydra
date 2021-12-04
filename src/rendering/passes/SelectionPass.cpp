@@ -31,6 +31,7 @@ namespace vOS {
         m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
+        m_selection_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
 
         vao->draw();
 
@@ -43,6 +44,7 @@ namespace vOS {
         m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
+        m_selection_cylinder_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
 
         m_cylinder_vao->draw_instanced(m_num_edges);
 
@@ -57,16 +59,18 @@ namespace vOS {
         m_selection_sphere_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
+        m_selection_sphere_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
 
         m_sphere_vao->draw_instanced(m_num_vertices);
 
         m_selection_sphere_shader->unbind();
     }
 
-    void SelectionPass::render_mesh(MeshObject* mesh, const RenderData& data)
+    void SelectionPass::render_mesh(MeshObject* mesh, RenderData& data)
     {
         if (mesh != nullptr && mesh->get_vao() != nullptr)
         {
+            data.mesh.selection_offset = std::get<0>(mesh->selection_offset());
             m_sphere_vao = mesh->get_sphere_vao();
             m_num_vertices = mesh->get_num_visible_vertices();
             m_cylinder_vao = mesh->get_cylinder_vao();

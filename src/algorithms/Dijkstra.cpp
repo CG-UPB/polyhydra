@@ -82,6 +82,8 @@ namespace vOS
     void Dijkstra::debugging_template_ui()
     {
 
+        static int mesh_count = 0;
+
         ImGui::Begin("Custom UI");
         // Pause Button
         if (m_pause_toggled)
@@ -130,7 +132,7 @@ namespace vOS
                 Window::instance().set_mesh(&m_mesh, 0);
 
                 OpenVolumeMesh::GeometricPolyhedralMeshV3f mesh;
-                file_manager.readFile("/home/kali/CLionProjects/volumeshos/OVM/Tet/duck868.1.ovm", mesh);
+                file_manager.readFile("/home/steffen/Downloads/Tet/duck868.1.ovm", mesh);
                 Window::instance().set_mesh(&mesh, 1);
 
                 std::cout << path << std::endl;
