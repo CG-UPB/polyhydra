@@ -129,9 +129,9 @@ namespace vOS
                 file_manager.readFile(path, m_mesh);
                 Window::instance().set_mesh(&m_mesh, 0);
 
-//                OpenVolumeMesh::GeometricPolyhedralMeshV3f mesh;
-//                file_manager.readFile("/home/kali/CLionProjects/volumeshos/buddha14880.1.ovm", mesh);
-//                Window::instance().set_mesh(&mesh, 1);
+                OpenVolumeMesh::GeometricPolyhedralMeshV3f mesh;
+                file_manager.readFile("/home/kali/CLionProjects/volumeshos/OVM/Tet/duck868.1.ovm", mesh);
+                Window::instance().set_mesh(&mesh, 1);
 
                 std::cout << path << std::endl;
 
@@ -155,7 +155,7 @@ namespace vOS
         Window& window = Window::instance();
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.get_mesh_obj().remove_highlights();
+        window.get_mesh_obj()->remove_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -236,7 +236,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj().remove_highlights();
+            window.get_mesh_obj()->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)

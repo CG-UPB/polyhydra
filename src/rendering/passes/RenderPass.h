@@ -24,6 +24,7 @@ namespace vOS
             glm::vec3 offset;
             glm::mat4 transform;
             glm::vec3 color;
+            int selection_offset;
         } mesh;
     };
 

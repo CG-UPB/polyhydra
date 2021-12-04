@@ -19,7 +19,7 @@
 
 namespace vOS
 {
-    MeshView::MeshView(int width, int height):
+    MeshView::MeshView(int width, int height) :
             m_viewportPanelWidth(width),
             m_viewportPanelHeight(height),
             m_lastDown(false),
@@ -28,7 +28,7 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_selectionFrameBuffer= new FrameBufferObject(width, height);
+        m_selectionFrameBuffer = new FrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -88,7 +88,7 @@ namespace vOS
     glm::vec3 MeshView::get_arc_ball_vector(float x, float y) const
     {
         glm::vec3 res = glm::vec3(
-                x/ (float) m_viewportPanelWidth * 2.0f - 1.0f,
+                x / (float) m_viewportPanelWidth * 2.0f - 1.0f,
                 y / (float) m_viewportPanelHeight * 2.0f - 1.0f,
                 0.0f
         );
@@ -162,17 +162,21 @@ namespace vOS
                 glm::vec3 b = get_arc_ball_vector(mousePos.x, mousePos.y);
                 float angle = (float) std::acos(std::min(1.0f, glm::dot(a, b)));
                 glm::vec3 axis_camera = glm::cross(a, b);
-                glm::mat3 camera_to_object = glm::inverse(glm::mat3(m_render_data.camera.view) * glm::mat3(m_render_data.camera.world));
+                glm::mat3 camera_to_object = glm::inverse(
+                        glm::mat3(m_render_data.camera.view) * glm::mat3(m_render_data.camera.world));
                 glm::vec3 axis_object = camera_to_object * axis_camera;
-                m_render_data.camera.world = glm::rotate(m_render_data.camera.world, glm::degrees(angle) * speed, axis_object);
+                m_render_data.camera.world = glm::rotate(m_render_data.camera.world, glm::degrees(angle) * speed,
+                                                         axis_object);
             }
         }
         m_lastX = mousePos.x;
         m_lastY = mousePos.y;
     }
 
-    void MeshView::renderMesh() {
-        if (ImGui::IsKeyPressed(GLFW_KEY_W)) {
+    void MeshView::renderMesh()
+    {
+        if (ImGui::IsKeyPressed(GLFW_KEY_W))
+        {
             m_mesh_pass.set_wireframe_mode(!m_mesh_pass.get_wireframe_mode());
         }
 
@@ -183,6 +187,16 @@ namespace vOS
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data);
+
+        if (ImGui::IsKeyPressed(GLFW_KEY_S))
+        {
+            Window::instance().set_mesh_active(0);
+        }
+        if (ImGui::IsKeyPressed(GLFW_KEY_F))
+        {
+            Window::instance().set_mesh_active(1);
+        }
+
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto &mesh = *m.second;
@@ -217,38 +231,37 @@ namespace vOS
         {
             auto &mesh = *m.second;
             m_render_data.mesh.offset = mesh.get_mesh_offset();
-
             m_selection_pass.render_mesh(&mesh, m_render_data);
-
-            glFlush();
-            glFinish();
-
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-            // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-            // viewport[3] equals viewport height
-            GLint viewport[4];
-            glGetIntegerv(GL_VIEWPORT, viewport);
-
-            // read Pixel data/color from framebuffer
-            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-            unsigned char data[4];
-            glReadPixels(
-                    (int) (m_lastX - screen_pos.x),
-                    (int) (viewport[3] - (m_lastY - screen_pos.y)),
-                    1,
-                    1,
-                    GL_RGBA,
-                    GL_UNSIGNED_BYTE,
-                    data
-            );
-
-            int type = data[0] & 3;
-
-            // evaluate ID out of color
-            int pickedID = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
-            handleSelection(mesh, type, pickedID);
         }
+
+        glFlush();
+        glFinish();
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+        // viewport[3] equals viewport height
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        // read Pixel data/color from framebuffer
+        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+        unsigned char data[4];
+        glReadPixels(
+                (int) (m_lastX - screen_pos.x),
+                (int) (viewport[3] - (m_lastY - screen_pos.y)),
+                1,
+                1,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                data
+        );
+
+        int type = data[0] & 3;
+
+        // evaluate ID out of color
+        int pickedID = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
+        handleSelection(type, pickedID);
 
         m_selectionFrameBuffer->unbind();
 
@@ -257,75 +270,93 @@ namespace vOS
         m_meshFrameBuffer->unbind();
     }
 
-    void MeshView::handleSelection(MeshObject& mesh, int type, int picked_id)
+    void MeshView::handleSelection(int type, int picked_id)
     {
-        if (type == SELECTION_TYPE_FACE)
+        // evaluate which in which mesh the color was selected
+        auto& mesh = *Window::instance().get_mesh_obj();
+        int from = 0;
+        int to = 0;
+        for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list())
         {
-            // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
-            // there is no valid ID (e.g when clicking background)
-            int face_id = (int) mesh.to_faceID(picked_id) - 1;
+            mesh = *m.second;
+            from = std::get<0>(mesh.selection_offset());
+            to = std::get<1>(mesh.selection_offset());
 
-            m_selection_hover_pass.select(mesh, type, face_id);
-
-            OpenVolumeMesh::FaceHandle face(face_id);
-            if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            if (picked_id >= from && picked_id <= to)
             {
+                std::cout << "Mesh " << m.first << " was picked" << std::endl;
 
-                auto pick_pos = mesh.m_mesh->barycenter(face);
-                auto* shape = new Cylinder();
-                shape->set_scale(0.02f, 0.02f, 0.02f);
-                shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                shape->set_base_color(1.0f, 0.0f, 0.0f);
-                ShapePass::add_shape(shape);
+                if (type == SELECTION_TYPE_FACE)
+                {
+                    // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
+                    // there is no valid ID (e.g when clicking background)
+                    int face_id = (int) mesh.to_faceID(picked_id) - 1;
+
+                    m_selection_hover_pass.select(mesh, type, face_id);
+
+                    OpenVolumeMesh::FaceHandle face(face_id);
+                    if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+
+                        auto pick_pos = mesh.m_mesh->barycenter(face);
+                        auto* shape = new Cylinder();
+                        shape->set_scale(0.02f, 0.02f, 0.02f);
+                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                        shape->set_base_color(1.0f, 0.0f, 0.0f);
+                        ShapePass::add_shape(shape);
+                    }
+                }
+                else if (type == SELECTION_TYPE_VERTEX)
+                {
+                    int vertex_id = picked_id;
+
+                    m_selection_hover_pass.select(mesh, type, vertex_id);
+
+                    OpenVolumeMesh::VertexHandle vertex(vertex_id);
+                    if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        auto pick_pos = mesh.m_mesh->vertex(vertex);
+                        auto* shape = new Sphere();
+                        shape->set_scale(0.02f, 0.02f, 0.02f);
+                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                        shape->set_base_color(0.0f, 1.0f, 0.0f);
+                        ShapePass::add_shape(shape);
+                    }
+                }
+                else if (type == SELECTION_TYPE_EDGE)
+                {
+                    int edge_id = (int) mesh.to_edgeID(picked_id) - 1;
+
+                    m_selection_hover_pass.select(mesh, type, edge_id);
+
+                    OpenVolumeMesh::EdgeHandle edge(edge_id);
+                    if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        auto vertices = mesh.m_mesh->edge_vertices(edge);
+                        auto v0 = mesh.m_mesh->vertex(vertices[0]);
+                        auto v1 = mesh.m_mesh->vertex(vertices[1]);
+                        auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
+                        auto* shape = new Box();
+                        shape->set_scale(0.02f, 0.02f, 0.02f);
+                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+                        shape->set_base_color(0.0f, 0.0f, 1.0f);
+                        ShapePass::add_shape(shape);
+                    }
+                }
+                else
+                {
+                    m_selection_hover_pass.select(mesh, 0, 0);
+                }
+
+                continue;
             }
-        }
-        else if (type == SELECTION_TYPE_VERTEX)
-        {
-            int vertex_id = picked_id;
-
-            m_selection_hover_pass.select(mesh, type, vertex_id);
-
-            OpenVolumeMesh::VertexHandle vertex(vertex_id);
-            if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                auto pick_pos = mesh.m_mesh->vertex(vertex);
-                auto* shape = new Sphere();
-                shape->set_scale(0.02f, 0.02f, 0.02f);
-                shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                shape->set_base_color(0.0f, 1.0f, 0.0f);
-                ShapePass::add_shape(shape);
-            }
-        }
-        else if (type == SELECTION_TYPE_EDGE)
-        {
-            int edge_id = (int) mesh.to_edgeID(picked_id) - 1;
-
-            m_selection_hover_pass.select(mesh, type, edge_id);
-
-            OpenVolumeMesh::EdgeHandle edge(edge_id);
-            if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                auto vertices = mesh.m_mesh->edge_vertices(edge);
-                auto v0 = mesh.m_mesh->vertex(vertices[0]);
-                auto v1 = mesh.m_mesh->vertex(vertices[1]);
-                auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
-                auto* shape = new Box();
-                shape->set_scale(0.02f, 0.02f, 0.02f);
-                shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                shape->set_base_color(0.0f, 0.0f, 1.0f);
-                ShapePass::add_shape(shape);
-            }
-        }
-        else
-        {
-            m_selection_hover_pass.select(mesh, 0, 0);
         }
     }
 
     void MeshView::show()
     {
         auto padding = ImGui::GetStyle().WindowPadding;
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0.0f, 0.0f});
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
 
         // handle the things related to our mesh rendering canvas
@@ -355,14 +386,14 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
-        if (Window::instance().get_mesh_obj().m_mesh != nullptr)
+        if (Window::instance().get_mesh_obj()->m_mesh != nullptr)
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj().m_mesh->n_vertices());
+            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj()->m_mesh->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj().m_mesh->n_edges());
+            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj()->m_mesh->n_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj().m_mesh->n_faces());
+            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj()->m_mesh->n_faces());
         }
 
         ImGui::End();
