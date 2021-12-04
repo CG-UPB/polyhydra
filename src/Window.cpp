@@ -142,7 +142,7 @@ namespace vOS {
             delete search->second;
             search->second = mesh_obj;
         } else {
-            m_mesh_objects.insert({index, mesh_obj});
+            m_mesh_objects.emplace(index, mesh_obj);
         }
         set_mesh_active(index);
 
@@ -155,7 +155,7 @@ namespace vOS {
         for(const auto& mesh_obj : m_mesh_objects)
         {
             mesh_obj.second->set_selection_offset(offset);
-            offset =  std::get<1>(mesh_obj.second->selection_offset()) + 1;
+            offset = std::get<1>(mesh_obj.second->selection_offset()) + 1;
         }
     }
 

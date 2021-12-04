@@ -226,7 +226,7 @@ namespace vOS
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
             m_selection_pass.render_mesh(mesh, m_render_data);
@@ -255,11 +255,18 @@ namespace vOS
                 data
         );
 
-        int type = data[0] & 3;
-
         // evaluate ID out of color
-        int pickedID = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
-        handleSelection(type, pickedID);
+        int type = data[0] & 3;
+        int id;
+        if (SelectionPass::DEBUG_MODE)
+        {
+            id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
+        }
+        else
+        {
+            id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
+        }
+        handleSelection(type, id);
 
         m_selectionFrameBuffer->unbind();
 
@@ -271,21 +278,17 @@ namespace vOS
     void MeshView::handleSelection(int type, int picked_id)
     {
         // evaluate which in which mesh the color was selected
-        int from = 0;
-        int to = 0;
         bool any_mesh_hovered = false;
-        for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list())
+        for (const auto& m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-            from = std::get<0>(mesh->selection_offset());
-            to = std::get<1>(mesh->selection_offset());
+            int from = std::get<0>(mesh->selection_offset());
+            int to = std::get<1>(mesh->selection_offset());
 
             if (picked_id >= from && picked_id <= to)
             {
 
                 any_mesh_hovered = true;
-//                std::cout << "Mesh " << m.first << " was picked" << std::endl;
-//                std::cout << "from: " << from << ", to: " << to << std::endl;
 
                 if (type == SELECTION_TYPE_FACE)
                 {
@@ -372,9 +375,19 @@ namespace vOS
         topLeft.x += padding.x;
         topLeft.y += padding.y;
 
+        ImTextureID texture_id;
+        if (SelectionPass::DEBUG_MODE)
+        {
+            texture_id = reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id());
+        }
+        else
+        {
+            texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
+        }
+
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id()),
+                texture_id,
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},

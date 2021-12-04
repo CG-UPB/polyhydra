@@ -24,7 +24,7 @@ void main()
     //v_discard = dot(view_dir, normal) > 0.01 ? 1 : 0;
 
     vec3 offset = a_offset;
-    float width = 0.2 * min(1.0 / length(u_mesh_transform[0]), 1.0);
+    float width = 0.2 * (1.0 / length(u_mesh_transform[0]));
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,
         0.0, width, 0.0, 0.0,

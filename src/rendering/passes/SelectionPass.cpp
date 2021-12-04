@@ -32,6 +32,7 @@ namespace vOS {
         m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_selection_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
+        m_selection_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
 
         vao->draw();
 
@@ -45,6 +46,7 @@ namespace vOS {
         m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_selection_cylinder_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
+        m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
 
         m_cylinder_vao->draw_instanced(m_num_edges);
 
@@ -60,6 +62,7 @@ namespace vOS {
         m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
         m_selection_sphere_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
+        m_selection_sphere_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
 
         m_sphere_vao->draw_instanced(m_num_vertices);
 

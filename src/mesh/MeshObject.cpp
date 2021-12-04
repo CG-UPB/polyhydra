@@ -385,9 +385,10 @@ namespace vOS
     {
         return m_sphere_vao;
     }
-    int MeshObject::calculate_selection_size()
+    int MeshObject::calculate_selection_size() const
     {
-        return m_face_ids.size();
+        // make sure that we choose the biggest possible vertex, edge or face id as the offset
+        return (int) std::max(std::max(m_mesh->n_vertices(), m_mesh->n_edges()), m_mesh->n_faces());
     }
 
     int MeshObject::get_num_visible_vertices() const
@@ -407,7 +408,7 @@ namespace vOS
 
     void MeshObject::set_selection_offset(int start)
     {
-        m_selection_offset = {start, start + calculate_selection_size() -1};
+        m_selection_offset = {start, start + calculate_selection_size()};
     }
 }
 

@@ -63,7 +63,7 @@ namespace vOS
 
     private:
         void calculate_mesh_offset();
-        int calculate_selection_size();
+        int calculate_selection_size() const;
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_edges;

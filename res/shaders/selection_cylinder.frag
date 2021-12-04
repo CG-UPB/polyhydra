@@ -3,6 +3,7 @@
 flat in int v_instance_id;
 
 uniform int u_selection_offset;
+uniform bool u_debug_mode;
 
 out vec4 fragment_color;
 
@@ -21,4 +22,8 @@ void main()
 {
     ivec4 id_color = get_id_bits(v_instance_id + u_selection_offset);
     fragment_color = vec4(float(id_color.r) / 255.0, float(id_color.g) / 255.0, float(id_color.b) / 255.0, float(id_color.a) / 255.0);
+    if (u_debug_mode)
+    {
+        fragment_color.a = 1.0;
+    }
 }

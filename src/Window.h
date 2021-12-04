@@ -79,7 +79,7 @@ namespace vOS {
 
         MeshObject *get_mesh_obj(int index = -1);
 
-        std::unordered_map<int, MeshObject *> get_mesh_list() { return m_mesh_objects; };
+        const std::unordered_map<int, MeshObject*>& get_mesh_list() { return m_mesh_objects; };
 
         unsigned int add_shape(Shape *shape);
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ namespace vOS {
         v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
 
-        std::unordered_map<int, MeshObject *> m_mesh_objects;
+        std::unordered_map<int, MeshObject*> m_mesh_objects;
         MeshObject *m_mesh_obj;
 
         MenuBar *m_menu_bar;

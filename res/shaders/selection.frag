@@ -1,8 +1,9 @@
 #version 330 core
 
 uniform int u_selection_offset;
+uniform bool u_debug_mode;
 
-out vec4 FragColor;
+out vec4 fragment_color;
 
 ivec4 get_id_bits(int id)
 {
@@ -19,5 +20,9 @@ void main()
 {
     int id = u_selection_offset + gl_PrimitiveID;
     ivec4 id_color = get_id_bits(id);
-    FragColor = vec4(float(id_color.r) / 255.0, float(id_color.g) / 255.0, float(id_color.b) / 255.0, float(id_color.a) / 255.0);
+    fragment_color = vec4(float(id_color.r) / 255.0, float(id_color.g) / 255.0, float(id_color.b) / 255.0, float(id_color.a) / 255.0);
+    if (u_debug_mode)
+    {
+        fragment_color.a = 1.0;
+    }
 }

@@ -8,6 +8,9 @@ namespace vOS
     class SelectionPass : public RenderPass
     {
     public:
+
+        static const bool DEBUG_MODE = true;
+
         SelectionPass();
         ~SelectionPass() = default;
 
