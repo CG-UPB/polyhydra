@@ -18,7 +18,7 @@
 
 namespace vOS
 {
-    MeshView::MeshView(int width, int height):
+    MeshView::MeshView(int width, int height) :
             m_viewportPanelWidth(width),
             m_viewportPanelHeight(height),
             m_lastDown(false),
@@ -27,7 +27,7 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_selectionFrameBuffer= new FrameBufferObject(width, height);
+        m_selectionFrameBuffer = new FrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -87,7 +87,7 @@ namespace vOS
     glm::vec3 MeshView::get_arc_ball_vector(float x, float y) const
     {
         glm::vec3 res = glm::vec3(
-                x/ (float) m_viewportPanelWidth * 2.0f - 1.0f,
+                x / (float) m_viewportPanelWidth * 2.0f - 1.0f,
                 y / (float) m_viewportPanelHeight * 2.0f - 1.0f,
                 0.0f
         );
@@ -96,8 +96,7 @@ namespace vOS
         if (squared <= 1.0f)
         {
             res.z = (float) sqrt(1.0 - squared);
-        }
-        else
+        } else
         {
             res = glm::normalize(res);
         }
@@ -161,19 +160,23 @@ namespace vOS
                 glm::vec3 b = get_arc_ball_vector(mousePos.x, mousePos.y);
                 float angle = (float) std::acos(std::min(1.0f, glm::dot(a, b)));
                 glm::vec3 axis_camera = glm::cross(a, b);
-                glm::mat3 camera_to_object = glm::inverse(glm::mat3(m_render_data.camera.view) * glm::mat3(m_render_data.camera.world));
+                glm::mat3 camera_to_object = glm::inverse(
+                        glm::mat3(m_render_data.camera.view) * glm::mat3(m_render_data.camera.world));
                 glm::vec3 axis_object = camera_to_object * axis_camera;
-                m_render_data.camera.world = glm::rotate(m_render_data.camera.world, glm::degrees(angle) * speed, axis_object);
+                m_render_data.camera.world = glm::rotate(m_render_data.camera.world, glm::degrees(angle) * speed,
+                                                         axis_object);
             }
         }
         m_lastX = mousePos.x;
         m_lastY = mousePos.y;
     }
 
-    void MeshView::renderMesh() {
+    void MeshView::renderMesh()
+    {
 
 
-        if (ImGui::IsKeyPressed(GLFW_KEY_W)) {
+        if (ImGui::IsKeyPressed(GLFW_KEY_W))
+        {
             m_mesh_pass.set_wireframe_mode(!m_mesh_pass.get_wireframe_mode());
         }
 
@@ -186,23 +189,26 @@ namespace vOS
         m_background_pass.render(*Window::instance().get_mesh_obj()->get_vao(), m_render_data);
 
 
-        if (ImGui::IsKeyPressed(GLFW_KEY_S)) {
+        if (ImGui::IsKeyPressed(GLFW_KEY_S))
+        {
             Window::instance().set_mesh_active(0);
         }
-        if (ImGui::IsKeyPressed(GLFW_KEY_F)) {
+        if (ImGui::IsKeyPressed(GLFW_KEY_F))
+        {
             Window::instance().set_mesh_active(1);
         }
 
         m_render_data.mesh.offset = Window::instance().get_mesh_obj()->get_mesh_offset();
 
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
 
             mesh->update_vertex_buffer();
 
             // render all passes
-            if (mesh->get_vao() != nullptr) {
+            if (mesh->get_vao() != nullptr)
+            {
                 m_mesh_pass.render(*mesh->get_vao(), m_render_data);
                 m_shape_pass.render(*mesh->get_vao(), m_render_data);
                 m_highlight_pass.render(*mesh->get_vao(), m_render_data);
@@ -223,11 +229,11 @@ namespace vOS
 
 
         // render selection_pass for each mesh
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
 
-            if (mesh->get_vao() != nullptr )
+            if (mesh->get_vao() != nullptr)
             {
                 m_render_data.mesh.selection_offset = std::get<0>(mesh->selection_offset());
                 m_selection_pass.render(*mesh->get_vao(), m_render_data);
@@ -236,7 +242,8 @@ namespace vOS
 
 
         // check for actual picking
-        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        {
             glFlush();
             glFinish();
 
@@ -260,22 +267,23 @@ namespace vOS
             auto mesh = Window::instance().get_mesh_obj();
             int from = 0;
             int to = 0;
-            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list())
             {
                 mesh = m.second;
                 from = std::get<0>(mesh->selection_offset());
                 to = std::get<1>(mesh->selection_offset());
 
-                if(pickedID >= from && pickedID <= to)
+                if (pickedID >= from && pickedID <= to)
                 {
-                    std::cout << "Mesh "<< m.first << " was picked" << std::endl;
+                    std::cout << "Mesh " << m.first << " was picked" << std::endl;
 
                     // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                     // there is no valid ID (e.g when clicking background)
                     unsigned int faceID = mesh->to_faceID(pickedID - from) - 1;
 
                     OpenVolumeMesh::FaceHandle face(faceID);
-                    if (face.is_valid()) {
+                    if (face.is_valid())
+                    {
 
                         auto pick_pos = mesh->m_mesh->barycenter(face);
                         Box *shape = new Box(0.1f, 0.1f, 0.1f);
@@ -298,7 +306,7 @@ namespace vOS
     void MeshView::show()
     {
         auto padding = ImGui::GetStyle().WindowPadding;
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0.0f, 0.0f});
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
 
         // handle the things related to our mesh rendering canvas

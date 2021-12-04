@@ -305,7 +305,8 @@ namespace vOS
         return m_vertexArrayObject;
     }
 
-    int MeshObject::calculate_selection_size() {
+    int MeshObject::calculate_selection_size()
+    {
         return m_face_ids.size();
     }
 

@@ -35,12 +35,12 @@ namespace vOS
         void init_face_normals();
         void init_vertex_normals();
 
-        std::vector<float> vertices(){ return m_vertices;};
-        std::vector<unsigned int> edges(){ return m_edges;};
-        std::vector<unsigned int> faces(){ return m_faces;};
-        std::vector<float> vertex_normals(){ return m_vertex_normals;};
-        std::vector<float> face_normals(){ return m_face_normals;};
-        std::tuple<int, int> selection_offset(){ return m_selection_offset;};
+        std::vector<float>& vertices(){ return m_vertices;};
+        std::vector<unsigned int>& edges(){ return m_edges;};
+        std::vector<unsigned int>& faces(){ return m_faces;};
+        std::vector<float>& vertex_normals(){ return m_vertex_normals;};
+        std::vector<float>& face_normals(){ return m_face_normals;};
+        std::tuple<int, int>& selection_offset(){ return m_selection_offset;};
         void set_selection_offset(int start);
 
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
