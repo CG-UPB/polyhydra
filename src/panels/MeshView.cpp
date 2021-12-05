@@ -294,7 +294,7 @@ namespace vOS
                     // there is no valid ID (e.g when clicking background)
                     int face_id = (int) mesh->to_faceID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, type, face_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data, type, face_id);
 
                     OpenVolumeMesh::FaceHandle face(face_id);
                     if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -312,7 +312,7 @@ namespace vOS
                 {
                     int vertex_id = picked_id - from;
 
-                    m_selection_hover_pass.select(*mesh, type, vertex_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -329,7 +329,7 @@ namespace vOS
                 {
                     int edge_id = (int) mesh->to_edgeID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, type, edge_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -352,7 +352,7 @@ namespace vOS
 
         if (!any_mesh_hovered)
         {
-            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(), 0, 0);
+            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(), m_render_data, 0, 0);
         }
     }
 

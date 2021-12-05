@@ -5,11 +5,11 @@
 #include "../meshes/CommonMeshes.h"
 
 namespace vOS {
-    SelectionPass::SelectionPass(): m_selection_shader(Shader::selection_shader())
+    SelectionPass::SelectionPass(): m_selection_shader(Shader::selection_face())
     {
-        m_selection_shader = Shader::selection_shader();
-        m_selection_sphere_shader = Shader::selection_sphere_shader();
-        m_selection_cylinder_shader = Shader::selection_cylinder_shader();
+        m_selection_shader = Shader::selection_face();
+        m_selection_sphere_shader = Shader::selection_vertex_shader();
+        m_selection_cylinder_shader = Shader::selection_edge_shader();
     }
 
     void SelectionPass::render(VertexArrayObject* vao, const RenderData &data)

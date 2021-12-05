@@ -13,7 +13,7 @@ namespace vOS
     {
         m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
-        m_highlight_shader = Shader::property_shader();
+        m_highlight_shader = Shader::quad_circle_shader();
     }
 
     HighlightPass::~HighlightPass()

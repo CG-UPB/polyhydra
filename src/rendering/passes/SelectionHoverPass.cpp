@@ -8,19 +8,20 @@
 
 namespace vOS
 {
-    SelectionHoverPass::SelectionHoverPass(): m_hover_color(glm::vec4(0.9, 0.9, 0.2, 0.8))
+    SelectionHoverPass::SelectionHoverPass(): m_hover_color(glm::vec4(0.9, 0.2, 0.2, 0.5))
     {
-        m_hover_shader = Shader::selection_hover_shader();
-        m_blurred_quad_shader = Shader::blurred_quad_shader();
-        m_vertex_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
-        m_vertex_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
+        m_flat_color_shader = Shader::flat_color_shader();
+        m_quad_circle_shader = Shader::quad_circle_shader();
+        m_edge_hover_shader = Shader::edge_hover_shader();
+        m_quad_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
+        m_quad_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
+        m_edge_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
     }
 
     SelectionHoverPass::~SelectionHoverPass()
     {
         delete m_face_vao;
-        delete m_vertex_vao;
-        delete m_edge_vao;
+        delete m_quad_vao;
     }
 
     void SelectionHoverPass::render(VertexArrayObject* vao, const RenderData& data)
@@ -42,50 +43,50 @@ namespace vOS
         {
             if (m_face_vao != nullptr)
             {
-                m_hover_shader->bind();
-                m_hover_shader->set_uniform_mat4f("u_mesh_transform", transform);
-                m_hover_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_hover_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_hover_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
+                m_flat_color_shader->bind();
+                m_flat_color_shader->set_uniform_mat4f("u_transform", transform);
+                m_flat_color_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+                m_flat_color_shader->set_uniform_mat4f("u_view", data.camera.view);
+                m_flat_color_shader->set_uniform_vec4f("u_color", m_hover_color);
                 m_face_vao->draw();
-                m_hover_shader->unbind();
+                m_flat_color_shader->unbind();
             }
         }
         else if (m_selected_type == SELECTION_TYPE_VERTEX)
         {
-            if (m_vertex_vao != nullptr)
+            if (m_quad_vao != nullptr)
             {
-                m_blurred_quad_shader->bind();
-                m_blurred_quad_shader->set_uniform_mat4f("u_transform", transform);
-                m_blurred_quad_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_blurred_quad_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_blurred_quad_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
-                m_blurred_quad_shader->set_uniform_vec4f("u_position", m_selected_vertex_position);
-                m_blurred_quad_shader->set_uniform_float("u_scale", 0.025f);
-                m_blurred_quad_shader->set_uniform_float("u_rotation", 0.0f);
-                m_vertex_vao->draw();
-                m_blurred_quad_shader->unbind();
+                m_quad_circle_shader->bind();
+                m_quad_circle_shader->set_uniform_mat4f("u_transform", transform);
+                m_quad_circle_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+                m_quad_circle_shader->set_uniform_mat4f("u_view", data.camera.view);
+                m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
+                m_quad_circle_shader->set_uniform_vec4f("u_position", m_selected_vertex_position);
+                m_quad_circle_shader->set_uniform_float("u_scale", 0.015f);
+                m_quad_vao->draw();
+                m_quad_circle_shader->unbind();
             }
         }
         else if (m_selected_type == SELECTION_TYPE_EDGE)
         {
             if (m_edge_vao != nullptr)
             {
-                m_blurred_quad_shader->bind();
-                m_blurred_quad_shader->set_uniform_mat4f("u_transform", transform);
-                m_blurred_quad_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_blurred_quad_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_blurred_quad_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
-                m_blurred_quad_shader->set_uniform_vec4f("u_position", m_selected_edge_position);
-                m_blurred_quad_shader->set_uniform_float("u_scale", 0.025f);
-                m_blurred_quad_shader->set_uniform_float("u_rotation", m_selected_edge_angle);
+                glm::vec4 color(m_hover_color);
+                color *= 0.5;
+                m_edge_hover_shader->bind();
+                m_edge_hover_shader->set_uniform_mat4f("u_mesh_transform", transform);
+                m_edge_hover_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+                m_edge_hover_shader->set_uniform_mat4f("u_view", data.camera.view);
+                m_edge_hover_shader->set_uniform_vec4f("u_color", color);
+                m_edge_hover_shader->set_uniform_vec3f("u_from_vertex", m_selected_edge_from);
+                m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_selected_edge_to);
                 m_edge_vao->draw();
-                m_blurred_quad_shader->unbind();
+                m_edge_hover_shader->unbind();
             }
         }
     }
 
-    void SelectionHoverPass::select(MeshObject& mesh, int type, int id)
+    void SelectionHoverPass::select(MeshObject& mesh, const RenderData& data, int type, int id)
     {
         if (m_selected_id == id && m_selected_type == type)
         {
@@ -126,30 +127,12 @@ namespace vOS
                 auto edge_vertices = mesh.m_mesh->edge_vertices(edge);
                 auto v0 = mesh.m_mesh->vertex(edge_vertices[0]);
                 auto v1 = mesh.m_mesh->vertex(edge_vertices[1]);
-                glm::vec3 pos0 = glm::vec3(v0[0], v0[1], v0[2]);
-                glm::vec3 pos1 = glm::vec3(v1[0], v1[1], v1[2]);
-
-                float dot = pos0.x * pos1.x + pos0.y * pos1.y;
-                float det = pos0.x * pos1.x - pos0.y * pos1.y;
-                m_selected_edge_angle = std::atan2(det, dot);
-
-                glm::vec3 edge_normal = glm::normalize(glm::cross(pos1 - pos0, glm::vec3(0.0, 0.0, 1.0)));
-                //m_selected_edge_angle = glm::acos(glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), edge_normal));
-                std::cout << "angle: " << glm::degrees(m_selected_edge_angle) << std::endl;
-                m_selected_edge_position.x = pos0.x + (pos1.x - pos0.x) * 0.5f;
-                m_selected_edge_position.y = pos0.y + (pos1.y - pos0.y) * 0.5f;
-                m_selected_edge_position.z = pos0.z + (pos1.z - pos0.z) * 0.5f;
-                m_selected_edge_position.w = 1.0f;
-                float width = glm::length(pos1 - pos0);
-                if (m_edge_vao == nullptr)
-                {
-                    m_edge_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 1.0f), CommonMeshes::PlaneXY::indices());
-                    m_edge_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
-                }
-                else
-                {
-                    m_edge_vao->update_vertices(CommonMeshes::PlaneXY::vertices(2.0f, 1.0f), CommonMeshes::PlaneXY::indices());
-                }
+                m_selected_edge_from.x = v0[0];
+                m_selected_edge_from.y = v0[1];
+                m_selected_edge_from.z = v0[2];
+                m_selected_edge_to.x = v1[0];
+                m_selected_edge_to.y = v1[1];
+                m_selected_edge_to.z = v1[2];
             }
         }
     }
@@ -175,11 +158,11 @@ namespace vOS
         return res;
     }
 
-    SelectionHoverPass::MeshData SelectionHoverPass::get_edge_mesh_data(MeshObject& mesh, int edge_id)
+    SelectionHoverPass::MeshData SelectionHoverPass::get_edge_mesh_data(MeshObject& mesh, const RenderData& data, int edge_id)
     {
         MeshData res;
 
-        float width = 0.3;
+        float width = 0.003;
 
         OpenVolumeMesh::EdgeHandle edge(edge_id);
         auto edge_vertices = mesh.m_mesh->edge_vertices(edge);
@@ -187,7 +170,10 @@ namespace vOS
         auto v1 = mesh.m_mesh->vertex(edge_vertices[1]);
         glm::vec3 pos0 = glm::vec3(v0[0], v0[1], v0[2]);
         glm::vec3 pos1 = glm::vec3(v1[0], v1[1], v1[2]);
-        glm::vec3 edge_normal = glm::normalize(glm::cross(pos1 - pos0, glm::vec3(0.0, 0.0, 1.0)));
+        auto mat = data.camera.projection * data.camera.view * data.camera.world * data.mesh.transform;
+        auto p0_transformed = mat * glm::vec4(pos0, 1.0f);
+        auto p1_transformed = mat * glm::vec4(pos1, 1.0f);
+        glm::vec3 edge_normal = glm::normalize(glm::cross(glm::vec3(p1_transformed - p0_transformed), glm::vec3(0.0, 0.0, 1.0)));
 
         add_vertex(pos0 - width * edge_normal, res.vertices);
         add_vertex(pos1 - width * edge_normal, res.vertices);
@@ -198,9 +184,9 @@ namespace vOS
         res.indices.push_back(1);
         res.indices.push_back(2);
 
-        res.indices.push_back(0);
         res.indices.push_back(2);
         res.indices.push_back(3);
+        res.indices.push_back(0);
 
         return res;
     }

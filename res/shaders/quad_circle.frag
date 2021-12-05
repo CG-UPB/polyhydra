@@ -2,7 +2,7 @@
 
 in vec2 tex_coord;
 
-uniform vec4 u_highlight_color;
+uniform vec4 u_hover_color;
 
 out vec4 fragmentColor;
 
@@ -13,5 +13,5 @@ void main()
 
     // anti aliasing
     fragmentColor = vec4(smoothstep(0.0, 0.1, distance));
-    fragmentColor *= u_highlight_color;
+    fragmentColor *= u_hover_color;
 }

@@ -38,11 +38,12 @@ namespace vOS
         static Shader* property_shader() { return get("property"); }
         static Shader* background_shader() { return get("background"); }
         static Shader* basic_shape_shader() { return get("basic_shape"); }
-        static Shader* selection_shader() { return get("selection"); }
-        static Shader* selection_sphere_shader() { return get("selection_sphere"); }
-        static Shader* selection_cylinder_shader() { return get("selection_cylinder"); }
-        static Shader* selection_hover_shader() { return get("selection_hover"); }
-        static Shader* blurred_quad_shader() { return get("blurred_quad"); }
+        static Shader* selection_face() { return get("selection_face"); }
+        static Shader* selection_vertex_shader() { return get("selection_vertex"); }
+        static Shader* selection_edge_shader() { return get("selection_edge"); }
+        static Shader* flat_color_shader() { return get("flat_color"); }
+        static Shader* quad_circle_shader() { return get("quad_circle"); }
+        static Shader* edge_hover_shader() { return get("edge_hover"); }
 
         /**
          * Binds this shader for opengl. A shader must be bound to draw something or to set the shader uniforms.
