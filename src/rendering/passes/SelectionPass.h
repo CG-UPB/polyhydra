@@ -9,7 +9,7 @@ namespace vOS
     {
     public:
 
-        static const bool DEBUG_MODE = true;
+        static const bool DEBUG_MODE = false;
 
         SelectionPass();
         ~SelectionPass() = default;

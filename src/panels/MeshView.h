@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../rendering/gl/PixelBufferObject.h"
 #include "../ImguiRenderer.h"
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/HighlightPass.h"
@@ -44,6 +45,7 @@ namespace vOS
         // opengl rendering
         FrameBufferObject* m_meshFrameBuffer;
         FrameBufferObject* m_selectionFrameBuffer;
+        PixelBufferObject* m_pixel_buffer;
         RenderData m_render_data;
 
         // render passes

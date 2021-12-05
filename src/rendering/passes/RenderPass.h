@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../VertexArrayObject.h"
-#include "../Shader.h"
-#include "../FrameBufferObject.h"
+#include "../gl/VertexArrayObject.h"
+#include "../gl/Shader.h"
+#include "../gl/FrameBufferObject.h"
 
 #include "glm/gtx/transform.hpp"
 

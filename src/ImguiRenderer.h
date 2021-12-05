@@ -4,7 +4,7 @@
 
 #include <string>
 #include <vector>
-#include "rendering/FrameBufferObject.h"
+#include "rendering/gl/FrameBufferObject.h"
 
 namespace vOS
 {

@@ -1,12 +1,12 @@
 
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 #include "Shader.h"
 
 #include <iostream>
 
-#include "../fs/FileManager.h"
-#include "../util/StringUtil.h"
+#include "../../fs/FileManager.h"
+#include "../../util/StringUtil.h"
 
 namespace vOS
 {

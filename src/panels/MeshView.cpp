@@ -29,6 +29,7 @@ namespace vOS
     {
         m_meshFrameBuffer = new FrameBufferObject(width, height);
         m_selectionFrameBuffer = new FrameBufferObject(width, height);
+        m_pixel_buffer = new PixelBufferObject(2, width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -62,6 +63,7 @@ namespace vOS
     {
         delete m_meshFrameBuffer;
         delete m_selectionFrameBuffer;
+        delete m_pixel_buffer;
     }
 
     void MeshView::handleResize()
@@ -206,7 +208,6 @@ namespace vOS
             mesh->update_vertex_buffer();
 
             // render all passes
-
             if (mesh->get_vao() != nullptr) {
                 m_mesh_pass.render(mesh->get_vao(), m_render_data);
             }
@@ -222,6 +223,39 @@ namespace vOS
         // now render our mesh scene to the framebuffer texture
         m_selectionFrameBuffer->bind();
 
+        // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+        // viewport[3] equals viewport height
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        // read Pixel data/color from framebuffer
+        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+
+        GLubyte* data = m_pixel_buffer->start_read(
+                (int) (m_lastX - screen_pos.x),
+                (int) (viewport[3] - (m_lastY - screen_pos.y)),
+                1,
+                1
+        );
+
+        if (data != nullptr)
+        {
+            // evaluate ID out of color
+            int type = data[0] & 3;
+            int id;
+            if (SelectionPass::DEBUG_MODE)
+            {
+                id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
+            }
+            else
+            {
+                id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
+            }
+            handleSelection(type, id);
+        }
+
+        m_pixel_buffer->finish_read();
+
         // we need to clear our framebuffer as well
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -231,42 +265,6 @@ namespace vOS
             auto mesh = m.second;
             m_selection_pass.render_mesh(mesh, m_render_data);
         }
-
-        glFlush();
-        glFinish();
-
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-        // viewport[3] equals viewport height
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-
-        // read Pixel data/color from framebuffer
-        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-        unsigned char data[4];
-        glReadPixels(
-                (int) (m_lastX - screen_pos.x),
-                (int) (viewport[3] - (m_lastY - screen_pos.y)),
-                1,
-                1,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                data
-        );
-
-        // evaluate ID out of color
-        int type = data[0] & 3;
-        int id;
-        if (SelectionPass::DEBUG_MODE)
-        {
-            id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
-        }
-        else
-        {
-            id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
-        }
-        handleSelection(type, id);
 
         m_selectionFrameBuffer->unbind();
 

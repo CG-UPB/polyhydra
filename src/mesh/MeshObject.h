@@ -1,7 +1,7 @@
 #include <OpenVolumeMesh/Geometry/VectorT.hh>
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
 #include <vector>
-#include "../rendering/VertexArrayObject.h"
+#include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 
 #ifndef VOLUMESHOS_MESH_OBJECT_H
