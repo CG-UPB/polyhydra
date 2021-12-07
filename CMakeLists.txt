@@ -3,6 +3,9 @@ project(volumeshOS)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+
 # we don't need glfw docs, tests or examples
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -21,10 +24,10 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/main.cpp
         ${VOLUMESHOS_SRC}/ImguiRenderer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshView.cpp
-        ${VOLUMESHOS_SRC}/rendering/Shader.cpp
+        ${VOLUMESHOS_SRC}/rendering/gl/Shader.cpp
         ${VOLUMESHOS_SRC}/fs/FileManager.cpp
-        ${VOLUMESHOS_SRC}/rendering/FrameBufferObject.cpp
-        ${VOLUMESHOS_SRC}/rendering/VertexArrayObject.cpp
+        ${VOLUMESHOS_SRC}/rendering/gl/FrameBufferObject.cpp
+        ${VOLUMESHOS_SRC}/rendering/gl/VertexArrayObject.cpp
         ${VOLUMESHOS_SRC}/Window.cpp
         ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
         ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
@@ -38,7 +41,14 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
         ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp
-        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp src/rendering/passes/SelectionPasss.cpp src/rendering/passes/SelectionPasss.h)
+        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/SelectionPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/meshes/IcoSphereMesh.cpp
+        ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.cpp
+        ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
+        ${VOLUMESHOS_SRC}/rendering/shapes/Cylinder.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/SelectionHoverPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/gl/PixelBufferObject.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

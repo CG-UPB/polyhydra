@@ -13,7 +13,7 @@ namespace vOS
         void set_background_color(const glm::vec4& color);
         [[nodiscard]] const glm::vec4& get_background_color() const;
 
-        void render(const VertexArrayObject &vao, const RenderData &data) override;
+        void render(VertexArrayObject* vao, const RenderData &data) override;
 
     private:
 

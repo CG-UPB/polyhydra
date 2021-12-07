@@ -35,20 +35,17 @@ namespace vOS
         return inst;
     }
 
-    Window::Window()
-    {
+    Window::Window() {
         // Create Custom UI Panel Object
         m_custom_ui = new CustomUIPanel();
 
         m_file_dialog = new FileDialog();
     }
 
-    Window::~Window()
-    {
+    Window::~Window() {
     }
 
-    void Window::initPanels()
-    {
+    void Window::initPanels() {
         m_file_dialog = new FileDialog();
         m_menu_bar = new MenuBar();
 
@@ -59,10 +56,10 @@ namespace vOS
         m_log_window = LogWindow::getInstance();
     }
 
-    void Window::open()
-    {
+    void Window::open() {
         m_window_open = true;
         m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
+        m_mesh_obj = new MeshObject();
 
         // Create default UI Panels
         initPanels();
@@ -84,8 +81,7 @@ namespace vOS
         rendering_mutex.unlock();
 
         // Render window forever until window is closed by user
-        while (m_window_open)
-        {
+        while (m_window_open) {
             // Render single frame
             render();
         }
@@ -95,8 +91,7 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::close()
-    {
+    void Window::close() {
 
         // Destroy Imgui Elements
         delete m_file_dialog;
@@ -116,8 +111,7 @@ namespace vOS
         // Query whether the window has been closed by the user or not
         bool window_closed = m_imgui_renderer->window_closed();
 
-        if (window_closed)
-        {
+        if (window_closed) {
             std::cout << "Window Closed" << std::endl;
             m_window_open = false;
             rendering_mutex.unlock();
@@ -135,7 +129,6 @@ namespace vOS
         //static int i;
         //std::cout << "I render "<< i++ << std::endl;
         // Pre Render Setup
-        m_mesh_obj.m_is_rendering = true;
 
         // Do NOT lock the pre render step, Imgui tries to bind to 60 fps which will result in every thread having to adhere to Imgui's fps mechanism
         m_imgui_renderer->pre_render_step();
@@ -213,40 +206,55 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index)
-    {
+
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index) {
         rendering_mutex.lock();
-        auto mesh_obj = new MeshObject();
+        auto* mesh_obj = new MeshObject();
         mesh_obj->set_mesh(mesh);
 
-        bool replaced = false;
         // check if index of mesh already exist: yes -> replace it, no -> just insert it
-        for(auto & m: m_mesh_objects)
-        {
-            if (m.first == index)
-            {
-                m.second = mesh_obj;
-                replaced = true;
-            }
+        auto search = m_mesh_objects.find(index);
+        if (search != m_mesh_objects.end()) {
+            // delete old pointer
+            delete search->second;
+            search->second = mesh_obj;
+        } else {
+            m_mesh_objects.emplace(index, mesh_obj);
         }
-        if (!replaced)
-        {
-            m_mesh_objects.insert({index, mesh_obj});
-        }
+        set_mesh_active(index);
+
+        calculate_selection_offsets();
         rendering_mutex.unlock();
     }
 
-    MeshObject &Window::get_mesh_obj(int index)
+    void Window::calculate_selection_offsets()
     {
-        // TODO: Make friendly and private
-        for (auto &m: m_mesh_objects)
+        int offset = 0;
+        for(const auto& mesh_obj : m_mesh_objects)
         {
-            if (m.first == index)
-            {
-                return *m.second;
-            }
+            mesh_obj.second->set_selection_offset(offset);
+            offset = std::get<1>(mesh_obj.second->selection_offset()) + 1;
         }
-        return m_mesh_obj;
+    }
+
+    void Window::set_mesh_active(int index) {
+        auto search = m_mesh_objects.find(index);
+        if (search != m_mesh_objects.end())
+        {
+            m_mesh_obj = search->second;
+        }
+    }
+
+    MeshObject* Window::get_mesh_obj(int index) {
+        auto search = m_mesh_objects.find(index);
+        if (search != m_mesh_objects.end())
+        {
+            return search->second;
+        }
+        else
+        {
+            return m_mesh_obj;
+        }
     }
 
     void Window::remove_all_vertex_highlights(){
@@ -305,14 +313,12 @@ namespace vOS
     }
 
 
-    bool Window::is_running()
-    {
+    bool Window::is_running() {
         return m_window_open;
     }
 
 
-    bool Window::is_closed()
-    {
+    bool Window::is_closed() {
         return is_running();
     }
 

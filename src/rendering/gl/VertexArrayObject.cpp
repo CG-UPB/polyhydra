@@ -1,5 +1,5 @@
 
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 #include "VertexArrayObject.h"
 
@@ -53,6 +53,15 @@ namespace vOS
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
+    void VertexArrayObject::draw_instanced(int num_instances) const
+    {
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+        glDrawElementsInstanced(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr, num_instances);
+        glBindVertexArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
     void VertexArrayObject::update_vertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
     {
         m_numIndices = (int) indices.size();
@@ -67,7 +76,7 @@ namespace vOS
     }
 
     template<typename T>
-    void VertexArrayObject::add_buffer(const std::vector<T>& data, int location, int element_count)
+    void VertexArrayObject::add_attribute(const std::vector<T>& data, int location, int element_count, bool per_instance)
     {
         int gl_type;
         if constexpr(std::is_same_v<T, float>)
@@ -91,12 +100,17 @@ namespace vOS
         glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
         glEnableVertexAttribArray(location);
 
+        if (per_instance)
+        {
+            glVertexAttribDivisor(location, 1);
+        }
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
 
     template<typename T>
-    void VertexArrayObject::update_buffer(const std::vector<T>& data, int location)
+    void VertexArrayObject::update_attribute(const std::vector<T>& data, int location)
     {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[location - 1]);
@@ -107,13 +121,13 @@ namespace vOS
 
     // these are necessary for the linker to find the templated function types, otherwise we would need to implement
     // the template function in the header file, which would cause some problems
-    template void VertexArrayObject::add_buffer<float>(const std::vector<float>&, int, int);
-    template void VertexArrayObject::add_buffer<int>(const std::vector<int>&, int, int);
-    template void VertexArrayObject::add_buffer<unsigned int>(const std::vector<unsigned int>&, int, int);
+    template void VertexArrayObject::add_attribute<float>(const std::vector<float>& data, int location, int element_count, bool per_instance = false);
+    template void VertexArrayObject::add_attribute<int>(const std::vector<int>& data, int location, int element_count, bool per_instance = false);
+    template void VertexArrayObject::add_attribute<unsigned int>(const std::vector<unsigned int>& data, int location, int element_count, bool per_instance = false);
 
-    template void VertexArrayObject::update_buffer<float>(const std::vector<float>&, int);
-    template void VertexArrayObject::update_buffer<int>(const std::vector<int>&, int);
-    template void VertexArrayObject::update_buffer<unsigned int>(const std::vector<unsigned int>&, int);
+    template void VertexArrayObject::update_attribute<float>(const std::vector<float>& data, int location);
+    template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location);
+    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location);
 
 
 }

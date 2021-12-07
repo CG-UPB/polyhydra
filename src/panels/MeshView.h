@@ -1,10 +1,12 @@
 #pragma once
 
+#include "../rendering/gl/PixelBufferObject.h"
 #include "../ImguiRenderer.h"
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
-#include "../rendering/passes/SelectionPasss.h"
+#include "../rendering/passes/SelectionPass.h"
+#include "../rendering/passes/SelectionHoverPass.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 
@@ -16,16 +18,20 @@ namespace vOS
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
-        void set_mesh_object(MeshObject* mesh_pointer) {m_mesh = mesh_pointer;};
+
     private:
 
         void handleResize();
         void handleMouseControl();
         void renderMesh();
         void renderSelection();
+        void handleSelection(int type, int picked_id);
 
-        glm::vec3 get_arc_ball_vector(float x, float y) const;
-        MeshObject* m_mesh;
+        [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
+
+        static const int SELECTION_TYPE_VERTEX = 1;
+        static const int SELECTION_TYPE_EDGE = 2;
+        static const int SELECTION_TYPE_FACE = 3;
 
         // used for the arc ball
         bool m_arcBallOn;
@@ -39,6 +45,7 @@ namespace vOS
         // opengl rendering
         FrameBufferObject* m_meshFrameBuffer;
         FrameBufferObject* m_selectionFrameBuffer;
+        PixelBufferObject* m_pixel_buffer;
         RenderData m_render_data;
 
         // render passes
@@ -47,5 +54,6 @@ namespace vOS
         HighlightPass m_highlight_pass;
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
+        SelectionHoverPass m_selection_hover_pass;
     };
 }

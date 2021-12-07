@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../VertexArrayObject.h"
-#include "../Shader.h"
-#include "../FrameBufferObject.h"
-#include "../../mesh/MeshObject.h"
+#include "../gl/VertexArrayObject.h"
+#include "../gl/Shader.h"
+#include "../gl/FrameBufferObject.h"
 
 #include "glm/gtx/transform.hpp"
 
@@ -22,15 +21,15 @@ namespace vOS
             glm::vec3 color;
         } light;
         struct Mesh {
-            MeshObject* mesh;
             glm::vec3 offset;
             glm::mat4 transform;
             glm::vec3 color;
+            int selection_offset;
         } mesh;
     };
 
     class RenderPass
     {
-        virtual void render(const VertexArrayObject& vao, const RenderData& data) = 0;
+        virtual void render(VertexArrayObject* vao, const RenderData& data) = 0;
     };
 }

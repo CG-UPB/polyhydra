@@ -1,12 +1,12 @@
 
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 #include "Shader.h"
 
 #include <iostream>
 
-#include "../fs/FileManager.h"
-#include "../util/StringUtil.h"
+#include "../../fs/FileManager.h"
+#include "../../util/StringUtil.h"
 
 namespace vOS
 {
@@ -83,9 +83,9 @@ namespace vOS
         return m_locations[name];
     }
 
-    void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& matrix)
+    void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& value)
     {
-        glUniformMatrix4fv(get_uniform(name), 1, GL_FALSE, &matrix[0][0]);
+        glUniformMatrix4fv(get_uniform(name), 1, GL_FALSE, &value[0][0]);
     }
 
     void Shader::set_uniform_float(const std::string& name, float value)

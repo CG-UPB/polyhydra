@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Shader.h"
-#include "../VertexArrayObject.h"
+#include "../gl/Shader.h"
+#include "../gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 
 namespace vOS

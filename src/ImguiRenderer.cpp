@@ -13,7 +13,7 @@
 #include "fs/FileManager.h"
 #include "Window.h"
 #include "panels/LogWindow.h"
-#include "rendering/Shader.h"
+#include "rendering/gl/Shader.h"
 
 namespace vOS
 {

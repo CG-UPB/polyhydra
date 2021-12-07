@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "glad/glad.h"
 
 #include "ShapePass.h"
@@ -15,7 +16,7 @@ namespace vOS
         }
     }
 
-    void ShapePass::render(const VertexArrayObject& vao, const RenderData& data)
+    void ShapePass::render(VertexArrayObject* vao, const RenderData& data)
     {
         glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
         glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
@@ -23,6 +24,7 @@ namespace vOS
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
+
 
         for (Shape* shape : s_shapes)
         {

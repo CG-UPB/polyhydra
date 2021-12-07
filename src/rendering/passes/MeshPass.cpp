@@ -8,7 +8,7 @@ namespace vOS
     MeshPass::MeshPass(): m_mesh_shader(Shader::mesh_phong_shader())
     {}
 
-    void MeshPass::render(const VertexArrayObject& vao, const RenderData& data)
+    void MeshPass::render(VertexArrayObject* vao, const RenderData& data)
     {
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
@@ -43,7 +43,7 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_mesh_shader->set_uniform_vec3f("u_objectColor", data.mesh.color);
 
-        vao.draw();
+        vao->draw();
 
         m_mesh_shader->unbind();
 

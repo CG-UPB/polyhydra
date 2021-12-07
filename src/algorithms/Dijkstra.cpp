@@ -82,6 +82,8 @@ namespace vOS
     void Dijkstra::debugging_template_ui_linear()
     {
 
+        static int mesh_count = 0;
+
         ImGui::Begin("Custom UI");
         // Pause Button
         if (m_pause_toggled)
@@ -127,8 +129,7 @@ namespace vOS
             {
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
-                Window::instance().set_mesh(&m_mesh);
-                std::cout << path << std::endl;
+                Window::instance().set_mesh(&m_mesh, mesh_count++);
 
                 linear_run();
                 m_open_file = false;
@@ -166,6 +167,7 @@ namespace vOS
         Window& window = Window::instance();
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
+        window.get_mesh_obj()->remove_highlights();
         window.remove_all_vertex_highlights();
         init();
 
@@ -435,7 +437,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.remove_all_vertex_highlights();
+            window.get_mesh_obj()->remove_all_vertex_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)

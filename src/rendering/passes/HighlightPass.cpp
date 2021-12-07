@@ -2,7 +2,7 @@
 #include "glad/glad.h"
 
 #include "HighlightPass.h"
-#include "../shapes/CommonMeshes.h"
+#include "../meshes/CommonMeshes.h"
 #include "../../Window.h"
 
 #include "glm/gtx/transform.hpp"
@@ -12,8 +12,8 @@ namespace vOS
     HighlightPass::HighlightPass()
     {
         m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
-        m_vao->add_buffer(CommonMeshes::PlaneXY::uvs(), 1, 2);
-        m_highlight_shader = Shader::property_shader();
+        m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
+        m_highlight_shader = Shader::quad_circle_shader();
     }
 
     HighlightPass::~HighlightPass()
@@ -21,7 +21,7 @@ namespace vOS
         delete m_vao;
     }
 
-    void HighlightPass::render(const VertexArrayObject& vao, const RenderData& data)
+    void HighlightPass::render(VertexArrayObject* vao, const RenderData& data)
     {
         m_highlight_shader->bind();
 
@@ -32,10 +32,13 @@ namespace vOS
         glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
         glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
 
-        auto highlights = data.mesh.mesh->get_highlights();
-        for(auto it = highlights.begin(); it != highlights.end(); it++)
+        for(auto mesh : Window::instance().get_mesh_list())
         {
-            auto entry = it->second;
+        auto highlights = mesh.second->get_highlights();
+
+        for(int i = 0; i < highlights.size(); i++)
+        {
+            auto entry = highlights[i];
 
             OpenVolumeMesh::VertexHandle v_h = entry.v_h;
             float red = entry.color.r;
@@ -43,7 +46,7 @@ namespace vOS
             float blue = entry.color.b;
             float alpha = entry.color.a;
 
-            auto vertex = data.mesh.mesh->m_mesh->vertex(v_h);
+            auto vertex = Window::instance().get_mesh_obj()->m_mesh->vertex(v_h);
 
             // set highlight properties
             glm::vec4 vertex_pos = glm::vec4(vertex[0], vertex[1], vertex[2], 1.0f);
@@ -59,6 +62,7 @@ namespace vOS
 
             m_vao->draw();
 
+        }
         }
         glDisable(GL_BLEND);
 
