@@ -44,7 +44,7 @@ namespace vOS
 
     void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
     {
-        m_mesh = mesh;
+        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>(*mesh);
         remove_highlights();
         m_should_update = true;
     }
@@ -61,6 +61,11 @@ namespace vOS
             initialize_vertex_normals();
             m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
             m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
+            m_vertexArrayObject->add_buffer(m_face_ids,2,3);
+            for (auto i = std::begin(m_face_ids); i < std::end(m_face_ids); ++i)
+            {
+                std::cout << *i << std::endl;
+            }
 
             calculate_mesh_offset();
         }
@@ -112,10 +117,10 @@ namespace vOS
              v_it != m_mesh->vertices_end(); ++v_it)
         {
 
-            auto myPoint = m_mesh->vertex(*v_it);
+            auto vertex_coords = m_mesh->vertex(*v_it);
             for (int i = 0; i < dim; i++)
             {
-                m_vertices.push_back(myPoint[i]);
+                m_vertices.push_back(vertex_coords[i]);
             }
         }
 
@@ -143,21 +148,68 @@ namespace vOS
 
         m_indices.clear();
 
+        int count = 0;
+        std::vector<int> vert_idx;
+
         for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
              f_it != m_mesh->faces_end(); ++f_it)
         {
+
             for (auto halfface : m_mesh->face_halffaces(*f_it))
             {
                 if (!m_mesh->is_boundary(halfface))
                 {
                     continue;
                 }
-                auto face_vertexids = m_mesh->halfface_vertices(halfface);
-                for (auto fv_it = face_vertexids.first;
-                     fv_it != face_vertexids.second; ++fv_it)
+                auto face_vertex_ids = m_mesh->halfface_vertices(halfface);
+
+                count = 0;
+                vert_idx.clear();
+
+                //count how many vertices the face has
+                for (auto fv_it = face_vertex_ids.first;
+                     fv_it != face_vertex_ids.second; ++fv_it)
                 {
-                    m_indices.push_back(fv_it->idx());
+                    count ++;
+                    vert_idx.push_back(fv_it->idx());
                 }
+
+                //save indices depending on count
+                if (count == 3)
+                {
+                    // create 1 triangles out of 3 indices
+                    m_indices.push_back(vert_idx[0]);
+                    m_indices.push_back(vert_idx[1]);
+                    m_indices.push_back(vert_idx[2]);
+                }
+                else if (count == 4)
+                {
+                    // create 2 triangles out of 4 indices
+                    m_indices.push_back(vert_idx[0]);
+                    m_indices.push_back(vert_idx[1]);
+                    m_indices.push_back(vert_idx[2]);
+
+                    m_indices.push_back(vert_idx[0]);
+                    m_indices.push_back(vert_idx[2]);
+                    m_indices.push_back(vert_idx[3]);
+
+
+
+                }
+                // unpredictable behaviour
+                else
+                {
+                    for(int i = 0; i < count; i++)
+                    {
+                        m_indices.push_back(vert_idx[i]);
+                    }
+                }
+
+                for(int i = 0; i < 3; i++)
+                {
+                    m_face_ids.push_back(f_it->idx());
+                }
+
             }
         }
 

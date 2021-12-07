@@ -11,6 +11,7 @@
 #include <OpenVolumeMesh/Mesh/PolyhedralMesh.hh>
 #include <string>
 #include <list>
+#include <map>
 #include <functional>
 #include "ImguiRenderer.h"
 #include "mesh/MeshObject.h"
@@ -78,11 +79,12 @@ class MeshView;
         void remove_all_vertex_highlights();
         void remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h);
 
-        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
+        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index=0);
 
-        void remove_shape(unsigned int id);
+        MeshObject& get_mesh_obj(int index = 0);
 
         unsigned int add_shape(Shape* shape);
+        void remove_shape(unsigned int id);
 
         //   Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -214,6 +216,8 @@ class MeshView;
 
         v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
+
+        std::map<int, MeshObject*> m_mesh_objects;
         MeshObject m_mesh_obj;
 
         MenuBar* get_menu_bar(){return m_menu_bar;}

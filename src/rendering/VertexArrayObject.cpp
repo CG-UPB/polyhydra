@@ -74,6 +74,9 @@ namespace vOS
         { gl_type = GL_FLOAT; }
         else if constexpr(std::is_same_v<T, int>)
         { gl_type = GL_INT; }
+        else if constexpr(std::is_same_v<T, unsigned int>)
+        { gl_type = GL_UNSIGNED_INT; }
+
         else
         { throw std::invalid_argument("Invalid data type for gl buffer"); }
 
@@ -106,8 +109,11 @@ namespace vOS
     // the template function in the header file, which would cause some problems
     template void VertexArrayObject::add_buffer<float>(const std::vector<float>&, int, int);
     template void VertexArrayObject::add_buffer<int>(const std::vector<int>&, int, int);
+    template void VertexArrayObject::add_buffer<unsigned int>(const std::vector<unsigned int>&, int, int);
 
     template void VertexArrayObject::update_buffer<float>(const std::vector<float>&, int);
     template void VertexArrayObject::update_buffer<int>(const std::vector<int>&, int);
+    template void VertexArrayObject::update_buffer<unsigned int>(const std::vector<unsigned int>&, int);
+
 
 }

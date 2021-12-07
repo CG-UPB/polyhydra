@@ -4,6 +4,7 @@
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
+#include "../rendering/passes/SelectionPasss.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 
@@ -21,6 +22,7 @@ namespace vOS
         void handleResize();
         void handleMouseControl();
         void renderMesh();
+        void renderSelection();
 
         glm::vec3 get_arc_ball_vector(float x, float y) const;
         MeshObject* m_mesh;
@@ -36,6 +38,7 @@ namespace vOS
 
         // opengl rendering
         FrameBufferObject* m_meshFrameBuffer;
+        FrameBufferObject* m_selectionFrameBuffer;
         RenderData m_render_data;
 
         // render passes
@@ -43,5 +46,6 @@ namespace vOS
         MeshPass m_mesh_pass;
         HighlightPass m_highlight_pass;
         ShapePass m_shape_pass;
+        SelectionPass m_selection_pass;
     };
 }

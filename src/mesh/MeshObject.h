@@ -65,10 +65,13 @@ namespace vOS
 
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;
+        std::vector<float> m_vert_colors;
+        std::vector<float> m_face_colors;
         std::vector<float> m_vertex_normals;
         std::vector<float> m_face_normals;
 
         std::map<OpenVolumeMesh::VertexHandle, Highlight> highlight_map;
+        std::vector<unsigned int> m_face_ids;
 
         VertexArrayObject *m_vertexArrayObject = nullptr;
 

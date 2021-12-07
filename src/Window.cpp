@@ -26,7 +26,7 @@
 namespace vOS
 {
 
-    Window& Window::instance()
+    Window &Window::instance()
     {
         static std::mutex s_mutex;
         s_mutex.lock();
@@ -54,6 +54,7 @@ namespace vOS
 
         m_mesh_view = new MeshView(720, 480);
         m_mesh_view->set_mesh_object(&m_mesh_obj);
+        auto *mesh_view = new MeshView(720, 480);
 
         m_log_window = LogWindow::getInstance();
     }
@@ -212,33 +213,40 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index)
     {
         rendering_mutex.lock();
-        m_mesh_obj.set_mesh(mesh);
+        auto mesh_obj = new MeshObject();
+        mesh_obj->set_mesh(mesh);
+
+        bool replaced = false;
+        // check if index of mesh already exist: yes -> replace it, no -> just insert it
+        for(auto & m: m_mesh_objects)
+        {
+            if (m.first == index)
+            {
+                m.second = mesh_obj;
+                replaced = true;
+            }
+        }
+        if (!replaced)
+        {
+            m_mesh_objects.insert({index, mesh_obj});
+        }
         rendering_mutex.unlock();
     }
 
-    unsigned int Window::add_shape(Shape* shape)
+    MeshObject &Window::get_mesh_obj(int index)
     {
-        // TODO Add good exception handling
-        if (shape == nullptr)
-            return -1;
-
-        // Greedy Approach
-
-        rendering_mutex.lock();
-
-        // Give the shape a unique ID
-        unsigned int shape_id = shape_id_counter++;
-        shape->set_id((shape_id));
-
-        // Add shape to the ShapePass
-        ShapePass::add_shape(shape);
-        rendering_mutex.unlock();
-
-        // Command Queue Approach
-        return shape_id;
+        // TODO: Make friendly and private
+        for (auto &m: m_mesh_objects)
+        {
+            if (m.first == index)
+            {
+                return *m.second;
+            }
+        }
+        return m_mesh_obj;
     }
 
     void Window::remove_all_vertex_highlights(){
@@ -268,6 +276,27 @@ namespace vOS
     }
     // Read Methods ///////////////////////////////////////////////////////////////////////////////
 
+    unsigned int Window::add_shape(Shape* shape)
+    {
+        // TODO Add good exception handling
+        if (shape == nullptr)
+            return -1;
+
+        // Greedy Approach
+
+        rendering_mutex.lock();
+
+        // Give the shape a unique ID
+        unsigned int shape_id = shape_id_counter++;
+        shape->set_id((shape_id));
+
+        // Add shape to the ShapePass
+        ShapePass::add_shape(shape);
+        rendering_mutex.unlock();
+
+        // Command Queue Approach
+        return shape_id;
+    }
     bool Window::is_ready()
     {
         rendering_mutex.lock();
@@ -286,14 +315,5 @@ namespace vOS
     {
         return is_running();
     }
-
-    /*
-    unsigned int Window::add_box(float x, float y, float z, float red, float green, float blue)
-    {
-        Box* box = new Box(0.05f, 0.05f, 0.05f);
-        box->set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)));
-        box->set_base_color(glm::vec4(red, green, blue, 1.0f));
-        return ShapePass::add_shape(box);
-    }*/
 
 }
