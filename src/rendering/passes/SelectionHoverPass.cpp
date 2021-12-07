@@ -16,6 +16,7 @@ namespace vOS
         m_quad_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
         m_quad_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
         m_edge_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
+        m_zoom_point = glm::vec3(0,0,0);
     }
 
     SelectionHoverPass::~SelectionHoverPass()
@@ -117,6 +118,10 @@ namespace vOS
                 m_selected_vertex_position.y = pos[1];
                 m_selected_vertex_position.z = pos[2];
                 m_selected_vertex_position.w = 1.0f;
+
+                m_zoom_point.x = m_selected_vertex_position.x;
+                m_zoom_point.y = m_selected_vertex_position.y;
+                m_zoom_point.z = m_selected_vertex_position.z;
             }
         }
         else if (m_selected_type == SELECTION_TYPE_EDGE)
@@ -133,6 +138,10 @@ namespace vOS
                 m_selected_edge_to.x = v1[0];
                 m_selected_edge_to.y = v1[1];
                 m_selected_edge_to.z = v1[2];
+
+                m_zoom_point.x = (m_selected_edge_from.x + m_selected_edge_to.x) / 2;
+                m_zoom_point.y = (m_selected_edge_from.y + m_selected_edge_to.y) / 2;
+                m_zoom_point.z = (m_selected_edge_from.z + m_selected_edge_to.z) / 2;
             }
         }
     }
@@ -153,7 +162,14 @@ namespace vOS
                 res.vertices.push_back(vertex[2]);
 
                 res.indices.push_back(index++);
+
             }
+
+            auto pos = mesh.m_mesh->barycenter(face);
+            m_zoom_point.x = pos[0];
+            m_zoom_point.y = pos[1];
+            m_zoom_point.z = pos[2];
+
         }
         return res;
     }
