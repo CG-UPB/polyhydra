@@ -77,8 +77,8 @@ namespace vOS
             m_sphere_vao->add_attribute(m_vertices, 2, 3, true);
 
             delete m_cylinder_vao;
-            m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(),
-                                                   CommonMeshes::Cylinder::indices());
+            m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
+                                                   CommonMeshes::Cylinder::edge_cylinder().indices());
             // collect from-vertex and to-vertex for each edge
             std::vector<float> from_vertices;
             std::vector<float> to_vertices;

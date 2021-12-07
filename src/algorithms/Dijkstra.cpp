@@ -341,11 +341,13 @@ namespace vOS
 
     void Dijkstra::parallel_run()
     {
+        static std::string empty;
+
         /* One Time only Setup */
         Window& window = Window::instance();
 
         // Read file
-        while(window.get_loaded_file_name() == ""){}
+        while(window.get_loaded_file_name() == empty){}
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(window.get_loaded_file_name(), m_mesh);
         Window::instance().set_mesh(&m_mesh);

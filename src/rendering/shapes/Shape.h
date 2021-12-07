@@ -35,6 +35,7 @@ namespace vOS
                 glm::mat4 scale = glm::scale(m_scale);
                 glm::mat4 rotation = glm::rotate(m_rotation.x, glm::vec3(m_rotation.y, m_rotation.z, m_rotation.w));
                 m_transform = position * rotation * scale;
+                m_transform_changed = false;
             }
             return m_transform;
         }
