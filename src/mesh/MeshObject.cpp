@@ -20,13 +20,13 @@ namespace vOS
 
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp->set_persistent(true);
-        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
+        OpenVolumeMesh::VertexPropertyT <OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
                 "VertexHighlightColor");
         highlightColProp->set_persistent(true);
 
     }
 
-    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh) : MeshObject()
+    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh) : MeshObject()
     {
         set_mesh(mesh);
     }
@@ -46,7 +46,7 @@ namespace vOS
         file_manager.writeFile(file_path, *m_mesh);
     }
 
-    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
+    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh)
     {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
         m_mesh->assign(mesh);
@@ -77,18 +77,19 @@ namespace vOS
             m_sphere_vao->add_attribute(m_vertices, 2, 3, true);
 
             delete m_cylinder_vao;
-            m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
+            m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(),
+                                                   CommonMeshes::Cylinder::indices());
             // collect from-vertex and to-vertex for each edge
             std::vector<float> from_vertices;
             std::vector<float> to_vertices;
             m_edge_ids.clear();
             for (int i = 0; i < m_faces.size(); i += 3)
             {
-                auto vh0 = OpenVolumeMesh::VertexHandle( m_faces[i + 0]);
-                auto vh1 = OpenVolumeMesh::VertexHandle( m_faces[i + 1]);
-                auto vh2 = OpenVolumeMesh::VertexHandle( m_faces[i + 2]);
+                auto vh0 = OpenVolumeMesh::VertexHandle(m_faces[i + 0]);
+                auto vh1 = OpenVolumeMesh::VertexHandle(m_faces[i + 1]);
+                auto vh2 = OpenVolumeMesh::VertexHandle(m_faces[i + 2]);
 
-                for (auto heh : m_mesh->outgoing_halfedges(vh0))
+                for (auto heh: m_mesh->outgoing_halfedges(vh0))
                 {
                     auto out = m_mesh->to_vertex_handle(heh);
                     if (out == vh1)
@@ -97,7 +98,7 @@ namespace vOS
                         break;
                     }
                 }
-                for (auto heh : m_mesh->outgoing_halfedges(vh1))
+                for (auto heh: m_mesh->outgoing_halfedges(vh1))
                 {
                     auto out = m_mesh->to_vertex_handle(heh);
                     if (out == vh2)
@@ -106,7 +107,7 @@ namespace vOS
                         break;
                     }
                 }
-                for (auto heh : m_mesh->outgoing_halfedges(vh2))
+                for (auto heh: m_mesh->outgoing_halfedges(vh2))
                 {
                     auto out = m_mesh->to_vertex_handle(heh);
                     if (out == vh0)
@@ -162,21 +163,24 @@ namespace vOS
             if (vertex.x < min.x)
             {
                 min.x = vertex.x;
-            } else if (vertex.x > max.x)
+            }
+            else if (vertex.x > max.x)
             {
                 max.x = vertex.x;
             }
             if (vertex.y < min.y)
             {
                 min.y = vertex.y;
-            } else if (vertex.y > max.y)
+            }
+            else if (vertex.y > max.y)
             {
                 max.y = vertex.y;
             }
             if (vertex.z < min.z)
             {
                 min.z = vertex.z;
-            } else if (vertex.z > max.z)
+            }
+            else if (vertex.z > max.z)
             {
                 max.z = vertex.z;
             }
@@ -230,7 +234,7 @@ namespace vOS
              f_it != m_mesh->faces_end(); ++f_it)
         {
 
-            for (auto halfface : m_mesh->face_halffaces(*f_it))
+            for (auto halfface: m_mesh->face_halffaces(*f_it))
             {
                 if (!m_mesh->is_boundary(halfface))
                 {
@@ -245,7 +249,7 @@ namespace vOS
                 for (auto fv_it = face_vertex_ids.first;
                      fv_it != face_vertex_ids.second; ++fv_it)
                 {
-                    count ++;
+                    count++;
                     vert_idx.push_back(fv_it->idx());
                 }
 
@@ -269,12 +273,11 @@ namespace vOS
                     m_faces.push_back(vert_idx[3]);
 
 
-
                 }
-                // unpredictable behaviour
+                    // unpredictable behaviour
                 else
                 {
-                    for(int i = 0; i < count; i++)
+                    for (int i = 0; i < count; i++)
                     {
                         m_faces.push_back(vert_idx[i]);
                     }
@@ -289,7 +292,7 @@ namespace vOS
 
     unsigned int MeshObject::to_faceID(unsigned int value)
     {
-        if(m_face_ids.size() > value)
+        if (m_face_ids.size() > value)
         {
             return m_face_ids[value] + 1;
         }
@@ -298,7 +301,7 @@ namespace vOS
 
     unsigned int MeshObject::to_edgeID(unsigned int value)
     {
-        if(m_edge_ids.size() > value)
+        if (m_edge_ids.size() > value)
         {
             return m_edge_ids[value] + 1;
         }
@@ -315,10 +318,13 @@ namespace vOS
                                                                                                          green, blue,
                                                                                                          alpha);
             m_vertex_colors.push_back(tuple);
-        } else {
+        }
+        else
+        {
             auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(),
                                  std::make_tuple(v_h, red, green, blue, alpha));
-            if (pos != m_vertex_colors.end()) {
+            if (pos != m_vertex_colors.end())
+            {
                 m_vertex_colors.erase(pos);
             }
         }
@@ -330,12 +336,12 @@ namespace vOS
         m_vertex_colors.clear();
     }
 
-    std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> MeshObject::get_highlights()
+    std::vector <std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> MeshObject::get_highlights()
     {
         return m_vertex_colors;
     }
 
-    glm::vec3 &MeshObject::get_mesh_offset()
+    glm::vec3& MeshObject::get_mesh_offset()
     {
         return m_mesh_offset_from_center;
     }
@@ -349,7 +355,7 @@ namespace vOS
         for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
              f_it != m_mesh->faces_end(); ++f_it)
         {
-            for(int i = 0; i < normals[*f_it].size(); i++)
+            for (int i = 0; i < normals[*f_it].size(); i++)
             {
                 m_face_normals.push_back(normals[*f_it][i]);
             }
@@ -362,17 +368,57 @@ namespace vOS
         m_vertex_normals.clear();
 
         OpenVolumeMesh::NormalAttrib normals(*m_mesh);
-        normals.update_vertex_normals();
-        for (OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
-             v_it != m_mesh->vertices_end(); ++v_it)
-        {
-            float x = normals[*v_it][0];
-            float y = normals[*v_it][1];
-            float z = normals[*v_it][2];
-            m_vertex_normals.push_back(x);
-            m_vertex_normals.push_back(y);
-            m_vertex_normals.push_back(z);
+        normals.update_face_normals();
 
+        // normal calculation based on OpenVolumeMesh's update_vertex_normals() method
+        for (const auto& _vh: m_mesh->vertices())
+        {
+            std::set<std::pair<OpenVolumeMesh::HalfFaceHandle, float>> halffaces;
+            for (auto voh_it = m_mesh->voh_iter(_vh); voh_it.valid(); ++voh_it)
+            {
+                for (auto hehf_it = m_mesh->hehf_iter(*voh_it); hehf_it.valid(); ++hehf_it)
+                {
+                    // find points of this halfface to calculate the angle of the face from the vertex
+                    std::vector<glm::vec3> points;
+                    for (auto hfv_it : m_mesh->halfface_vertices(*hehf_it))
+                    {
+                        if (hfv_it.idx() != _vh.idx())
+                        {
+                            auto point = m_mesh->vertex(hfv_it);
+                            points.emplace_back(point[0], point[1], point[2]);
+                        }
+                    }
+
+                    // calculate face angle
+                    float angle = M_PI * 2.0f;
+                    if (points.size() == 2)
+                    {
+                        auto p = m_mesh->vertex(_vh);
+                        glm::vec3 pivot = glm::vec3(p[0], p[1], p[2]);
+                        glm::vec3 first = glm::normalize(points[0] - pivot);
+                        glm::vec3 second = glm::normalize(points[1] - pivot);
+                        angle = glm::acos(glm::dot(first, second));
+                    }
+                    if (m_mesh->is_boundary(*hehf_it))
+                    {
+                        halffaces.insert(std::make_pair(*hehf_it, angle));
+                    }
+                }
+            }
+
+            // sum up normals of adjacent faces, but assign weight based on the angle size for better results
+            auto normal = glm::vec3(0.0f);
+            for (auto halfface: halffaces)
+            {
+                auto n = m_mesh->normal(std::get<0>(halfface));
+                float angle = std::get<1>(halfface);
+                normal += glm::vec3(n[0], n[1], n[2]) * (float) (angle / M_PI * 2.0f);
+            }
+
+            auto norm = glm::normalize(normal);
+            m_vertex_normals.push_back(norm.x);
+            m_vertex_normals.push_back(norm.y);
+            m_vertex_normals.push_back(norm.z);
         }
     }
 
@@ -385,6 +431,7 @@ namespace vOS
     {
         return m_sphere_vao;
     }
+
     int MeshObject::calculate_selection_size() const
     {
         // make sure that we choose the biggest possible vertex, edge or face id as the offset
