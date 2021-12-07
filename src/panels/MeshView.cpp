@@ -169,9 +169,40 @@ namespace vOS
 
     void MeshView::renderMesh()
     {
+        if(ImGui::IsKeyPressed(GLFW_KEY_Q))
+        {
+            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+        }
         if(ImGui::IsKeyPressed(GLFW_KEY_W))
         {
-            m_mesh_pass.set_wireframe_mode(!m_mesh_pass.get_wireframe_mode());
+            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
+            m_mesh_pass.set_wireframe_mode(true);
+        }
+        if(ImGui::IsKeyPressed(GLFW_KEY_E))
+        {
+            m_mesh_pass.set_mesh_shader(Shader::mesh_normal_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+        }
+        if(ImGui::IsKeyPressed(GLFW_KEY_R))
+        {
+            m_mesh_pass.set_mesh_shader(Shader::mesh_tangent_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+        }
+        if(ImGui::IsKeyPressed(GLFW_KEY_T))
+        {
+            m_mesh_pass.set_mesh_shader(Shader::mesh_bitangent_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+        }
+        if(ImGui::IsKeyPressed(GLFW_KEY_U))
+        {
+            m_mesh_pass.set_mesh_shader(Shader::mesh_flat_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+        }
+        if(ImGui::IsKeyPressed(GLFW_KEY_I))
+        {
+            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
+            m_mesh_pass.set_wireframe_mode(false);
         }
 
         // now render our mesh scene to the framebuffer texture

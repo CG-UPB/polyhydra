@@ -5,7 +5,7 @@
 
 namespace vOS
 {
-    MeshPass::MeshPass(): m_mesh_shader(Shader::mesh_shader())
+    MeshPass::MeshPass(): m_mesh_shader(Shader::mesh_phong_shader())
     {}
 
     void MeshPass::render(const VertexArrayObject& vao, const RenderData& data)
@@ -38,7 +38,6 @@ namespace vOS
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
         m_mesh_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
         m_mesh_shader->set_uniform_mat4f("u_View", data.camera.view);
-        m_mesh_shader->set_uniform_bool("u_phong", m_use_phong);
         m_mesh_shader->set_uniform_vec3f("u_lightPos", data.light.position);
         m_mesh_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
