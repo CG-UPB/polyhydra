@@ -15,6 +15,8 @@ namespace vOS
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
+        ImTextureID generate_snapshot();
+        static ImTextureID get_actual_snapshot(){return m_actual_snapshot;}
 
     private:
 
@@ -32,6 +34,8 @@ namespace vOS
 
         int m_viewportPanelWidth;
         int m_viewportPanelHeight;
+
+        static ImTextureID m_actual_snapshot;
 
         // opengl rendering
         FrameBufferObject* m_meshFrameBuffer;

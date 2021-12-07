@@ -29,6 +29,7 @@ namespace vOS
         int m_timer_treshold = 3;
 
         int m_current_selection_mode;
+        bool m_color_activated = true;
         float m_color[4] = {1.0f,0.0f,0.0f,1.0f};
         float m_slider_slicer = 0.5f;
         float m_slider_peel = 0.5f;

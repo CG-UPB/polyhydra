@@ -1,4 +1,3 @@
-
 #include "ToolBar.h"
 #include "../input/Input.h"
 #include <algorithm>
@@ -6,6 +5,10 @@
 #include <imgui_internal.h>
 #include <iostream>
 #include <string.h>
+#include "MeshView.h"
+
+#include <iostream>
+#include <fstream>
 
 //TODO:Set fixed size and position in the window
 
@@ -65,6 +68,8 @@ namespace vOS
         {
             //TODO:Start file dialog to save a snapshot
             //TODO:Make clear how to get image of the actual mesh object (with transparent background)
+            GlobalViewerSettings::getInstance()->m_set_take_snapshot(true);
+            GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename("test.png");
         }
         ImGui::SameLine();
         HelpMarkerWithQuestionMark("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
@@ -169,8 +174,10 @@ namespace vOS
             {
                 ImGui::TableNextColumn();
                 ImGui::Text("Color:");
+                ImGui::Checkbox("", &m_color_activated);
+                ImGui::SameLine();
                 ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color[0],m_color[1],m_color[2],m_color[3]);
+                GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color_activated, m_color[0],m_color[1],m_color[2],m_color[3]);
                 ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
                 
@@ -182,10 +189,8 @@ namespace vOS
                 ImGui::Text("Rendering Mode:");
                 ImGui::Combo("  ", &m_rendering_mode, rendering_mode_names, IM_ARRAYSIZE(rendering_mode_names), IM_ARRAYSIZE(rendering_mode_names));
                 GlobalViewerSettings::getInstance()->m_set_current_rendering_mode(m_rendering_mode);
-                //TODO: Fix the next line that it works:
-                //ImGui::SliderFloat("",&m_separation_value, 0.0f, 1.0f,"ratio = %.3f");
                 ImGui::SameLine();
-                HelpMarkerWithQuestionMark("You can choose between multiple Separation-types. This could be useful, if you want to watch inside of the mesh");
+                HelpMarkerWithQuestionMark("You can choose between multiple rendering modes for the mesh");
                 
                 
                 // Select an item type
@@ -194,7 +199,7 @@ namespace vOS
                                 "Roundings", "Fissures", "Lines", "Flat Lines"
                         };
                 ImGui::Text("Separation:");
-                ImGui::Combo("", &m_separation_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
+                ImGui::Combo("   ", &m_separation_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
                 GlobalViewerSettings::getInstance()->m_set_current_separation_type(m_separation_type);
                 //TODO: Fix the next line that it works:
                 //ImGui::SliderFloat("",&m_separation_value, 0.0f, 1.0f,"ratio = %.3f");

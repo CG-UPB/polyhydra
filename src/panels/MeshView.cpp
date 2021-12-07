@@ -189,9 +189,12 @@ namespace vOS
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
-        float* color = GlobalViewerSettings::getInstance()->m_get_current_mesh_rendering_color();
-        m_render_data.mesh.color = glm::vec3{color[0], color[1], color[2]};
-
+        if(GlobalViewerSettings::getInstance()->m_get_color_activated())
+        {
+            float* color = GlobalViewerSettings::getInstance()->m_get_current_mesh_rendering_color();
+            m_render_data.mesh.color = glm::vec3{color[0], color[1], color[2]};
+        }
+        
         // we need to clear our framebuffer as well
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -218,6 +221,31 @@ namespace vOS
 
     void MeshView::show()
     {
+        if(GlobalViewerSettings::getInstance()->m_get_take_snapshot())
+        {
+            m_meshFrameBuffer->bind();
+            GlobalViewerSettings::getInstance()->m_set_take_snapshot(false);
+            // Snapshot erstellen
+            std::string filename = GlobalViewerSettings::getInstance()->m_get_actual_snapshot_filename();
+            glFlush();
+            glFinish();
+
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+            GLint viewport[4];
+            glGetIntegerv(GL_VIEWPORT, viewport);
+
+            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+            int swidth = 5000;
+            int sheight = 5000;
+            unsigned char sdata[4*swidth*sheight];
+            unsigned char data[4*viewport[2]*viewport[3]];
+            
+            glReadPixels(0,0,swidth,sheight,GL_RGBA,GL_UNSIGNED_BYTE, sdata);
+            m_meshFrameBuffer->unbind();
+        }
+
+
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0.0f, 0.0f});
         ImGui::Begin("Mesh");
@@ -241,6 +269,9 @@ namespace vOS
                 {0.0f, 1.0f},
                 {1.0f, 0.0f}
         );
+
+        //m_actual_snapshot = m_meshFrameBuffer->get_texture_id();
+        
 
         // show frame time and fps
         ImGui::SetCursorPos(topLeft);
