@@ -146,7 +146,7 @@ namespace vOS
         void run(void_callback vc);
         // Custom ImGui Methods
 
-        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm");
+        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm",int nbr_of_dialog = 0);
 
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
 

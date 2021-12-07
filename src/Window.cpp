@@ -203,14 +203,26 @@ namespace vOS
         return ShapePass::add_shape(box);
     }*/
 
-    bool Window::ShowFileDialog(std::string& path, const std::string& extension)
+    bool Window::ShowFileDialog(std::string& path, const std::string& extension, int nbr_of_dialog)
     {
-        m_file_dialog->open(extension);
-        if (m_file_dialog->is_ok())
+        m_file_dialog->open(extension, nbr_of_dialog);
+        if (nbr_of_dialog == 0)
         {
-            path = m_file_dialog->get_file_path();
-            m_file_dialog->set_open(false);
+            if (m_file_dialog->is_ok_file_loader())
+            {
+                path = m_file_dialog->get_file_path_file_loader();
+                m_file_dialog->set_open_fileloader(false);
+            }
+            return m_file_dialog->is_ok_file_loader();
+        }else if (nbr_of_dialog == 1)
+        {
+            if (m_file_dialog->is_ok_snapshot_saver())
+            {
+                path = m_file_dialog->get_file_path_snapshot_saver();
+                m_file_dialog->set_open_snapshot_saver(false);
+            }
+            return m_file_dialog->is_ok_snapshot_saver();
         }
-        return m_file_dialog->is_ok();
+
     }
 }

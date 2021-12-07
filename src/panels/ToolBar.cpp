@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string.h>
 #include "MeshView.h"
+#include "ImGuiFileDialog.h"
 
 #include <iostream>
 #include <fstream>
@@ -63,13 +64,24 @@ namespace vOS
             return;
         }
 
-
+        bool open_file = false;
         if(ImGui::Button("Snapshot"))
         {
+            open_file = true;
+        }
+        if(open_file)
+        {
+            std::string path;
+            if (Window::ShowFileDialog(path,".bmp",1))
+            {
+                GlobalViewerSettings::getInstance()->m_set_take_snapshot(true);
+                GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename(path);
+                open_file = false;
+            }
             //TODO:Start file dialog to save a snapshot
             //TODO:Make clear how to get image of the actual mesh object (with transparent background)
-            GlobalViewerSettings::getInstance()->m_set_take_snapshot(true);
-            GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename("test.png");
+
+
         }
         ImGui::SameLine();
         HelpMarkerWithQuestionMark("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
