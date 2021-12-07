@@ -17,6 +17,6 @@ uniform vec3 u_objectColor;
 void main()
 {
     v_Pos = vec3(u_Transform * vec4(a_Pos,1.0));
-    v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
+    v_Normal = a_Normal;
     gl_Position = u_Projection * u_View * u_Transform * vec4(a_Pos, 1.0);
 }

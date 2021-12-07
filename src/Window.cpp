@@ -50,7 +50,6 @@ namespace vOS
         m_menu_bar = new MenuBar();
 
         m_mesh_view = new MeshView(720, 480);
-        m_mesh_view->set_mesh_object(&m_mesh_obj);
         auto *mesh_view = new MeshView(720, 480);
 
         m_log_window = LogWindow::getInstance();
@@ -167,7 +166,6 @@ namespace vOS
         // Post Render Stuff
 
         m_imgui_renderer->post_render_step();
-        m_mesh_obj.m_is_rendering = false;
         rendering_mutex.unlock();
 
     }
@@ -188,7 +186,7 @@ namespace vOS
 
         Highlight highlight(color, v_h);
 
-        m_mesh_obj.add_highlight(highlight);
+        m_mesh_obj->add_highlight(highlight);
 
         rendering_mutex.unlock();
     }
@@ -201,7 +199,7 @@ namespace vOS
     void Window::remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h) {
         rendering_mutex.lock();
 
-        m_mesh_obj.remove_highlight((v_h));
+        m_mesh_obj->remove_highlight((v_h));
 
         rendering_mutex.unlock();
     }
@@ -262,7 +260,7 @@ namespace vOS
 
         rendering_mutex.lock();
 
-        m_mesh_obj.remove_highlights();
+        m_mesh_obj->remove_highlights();
         rendering_mutex.unlock();
     }
 

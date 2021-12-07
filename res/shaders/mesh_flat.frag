@@ -3,7 +3,7 @@
 out vec4 FragColor;
 
 in vec3 v_Pos;
-in vec3 v_Normal;
+flat in vec3 v_Normal;
 
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;

@@ -62,9 +62,7 @@ namespace vOS
         std::vector<float>& face_normals(){ return m_face_normals;};
         std::tuple<int, int> selection_offset(){ return m_selection_offset;};
         void set_selection_offset(int start);
-        std::map<OpenVolumeMesh::VertexHandle, Highlight> get_highlights();
-
-        std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> get_highlights();
+        std::map<OpenVolumeMesh::VertexHandle, Highlight>& get_highlights();
 
         glm::vec3 &get_mesh_offset();
         [[nodiscard]] VertexArrayObject* get_vao() const;

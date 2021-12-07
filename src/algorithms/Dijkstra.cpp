@@ -437,7 +437,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj()->remove_all_vertex_highlights();
+            window.get_mesh_obj()->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)

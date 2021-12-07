@@ -352,7 +352,7 @@ namespace vOS
         //highlight_map.clear();
     }
 
-    std::map<OpenVolumeMesh::VertexHandle, Highlight> MeshObject::get_highlights()
+    std::map<OpenVolumeMesh::VertexHandle, Highlight>& MeshObject::get_highlights()
     {
         return highlight_map;
     }

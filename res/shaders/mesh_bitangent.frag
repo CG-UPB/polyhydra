@@ -12,28 +12,24 @@ uniform vec3 u_objectColor;
 
 void main()
 {
-    //ambient
-    float ambientStrength = 0.1;
-    vec3 ambient = ambientStrength * u_lightColor;
+        vec3 tangent = vec3(1.0,1.0,1.0);
+        vec3 c1 = cross(v_Normal, vec3(0.0, 0.0, 1.0));
+        vec3 c2 = cross(v_Normal, vec3(0.0, 1.0, 0.0));
 
-        // Phong Shading
-
-        //diffuse
-        vec3 n = normalize(v_Normal);
-        vec3 l = normalize(u_lightPos - v_Pos);
-        float diff = max(0.0, dot(l, n));
-        vec3 diffuse = diff * u_lightColor;
-
-        //specular
-        float specularStrength = 0.5;
-        vec3 v = normalize(u_camPos - v_Pos);
-        vec3 r = reflect(-l, n);
-        float spec = pow(max(0.0, dot(v,r)), 8);
-        vec3 specular = specularStrength * spec * u_lightColor;
-
-        vec3 result = (ambient + diffuse + specular) * u_objectColor;
+        if (length(c1)>length(c2))
+        {
+            tangent = c1;
+        }
+        else
+        {
+            tangent = c2;
+        }
 
 
-        FragColor = vec4(result, 1.0);
-    
+        tangent = normalize(tangent);
+
+        vec3 binormal = cross(v_Normal, tangent);
+        binormal = normalize(binormal);
+
+        FragColor = vec4(normalize(binormal), 1.0);
 }
