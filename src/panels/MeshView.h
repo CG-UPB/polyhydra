@@ -48,6 +48,9 @@ namespace vOS
         PixelBufferObject* m_pixel_buffer;
         RenderData m_render_data;
 
+        bool m_zoom;
+        glm::vec3 m_zoom_point;
+
         // render passes
         BackgroundPass m_background_pass;
         MeshPass m_mesh_pass;

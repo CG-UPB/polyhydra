@@ -57,6 +57,9 @@ namespace vOS
         glm::mat4 inverse = glm::inverse(m_render_data.camera.view);
         glm::vec3 view_dir = {inverse[2][0], inverse[2][1], inverse[2][2]};
         m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 10.0f;
+
+        m_zoom = false;
+        m_zoom_point = glm::vec3(0, 0, 0);
     }
 
     MeshView::~MeshView()
@@ -230,7 +233,11 @@ namespace vOS
             Window::instance().set_mesh_active(1);
         }
 
-        m_render_data.mesh.offset = Window::instance().get_mesh_obj()->get_mesh_offset();
+        if(!m_zoom)
+        {
+            m_zoom_point = Window::instance().get_mesh_obj()->get_mesh_offset();
+        }
+        m_render_data.mesh.offset = m_zoom_point;
 
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -379,6 +386,17 @@ namespace vOS
 
                 break;
             }
+
+        }
+        if(ImGui::IsMouseDoubleClicked(0))
+        {
+            m_zoom_point = m_selection_hover_pass.m_zoom_point;
+            m_zoom = true;
+        }
+        if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+        {
+            std::cout << "ESCAPE" << std::endl;
+            m_zoom = false;
         }
 
         if (!any_mesh_hovered)

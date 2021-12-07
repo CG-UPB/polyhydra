@@ -206,7 +206,7 @@ namespace vOS
 
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index) {
-        rendering_mutex.lock();
+        //rendering_mutex.lock();
         auto* mesh_obj = new MeshObject();
         mesh_obj->set_mesh(mesh);
 
@@ -222,7 +222,7 @@ namespace vOS
         set_mesh_active(index);
 
         calculate_selection_offsets();
-        rendering_mutex.unlock();
+        //rendering_mutex.unlock();
     }
 
     void Window::calculate_selection_offsets()
