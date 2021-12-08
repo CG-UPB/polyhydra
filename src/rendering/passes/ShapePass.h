@@ -5,19 +5,20 @@
 
 namespace vOS
 {
+
+
     class ShapePass : public RenderPass
     {
     public:
 
         ~ShapePass();
 
-        static unsigned int add_shape(Shape* shape);
+        static void add_shape(Shape* shape);
         [[nodiscard]] static const Shape& get_shape(unsigned int shape_id);
 
-        void render(const VertexArrayObject &vao, const RenderData &data) override;
+        void render(VertexArrayObject* vao, const RenderData &data) override;
 
     private:
-
         static std::vector<Shape*> s_shapes;
     };
 }

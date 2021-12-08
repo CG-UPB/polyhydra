@@ -1,6 +1,6 @@
 #include "Box.h"
 
-#include "CommonMeshes.h"
+#include "../meshes/CommonMeshes.h"
 
 namespace vOS
 {
@@ -18,7 +18,7 @@ namespace vOS
         if (m_vao == nullptr)
         {
             m_vao = new VertexArrayObject(CommonMeshes::Box::vertices(m_size.x, m_size.y, m_size.z), CommonMeshes::Box::indices());
-            m_vao->add_buffer(CommonMeshes::Box::normals(), 1, 3);
+            m_vao->add_attribute(CommonMeshes::Box::normals(), 1, 3);
         }
         m_vao->draw();
     }

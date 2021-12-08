@@ -11,7 +11,8 @@ namespace vOS
         Dijkstra();
         void init();
         void start();
-        void run();
+        void linear_run();
+        void parallel_run();
         void step();
 
     private:
@@ -25,7 +26,8 @@ namespace vOS
         void pause_button_pressed();
         void step_button_pressed();
         void reset_button_pressed();
-        void debugging_template_ui();
+        void debugging_template_ui_linear();
+        void debugging_template_ui_parallel();
 
         bool m_reset = false;
         bool m_pause = false;

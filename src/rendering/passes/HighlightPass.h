@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderPass.h"
+#include "../../mesh/MeshObject.h"
 
 namespace vOS
 {
@@ -10,7 +11,7 @@ namespace vOS
         HighlightPass();
         ~HighlightPass();
 
-        void render(const VertexArrayObject& vao, const RenderData& data) override;
+        void render(VertexArrayObject* vao, const RenderData& data) override;
 
     private:
 

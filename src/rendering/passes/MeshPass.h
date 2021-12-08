@@ -17,8 +17,9 @@ namespace vOS
         void set_use_phong(bool use);
         [[nodiscard]] bool get_use_phong() const;
 
-        void render(const VertexArrayObject& vao, const RenderData& data) override;
+        void render(VertexArrayObject* vao, const RenderData& data) override;
 
+        void set_mesh_shader(Shader* shader){m_mesh_shader = shader;}
     private:
 
         bool m_use_phong = true;

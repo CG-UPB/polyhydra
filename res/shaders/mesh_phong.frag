@@ -9,16 +9,14 @@ uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
 uniform vec3 u_objectColor;
-uniform bool u_phong;
 
 void main()
 {
+    //ambient
+    float ambientStrength = 0.1;
+    vec3 ambient = ambientStrength * u_lightColor;
 
-    if(u_phong)
-    {
-        //ambient
-        float ambientStrength = 0.1;
-        vec3 ambient = ambientStrength * u_lightColor;
+        // Phong Shading
 
         //diffuse
         vec3 n = normalize(v_Normal);
@@ -37,9 +35,5 @@ void main()
 
 
         FragColor = vec4(result, 1.0);
-    }else
-    {
-        FragColor = vec4(u_objectColor, 1.0);
-    }
-
+    
 }

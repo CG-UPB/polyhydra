@@ -8,6 +8,7 @@
 #include <array>
 #include <string>
 #include "../Window.h"
+#include "../rendering/meshes/CommonMeshes.h"
 
 namespace vOS
 {
@@ -17,14 +18,17 @@ namespace vOS
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
         m_should_update = false;
 
-
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp->set_persistent(true);
-
-        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
+        OpenVolumeMesh::VertexPropertyT <OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
                 "VertexHighlightColor");
         highlightColProp->set_persistent(true);
 
+    }
+
+    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh) : MeshObject()
+    {
+        set_mesh(mesh);
     }
 
     void MeshObject::load_from_file(std::string file_path)
@@ -36,15 +40,24 @@ namespace vOS
         m_should_update = true;
     }
 
-    void MeshObject::write_to_file(std::string file_path)
+    void MeshObject::write_to_file(const std::string& file_path) const
     {
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.writeFile(file_path, *m_mesh);
     }
 
-    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh)
+    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh)
     {
-        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>(*mesh);
+        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
+        m_mesh->assign(mesh);
+
+        init_vertices();
+        init_edges();
+        init_faces();
+        //init_cells();
+        init_vertex_normals();
+        init_face_normals();
+
         remove_highlights();
         m_should_update = true;
     }
@@ -53,14 +66,87 @@ namespace vOS
     {
         if (m_should_update)
         {
-            if (m_vertexArrayObject != nullptr)
-            {
-                delete m_vertexArrayObject;
-            }
-            initialize_face_normals();
-            initialize_vertex_normals();
+            delete m_vertexArrayObject;
             m_vertexArrayObject = new VertexArrayObject(vertices(), faces());
-            m_vertexArrayObject->add_buffer(vertex_normals(), 1, 3);
+            m_vertexArrayObject->add_attribute(vertex_normals(), 1, 3);
+
+            delete m_sphere_vao;
+            // add an attribute for each vertex position, so we can render the spheres instanced
+            m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::vertices(), CommonMeshes::Sphere::indices());
+            m_sphere_vao->add_attribute(m_vertex_normals, 1, 3, true);
+            m_sphere_vao->add_attribute(m_vertices, 2, 3, true);
+
+            delete m_cylinder_vao;
+            m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
+                                                   CommonMeshes::Cylinder::edge_cylinder().indices());
+            // collect from-vertex and to-vertex for each edge
+            std::vector<float> from_vertices;
+            std::vector<float> to_vertices;
+            m_edge_ids.clear();
+            for (int i = 0; i < m_faces.size(); i += 3)
+            {
+                auto vh0 = OpenVolumeMesh::VertexHandle(m_faces[i + 0]);
+                auto vh1 = OpenVolumeMesh::VertexHandle(m_faces[i + 1]);
+                auto vh2 = OpenVolumeMesh::VertexHandle(m_faces[i + 2]);
+
+                for (auto heh: m_mesh->outgoing_halfedges(vh0))
+                {
+                    auto out = m_mesh->to_vertex_handle(heh);
+                    if (out == vh1)
+                    {
+                        m_edge_ids.push_back(m_mesh->edge_handle(heh).idx());
+                        break;
+                    }
+                }
+                for (auto heh: m_mesh->outgoing_halfedges(vh1))
+                {
+                    auto out = m_mesh->to_vertex_handle(heh);
+                    if (out == vh2)
+                    {
+                        m_edge_ids.push_back(m_mesh->edge_handle(heh).idx());
+                        break;
+                    }
+                }
+                for (auto heh: m_mesh->outgoing_halfedges(vh2))
+                {
+                    auto out = m_mesh->to_vertex_handle(heh);
+                    if (out == vh0)
+                    {
+                        m_edge_ids.push_back(m_mesh->edge_handle(heh).idx());
+                        break;
+                    }
+                }
+
+                auto v0 = m_mesh->vertex(vh0);
+                auto v1 = m_mesh->vertex(vh1);
+                auto v2 = m_mesh->vertex(vh2);
+
+                from_vertices.push_back(v0[0]);
+                from_vertices.push_back(v0[1]);
+                from_vertices.push_back(v0[2]);
+
+                to_vertices.push_back(v1[0]);
+                to_vertices.push_back(v1[1]);
+                to_vertices.push_back(v1[2]);
+
+                from_vertices.push_back(v1[0]);
+                from_vertices.push_back(v1[1]);
+                from_vertices.push_back(v1[2]);
+
+                to_vertices.push_back(v2[0]);
+                to_vertices.push_back(v2[1]);
+                to_vertices.push_back(v2[2]);
+
+                from_vertices.push_back(v2[0]);
+                from_vertices.push_back(v2[1]);
+                from_vertices.push_back(v2[2]);
+
+                to_vertices.push_back(v0[0]);
+                to_vertices.push_back(v0[1]);
+                to_vertices.push_back(v0[2]);
+            }
+            m_cylinder_vao->add_attribute(from_vertices, 1, 3, true);
+            m_cylinder_vao->add_attribute(to_vertices, 2, 3, true);
 
             calculate_mesh_offset();
         }
@@ -77,21 +163,24 @@ namespace vOS
             if (vertex.x < min.x)
             {
                 min.x = vertex.x;
-            } else if (vertex.x > max.x)
+            }
+            else if (vertex.x > max.x)
             {
                 max.x = vertex.x;
             }
             if (vertex.y < min.y)
             {
                 min.y = vertex.y;
-            } else if (vertex.y > max.y)
+            }
+            else if (vertex.y > max.y)
             {
                 max.y = vertex.y;
             }
             if (vertex.z < min.z)
             {
                 min.z = vertex.z;
-            } else if (vertex.z > max.z)
+            }
+            else if (vertex.z > max.z)
             {
                 max.z = vertex.z;
             }
@@ -99,11 +188,9 @@ namespace vOS
         m_mesh_offset_from_center = min + (max - min) * 0.5f;
     }
 
-    std::vector<float> MeshObject::vertices()
+    void MeshObject::init_vertices()
     {
-        //int dim = m_mesh->dim();
         int dim = 3;
-        //std::vector<float> vertices (m_mesh->n_vertices() * dim);
 
         m_vertices.clear();
         m_vertices.reserve(m_mesh->n_vertices() * dim);
@@ -112,36 +199,33 @@ namespace vOS
              v_it != m_mesh->vertices_end(); ++v_it)
         {
 
-            auto myPoint = m_mesh->vertex(*v_it);
+            auto vertex_coords = m_mesh->vertex(*v_it);
             for (int i = 0; i < dim; i++)
             {
-                m_vertices.push_back(myPoint[i]);
+                m_vertices.push_back(vertex_coords[i]);
             }
         }
-
-        return m_vertices;
     }
 
-    std::vector<unsigned int> MeshObject::edges()
+    void MeshObject::init_edges()
     {
-        m_indices.clear();
+        m_faces.clear();
 
         for (OpenVolumeMesh::EdgeIter e_it = m_mesh->edges_begin();
              e_it != m_mesh->edges_end(); ++e_it)
         {
             std::array<OpenVolumeMesh::VertexHandle, 2> edge_vertexids = m_mesh->edge_vertices(*e_it);
-            m_indices.push_back(edge_vertexids[0].idx());
-            m_indices.push_back(edge_vertexids[1].idx());
+            m_faces.push_back(edge_vertexids[0].idx());
+            m_faces.push_back(edge_vertexids[1].idx());
         }
 
-        return m_indices;
     }
 
 
-    std::vector<unsigned int> MeshObject::faces()
+    void MeshObject::init_faces()
     {
 
-        m_indices.clear();
+        m_faces.clear();
 
         int count = 0;
         std::vector<int> vert_idx;
@@ -150,22 +234,22 @@ namespace vOS
              f_it != m_mesh->faces_end(); ++f_it)
         {
 
-            for (auto halfface : m_mesh->face_halffaces(*f_it))
+            for (auto halfface: m_mesh->face_halffaces(*f_it))
             {
                 if (!m_mesh->is_boundary(halfface))
                 {
                     continue;
                 }
-                auto face_vertexids = m_mesh->halfface_vertices(halfface);
+                auto face_vertex_ids = m_mesh->halfface_vertices(halfface);
 
                 count = 0;
                 vert_idx.clear();
 
                 //count how many vertices the face has
-                for (auto fv_it = face_vertexids.first;
-                     fv_it != face_vertexids.second; ++fv_it)
+                for (auto fv_it = face_vertex_ids.first;
+                     fv_it != face_vertex_ids.second; ++fv_it)
                 {
-                    count ++;
+                    count++;
                     vert_idx.push_back(fv_it->idx());
                 }
 
@@ -173,87 +257,112 @@ namespace vOS
                 if (count == 3)
                 {
                     // create 1 triangles out of 3 indices
-                    m_indices.push_back(vert_idx[0]);
-                    m_indices.push_back(vert_idx[1]);
-                    m_indices.push_back(vert_idx[2]);
+                    m_faces.push_back(vert_idx[0]);
+                    m_faces.push_back(vert_idx[1]);
+                    m_faces.push_back(vert_idx[2]);
                 }
                 else if (count == 4)
                 {
                     // create 2 triangles out of 4 indices
-                    m_indices.push_back(vert_idx[0]);
-                    m_indices.push_back(vert_idx[1]);
-                    m_indices.push_back(vert_idx[2]);
+                    m_faces.push_back(vert_idx[0]);
+                    m_faces.push_back(vert_idx[1]);
+                    m_faces.push_back(vert_idx[2]);
 
-                    m_indices.push_back(vert_idx[0]);
-                    m_indices.push_back(vert_idx[2]);
-                    m_indices.push_back(vert_idx[3]);
+                    m_faces.push_back(vert_idx[0]);
+                    m_faces.push_back(vert_idx[2]);
+                    m_faces.push_back(vert_idx[3]);
+
 
                 }
-                // unpredictable behaviour
+                    // unpredictable behaviour
                 else
                 {
-                    for(int i = 0; i < count; i++)
+                    for (int i = 0; i < count; i++)
                     {
-                        m_indices.push_back(vert_idx[i]);
+                        m_faces.push_back(vert_idx[i]);
                     }
                 }
 
+                m_face_ids.push_back(f_it->idx());
 
 
             }
         }
-
-        return m_indices;
     }
 
-    std::vector<float> MeshObject::vertex_normals()
+    unsigned int MeshObject::to_faceID(unsigned int value)
     {
-        return m_vertex_normals;
+        if (m_face_ids.size() > value)
+        {
+            return m_face_ids[value] + 1;
+        }
+        return 0;
     }
 
-    std::vector<float> MeshObject::face_normals()
+    unsigned int MeshObject::to_edgeID(unsigned int value)
     {
-        return m_face_normals;
+        if (m_edge_ids.size() > value)
+        {
+            return m_edge_ids[value] + 1;
+        }
+        return 0;
     }
 
-    void MeshObject::set_highlight(OpenVolumeMesh::VertexHandle v_h, bool b = true, float red = 0.0, float green = 0.0,
-                                   float blue = 0.0, float alpha = 0.0)
+    void MeshObject::add_highlight(Highlight highlight)
     {
+        // Remove Highlight if it already exists
+        remove_highlight(highlight.v_h);
+
+        // Add Highlight to Map
+        highlight_map.insert({highlight.v_h,  highlight});
+        /*
         //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
-        if (b == true)
+        if (std::get<5>(tuple) == true)
         {
-            std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float> tuple = std::make_tuple(v_h, red,
-                                                                                                         green, blue,
-                                                                                                         alpha);
-            m_vertex_colors.push_back(tuple);
-        } else if (b == false)
+            // Add
+            m_vertex_highlights.push_back(tuple);
+        } else if (std::get<5>(tuple) == false)
         {
-            auto pos = std::find(m_vertex_colors.begin(), m_vertex_colors.end(),
-                                 std::make_tuple(v_h, red, green, blue, alpha));
-            if (pos != m_vertex_colors.end())
+            // Remove
+            auto pos = std::find(m_vertex_highlights.begin(), m_vertex_highlights.end(),
+                                 tuple);
+            if (pos != m_vertex_highlights.end())
             {
-                m_vertex_colors.erase(pos);
+                m_vertex_highlights.erase(pos);
             }
         }
+        */
+    }
 
+
+    void MeshObject::remove_highlight(OpenVolumeMesh::VertexHandle vh) {
+
+        auto search = highlight_map.find(vh);
+        if (search != highlight_map.end()) {
+            // Element Exists
+            highlight_map.erase(search);
+        }else{
+            // Element does not exist
+            // ...
+        }
     }
 
     void MeshObject::remove_highlights()
     {
-        m_vertex_colors.clear();
+        //highlight_map.clear();
     }
 
-    std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> MeshObject::get_highlights()
+    std::map<OpenVolumeMesh::VertexHandle, Highlight>& MeshObject::get_highlights()
     {
-        return m_vertex_colors;
+        return highlight_map;
     }
 
-    glm::vec3 &MeshObject::get_mesh_offset()
+    glm::vec3& MeshObject::get_mesh_offset()
     {
         return m_mesh_offset_from_center;
     }
 
-    void MeshObject::initialize_face_normals()
+    void MeshObject::init_face_normals()
     {
         m_face_normals.clear();
 
@@ -262,7 +371,7 @@ namespace vOS
         for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin();
              f_it != m_mesh->faces_end(); ++f_it)
         {
-            for(int i = 0; i < normals[*f_it].size(); i++)
+            for (int i = 0; i < normals[*f_it].size(); i++)
             {
                 m_face_normals.push_back(normals[*f_it][i]);
             }
@@ -270,22 +379,62 @@ namespace vOS
 
     }
 
-    void MeshObject::initialize_vertex_normals()
+    void MeshObject::init_vertex_normals()
     {
         m_vertex_normals.clear();
 
         OpenVolumeMesh::NormalAttrib normals(*m_mesh);
-        normals.update_vertex_normals();
-        for (OpenVolumeMesh::VertexIter v_it = m_mesh->vertices_begin();
-             v_it != m_mesh->vertices_end(); ++v_it)
-        {
-            float x = normals[*v_it][0];
-            float y = normals[*v_it][1];
-            float z = normals[*v_it][2];
-            m_vertex_normals.push_back(x);
-            m_vertex_normals.push_back(y);
-            m_vertex_normals.push_back(z);
+        normals.update_face_normals();
 
+        // normal calculation based on OpenVolumeMesh's update_vertex_normals() method
+        for (const auto& _vh: m_mesh->vertices())
+        {
+            std::set<std::pair<OpenVolumeMesh::HalfFaceHandle, float>> halffaces;
+            for (auto voh_it = m_mesh->voh_iter(_vh); voh_it.valid(); ++voh_it)
+            {
+                for (auto hehf_it = m_mesh->hehf_iter(*voh_it); hehf_it.valid(); ++hehf_it)
+                {
+                    // find points of this halfface to calculate the angle of the face from the vertex
+                    std::vector<glm::vec3> points;
+                    for (auto hfv_it : m_mesh->halfface_vertices(*hehf_it))
+                    {
+                        if (hfv_it.idx() != _vh.idx())
+                        {
+                            auto point = m_mesh->vertex(hfv_it);
+                            points.emplace_back(point[0], point[1], point[2]);
+                        }
+                    }
+
+                    // calculate face angle
+                    float angle = M_PI * 2.0f;
+                    if (points.size() == 2)
+                    {
+                        auto p = m_mesh->vertex(_vh);
+                        glm::vec3 pivot = glm::vec3(p[0], p[1], p[2]);
+                        glm::vec3 first = glm::normalize(points[0] - pivot);
+                        glm::vec3 second = glm::normalize(points[1] - pivot);
+                        angle = glm::acos(glm::dot(first, second));
+                    }
+                    if (m_mesh->is_boundary(*hehf_it))
+                    {
+                        halffaces.insert(std::make_pair(*hehf_it, angle));
+                    }
+                }
+            }
+
+            // sum up normals of adjacent faces, but assign weight based on the angle size for better results
+            auto normal = glm::vec3(0.0f);
+            for (auto halfface: halffaces)
+            {
+                auto n = m_mesh->normal(std::get<0>(halfface));
+                float angle = std::get<1>(halfface);
+                normal += glm::vec3(n[0], n[1], n[2]) * (float) (angle / M_PI * 2.0f);
+            }
+
+            auto norm = glm::normalize(normal);
+            m_vertex_normals.push_back(norm.x);
+            m_vertex_normals.push_back(norm.y);
+            m_vertex_normals.push_back(norm.z);
         }
     }
 
@@ -294,5 +443,35 @@ namespace vOS
         return m_vertexArrayObject;
     }
 
+    VertexArrayObject* MeshObject::get_sphere_vao() const
+    {
+        return m_sphere_vao;
+    }
+
+    int MeshObject::calculate_selection_size() const
+    {
+        // make sure that we choose the biggest possible vertex, edge or face id as the offset
+        return (int) std::max(std::max(m_mesh->n_vertices(), m_mesh->n_edges()), m_mesh->n_faces());
+    }
+
+    int MeshObject::get_num_visible_vertices() const
+    {
+        return (int) m_vertices.size() / 3;
+    }
+
+    VertexArrayObject* MeshObject::get_cylinder_vao() const
+    {
+        return m_cylinder_vao;
+    }
+
+    int MeshObject::get_num_visible_edges() const
+    {
+        return (int) m_faces.size();
+    }
+
+    void MeshObject::set_selection_offset(int start)
+    {
+        m_selection_offset = {start, start + calculate_selection_size()};
+    }
 }
 

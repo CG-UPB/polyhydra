@@ -1,11 +1,12 @@
 #pragma once
 
-#include "../Shader.h"
-#include "../VertexArrayObject.h"
+#include "../gl/Shader.h"
+#include "../gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 
 namespace vOS
 {
+
     class Shape
     {
     public:
@@ -34,6 +35,7 @@ namespace vOS
                 glm::mat4 scale = glm::scale(m_scale);
                 glm::mat4 rotation = glm::rotate(m_rotation.x, glm::vec3(m_rotation.y, m_rotation.z, m_rotation.w));
                 m_transform = position * rotation * scale;
+                m_transform_changed = false;
             }
             return m_transform;
         }
@@ -79,11 +81,15 @@ namespace vOS
             return m_shader;
         }
 
+        int get_id(){return id;}
+        void set_id(int _id){id = _id;}
+
     protected:
 
         Shader* m_shader = Shader::basic_shape_shader();
 
     private:
+        int id = 0;
 
         bool m_visible = true;
         glm::vec4 m_base_color = glm::vec4(1.0f);
