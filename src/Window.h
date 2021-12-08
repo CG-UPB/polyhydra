@@ -35,7 +35,7 @@ namespace vOS {
  * TODO: Uses GeomtericPolyhedralMeshV3f exlusively at the moment, waiting for Wrapper Class
  * TODO: Allows a single Mesh Visualization at the moment
  */
-class MeshView;
+    class MeshView;
     class Window
     {
 
@@ -87,6 +87,7 @@ class MeshView;
 
         unsigned int add_shape(Shape* shape);
         void remove_shape(unsigned int id);
+        void take_screenshot(std::string filename);
 
         //   Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -182,6 +183,8 @@ class MeshView;
         // Generally Called when the User does anything to the Mesh (debug)
         void_callback m_on_general_update = default_callback_function;
 
+        // Panels
+        FileDialog* m_file_dialog;
     private:
         Window();
 
@@ -214,8 +217,6 @@ class MeshView;
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        // Panels
-        FileDialog* m_file_dialog;
         MenuBar* m_menu_bar;
         MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;

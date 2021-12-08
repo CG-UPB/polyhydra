@@ -127,12 +127,21 @@ namespace vOS
             std::string path;
             if (Window::instance().ShowFileDialog(path))
             {
-                OpenVolumeMesh::IO::FileManager file_manager;
-                file_manager.readFile(path, m_mesh);
-                Window::instance().set_mesh(&m_mesh, mesh_count++);
+                if(path != "")
+                {
+                    std::cout << "Pfad:" << path << std::endl;
+                    OpenVolumeMesh::IO::FileManager file_manager;
+                    file_manager.readFile(path, m_mesh);
+                    Window::instance().set_mesh(&m_mesh, mesh_count++);
 
-                linear_run();
+                    linear_run();
+                    m_open_file = false;
+                }
+            }
+            if(path == "")
+            {
                 m_open_file = false;
+                Window::instance().m_file_dialog->set_open_fileloader(false);
             }
         }
 

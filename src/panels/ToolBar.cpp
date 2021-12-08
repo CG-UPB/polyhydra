@@ -64,7 +64,7 @@ namespace vOS
             return;
         }
 
-        
+
         if(ImGui::Button("Snapshot"))
         {
             m_open_file = true;
@@ -72,19 +72,27 @@ namespace vOS
         if(m_open_file)
         {
             std::string path;
-            if (Window::ShowFileDialog(path,".bmp",1))
+            if (Window::instance().ShowFileDialog(path,".bmp",1))
             {
-                GlobalViewerSettings::getInstance()->m_set_take_snapshot(true);
-                GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename(path);
-                LogWindow::getInstance()->addLog("hier" + path);
-                m_open_file = false;
+                if(path != ""){
+                    //GlobalViewerSettings::getInstance()->m_set_take_snapshot(true);
+                    //GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename(path);
+                    Window::instance().take_screenshot(path);
+                    m_open_file = false;
+                }
             }
-            
+            std::cout << "hinter";
+            if (path == "")
+            {
+                m_open_file = false;
+                Window::instance().m_file_dialog->set_open_snapshot_saver(false);
+            }
+
 
         }
         ImGui::SameLine();
         HelpMarkerWithQuestionMark("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
-                   "choose a file in which you want to save your image of the actual Mesh");
+                                   "choose a file in which you want to save your image of the actual Mesh");
 
         if (ImGui::BeginPopup("Selection")) {
             //ImGui::Checkbox("Vertex-Selection", &m_vertex_selection);
@@ -191,7 +199,7 @@ namespace vOS
                 GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color_activated, m_color[0],m_color[1],m_color[2],m_color[3]);
                 ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
-                
+
                 // Select an item type
                 const char* rendering_mode_names[] =
                         {
@@ -202,8 +210,8 @@ namespace vOS
                 GlobalViewerSettings::getInstance()->m_set_current_rendering_mode(m_rendering_mode);
                 ImGui::SameLine();
                 HelpMarkerWithQuestionMark("You can choose between multiple rendering modes for the mesh");
-                
-                
+
+
                 // Select an item type
                 const char* item_names[] =
                         {

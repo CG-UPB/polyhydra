@@ -268,6 +268,7 @@ namespace vOS
 
     void MeshView::m_take_screenshot(std::string filename)
     {
+        LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
         m_meshFrameBuffer->bind();
         std::ofstream ofp;
 
