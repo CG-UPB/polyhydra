@@ -383,6 +383,8 @@ namespace vOS
     {
         m_vertex_normals.clear();
 
+        std::vector<OpenVolumeMesh::HandleT<OpenVolumeMesh::Entity::Vertex>> m_face_vertices_array;
+
         OpenVolumeMesh::NormalAttrib normals(*m_mesh);
         normals.update_face_normals();
 
@@ -413,6 +415,7 @@ namespace vOS
                         glm::vec3 pivot = glm::vec3(p[0], p[1], p[2]);
                         glm::vec3 first = glm::normalize(points[0] - pivot);
                         glm::vec3 second = glm::normalize(points[1] - pivot);
+
                         angle = glm::acos(glm::dot(first, second));
                     }
                     if (m_mesh->is_boundary(*hehf_it))
@@ -424,10 +427,21 @@ namespace vOS
 
             // sum up normals of adjacent faces, but assign weight based on the angle size for better results
             auto normal = glm::vec3(0.0f);
+
+            m_face_vertices_array.clear();
+
             for (auto halfface: halffaces)
             {
+                glm::vec3 t = glm::vec3(0.0f);
+                glm::vec3 b = glm::vec3(0.0f);
                 auto n = m_mesh->normal(std::get<0>(halfface));
                 float angle = std::get<1>(halfface);
+
+                for(auto vert : m_mesh->halfface_vertices(std::get<0>(halfface)))
+                {
+                    m_face_vertices_array.push_back(vert);
+                }
+
                 normal += glm::vec3(n[0], n[1], n[2]) * (float) (angle / M_PI * 2.0f);
             }
 

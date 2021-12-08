@@ -53,7 +53,7 @@ class MeshView;
         static Window &instance();
 
         // Renamed Classes for convenience
-        using v3f = OpenVolumeMesh::GeometricPolyhedralMeshV3f;
+        using v3d = OpenVolumeMesh::GeometricPolyhedralMeshV3d;
 
         typedef std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool> operation_set_highlight;
         typedef std::tuple<Shape*, unsigned int, bool> operation_shape;
@@ -206,11 +206,6 @@ class MeshView;
         /// Set to guard GL when reading from and rendering our mesh
         std::mutex rendering_mutex;
 
-        // Operations /////////////////////////////////////////////////////////////////////////////////////////////////
-
-        std::list<operation_set_highlight> operation_list_vertex_highlights;
-        std::list<operation_shape> operation_list_shapes;
-
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Panels
@@ -220,7 +215,7 @@ class MeshView;
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
 
-        v3f *m_mesh_reference;
+        v3d *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
 
         std::unordered_map<int, MeshObject*> m_mesh_objects;
