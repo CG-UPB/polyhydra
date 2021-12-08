@@ -220,6 +220,7 @@ class MeshView;
         MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
+        ToolBar* m_toolbar = ToolBar::getInstance();
 
         v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;

@@ -53,6 +53,8 @@ namespace vOS
         auto *mesh_view = new MeshView(720, 480);
 
         m_log_window = LogWindow::getInstance();
+
+        //m_toolbar = ToolBar::getInstance();
     }
 
     void Window::open() {
@@ -146,6 +148,9 @@ namespace vOS
 
         // Log Window
         m_log_window->show();
+
+        // ToolBar
+        m_toolbar->show();
 
         rendering_mutex.unlock();
 
