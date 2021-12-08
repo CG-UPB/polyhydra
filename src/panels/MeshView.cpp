@@ -294,14 +294,18 @@ namespace vOS
 
         m_pixel_buffer->finish_read();
 
-        // we need to clear our framebuffer as well
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+        m_current_frame = (m_current_frame + 1) % m_frame_limit;
+        if (m_current_frame == 0)
         {
-            auto mesh = m.second;
-            m_selection_pass.render_mesh(mesh, m_render_data);
+            // we need to clear our framebuffer as well
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            {
+                auto mesh = m.second;
+                m_selection_pass.render_mesh(mesh, m_render_data);
+            }
         }
 
         m_selectionFrameBuffer->unbind();

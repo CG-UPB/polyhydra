@@ -204,7 +204,7 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
+                //window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -225,7 +225,7 @@ namespace vOS
                         distances[nextVertexHandle.idx()] = distances[vertexHandle.idx()] + distToNext;
                         queue.push(std::make_pair(distances[nextVertexHandle.idx()], nextVertexHandle));
                         prev[nextVertexHandle.idx()] = vertexHandle.idx();
-                        window.highlight_vertex(vertexHandle, 1, 0, 0, 1);
+                        //window.highlight_vertex(vertexHandle, 1, 0, 0, 1);
                     }
 
                     if (queue.top().second.idx() == m_end.idx())

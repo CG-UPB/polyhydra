@@ -72,7 +72,7 @@ namespace vOS
 
             delete m_sphere_vao;
             // add an attribute for each vertex position, so we can render the spheres instanced
-            m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::vertices(), CommonMeshes::Sphere::indices());
+            m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(), CommonMeshes::Sphere::selection_sphere().indices());
             m_sphere_vao->add_attribute(m_vertex_normals, 1, 3, true);
             m_sphere_vao->add_attribute(m_vertices, 2, 3, true);
 
