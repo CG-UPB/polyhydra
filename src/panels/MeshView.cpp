@@ -17,12 +17,15 @@
 #include "../mesh/MeshObject.h"
 #include "../rendering/shapes/Box.h"
 
-const int BYTES_PER_PIXEL = 4; /// red, green, & blue
-const int FILE_HEADER_SIZE = 14;
-const int INFO_HEADER_SIZE = 40;
+//#include "../util/BitMap.h"
+
+
 
 namespace vOS
 {
+    const int BYTES_PER_PIXEL = 4; /// red, green, & blue
+    const int FILE_HEADER_SIZE = 14;
+    const int INFO_HEADER_SIZE = 40;
     MeshView::MeshView(int width, int height):
             m_viewportPanelWidth(width),
             m_viewportPanelHeight(height),
@@ -303,49 +306,81 @@ namespace vOS
         fclose(imageFile);
     }
 
+    void MeshView::m_take_screenshot(std::string filename)
+    {
+        m_meshFrameBuffer->bind();
+        std::ofstream ofp;
 
+        glFlush();
+        glFinish();
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+        int swidth = viewport[2];
+        int sheight = viewport[3];
+        unsigned char sdata[4*swidth*sheight];
+        //unsigned char data[4*viewport[2]*viewport[3]];
+        
+        glReadPixels(0,0,swidth,sheight,GL_BGRA,GL_UNSIGNED_BYTE, sdata);
+
+        int n = filename.length();
+
+        // declaring character array
+        char char_array[n + 1];
+
+        // copying the contents of the
+        // string to char array
+        strcpy(char_array, filename.c_str());
+
+        generateBitmapImage(sdata,sheight,swidth,char_array);
+
+        m_meshFrameBuffer->unbind();
+
+    }
 
 
     void MeshView::show()
     {
         if(GlobalViewerSettings::getInstance()->m_get_take_snapshot())
         {
-            m_meshFrameBuffer->bind();
-            std::ofstream ofp;
             GlobalViewerSettings::getInstance()->m_set_take_snapshot(false);
             // Snapshot erstellen
             std::string filename = GlobalViewerSettings::getInstance()->m_get_actual_snapshot_filename();
-            glFlush();
-            glFinish();
+            m_meshFrameBuffer->bind();
+        std::ofstream ofp;
 
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glFlush();
+        glFinish();
 
-            GLint viewport[4];
-            glGetIntegerv(GL_VIEWPORT, viewport);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-            int swidth = 1476;
-            int sheight = 956;
-            unsigned char sdata[4*swidth*sheight];
-            //unsigned char data[4*viewport[2]*viewport[3]];
-            
-            glReadPixels(0,0,swidth,sheight,GL_BGRA,GL_UNSIGNED_BYTE, sdata);
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
 
-            int n = filename.length();
+        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+        int swidth = viewport[2];
+        int sheight = viewport[3];
+        unsigned char sdata[4*swidth*sheight];
+        //unsigned char data[4*viewport[2]*viewport[3]];
+        
+        glReadPixels(0,0,swidth,sheight,GL_BGRA,GL_UNSIGNED_BYTE, sdata);
 
-            // declaring character array
-            char char_array[n + 1];
+        int n = filename.length();
 
-            // copying the contents of the
-            // string to char array
-            strcpy(char_array, filename.c_str());
+        // declaring character array
+        char char_array[n + 1];
 
-            generateBitmapImage(sdata,sheight,swidth,char_array);
+        // copying the contents of the
+        // string to char array
+        strcpy(char_array, filename.c_str());
 
-            m_meshFrameBuffer->unbind();
+        generateBitmapImage(sdata,sheight,swidth,char_array);
 
-            LogWindow::getInstance()->addLog(std::to_string(viewport[2]));
-            LogWindow::getInstance()->addLog(std::to_string(viewport[3]));
+        m_meshFrameBuffer->unbind();
         }
 
 

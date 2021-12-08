@@ -25,6 +25,8 @@ namespace vOS
     private:
         ToolBar();
 
+        bool m_open_file = false;
+
         static ToolBar* instance;
         int m_timer_treshold = 3;
 

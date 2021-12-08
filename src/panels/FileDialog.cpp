@@ -2,14 +2,21 @@
 #include "FileDialog.h"
 #include "LogWindow.h"
 
+#include <iomanip>
+#include <ctime>
+#include <string>
+#include <sstream>
+
+
 namespace vOS
 {
 
     void FileDialog::show()
     {
-        m_ok_file_loader = false;
+        
         if (m_instance_file_loader.Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
         {
+            m_ok_file_loader = false;
             // action if OK
             if (m_instance_file_loader.IsOk())
             {
@@ -20,9 +27,10 @@ namespace vOS
             }
             m_instance_file_loader.Close();
         }
-        m_ok_snapshot_saver = false;
+       
         if (m_instance_snapshot_saver.Display("ChooseBMPFile", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
         {
+             m_ok_snapshot_saver = false;
             // action if OK
             LogWindow::getInstance()->addLog("Vor OK");
             if (m_instance_snapshot_saver.IsOk())
@@ -47,10 +55,15 @@ namespace vOS
         }
         if (!m_is_open_snapshot_saver && nbr_of_dialog == 1)
         {
-            m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Choose File", extension.c_str(), ".");
+            std::stringstream str;
+            time_t rawtime;
+            time ( &rawtime ); 
+            str << rawtime;
+            m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Choose File", extension.c_str(), ".",str.str());
             m_is_open_snapshot_saver = true;
         }
     }
+
 
     bool FileDialog::is_ok_file_loader() const
     {
