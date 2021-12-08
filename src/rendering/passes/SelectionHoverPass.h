@@ -16,6 +16,8 @@ namespace vOS
 
         void select(MeshObject& mesh, const RenderData& data, int type, int id);
 
+        glm::vec3 m_zoom_point;
+
     private:
 
         struct MeshData
@@ -43,6 +45,7 @@ namespace vOS
         glm::vec4 m_selected_vertex_position;
         glm::vec3 m_selected_edge_from;
         glm::vec3 m_selected_edge_to;
+
 
         VertexArrayObject* m_face_vao = nullptr;
         VertexArrayObject* m_quad_vao = nullptr;

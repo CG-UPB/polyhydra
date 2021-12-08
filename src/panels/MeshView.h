@@ -18,6 +18,7 @@ namespace vOS
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
+        void m_take_screenshot(std::string filename);
 
     private:
 
@@ -47,6 +48,9 @@ namespace vOS
         FrameBufferObject* m_selectionFrameBuffer;
         PixelBufferObject* m_pixel_buffer;
         RenderData m_render_data;
+
+        bool m_zoom;
+        glm::vec3 m_zoom_point;
 
         // render passes
         BackgroundPass m_background_pass;

@@ -53,6 +53,8 @@ namespace vOS
         auto *mesh_view = new MeshView(720, 480);
 
         m_log_window = LogWindow::getInstance();
+
+        //m_toolbar = ToolBar::getInstance();
     }
 
     void Window::open() {
@@ -147,6 +149,9 @@ namespace vOS
         // Log Window
         m_log_window->show();
 
+        // ToolBar
+        m_toolbar->show();
+
         rendering_mutex.unlock();
 
         // Custom UI
@@ -206,7 +211,7 @@ namespace vOS
 
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index) {
-        rendering_mutex.lock();
+        //rendering_mutex.lock();
         auto* mesh_obj = new MeshObject();
         mesh_obj->set_mesh(mesh);
 
@@ -222,7 +227,7 @@ namespace vOS
         set_mesh_active(index);
 
         calculate_selection_offsets();
-        rendering_mutex.unlock();
+        //rendering_mutex.unlock();
     }
 
     void Window::calculate_selection_offsets()
@@ -268,17 +273,27 @@ namespace vOS
         // TODO: No method available for this yet
     }
 
-    bool Window::ShowFileDialog(std::string& path, const std::string& extension)
+    bool Window::ShowFileDialog(std::string& path, const std::string& extension, int nbr_of_dialog)
     {
-
-        instance().m_file_dialog->open(extension);
-        if (instance().m_file_dialog->is_ok())
+        instance().m_file_dialog->open(extension, nbr_of_dialog);
+        if (nbr_of_dialog == 0)
         {
-            path = instance().m_file_dialog->get_file_path();
-            instance().m_file_dialog->set_open(false);
-            instance().set_loaded_file_path_name((path));
+            if (instance().m_file_dialog->is_ok_file_loader())
+            {
+                path = instance().m_file_dialog->get_file_path_file_loader();
+                instance().m_file_dialog->set_open_fileloader(false);
+            }
+            return instance().m_file_dialog->is_ok_file_loader();
+        }else if (nbr_of_dialog == 1)
+        {
+            if (instance().m_file_dialog->is_ok_snapshot_saver())
+            {
+                path = instance().m_file_dialog->get_file_path_snapshot_saver();
+                instance().m_file_dialog->set_open_snapshot_saver(false);
+            }
+            return instance().m_file_dialog->is_ok_snapshot_saver();
         }
-        return instance().m_file_dialog->is_ok();
+
     }
     // Read Methods ///////////////////////////////////////////////////////////////////////////////
 

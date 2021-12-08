@@ -23,6 +23,7 @@
 #include "rendering/shapes/Box.h"
 #include "panels/MeshView.h"
 #include <mutex>
+#include "panels/ToolBar.h"
 
 namespace vOS {
 
@@ -110,7 +111,7 @@ class MeshView;
         /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        std::string get_loaded_file_name() { return m_loaded_file_path; };
+        const std::string& get_loaded_file_name() { return m_loaded_file_path; };
 
         void set_loaded_file_path_name(std::string path) { m_loaded_file_path = path; };
 
@@ -162,7 +163,7 @@ class MeshView;
         //void run(void_callback vc);
         // Custom ImGui Methods
 
-        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm");
+        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm",int nbr_of_dialog = 0);
         FileDialog* get_file_dialog(){return m_file_dialog;}
 
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,6 +215,7 @@ class MeshView;
         MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
+        ToolBar* m_toolbar = ToolBar::getInstance();
 
         v3d *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;

@@ -224,6 +224,12 @@ namespace vOS
 
         public:
 
+            static CylinderMesh& edge_cylinder()
+            {
+                static CylinderMesh s_edge_cylinder = CylinderMesh(5, 0.5f, 1.0f);
+                return s_edge_cylinder;
+            }
+
             static const std::vector<float>& vertices()
             {
                 return default_cylinder().vertices();
