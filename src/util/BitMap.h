@@ -6,7 +6,7 @@ namespace vOS
     class BitMap
     {
     public:
-        static const int BYTES_PER_PIXEL = 4; /// red, green, & blue
+        static const int BYTES_PER_PIXEL = 4; /// red, green, blue & opacity
         static const int FILE_HEADER_SIZE = 14;
         static const int INFO_HEADER_SIZE = 40;
 

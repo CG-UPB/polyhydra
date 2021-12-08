@@ -13,9 +13,9 @@ namespace vOS
 
     void FileDialog::show()
     {
-        
         if (m_instance_file_loader.Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
         {
+
             m_ok_file_loader = false;
             // action if OK
             if (m_instance_file_loader.IsOk())
@@ -59,7 +59,7 @@ namespace vOS
             time_t rawtime;
             time ( &rawtime ); 
             str << rawtime;
-            m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Choose File", extension.c_str(), ".",str.str());
+            m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Save File", extension.c_str(), ".",str.str());
             m_is_open_snapshot_saver = true;
         }
     }
