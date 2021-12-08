@@ -23,6 +23,7 @@
 #include "rendering/shapes/Box.h"
 #include "panels/MeshView.h"
 #include <mutex>
+#include "panels/ToolBar.h"
 
 namespace vOS {
 
@@ -162,7 +163,7 @@ class MeshView;
         //void run(void_callback vc);
         // Custom ImGui Methods
 
-        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm");
+        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm",int nbr_of_dialog = 0);
         FileDialog* get_file_dialog(){return m_file_dialog;}
 
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,6 +220,7 @@ class MeshView;
         MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
+        ToolBar* m_toolbar = ToolBar::getInstance();
 
         v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;

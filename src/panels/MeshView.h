@@ -18,6 +18,7 @@ namespace vOS
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
+        void m_take_screenshot(std::string filename);
 
     private:
 

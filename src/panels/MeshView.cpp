@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
@@ -16,6 +17,10 @@
 #include "../mesh/MeshObject.h"
 #include "../rendering/shapes/Sphere.h"
 #include "../rendering/shapes/Cylinder.h"
+
+#include "../util/BitMap.h"
+
+
 
 namespace vOS
 {
@@ -215,9 +220,14 @@ namespace vOS
             m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
             m_mesh_pass.set_wireframe_mode(false);
         }
-
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
+
+        if(GlobalViewerSettings::getInstance()->m_get_color_activated())
+        {
+            float* color = GlobalViewerSettings::getInstance()->m_get_current_mesh_rendering_color();
+            m_render_data.mesh.color = glm::vec3{color[0], color[1], color[2]};
+        }
 
         // we need to clear our framebuffer as well
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -255,6 +265,43 @@ namespace vOS
 
         m_meshFrameBuffer->unbind();
     }
+
+    void MeshView::m_take_screenshot(std::string filename)
+    {
+        m_meshFrameBuffer->bind();
+        std::ofstream ofp;
+
+        glFlush();
+        glFinish();
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+        int swidth = viewport[2];
+        int sheight = viewport[3];
+        unsigned char sdata[4*swidth*sheight];
+        //unsigned char data[4*viewport[2]*viewport[3]];
+
+        glReadPixels(0,0,swidth,sheight,GL_BGRA,GL_UNSIGNED_BYTE, sdata);
+
+        int n = filename.length();
+
+        // declaring character array
+        char char_array[n + 1];
+
+        // copying the contents of the
+        // string to char array
+        strcpy(char_array, filename.c_str());
+
+        BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
+
+        m_meshFrameBuffer->unbind();
+
+    }
+
 
     void MeshView::renderSelection()
     {
@@ -411,6 +458,15 @@ namespace vOS
 
     void MeshView::show()
     {
+        if(GlobalViewerSettings::getInstance()->m_get_take_snapshot())
+        {
+            GlobalViewerSettings::getInstance()->m_set_take_snapshot(false);
+            // Snapshot erstellen
+            std::string filename = GlobalViewerSettings::getInstance()->m_get_actual_snapshot_filename();
+            this->m_take_screenshot(filename);
+        }
+
+
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
