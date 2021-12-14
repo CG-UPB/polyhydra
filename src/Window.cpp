@@ -284,13 +284,12 @@ namespace vOS
 
         if (nbr_of_dialog == 0)
         {
-            if(instance().m_file_dialog->m_get_instance_file_loader().IsOk())
+            if(instance().m_file_dialog->is_ok_file_loader())
             {
-                if (instance().m_file_dialog->is_ok_file_loader())
-                {
+                
                     path = instance().m_file_dialog->get_file_path_file_loader();
                     instance().m_file_dialog->set_open_fileloader(false);
-                }
+                
                 return instance().m_file_dialog->is_ok_file_loader();
             }
         }else if (nbr_of_dialog == 1)

@@ -19,7 +19,7 @@
 #include "../rendering/shapes/Cylinder.h"
 
 #include "../util/BitMap.h"
-
+#include "../util/shader_enum.h"
 
 
 namespace vOS
@@ -185,6 +185,34 @@ namespace vOS
 
     void MeshView::renderMesh()
     {
+        switch (GlobalViewerSettings::getInstance()->m_get_current_rendering_mode())
+        {
+        case vos::PHONG:
+            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+            break;
+        case vos::WIREFRAME:
+            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
+            m_mesh_pass.set_wireframe_mode(true);
+            break;
+        case vos::NORMAL:
+            m_mesh_pass.set_mesh_shader(Shader::mesh_normal_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+            break;
+        case vos::TANGENT:
+            m_mesh_pass.set_mesh_shader(Shader::mesh_tangent_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+            break;
+        case vos::BITANGENT:
+            m_mesh_pass.set_mesh_shader(Shader::mesh_bitangent_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+            break;
+        case vos::FLAT:
+            m_mesh_pass.set_mesh_shader(Shader::mesh_flat_shader());
+            m_mesh_pass.set_wireframe_mode(false);
+            break;
+        }
+        /*
         if(ImGui::IsKeyPressed(GLFW_KEY_Q))
         {
             m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
@@ -220,6 +248,7 @@ namespace vOS
             m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
             m_mesh_pass.set_wireframe_mode(false);
         }
+        */
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
@@ -241,6 +270,10 @@ namespace vOS
         if (ImGui::IsKeyPressed(GLFW_KEY_F))
         {
             Window::instance().set_mesh_active(1);
+        }
+        if (ImGui::IsKeyPressed(GLFW_KEY_T))
+        {
+            Window::instance().set_mesh_active(2);
         }
 
         if(!m_zoom)
@@ -268,7 +301,7 @@ namespace vOS
 
     void MeshView::m_take_screenshot(std::string filename)
     {
-        LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
+        //LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
         m_meshFrameBuffer->bind();
         std::ofstream ofp;
 

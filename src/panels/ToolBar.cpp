@@ -79,6 +79,7 @@ namespace vOS
                     //GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename(path);
                     Window::instance().take_screenshot(path);
                     m_open_file = false;
+                    LogWindow::getInstance()->addLog("1");
                 }
             }
             std::cout << "hinter";
@@ -86,8 +87,10 @@ namespace vOS
             {
                 m_open_file = false;
                 Window::instance().m_file_dialog->set_open_snapshot_saver(false);
+                LogWindow::getInstance()->addLog("2");
             }
-
+            if(path != "")
+                Window::instance().take_screenshot(path);
 
         }
         ImGui::SameLine();
@@ -187,6 +190,9 @@ namespace vOS
             ImGui::EndTooltip();
         }
 
+        int l = 0;
+        ImGui::InputInt("Test", &l);
+
         if (ImGui::CollapsingHeader("Rendering Options"))
         {
             if (ImGui::BeginTable("split", 1))
@@ -203,7 +209,7 @@ namespace vOS
                 // Select an item type
                 const char* rendering_mode_names[] =
                         {
-                                "WireFrame", "Phong"
+                                "Phong", "Wireframe", "Normal", "Tangent", "Bitangent", "Flat"
                         };
                 ImGui::Text("Rendering Mode:");
                 ImGui::Combo("  ", &m_rendering_mode, rendering_mode_names, IM_ARRAYSIZE(rendering_mode_names), IM_ARRAYSIZE(rendering_mode_names));

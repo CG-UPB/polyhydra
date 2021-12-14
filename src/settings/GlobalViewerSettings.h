@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../panels/ToolBar.h"
+#include "../util/shader_enum.h"
 
 namespace vOS
 {
@@ -20,6 +21,7 @@ namespace vOS
         void m_set_current_separation_type(int separation_type){m_separation_type = separation_type;};
         void m_set_current_lighting_type(int lighting_type){m_lighting_type = lighting_type;};
         void m_set_current_rendering_mode(int rend_mode){m_rendering_mode = rend_mode;};
+        void m_set_current_active_mesh(int active_mesh){m_active_mesh = active_mesh;};
 
 
         bool m_get_take_snapshot(){return m_take_snapshot;};
@@ -33,6 +35,7 @@ namespace vOS
         int m_get_current_separation_type(){return m_separation_type;};
         int m_get_current_lighting_type(){return m_lighting_type;};
         int m_get_current_rendering_mode(){return m_rendering_mode;};
+        int m_get_current_active_mesh(){return m_active_mesh;};
 
     private:
         GlobalViewerSettings();
@@ -49,6 +52,7 @@ namespace vOS
         int m_separation_type = 2;
         int m_lighting_type = 3;
         int m_rendering_mode = 1;
+        int m_active_mesh = 0;
     };
 
 }
