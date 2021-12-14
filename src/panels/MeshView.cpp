@@ -263,6 +263,9 @@ namespace vOS
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data);
 
+        Window::instance().set_mesh_active(GlobalViewerSettings::getInstance()->m_get_current_active_mesh());
+
+/*
         if (ImGui::IsKeyPressed(GLFW_KEY_S))
         {
             Window::instance().set_mesh_active(0);
@@ -275,7 +278,7 @@ namespace vOS
         {
             Window::instance().set_mesh_active(2);
         }
-
+*/
         if(!m_zoom)
         {
             m_zoom_point = Window::instance().get_mesh_obj()->get_mesh_offset();

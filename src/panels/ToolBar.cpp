@@ -65,6 +65,12 @@ namespace vOS
         }
 
 
+
+        ImGui::InputInt("Active Mesh", &m_active_mesh);
+        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+
+
+
         if(ImGui::Button("Snapshot"))
         {
             m_open_file = true;
@@ -82,7 +88,6 @@ namespace vOS
                     LogWindow::getInstance()->addLog("1");
                 }
             }
-            std::cout << "hinter";
             if (path == "")
             {
                 m_open_file = false;
@@ -190,9 +195,8 @@ namespace vOS
             ImGui::EndTooltip();
         }
 
-        int l = 0;
-        ImGui::InputInt("Test", &l);
-
+        
+        
         if (ImGui::CollapsingHeader("Rendering Options"))
         {
             if (ImGui::BeginTable("split", 1))
