@@ -310,6 +310,30 @@ namespace vOS
     {
         //LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
         m_meshFrameBuffer->bind();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if(!m_zoom)
+        {
+            m_zoom_point = Window::instance().get_mesh_obj()->get_mesh_offset();
+        }
+        m_render_data.mesh.offset = m_zoom_point;
+
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+
+            mesh->update_vertex_buffer();
+
+            // render all passes
+            if (mesh->get_vao() != nullptr) {
+                m_mesh_pass.render(mesh->get_vao(), m_render_data);
+            }
+        }
+        m_highlight_pass.render(nullptr, m_render_data);
+        m_shape_pass.render(nullptr, m_render_data);
+
         std::ofstream ofp;
 
         glFlush();
