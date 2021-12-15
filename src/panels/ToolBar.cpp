@@ -105,25 +105,31 @@ namespace vOS
                                    "choose a file in which you want to save your image of the actual Mesh");
 
         if (ImGui::BeginPopup("Selection")) {
+
+            ImGui::Checkbox("Activate Selection",&m_selection_activated);
+            GlobalViewerSettings::getInstance()->m_set_current_selection_activated(m_selection_activated);
             //ImGui::Checkbox("Vertex-Selection", &m_vertex_selection);
-            if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
+            if(m_selection_activated)
             {
-                m_current_selection_mode = Vertex;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Vertex);
+                if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
+                {
+                    m_current_selection_mode = Vertex;
+                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Vertex);
+                }
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
+                if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
+                {
+                    m_current_selection_mode = Edge;
+                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Edge);
+                }
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
+                if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
+                {
+                    m_current_selection_mode = Face;
+                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Face);
+                }
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
             }
-            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
-            if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
-            {
-                m_current_selection_mode = Edge;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Edge);
-            }
-            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
-            if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
-            {
-                m_current_selection_mode = Face;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Face);
-            }
-            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
             ImGui::EndPopup();
         }
         if (ImGui::Button("Selection"))
@@ -206,8 +212,10 @@ namespace vOS
                 // Decision on which mesh(es), the actual values should be used
                 // Idea: iterate over meshes, for each mesh create an Selectable, which is represented by a bool. In Meshview: For each Mesh: check if bool is true -> change Color etc.
                 ImGui::TableNextColumn();
-                ImGui::Text("   ");ImGui::SameLine();
-                if (ImGui::CollapsingHeader("Mesh-Selection"))
+                //ImGui::Text("   ");ImGui::SameLine();
+                if(ImGui::Button("Mesh-Selection"))
+                    showPopup = true;
+                if (ImGui::BeginPopup("Mesh-Selection"))
                 {
                     std::vector<bool> arr= GlobalViewerSettings::getInstance()->get_test();
                     bool selected_mesh[arr.size()];
@@ -222,7 +230,7 @@ namespace vOS
                     {
                         const char* label = ("Mesh " + std::to_string(i+1)).c_str();
                         ImGui::Text("   ");ImGui::SameLine();
-                        ImGui::Selectable(label,&selected_mesh[i]);
+                        ImGui::Selectable(label,&test_selected[i]);
                         LogWindow::getInstance()->addLog("Hier2:");
                         LogWindow::getInstance()->addLog(std::to_string(selected_mesh[i]));
                     }
@@ -236,7 +244,15 @@ namespace vOS
                     }
                     
                     GlobalViewerSettings::getInstance()->m_set_test(newArr);
+                    if(ImGui::Button("Close"))
+                    {
+                        showPopup = false;
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
                 }
+                if (showPopup)
+                    ImGui::OpenPopup("Mesh-Selection");
                 
 /*
                 if (ImGui::BeginPopup("Mesh-Selection"))

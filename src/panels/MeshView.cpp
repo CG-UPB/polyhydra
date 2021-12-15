@@ -337,6 +337,12 @@ namespace vOS
         // string to char array
         strcpy(char_array, filename.c_str());
 
+        /*for (size_t i = 0; i < 4*swidth*sheight; i += 4)
+        {
+            LogWindow::getInstance()->addLog(std::to_string(sdata[i]));   
+        }*/
+        
+
         BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
 
         m_meshFrameBuffer->unbind();
