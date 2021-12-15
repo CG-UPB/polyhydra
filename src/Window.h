@@ -24,6 +24,7 @@
 #include "panels/MeshView.h"
 #include <mutex>
 #include "panels/ToolBar.h"
+#include "settings/GlobalViewerSettings.h"
 
 namespace vOS {
 
@@ -72,16 +73,19 @@ class MeshView;
 
         // Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        void highlight_vertex(OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha);
-        void highlight_vertex(OpenVolumeMesh::VertexHandle v_h, Color color);
+        void highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha);
+        void highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, Color color);
         void remove_all_vertex_highlights();
-        void remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h);
+        void remove_vertex_highlight(int mesh_id, OpenVolumeMesh::VertexHandle v_h);
 
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index = 0);
 
         void set_mesh_active(int index);
 
-        MeshObject *get_mesh_obj(int index = -1);
+        MeshObject* get_active_mesh_obj(){return get_mesh_obj(m_active_mesh);}
+        MeshObject *get_mesh_obj(int index);
+
+        bool has_mesh();
 
         const std::unordered_map<int, MeshObject*>& get_mesh_list() { return m_mesh_objects; };
 
@@ -90,26 +94,31 @@ class MeshView;
 
         //   Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /*
+         * Applies rendering mode to mesh with given mesh_id
+         * Prebuild modes are: mesh_phong, mesh_wireframe, mesh_flat, mesh_normal
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_rendering_mode(int mesh_id, std::string mode);
+        /*
+         * Applies rendering mode to the currently active mesh
+         * Prebuild modes are: mesh_phong, mesh_wireframe, mesh_flat, mesh_normal
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_rendering_mode( std::string mode);
 
         /*
-         * Resets all given materials and color values back to the default value
+         * If set to false, the Vos Window will no longer interprete any inputs from Keys or Mouse
+         * Useful for File Dialogues and similar processes in which you do not which the interface to change.
          */
-        void default_all() {};
+        void set_intepret_input(bool interpret_input);
 
         /*
-         * Applies the given material shader to all vertices in array
-         * TODO: Only for Vertices at the moment
+         * Rebinds the given GLFW key
          */
-        void apply_material(OpenVolumeMesh::VertexHandle *vertices_array, std::string material_path) {};
+        void set_keybind_manual(int glfw_key_from, int glfw_key_to);
 
-        /*
-         * Applies given material shader to all elements with given property
-         */
-        void apply_material(std::string property, std::string material_path) {};
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
 
         const std::string& get_loaded_file_name() { return m_loaded_file_path; };
 
@@ -164,7 +173,7 @@ class MeshView;
         // Custom ImGui Methods
 
         static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm",int nbr_of_dialog = 0);
-        FileDialog* get_file_dialog(){return m_file_dialog;}
+
 
         // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -220,8 +229,8 @@ class MeshView;
         v3d *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
 
+        int m_active_mesh = 0;
         std::unordered_map<int, MeshObject*> m_mesh_objects;
-        MeshObject *m_mesh_obj;
 
         MenuBar* get_menu_bar(){return m_menu_bar;}
 

@@ -1,4 +1,5 @@
 
+#include "../input/Input.h"
 #include "FileDialog.h"
 #include "LogWindow.h"
 #include <iostream>
@@ -26,6 +27,7 @@ namespace vOS
                 m_ok_file_loader = true;
                 m_file_path_file_loader = std::string(filePathName);
             }
+            Input::accept_input(true);
             m_instance_file_loader.Close();
         }
 
@@ -42,6 +44,7 @@ namespace vOS
                 m_ok_snapshot_saver = true;
                 m_file_path_snapshot_saver = std::string(filePathName);;
             }
+            Input::accept_input(true);
             LogWindow::getInstance()->addLog("Vor Close");
             m_instance_snapshot_saver.Close();
         }
@@ -49,6 +52,8 @@ namespace vOS
 
     void FileDialog::open(const std::string& extension, int nbr_of_dialog)
     {
+
+        Input::accept_input(false);
         if (!m_is_open_fileloader && nbr_of_dialog == 0)
         {
             m_instance_file_loader.OpenDialog("ChooseOVMFIle", "Choose File", extension.c_str(), ".");

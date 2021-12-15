@@ -38,13 +38,8 @@ namespace vOS
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
-        m_render_data.mesh.color = glm::vec3{1.0f, 1.0f, 1.0f};
 
         // set up the initial camera position, direction and orientation of the mesh
-        glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
-        glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
-        glm::mat4 rotation = glm::mat4(1.0f);
-        m_render_data.mesh.transform = position * rotation * scale;
         m_render_data.camera.world = glm::mat4(1.0f);
         m_render_data.camera.projection = glm::perspective(
                 glm::radians(50.0f),
@@ -124,14 +119,14 @@ namespace vOS
         vMin.y += ImGui::GetWindowPos().y;
         vMax.x += ImGui::GetWindowPos().x;
         vMax.y += ImGui::GetWindowPos().y;
-        glm::vec2 mousePos = {Input::getMouseX(), Input::getMouseY()};
+        glm::vec2 mousePos = {Input::get_mouse_X(), Input::get_mouse_Y()};
 
         if (!ImGui::IsWindowHovered() && !m_arcBallOn)
         {
             return;
         }
 
-        bool isDown = Input::isKeyDown(GLFW_MOUSE_BUTTON_LEFT);
+        bool isDown = Input::mouse_pressed();
 
         // the cursor is inside the mesh viewport, so now we can manipulate the mesh view
         if (mousePos.x > vMin.x && mousePos.x < vMax.x && mousePos.y > vMin.y && mousePos.y < vMax.y)
@@ -151,11 +146,18 @@ namespace vOS
 
             // scroll scaling of the mesh
             float scaleSpeed = 0.1f;
-            glm::mat4 transform = glm::scale(
-                    m_render_data.mesh.transform,
-                    glm::vec3(1.0f + (float) Input::getScrollOffsetY() * scaleSpeed)
-            );
-            m_render_data.mesh.transform = transform;
+
+            for (const auto& m: Window::instance().get_mesh_list())
+            {
+                glm::mat4 transform = glm::scale(
+                        m.second->get_data().transform,
+                        glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
+                );
+
+                auto d = m.second->get_data();
+                d.transform = transform;
+                m.second->set_data(d);
+            }
         }
         m_lastDown = isDown;
 
@@ -183,72 +185,38 @@ namespace vOS
         m_lastY = mousePos.y;
     }
 
-    void MeshView::renderMesh()
+    void MeshView::renderMesh(int mesh_id)
     {
+        // Get Mesh
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        if (obj == nullptr)
+            return;
 
-        if(ImGui::IsKeyPressed(GLFW_KEY_Q))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_W))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(true);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_E))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_normal_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_R))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_tangent_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_T))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_bitangent_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_U))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_flat_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_I))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
+        MeshData mesh_data = obj->get_data();
+
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
+        /* Deprecated
         if(GlobalViewerSettings::getInstance()->m_get_color_activated())
         {
             float* color = GlobalViewerSettings::getInstance()->m_get_current_mesh_rendering_color();
-            m_render_data.mesh.color = glm::vec3{color[0], color[1], color[2]};
-        }
+            obj.color = glm::vec3{color[0], color[1], color[2]};
+        }*/
 
         // we need to clear our framebuffer as well
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data);
+        m_background_pass.render(nullptr, m_render_data, 0);
 
-        if (ImGui::IsKeyPressed(GLFW_KEY_S))
-        {
-            Window::instance().set_mesh_active(0);
-        }
-        if (ImGui::IsKeyPressed(GLFW_KEY_F))
-        {
-            Window::instance().set_mesh_active(1);
-        }
 
         if(!m_zoom)
         {
-            m_zoom_point = Window::instance().get_mesh_obj()->get_mesh_offset();
+            m_zoom_point = obj->get_mesh_offset();
         }
-        m_render_data.mesh.offset = m_zoom_point;
+        mesh_data.offset = m_zoom_point;
+
+        obj->set_data(mesh_data);
 
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -258,11 +226,11 @@ namespace vOS
 
             // render all passes
             if (mesh->get_vao() != nullptr) {
-                m_mesh_pass.render(mesh->get_vao(), m_render_data);
+                m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
+                m_highlight_pass.render(nullptr, m_render_data, m.first);
+                m_shape_pass.render(nullptr, m_render_data, m.first);
             }
         }
-        m_highlight_pass.render(nullptr, m_render_data);
-        m_shape_pass.render(nullptr, m_render_data);
 
         m_meshFrameBuffer->unbind();
     }
@@ -349,13 +317,13 @@ namespace vOS
         for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-            m_selection_pass.render_mesh(mesh, m_render_data);
+            m_selection_pass.render_mesh(mesh, m_render_data, m.first);
+            m_selection_hover_pass.render(nullptr, m_render_data, m.first);
         }
 
         m_selectionFrameBuffer->unbind();
 
         m_meshFrameBuffer->bind();
-        m_selection_hover_pass.render(nullptr, m_render_data);
         m_meshFrameBuffer->unbind();
     }
 
@@ -380,7 +348,7 @@ namespace vOS
                     // there is no valid ID (e.g when clicking background)
                     int face_id = (int) mesh->to_faceID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type, face_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data, type,m.first, face_id);
 
                     OpenVolumeMesh::FaceHandle face(face_id);
                     if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -398,7 +366,7 @@ namespace vOS
                 {
                     int vertex_id = picked_id - from;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type, vertex_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data, type,m.first, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -415,7 +383,7 @@ namespace vOS
                 {
                     int edge_id = (int) mesh->to_edgeID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type, edge_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data, type,m.first, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -449,7 +417,7 @@ namespace vOS
 
         if (!any_mesh_hovered)
         {
-            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(), m_render_data, 0, 0);
+            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(0), m_render_data, 0, 0, 0);
         }
     }
 
@@ -471,7 +439,10 @@ namespace vOS
         // handle the things related to our mesh rendering canvas
         handleResize();
         handleMouseControl();
-        renderMesh();
+        for (const auto& m: Window::instance().get_mesh_list())
+        {
+            renderMesh(m.first);
+        }
         renderSelection();
 
         // store the current top left position, so we can draw text here later on top of our canvas
@@ -505,14 +476,14 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
-        if (Window::instance().get_mesh_obj()->m_mesh != nullptr)
+        if (Window::instance().has_mesh() &&  Window::instance().get_mesh_obj(0)->m_mesh != nullptr)
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj()->m_mesh->n_vertices());
+            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj()->m_mesh->n_edges());
+            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj()->m_mesh->n_faces());
+            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_faces());
         }
 
         ImGui::End();

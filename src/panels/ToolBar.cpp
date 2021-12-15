@@ -199,7 +199,8 @@ namespace vOS
                         };
                 ImGui::Text("Rendering Mode:");
                 ImGui::Combo("  ", &m_rendering_mode, rendering_mode_names, IM_ARRAYSIZE(rendering_mode_names), IM_ARRAYSIZE(rendering_mode_names));
-                GlobalViewerSettings::getInstance()->m_set_current_rendering_mode(m_rendering_mode);
+                // TODO
+                Window::instance().set_mesh_rendering_mode("mesh_phong");
                 ImGui::SameLine();
                 HelpMarkerWithQuestionMark("You can choose between multiple rendering modes for the mesh");
                 

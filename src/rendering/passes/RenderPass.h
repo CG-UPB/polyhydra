@@ -3,7 +3,6 @@
 #include "../gl/VertexArrayObject.h"
 #include "../gl/Shader.h"
 #include "../gl/FrameBufferObject.h"
-
 #include "glm/gtx/transform.hpp"
 
 namespace vOS
@@ -20,16 +19,10 @@ namespace vOS
             glm::vec3 position;
             glm::vec3 color;
         } light;
-        struct Mesh {
-            glm::vec3 offset;
-            glm::mat4 transform;
-            glm::vec3 color;
-            int selection_offset;
-        } mesh;
     };
 
     class RenderPass
     {
-        virtual void render(VertexArrayObject* vao, const RenderData& data) = 0;
+        virtual void render(VertexArrayObject* vao, const RenderData& render_data, int mesh_id) = 0;
     };
 }

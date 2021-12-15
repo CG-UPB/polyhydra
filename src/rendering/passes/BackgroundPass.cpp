@@ -21,7 +21,7 @@ namespace vOS
         delete m_vao;
     }
 
-    void BackgroundPass::render(VertexArrayObject* vao, const RenderData& data)
+    void BackgroundPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
         // rendering a simple gradient for now, may be changed to something more fancy
         glDisable(GL_BLEND);

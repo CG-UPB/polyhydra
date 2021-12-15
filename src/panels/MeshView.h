@@ -12,19 +12,20 @@
 
 namespace vOS
 {
+
     class MeshView: public WindowPanel
     {
     public:
+
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
         void m_take_screenshot(std::string filename);
-
     private:
 
         void handleResize();
         void handleMouseControl();
-        void renderMesh();
+        void renderMesh(int mesh_id);
         void renderSelection();
         void handleSelection(int type, int picked_id);
 

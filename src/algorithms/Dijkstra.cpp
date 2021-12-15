@@ -79,6 +79,28 @@ namespace vOS
         m_reset = true;
     }
 
+    void Dijkstra::start()
+    {
+        bool linear = true;
+
+        if(linear)
+        {
+            // Run Dijkstra linearly
+            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
+            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            Window::instance().run();
+        }else{
+            // Run Dijkstra parallel
+            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_parallel, this));
+            std::cout << " Parallel approach " << std::endl;
+            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            std::thread* vos_thread = new std::thread(&Window::run, &Window::instance());
+
+            parallel_run();
+
+            vos_thread->join();
+        }
+    }
     void Dijkstra::debugging_template_ui_linear()
     {
 
@@ -130,7 +152,7 @@ namespace vOS
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
                 Window::instance().set_mesh(&m_mesh, mesh_count++);
-
+                Window::instance().set_intepret_input(true);
                 linear_run();
                 m_open_file = false;
             }
@@ -139,26 +161,6 @@ namespace vOS
         ImGui::End();
     }
 
-    void Dijkstra::start()
-    {
-        bool linear = true;
-
-        if(linear)
-        {
-            // Run Dijkstra linearly
-            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
-            Window::instance().run();
-        }else{
-            // Run Dijkstra parallel
-            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_parallel, this));
-            std::cout << " Parallel approach " << std::endl;
-            std::thread* vos_thread = new std::thread(&Window::run, &Window::instance());
-
-            parallel_run();
-
-            vos_thread->join();
-        }
-    }
 
     void Dijkstra::linear_run()
     {
@@ -167,10 +169,10 @@ namespace vOS
         Window& window = Window::instance();
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.get_mesh_obj()->remove_highlights();
         window.remove_all_vertex_highlights();
         init();
 
+        window.get_mesh_obj(0);
         Node currentVertex = std::make_pair(0.0f, m_start);
         std::priority_queue<Node, std::vector<Node>, std::greater<Node>> queue;
         std::vector<float> distances(m_mesh.n_vertices(), std::numeric_limits<float>::max());
@@ -204,7 +206,7 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
+                window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -331,7 +333,6 @@ namespace vOS
             std::string path;
             if (Window::instance().ShowFileDialog(path))
             {
-
                 m_open_file = false;
             }
         }
@@ -394,7 +395,7 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
+                window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -439,7 +440,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj()->remove_highlights();
+            window.get_mesh_obj(0)->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)

@@ -3,6 +3,7 @@
 #include "glad/glad.h"
 
 #include "ShapePass.h"
+#include "../../Window.h"
 
 namespace vOS
 {
@@ -16,10 +17,15 @@ namespace vOS
         }
     }
 
-    void ShapePass::render(VertexArrayObject* vao, const RenderData& data)
+    void ShapePass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
-        glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
-        glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
+        // Get Mesh
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        if (obj == nullptr)
+            return;
+
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
 
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);

@@ -123,7 +123,12 @@ namespace vOS
         auto shader = s_shaders.find(shader_name);
         if (shader == s_shaders.end())
         {
-            throw std::invalid_argument("Could not find shader: " + shader_name);
+            // Load Shaders again
+            load_all();
+
+            shader = s_shaders.find(shader_name);
+            if (shader == s_shaders.end())
+                throw std::invalid_argument("Could not find shader: " + shader_name);
         }
         return s_shaders[shader_name];
     }

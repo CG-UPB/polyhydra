@@ -11,7 +11,7 @@ namespace vOS
         HighlightPass();
         ~HighlightPass();
 
-        void render(VertexArrayObject* vao, const RenderData& data) override;
+        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
 
     private:
 

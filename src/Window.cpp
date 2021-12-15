@@ -60,7 +60,6 @@ namespace vOS
     void Window::open() {
         m_window_open = true;
         m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
-        m_mesh_obj = new MeshObject();
 
         // Create default UI Panels
         initPanels();
@@ -177,13 +176,44 @@ namespace vOS
 
     // Setter Methods (Programmer to Vos) /////////////////////////////////////////////////////////
 
+    void Window::set_keybind_manual(int glfw_key_from, int glfw_key_to) {
+        rendering_mutex.lock();
+        Input::set_keybind(glfw_key_from, glfw_key_to);
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_intepret_input(bool interpret) {
+        rendering_mutex.lock();
+        Input::accept_input(interpret);
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_mesh_rendering_mode(std::string mode) {
+        set_mesh_rendering_mode(0, mode);
+    }
+
+    void Window::set_mesh_rendering_mode(int mesh_id, std::string mode) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.rendering_mode = mode;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
     void Window::set_custom_imgui(void_callback vc) {
         rendering_mutex.lock();
         m_temporary_new_custom_ui_function = vc;
         m_new_custom_ui_function_set = true;
         rendering_mutex.unlock();
     }
-    void Window::highlight_vertex(OpenVolumeMesh::VertexHandle v_h, Color color)
+    void Window::highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, Color color)
     {
         //static int i;
         rendering_mutex.lock();
@@ -191,20 +221,22 @@ namespace vOS
 
         Highlight highlight(color, v_h);
 
-        m_mesh_obj->add_highlight(highlight);
+        if(get_mesh_obj(mesh_id) != nullptr)
+            get_mesh_obj(mesh_id)->add_highlight(highlight);
 
         rendering_mutex.unlock();
     }
-    void Window::highlight_vertex(OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha)
+    void Window::highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha)
     {
         Color color(red,green,blue,alpha);
-        highlight_vertex(v_h, color);
+        highlight_vertex(mesh_id, v_h, color);
     }
 
-    void Window::remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h) {
+    void Window::remove_vertex_highlight(int mesh_id, OpenVolumeMesh::VertexHandle v_h) {
         rendering_mutex.lock();
 
-        m_mesh_obj->remove_highlight((v_h));
+        if(get_mesh_obj(mesh_id) != nullptr)
+            get_mesh_obj(mesh_id)->remove_highlight((v_h));
 
         rendering_mutex.unlock();
     }
@@ -214,6 +246,8 @@ namespace vOS
         //rendering_mutex.lock();
         auto* mesh_obj = new MeshObject();
         mesh_obj->set_mesh(mesh);
+        mesh_obj->set_data(MeshData());
+        std::cout << "Adding mesh with id " << index << std::endl;
 
         // check if index of mesh already exist: yes -> replace it, no -> just insert it
         auto search = m_mesh_objects.find(index);
@@ -244,7 +278,7 @@ namespace vOS
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
         {
-            m_mesh_obj = search->second;
+            m_active_mesh = index;
         }
     }
 
@@ -256,16 +290,18 @@ namespace vOS
         }
         else
         {
-            return m_mesh_obj;
+            //std::cout << "Could not find mesh object with index " << index << std::endl;
+            return nullptr;
         }
     }
 
     void Window::remove_all_vertex_highlights(){
-        // Greedy Approach
-
         rendering_mutex.lock();
 
-        m_mesh_obj->remove_highlights();
+        for (auto it = m_mesh_objects.begin(); it != m_mesh_objects.end(); it++)
+        {
+            it->second->remove_highlights();
+        }
         rendering_mutex.unlock();
     }
 
@@ -275,6 +311,7 @@ namespace vOS
 
     bool Window::ShowFileDialog(std::string& path, const std::string& extension, int nbr_of_dialog)
     {
+
         instance().m_file_dialog->open(extension, nbr_of_dialog);
         if (nbr_of_dialog == 0)
         {
@@ -317,6 +354,10 @@ namespace vOS
 
         // Command Queue Approach
         return shape_id;
+    }
+
+    bool Window::has_mesh() {
+        return !m_mesh_objects.empty();
     }
     bool Window::is_ready()
     {

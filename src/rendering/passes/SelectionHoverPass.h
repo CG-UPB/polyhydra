@@ -12,22 +12,22 @@ namespace vOS
         SelectionHoverPass();
         ~SelectionHoverPass();
 
-        void render(VertexArrayObject* vao, const RenderData& data) override;
+        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
 
-        void select(MeshObject& mesh, const RenderData& data, int type, int id);
+        void select(MeshObject& mesh, const RenderData& data, int mesh_id, int type, int id);
 
         glm::vec3 m_zoom_point;
 
     private:
 
-        struct MeshData
+        struct SelectionMeshData
         {
             std::vector<float> vertices;
             std::vector<unsigned int> indices;
         };
 
-        MeshData get_face_mesh_data(MeshObject& mesh, int face_id);
-        MeshData get_edge_mesh_data(MeshObject& mesh, const RenderData& data, int edge_id);
+        SelectionMeshData get_face_mesh_data(MeshObject& mesh, int face_id);
+        SelectionMeshData get_edge_mesh_data(MeshObject& mesh, const RenderData& data, int mesh_id, int edge_id);
         void add_vertex(const glm::vec3& vertex, std::vector<float>& vertices);
 
         static const int SELECTION_TYPE_NONE = 0;

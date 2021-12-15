@@ -1,15 +1,29 @@
 
 #include "glad/glad.h"
-
+#include "../../Window.h"
 #include "MeshPass.h"
 
 namespace vOS
 {
-    MeshPass::MeshPass(): m_mesh_shader(Shader::mesh_phong_shader())
-    {}
 
-    void MeshPass::render(VertexArrayObject* vao, const RenderData& data)
+
+    void MeshPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
+        // Get Mesh
+        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
+        if(obj == nullptr)
+            return;
+
+        // Activate Wireframe mode if desired
+        std::string rendering_mode = obj->get_data().rendering_mode;
+        bool render_in_wireframe_mode = false;
+        if(rendering_mode == "mesh_wireframe") {
+            rendering_mode = "mesh_phong";
+            render_in_wireframe_mode = true;
+        }
+
+
+
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
@@ -17,7 +31,7 @@ namespace vOS
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
 
-        if (m_render_wireframe)
+        if (render_in_wireframe_mode)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glEnable(GL_LINE_SMOOTH);
@@ -29,10 +43,14 @@ namespace vOS
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
+
+        auto m_mesh_shader = Shader::get(rendering_mode);
+
         m_mesh_shader->bind();
 
-        glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
-        glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
+
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
 
         // set all of our uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
@@ -41,35 +59,16 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_lightPos", data.light.position);
         m_mesh_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
-        m_mesh_shader->set_uniform_vec3f("u_objectColor", data.mesh.color);
+        m_mesh_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get());
 
         vao->draw();
 
         m_mesh_shader->unbind();
 
-        if (m_render_wireframe)
+        if (render_in_wireframe_mode)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     }
 
-    void MeshPass::set_wireframe_mode(bool mode)
-    {
-        m_render_wireframe = mode;
-    }
-
-    bool MeshPass::get_wireframe_mode() const
-    {
-        return m_render_wireframe;
-    }
-
-    void MeshPass::set_use_phong(bool use)
-    {
-        m_use_phong = use;
-    }
-
-    bool MeshPass::get_use_phong() const
-    {
-        return m_use_phong;
-    }
 }
