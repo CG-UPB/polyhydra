@@ -22,6 +22,8 @@ namespace vOS
         static ToolBar* getInstance();
         void show() override;
 
+        //void setSelectedMeshes(std::vector<bool> sel){m_selected_meshs = sel};
+
     private:
         ToolBar();
 

@@ -30,7 +30,8 @@ namespace vOS
 
     }
 
-    ToolBar::ToolBar() {}
+    ToolBar::ToolBar() {
+    }
 
     // Destruktor
     ToolBar::~ToolBar()
@@ -68,6 +69,7 @@ namespace vOS
 
         ImGui::InputInt("Active Mesh", &m_active_mesh);
         GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+        GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
 
 
 
@@ -201,7 +203,56 @@ namespace vOS
         {
             if (ImGui::BeginTable("split", 1))
             {
+                // Decision on which mesh(es), the actual values should be used
+                // Idea: iterate over meshes, for each mesh create an Selectable, which is represented by a bool. In Meshview: For each Mesh: check if bool is true -> change Color etc.
                 ImGui::TableNextColumn();
+                ImGui::Text("   ");ImGui::SameLine();
+                if (ImGui::CollapsingHeader("Mesh-Selection"))
+                {
+                    std::vector<bool> arr= GlobalViewerSettings::getInstance()->get_test();
+                    bool selected_mesh[arr.size()];
+                    for (size_t i = 0; i < arr.size(); i++)
+                    {
+                        LogWindow::getInstance()->addLog("Hier:");
+                        LogWindow::getInstance()->addLog(std::to_string(arr[i]));
+                        selected_mesh[i] = arr[i];
+                    }
+                    
+                    for (size_t i = 0; i < GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes(); i++)
+                    {
+                        const char* label = ("Mesh " + std::to_string(i+1)).c_str();
+                        ImGui::Text("   ");ImGui::SameLine();
+                        ImGui::Selectable(label,&selected_mesh[i]);
+                        LogWindow::getInstance()->addLog("Hier2:");
+                        LogWindow::getInstance()->addLog(std::to_string(selected_mesh[i]));
+                    }
+
+                    
+                    std::vector<bool> newArr(GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes());
+                    newArr.clear();
+                    for (size_t i = 0; i < GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes(); i++)
+                    {
+                        newArr[i] = selected_mesh[i];
+                    }
+                    
+                    GlobalViewerSettings::getInstance()->m_set_test(newArr);
+                }
+                
+/*
+                if (ImGui::BeginPopup("Mesh-Selection"))
+                {
+                    for (size_t i = 0; i < m_nbr_meshes; i++)
+                    {
+                        const char* label = ("Mesh " + std::to_string(i)).c_str();
+                        ImGui::Selectable(label,&m_selected_mesh[i]);
+                    }
+                    ImGui::EndPopup();
+                }
+                if (ImGui::Button("Mesh-Selcetion"))
+                    ImGui::OpenPopup("Mesh-Selection");
+                
+*/
+                
                 ImGui::Text("Color:");
                 ImGui::Checkbox("", &m_color_activated);
                 ImGui::SameLine();

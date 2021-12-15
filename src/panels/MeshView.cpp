@@ -263,8 +263,12 @@ namespace vOS
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data);
 
-        Window::instance().set_mesh_active(GlobalViewerSettings::getInstance()->m_get_current_active_mesh());
 
+        if(GlobalViewerSettings::getInstance()->m_get_current_new_active_mesh())
+        {
+            Window::instance().set_mesh_active(GlobalViewerSettings::getInstance()->m_get_current_active_mesh());
+            GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(false);
+        }
 /*
         if (ImGui::IsKeyPressed(GLFW_KEY_S))
         {
@@ -277,8 +281,8 @@ namespace vOS
         if (ImGui::IsKeyPressed(GLFW_KEY_T))
         {
             Window::instance().set_mesh_active(2);
-        }
-*/
+        }*/
+
         if(!m_zoom)
         {
             m_zoom_point = Window::instance().get_mesh_obj()->get_mesh_offset();

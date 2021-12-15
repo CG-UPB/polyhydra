@@ -9,6 +9,7 @@
 #include <string>
 #include "../Window.h"
 #include "../rendering/meshes/CommonMeshes.h"
+#include "../settings/GlobalViewerSettings.h"
 
 namespace vOS
 {
@@ -38,6 +39,7 @@ namespace vOS
 
         remove_highlights();
         m_should_update = true;
+        
     }
 
     void MeshObject::write_to_file(const std::string& file_path) const
@@ -60,6 +62,7 @@ namespace vOS
 
         remove_highlights();
         m_should_update = true;
+        GlobalViewerSettings::getInstance()->m_new_Mesh();
     }
 
     void MeshObject::update_vertex_buffer()

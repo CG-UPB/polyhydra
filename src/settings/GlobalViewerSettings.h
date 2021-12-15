@@ -11,6 +11,9 @@ namespace vOS
         ~GlobalViewerSettings();
         static GlobalViewerSettings* getInstance();
 
+        void m_new_Mesh();
+
+
         void m_set_take_snapshot(bool snap){m_take_snapshot = snap;};
         void m_set_actual_snapshot_filename(std::string name){m_actual_snapshot_filename = name;};
         void m_set_current_selection_mode(int mode){m_current_selection_mode = mode;};
@@ -21,7 +24,12 @@ namespace vOS
         void m_set_current_separation_type(int separation_type){m_separation_type = separation_type;};
         void m_set_current_lighting_type(int lighting_type){m_lighting_type = lighting_type;};
         void m_set_current_rendering_mode(int rend_mode){m_rendering_mode = rend_mode;};
+        void m_set_current_new_active_mesh(bool new_active){m_new_active_mesh = new_active;};
         void m_set_current_active_mesh(int active_mesh){m_active_mesh = active_mesh;};
+        //void m_set_current_selected_mesh(bool sel[]){m_selected_mesh = sel;};
+        void m_set_current_nbr_meshes(int nbr_meshes){m_nbr_meshes = nbr_meshes;};
+
+        void m_set_test(std::vector<bool> sel){m_sel = sel;};
 
 
         bool m_get_take_snapshot(){return m_take_snapshot;};
@@ -35,7 +43,12 @@ namespace vOS
         int m_get_current_separation_type(){return m_separation_type;};
         int m_get_current_lighting_type(){return m_lighting_type;};
         int m_get_current_rendering_mode(){return m_rendering_mode;};
+        bool m_get_current_new_active_mesh(){return m_new_active_mesh;}
         int m_get_current_active_mesh(){return m_active_mesh;};
+        //bool* m_get_current_selected_mesh(){return m_selected_mesh;};
+        int m_get_current_nbr_meeshes(){return m_nbr_meshes;};
+
+        std::vector<bool> get_test(){return m_sel;};
 
     private:
         GlobalViewerSettings();
@@ -52,7 +65,14 @@ namespace vOS
         int m_separation_type = 2;
         int m_lighting_type = 3;
         int m_rendering_mode = 1;
+
+        bool m_new_active_mesh = false;
         int m_active_mesh = 0;
+
+        bool m_selected_mesh[1] = {true};
+        int m_nbr_meshes = 0;
+    
+        std::vector<bool> m_sel;
     };
 
 }

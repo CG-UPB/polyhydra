@@ -23,4 +23,18 @@ namespace vOS
     }
 
     GlobalViewerSettings::GlobalViewerSettings() {};
+
+    void GlobalViewerSettings::m_new_Mesh()
+    {
+        /*bool new_selected_meshes[m_nbr_meshes+1];
+        for (size_t i = 0; i < m_nbr_meshes; i++)
+        {
+            new_selected_meshes[i] = m_selected_mesh[i];
+        }
+        new_selected_meshes[m_nbr_meshes] = false;
+*/
+        m_sel.push_back(false);
+        m_nbr_meshes++;
+        
+    }
 }
