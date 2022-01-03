@@ -13,6 +13,7 @@ namespace vOS
 
         ~ShapePass();
 
+        static void remove_shape(unsigned int id);
         static void add_shape(Shape* shape);
         [[nodiscard]] static const Shape& get_shape(unsigned int shape_id);
 

@@ -181,6 +181,15 @@ class MeshView;
          * 3 : Cell
          */
         void select_element(int mesh, int element_handle_id, int element_type);
+        /*
+         * Unselects a given element (Face, Vertex, Edge) from given mesh
+         * Element Types are:
+         * 0 : Face
+         * 1 : Vertex
+         * 2 : Edge
+         * 3 : Cell
+         */
+        void unselect_element(int mesh, int element_handle_id, int element_type);
 
         // Called when a number of vertices have been selected
         vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
@@ -202,6 +211,7 @@ class MeshView;
         ~Window();
 
         friend class MeshView;
+        friend class MeshObject;
 
         // Debugging //////////////////////////////////////////////////////////////////////////////////////////////////
         bool m_pause_toggled = false;
@@ -222,6 +232,7 @@ class MeshView;
         // Mutex and thread safety
         /// Set to guard GL when reading from and rendering our mesh
         std::mutex rendering_mutex;
+
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 

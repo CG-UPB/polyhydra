@@ -15,8 +15,6 @@
 #include "glm/gtx/vec_swizzle.hpp"
 
 #include "../mesh/MeshObject.h"
-#include "../rendering/shapes/Sphere.h"
-#include "../rendering/shapes/Cylinder.h"
 
 #include "../util/BitMap.h"
 
@@ -416,48 +414,6 @@ namespace vOS
         }
     }
 
-    void MeshView::select_face(int mesh, int id){
-
-        auto mesh_obj = Window::instance().get_mesh_obj(mesh);
-
-        OpenVolumeMesh::FaceHandle face(id);
-
-        auto pick_pos = mesh_obj->m_mesh->barycenter(face);
-        auto* shape = new Cylinder();
-        shape->set_scale(0.02f, 0.02f, 0.02f);
-        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-        shape->set_base_color(1.0f, 0.0f, 0.0f);
-        ShapePass::add_shape(shape);
-    }
-
-    void MeshView::select_vertex(int mesh, int id){
-
-        auto mesh_obj = Window::instance().get_mesh_obj(mesh);
-
-        OpenVolumeMesh::VertexHandle vertex(id);
-
-        auto pick_pos = mesh_obj->m_mesh->vertex(vertex);
-        auto* shape = new Sphere();
-        shape->set_scale(0.02f, 0.02f, 0.02f);
-        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-        shape->set_base_color(0.0f, 1.0f, 0.0f);
-        ShapePass::add_shape(shape);
-    }
-    void MeshView::select_edge(int mesh, int id){
-
-        auto mesh_obj = Window::instance().get_mesh_obj(mesh);
-
-        OpenVolumeMesh::EdgeHandle edge(id);
-        auto vertices = mesh_obj->m_mesh->edge_vertices(edge);
-        auto v0 = mesh_obj->m_mesh->vertex(vertices[0]);
-        auto v1 = mesh_obj->m_mesh->vertex(vertices[1]);
-        auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
-        auto* shape = new Box();
-        shape->set_scale(0.02f, 0.02f, 0.02f);
-        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-        shape->set_base_color(0.0f, 0.0f, 1.0f);
-        ShapePass::add_shape(shape);
-    }
 
     void MeshView::show()
     {

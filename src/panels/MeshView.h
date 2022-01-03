@@ -21,9 +21,6 @@ namespace vOS
         ~MeshView() override;
         void show() override;
         void m_take_screenshot(std::string filename);
-        void select_face(int mesh, int id);
-        void select_vertex(int mesh, int id);
-        void select_edge(int mesh, int id);
 
     private:
 

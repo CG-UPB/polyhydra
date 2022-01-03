@@ -2,6 +2,7 @@
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
 #include <vector>
 #include <map>
+#include <unordered_set>
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 
@@ -57,6 +58,15 @@ namespace vOS
 
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
+        // Selection Functionality
+        std::unordered_set<int> get_all_selected_faces(){return m_selected_faces;}
+        std::unordered_set<int> get_all_selected_vertices(){return m_selected_vertices;}
+        std::unordered_set<int> get_all_selected_edges(){return m_selected_edges;}
+        std::unordered_set<int> get_all_selected_cells(){return m_selected_cells;}
+        void select_element(int id, int type);
+        void unselect_element(int id, int type);
+        bool element_is_selected(int id, int type);
+
         void load_from_file(std::string file_path);
         void write_to_file(const std::string& file_path) const;
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
@@ -111,6 +121,11 @@ namespace vOS
         std::vector<float> m_face_colors;
         std::vector<float> m_vertex_normals;
         std::vector<float> m_face_normals;
+        std::unordered_set<int> m_selected_faces;
+        std::unordered_set<int> m_selected_vertices;
+        std::unordered_set<int> m_selected_edges;
+        std::unordered_set<int> m_selected_cells;
+        std::map<int, int> m_created_shapes;
 
         std::map<OpenVolumeMesh::VertexHandle, Highlight> highlight_map;
         std::vector<unsigned int> m_face_ids;

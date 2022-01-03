@@ -61,6 +61,19 @@ namespace vOS
         s_shapes.push_back(shape);
     }
 
+    void ShapePass::remove_shape(unsigned int id){
+        int entry = 0;
+        for(int i = 0; i < s_shapes.size(); i++){
+            if(s_shapes[i]->get_id() == id)
+                break;
+            entry++;
+        }
+        if(entry != s_shapes.size()){
+            // Found the shape
+            s_shapes.erase(s_shapes.begin()+entry);
+        }
+    }
+
     const Shape& ShapePass::get_shape(unsigned int shape_id)
     {
         if (shape_id < 0 || shape_id >= s_shapes.size())

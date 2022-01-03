@@ -179,17 +179,11 @@ namespace vOS
     void Window::select_element(int mesh_id, int element_handle_id, int element_type)
     {
         rendering_mutex.lock();
+        auto mesh = get_mesh_obj(mesh_id);
 
-        if(element_type == 0)
-            m_mesh_view->select_face(mesh_id, element_handle_id);
-        else if(element_type == 1)
-            m_mesh_view->select_vertex(mesh_id, element_handle_id);
-        else if(element_type == 2)
-            m_mesh_view->select_edge(mesh_id, element_handle_id);
-
+        if(mesh != nullptr)
+            mesh->select_element(mesh_id, element_type);
         rendering_mutex.unlock();
-
-        std::cout << element_handle_id << std::endl;
 
         // Call the Selection Callback Function
         if(element_type == 0){
@@ -200,6 +194,29 @@ namespace vOS
             m_on_edge_selection(mesh_id,element_handle_id, true);
         }else
             m_on_cell_selection(mesh_id,element_handle_id, true);
+
+    }
+
+    void Window::unselect_element(int mesh_id, int element_handle_id, int element_type)
+    {
+        rendering_mutex.lock();
+
+        auto mesh = get_mesh_obj(mesh_id);
+
+        if(mesh != nullptr)
+            mesh->unselect_element(mesh_id, element_type);
+
+        rendering_mutex.unlock();
+
+        // Call the Selection Callback Function
+        if(element_type == 0){
+            m_on_face_selection(mesh_id,element_handle_id, false);
+        }else if(element_type == 1){
+            m_on_vertex_selection(mesh_id,element_handle_id, false);
+        }else if(element_type == 2){
+            m_on_edge_selection(mesh_id,element_handle_id, false);
+        }else
+            m_on_cell_selection(mesh_id,element_handle_id, false);
 
     }
 
@@ -332,9 +349,6 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::remove_shape(unsigned int id){
-        // TODO: No method available for this yet
-    }
 
     bool Window::ShowFileDialog(std::string& path, const std::string& extension, int nbr_of_dialog)
     {
@@ -359,8 +373,12 @@ namespace vOS
         }
 
     }
-    // Read Methods ///////////////////////////////////////////////////////////////////////////////
 
+    void Window::remove_shape(unsigned int id){
+        rendering_mutex.lock();
+        ShapePass::remove_shape(id);
+        rendering_mutex.unlock();
+    }
     unsigned int Window::add_shape(Shape* shape)
     {
         // TODO Add good exception handling
@@ -382,6 +400,8 @@ namespace vOS
         // Command Queue Approach
         return shape_id;
     }
+    // Read Methods ///////////////////////////////////////////////////////////////////////////////
+
 
     bool Window::has_mesh() {
         return !m_mesh_objects.empty();

@@ -9,6 +9,8 @@
 #include <string>
 #include "../Window.h"
 #include "../rendering/meshes/CommonMeshes.h"
+#include "../rendering/shapes/Sphere.h"
+#include "../rendering/shapes/Cylinder.h"
 
 namespace vOS
 {
@@ -38,6 +40,115 @@ namespace vOS
 
         remove_highlights();
         m_should_update = true;
+    }
+
+    void MeshObject::select_element(int id, int type){
+        // We can't select an element twice
+        bool already_selected = element_is_selected(id,type);
+        if(already_selected)
+            return;
+
+        int shape_key = type * 114748364 + id;
+
+        if(type == 0) {
+            m_selected_faces.insert(id);
+
+            // Add Shape
+
+            OpenVolumeMesh::FaceHandle face(id);
+
+            auto pick_pos = m_mesh->barycenter(face);
+            auto* shape = new Cylinder();
+            shape->set_scale(0.02f, 0.02f, 0.02f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(1.0f, 0.0f, 0.0f);
+
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
+
+            m_created_shapes.insert({0,1});
+        }else if(type == 1) {
+            m_selected_vertices.insert(id);
+
+            // Add Shape
+
+            OpenVolumeMesh::VertexHandle vertex(id);
+
+            auto pick_pos = m_mesh->vertex(vertex);
+            auto* shape = new Sphere();
+            shape->set_scale(0.02f, 0.02f, 0.02f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(0.0f, 1.0f, 0.0f);
+
+            // There a guaranteed Mutex Guard around this method
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
+
+            m_created_shapes.insert({shape_key, shape_id});
+        }else if(type == 2){
+            m_selected_edges.insert(id);
+
+            // Add Shape
+
+            OpenVolumeMesh::EdgeHandle edge(id);
+            auto vertices = m_mesh->edge_vertices(edge);
+            auto v0 = m_mesh->vertex(vertices[0]);
+            auto v1 = m_mesh->vertex(vertices[1]);
+            auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
+            auto* shape = new Box();
+            shape->set_scale(0.02f, 0.02f, 0.02f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(0.0f, 0.0f, 1.0f);
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
+
+            m_created_shapes.insert({shape_key, shape_id});
+        }else {
+            m_selected_cells.insert(id);
+
+        }
+    }
+    void MeshObject::unselect_element(int id, int type){
+        // Element must be selected to be unselectable
+        bool is_selected = element_is_selected(id,type);
+        if(!is_selected)
+            return;
+
+        if(type == 0) {
+            auto entry = m_selected_faces.find(id);
+            m_selected_faces.erase(entry);
+        }else if(type == 1) {
+            auto entry = m_selected_vertices.find(id);
+            m_selected_vertices.erase(entry);
+        }else if(type == 2) {
+            auto entry = m_selected_edges.find(id);
+            m_selected_edges.erase(entry);
+        }else {
+            auto entry =  m_selected_cells.find(id);
+            m_selected_cells.erase(entry);
+        }
+
+        // Delete Shape Element
+        int shape_key = type * 114748364 + id;
+        int shape_id = m_created_shapes[shape_key];
+
+        Window::instance().rendering_mutex.unlock();
+        Window::instance().remove_shape(shape_id);
+        Window::instance().rendering_mutex.lock();
+    }
+    bool MeshObject::element_is_selected(int id, int type){
+
+        if(type == 0)
+            return m_selected_faces.find(id) != m_selected_faces.end();
+        else if(type == 1)
+            return m_selected_vertices.find(id) != m_selected_vertices.end();
+        else if(type == 2)
+            return m_selected_edges.find(id) != m_selected_edges.end();
+        else
+            return m_selected_cells.find(id) != m_selected_cells.end();
     }
 
     void MeshObject::write_to_file(const std::string& file_path) const
