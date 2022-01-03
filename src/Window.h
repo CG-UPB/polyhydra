@@ -57,12 +57,10 @@ class MeshView;
         // Renamed Classes for convenience
         using v3d = OpenVolumeMesh::GeometricPolyhedralMeshV3d;
 
-        typedef std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool> operation_set_highlight;
-        typedef std::tuple<Shape*, unsigned int, bool> operation_shape;
-        typedef std::function<void(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode)> vertex_selection_callback;
-        typedef std::function<void(OpenVolumeMesh::EdgeHandle* edges_array, int length, Selection_Mode selection_mode)> edge_selection_callback;
-        typedef std::function<void(OpenVolumeMesh::FaceHandle* faces_array, int length, Selection_Mode selection_mode)> face_selection_callback;
-        typedef std::function<void(OpenVolumeMesh::CellHandle* cells_array, int length, Selection_Mode selection_mode)> cell_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> vertex_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> edge_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> face_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> cell_selection_callback;
 
         //typedef std::function<void(double x, double y, double z, Translation_Mode translation_mode)> operation_translation_callback;
         //typedef std::function<void(Rendering_Mode rendering_mode)> operation_rendering_callback;
@@ -174,8 +172,15 @@ class MeshView;
 
         static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm",int nbr_of_dialog = 0);
 
-
-        // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
+        /*
+         * Selects a given element (Face, Vertex, Edge) from given mesh
+         * Element Types are:
+         * 0 : Face
+         * 1 : Vertex
+         * 2 : Edge
+         * 3 : Cell
+         */
+        void select_element(int mesh, int element_handle_id, int element_type);
 
         // Called when a number of vertices have been selected
         vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
@@ -195,6 +200,8 @@ class MeshView;
         Window();
 
         ~Window();
+
+        friend class MeshView;
 
         // Debugging //////////////////////////////////////////////////////////////////////////////////////////////////
         bool m_pause_toggled = false;
@@ -251,17 +258,13 @@ class MeshView;
         /// Default Empty Callback Function
         static void default_callback_function(){};
 
-        static void default_vertex_selection_function(OpenVolumeMesh::VertexHandle *vertices_array, int length,
-                                                      Selection_Mode selection_mode) {};
+        static void default_vertex_selection_function(int mesh, int id, bool selected) {};
 
-        static void default_edge_selection_function(OpenVolumeMesh::EdgeHandle *edge_array, int length,
-                                                    Selection_Mode selection_mode) {};
+        static void default_edge_selection_function(int mesh,int id, bool selected) {};
 
-        static void default_face_selection_function(OpenVolumeMesh::FaceHandle *face_array, int length,
-                                                    Selection_Mode selection_mode) {};
+        static void default_face_selection_function(int mesh,int id, bool selected) {};
 
-        static void default_cell_selection_function(OpenVolumeMesh::CellHandle *cell_array, int length,
-                                                    Selection_Mode selection_mode) {};
+        static void default_cell_selection_function(int mesh,int id, bool selected) {};
 
         static void
         default_translate_operation_function(double x, double y, double z, Translation_Mode translation_mode) {};

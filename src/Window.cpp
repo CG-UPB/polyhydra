@@ -176,6 +176,33 @@ namespace vOS
 
     // Setter Methods (Programmer to Vos) /////////////////////////////////////////////////////////
 
+    void Window::select_element(int mesh_id, int element_handle_id, int element_type)
+    {
+        rendering_mutex.lock();
+
+        if(element_type == 0)
+            m_mesh_view->select_face(mesh_id, element_handle_id);
+        else if(element_type == 1)
+            m_mesh_view->select_vertex(mesh_id, element_handle_id);
+        else if(element_type == 2)
+            m_mesh_view->select_edge(mesh_id, element_handle_id);
+
+        rendering_mutex.unlock();
+
+        std::cout << element_handle_id << std::endl;
+
+        // Call the Selection Callback Function
+        if(element_type == 0){
+            m_on_face_selection(mesh_id,element_handle_id, true);
+        }else if(element_type == 1){
+            m_on_vertex_selection(mesh_id,element_handle_id, true);
+        }else if(element_type == 2){
+            m_on_edge_selection(mesh_id,element_handle_id, true);
+        }else
+            m_on_cell_selection(mesh_id,element_handle_id, true);
+
+    }
+
     void Window::set_keybind_manual(int glfw_key_from, int glfw_key_to) {
         rendering_mutex.lock();
         Input::set_keybind(glfw_key_from, glfw_key_to);

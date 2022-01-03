@@ -305,7 +305,8 @@ namespace vOS
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
             }
-            handleSelection(type, id);
+
+            querySelection(type,id);
         }
 
         m_pixel_buffer->finish_read();
@@ -327,7 +328,7 @@ namespace vOS
         m_meshFrameBuffer->unbind();
     }
 
-    void MeshView::handleSelection(int type, int picked_id)
+    void MeshView::querySelection(int type, int picked_id)
     {
         // evaluate which in which mesh the color was selected
         bool any_mesh_hovered = false;
@@ -348,55 +349,49 @@ namespace vOS
                     // there is no valid ID (e.g when clicking background)
                     int face_id = (int) mesh->to_faceID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type,m.first, face_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
 
                     OpenVolumeMesh::FaceHandle face(face_id);
                     if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-
-                        auto pick_pos = mesh->m_mesh->barycenter(face);
-                        auto* shape = new Cylinder();
-                        shape->set_scale(0.02f, 0.02f, 0.02f);
-                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                        shape->set_base_color(1.0f, 0.0f, 0.0f);
-                        ShapePass::add_shape(shape);
+                        // Select element via Window class, to activate Callback function
+                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().select_element(m.first, face_id, type);
+                        Window::instance().rendering_mutex.lock();
                     }
+
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
                 {
                     int vertex_id = picked_id - from;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type,m.first, vertex_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        auto pick_pos = mesh->m_mesh->vertex(vertex);
-                        auto* shape = new Sphere();
-                        shape->set_scale(0.02f, 0.02f, 0.02f);
-                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                        shape->set_base_color(0.0f, 1.0f, 0.0f);
-                        ShapePass::add_shape(shape);
+                        // Select element via Window class, to activate Callback function
+                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().select_element(m.first, vertex_id, type);
+                        Window::instance().rendering_mutex.lock();
                     }
                 }
                 else if (type == SELECTION_TYPE_EDGE)
                 {
                     int edge_id = (int) mesh->to_edgeID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type,m.first, edge_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        auto vertices = mesh->m_mesh->edge_vertices(edge);
-                        auto v0 = mesh->m_mesh->vertex(vertices[0]);
-                        auto v1 = mesh->m_mesh->vertex(vertices[1]);
-                        auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
-                        auto* shape = new Box();
-                        shape->set_scale(0.02f, 0.02f, 0.02f);
-                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                        shape->set_base_color(0.0f, 0.0f, 1.0f);
-                        ShapePass::add_shape(shape);
+                        // Select element via Window class, to activate Callback function
+                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().select_element(m.first, edge_id, type);
+                        Window::instance().rendering_mutex.lock();
                     }
                 }
 
@@ -419,6 +414,49 @@ namespace vOS
         {
             m_selection_hover_pass.select(*Window::instance().get_mesh_obj(0), m_render_data, 0, 0, 0);
         }
+    }
+
+    void MeshView::select_face(int mesh, int id){
+
+        auto mesh_obj = Window::instance().get_mesh_obj(mesh);
+
+        OpenVolumeMesh::FaceHandle face(id);
+
+        auto pick_pos = mesh_obj->m_mesh->barycenter(face);
+        auto* shape = new Cylinder();
+        shape->set_scale(0.02f, 0.02f, 0.02f);
+        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+        shape->set_base_color(1.0f, 0.0f, 0.0f);
+        ShapePass::add_shape(shape);
+    }
+
+    void MeshView::select_vertex(int mesh, int id){
+
+        auto mesh_obj = Window::instance().get_mesh_obj(mesh);
+
+        OpenVolumeMesh::VertexHandle vertex(id);
+
+        auto pick_pos = mesh_obj->m_mesh->vertex(vertex);
+        auto* shape = new Sphere();
+        shape->set_scale(0.02f, 0.02f, 0.02f);
+        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+        shape->set_base_color(0.0f, 1.0f, 0.0f);
+        ShapePass::add_shape(shape);
+    }
+    void MeshView::select_edge(int mesh, int id){
+
+        auto mesh_obj = Window::instance().get_mesh_obj(mesh);
+
+        OpenVolumeMesh::EdgeHandle edge(id);
+        auto vertices = mesh_obj->m_mesh->edge_vertices(edge);
+        auto v0 = mesh_obj->m_mesh->vertex(vertices[0]);
+        auto v1 = mesh_obj->m_mesh->vertex(vertices[1]);
+        auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
+        auto* shape = new Box();
+        shape->set_scale(0.02f, 0.02f, 0.02f);
+        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+        shape->set_base_color(0.0f, 0.0f, 1.0f);
+        ShapePass::add_shape(shape);
     }
 
     void MeshView::show()

@@ -21,13 +21,17 @@ namespace vOS
         ~MeshView() override;
         void show() override;
         void m_take_screenshot(std::string filename);
+        void select_face(int mesh, int id);
+        void select_vertex(int mesh, int id);
+        void select_edge(int mesh, int id);
+
     private:
 
         void handleResize();
         void handleMouseControl();
         void renderMesh(int mesh_id);
         void renderSelection();
-        void handleSelection(int type, int picked_id);
+        void querySelection(int type, int picked_id);
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
 
