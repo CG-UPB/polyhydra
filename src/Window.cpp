@@ -182,7 +182,7 @@ namespace vOS
         auto mesh = get_mesh_obj(mesh_id);
 
         if(mesh != nullptr)
-            mesh->select_element(mesh_id, element_type);
+            mesh->select_element(element_handle_id, element_type);
         rendering_mutex.unlock();
 
         // Call the Selection Callback Function
@@ -218,6 +218,21 @@ namespace vOS
         }else
             m_on_cell_selection(mesh_id,element_handle_id, false);
 
+    }
+
+    void Window::unselect_all_elements(int mesh_id)
+    {
+        rendering_mutex.lock();
+
+        rendering_mutex.unlock();
+    }
+
+    void Window::unselect_all_elements()
+    {
+        rendering_mutex.lock();
+        for(std::pair<int, MeshObject*> element : m_mesh_objects)
+            unselect_all_elements(element.first);
+        rendering_mutex.unlock();
     }
 
     void Window::set_keybind_manual(int glfw_key_from, int glfw_key_to) {
@@ -361,6 +376,8 @@ namespace vOS
                 path = instance().m_file_dialog->get_file_path_file_loader();
                 instance().m_file_dialog->set_open_fileloader(false);
             }
+            if(instance().m_file_dialog->is_ok_file_loader())
+                instance().set_loaded_file_path_name( path);
             return instance().m_file_dialog->is_ok_file_loader();
         }else if (nbr_of_dialog == 1)
         {

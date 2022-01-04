@@ -190,7 +190,14 @@ class MeshView;
          * 3 : Cell
          */
         void unselect_element(int mesh, int element_handle_id, int element_type);
-
+/*
+         * Unselects all elements given Mesh has marked as selected
+         */
+        void unselect_all_elements(int mesh);
+        /*
+         * Unselects all elements any Mesh has marked as selected
+         */
+        void unselect_all_elements();
         // Called when a number of vertices have been selected
         vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
         // Called when a number of edges have been selected

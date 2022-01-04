@@ -81,7 +81,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = true;
+        bool linear = false;
 
         if(linear)
         {
@@ -152,7 +152,6 @@ namespace vOS
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
                 Window::instance().set_mesh(&m_mesh, mesh_count++);
-                Window::instance().set_intepret_input(true);
                 linear_run();
                 m_open_file = false;
             }
@@ -347,10 +346,15 @@ namespace vOS
         /* One Time only Setup */
         Window& window = Window::instance();
 
+        std::cout << "Start waiting " << std::endl;
         // Read file
         while(window.get_loaded_file_name() == empty){}
+
+        std::cout << "Continue " << std::endl;
+
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(window.get_loaded_file_name(), m_mesh);
+
         Window::instance().set_mesh(&m_mesh);
         std::cout << window.get_loaded_file_name() << std::endl;
 

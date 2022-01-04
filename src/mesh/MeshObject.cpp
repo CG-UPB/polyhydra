@@ -43,12 +43,12 @@ namespace vOS
     }
 
     void MeshObject::select_element(int id, int type){
+        int shape_key = type * 114748364 + id;
+
         // We can't select an element twice
         bool already_selected = element_is_selected(id,type);
         if(already_selected)
             return;
-
-        int shape_key = type * 114748364 + id;
 
         if(type == 0) {
             m_selected_faces.insert(id);
@@ -63,11 +63,12 @@ namespace vOS
             shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
             shape->set_base_color(1.0f, 0.0f, 0.0f);
 
+            // There a guaranteed Mutex Guard around this method
             Window::instance().rendering_mutex.unlock();
             int shape_id = Window::instance().add_shape(shape);
             Window::instance().rendering_mutex.lock();
 
-            m_created_shapes.insert({0,1});
+            m_created_shapes.insert({shape_key, shape_id});
         }else if(type == 1) {
             m_selected_vertices.insert(id);
 
@@ -91,7 +92,6 @@ namespace vOS
             m_selected_edges.insert(id);
 
             // Add Shape
-
             OpenVolumeMesh::EdgeHandle edge(id);
             auto vertices = m_mesh->edge_vertices(edge);
             auto v0 = m_mesh->vertex(vertices[0]);
@@ -101,6 +101,8 @@ namespace vOS
             shape->set_scale(0.02f, 0.02f, 0.02f);
             shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
             shape->set_base_color(0.0f, 0.0f, 1.0f);
+
+            // There a guaranteed Mutex Guard around this method
             Window::instance().rendering_mutex.unlock();
             int shape_id = Window::instance().add_shape(shape);
             Window::instance().rendering_mutex.lock();
@@ -111,6 +113,59 @@ namespace vOS
 
         }
     }
+
+    void MeshObject::unselect_all(){
+        // Delete Face Elements
+        for(int element : m_selected_faces)
+        {
+            // Delete Shape Element
+            int shape_key = 0 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_faces.clear();
+
+        // Delete Vertex Elements
+        for(int element : m_selected_vertices)
+        {
+            // Delete Shape Element
+            int shape_key = 1 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_vertices.clear();
+        // Delete Edge Elements
+        for(int element : m_selected_edges)
+        {
+            // Delete Shape Element
+            int shape_key = 2 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_edges.clear();
+        // Delete Face Elements
+        for(int element : m_selected_cells)
+        {
+            // Delete Shape Element
+            int shape_key = 3 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_cells.clear();
+    }
+
     void MeshObject::unselect_element(int id, int type){
         // Element must be selected to be unselectable
         bool is_selected = element_is_selected(id,type);
@@ -118,6 +173,7 @@ namespace vOS
             return;
 
         if(type == 0) {
+
             auto entry = m_selected_faces.find(id);
             m_selected_faces.erase(entry);
         }else if(type == 1) {
@@ -140,6 +196,10 @@ namespace vOS
         Window::instance().rendering_mutex.lock();
     }
     bool MeshObject::element_is_selected(int id, int type){
+
+        id = type * 114748364 + id;
+
+        auto it = m_selected_vertices.find(id);
 
         if(type == 0)
             return m_selected_faces.find(id) != m_selected_faces.end();

@@ -65,6 +65,7 @@ namespace vOS
         std::unordered_set<int> get_all_selected_cells(){return m_selected_cells;}
         void select_element(int id, int type);
         void unselect_element(int id, int type);
+        void unselect_all();
         bool element_is_selected(int id, int type);
 
         void load_from_file(std::string file_path);
