@@ -4,6 +4,7 @@
 #include <map>
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
+#include "MeshVertexBuffer.h"
 
 #ifndef VOLUMESHOS_MESH_OBJECT_H
 #define VOLUMESHOS_MESH_OBJECT_H
@@ -34,7 +35,7 @@ namespace vOS
         MeshObject();
         explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh);
 
-        ~MeshObject() = default;
+        ~MeshObject();
 
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
@@ -46,20 +47,9 @@ namespace vOS
         void remove_highlights();
         void update_vertex_buffer();
 
-        void init_vertices();
-        void init_edges();
-        void init_faces();
-        //void init_cells();
-        void init_face_normals();
-        void init_vertex_normals();
         unsigned int to_faceID(unsigned int value);
         unsigned int to_edgeID(unsigned int value);
 
-        std::vector<float>& vertices(){ return m_vertices;};
-        std::vector<unsigned int>& edges(){ return m_edges;};
-        std::vector<unsigned int>& faces(){ return m_faces;};
-        std::vector<float>& vertex_normals(){ return m_vertex_normals;};
-        std::vector<float>& face_normals(){ return m_face_normals;};
         std::tuple<int, int> selection_offset(){ return m_selection_offset;};
         void set_selection_offset(int start);
         std::map<OpenVolumeMesh::VertexHandle, Highlight>& get_highlights();
@@ -83,26 +73,22 @@ namespace vOS
         void calculate_mesh_offset();
         [[nodiscard]] int calculate_selection_size() const;
 
-        std::vector<float> m_vertices;
-        std::vector<unsigned int> m_edges;
-        std::vector<unsigned int> m_faces;
         std::vector<float> m_vert_colors;
         std::vector<float> m_face_colors;
-        std::vector<float> m_vertex_normals;
-        std::vector<float> m_face_normals;
 
         std::map<OpenVolumeMesh::VertexHandle, Highlight> highlight_map;
-        std::vector<unsigned int> m_face_ids;
-        std::vector<unsigned int> m_edge_ids;
 
         std::tuple<int, int> m_selection_offset;
         glm::vec3 m_mesh_offset_from_center;
         std::vector<std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float>> m_vertex_colors;
-        VertexArrayObject* m_vertexArrayObject = nullptr;
-        VertexArrayObject* m_sphere_vao = nullptr;
-        VertexArrayObject* m_cylinder_vao = nullptr;
+
+        MeshVertexBuffer* m_mvb;
+
+        std::unordered_map<unsigned int, MeshVertexBuffer*> m_peel_cache;
 
         bool m_should_update;
+
+        int m_last_peel_level;
 
     };
 }

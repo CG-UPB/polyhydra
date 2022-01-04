@@ -53,7 +53,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionHoverPass.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/PixelBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
-        ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp)
+        ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
+        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
