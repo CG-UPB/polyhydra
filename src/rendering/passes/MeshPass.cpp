@@ -54,7 +54,7 @@ namespace vOS
             glEnable(GL_BLEND);
 
             // move a small epsilon to the camera, else it would overlay with the mesh
-            float epsilon = 0.01;
+            float epsilon = 0.02;
             glm::mat4 temp = glm::translate(glm::vec3(0.0, 0.0, epsilon));
             transform = temp * data.camera.world * data.mesh.transform * positionOffset;
             m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
