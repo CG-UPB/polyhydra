@@ -223,7 +223,9 @@ namespace vOS
     void Window::unselect_all_elements(int mesh_id)
     {
         rendering_mutex.lock();
+        MeshObject* mesh = get_mesh_obj(mesh_id);
 
+        mesh->unselect_all();
         rendering_mutex.unlock();
     }
 
@@ -231,7 +233,9 @@ namespace vOS
     {
         rendering_mutex.lock();
         for(std::pair<int, MeshObject*> element : m_mesh_objects)
-            unselect_all_elements(element.first);
+        {
+            element.second->unselect_all();
+        }
         rendering_mutex.unlock();
     }
 

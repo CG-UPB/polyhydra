@@ -389,6 +389,7 @@ namespace vOS
         window.add_shape(box_start);
         window.add_shape(box_end);
 
+        window.unselect_all_elements();
 
         while (!found && !queue.empty() && !m_reset)
         {
@@ -451,6 +452,7 @@ namespace vOS
             {
                 auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
 
+                /*
                 auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
                 box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
                 if (i == res.size() - 1 || first)
@@ -462,7 +464,8 @@ namespace vOS
                     //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
                     box->set_base_color(1.0f, 0.2f, 0.2f);
                 }
-                window.add_shape(box);
+                window.add_shape(box);*/
+                window.select_element(0, res[i], 1);
                 first = false;
 
                 std::cout << "Vertex: " << vertex.idx() << std::endl;
