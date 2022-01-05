@@ -215,6 +215,7 @@ namespace vOS
                 //ImGui::Text("   ");ImGui::SameLine();
                 if(ImGui::Button("Mesh-Selection"))
                     showPopup = true;
+                ImGui::SetNextWindowPos(ImVec2(100,400));
                 if (ImGui::BeginPopup("Mesh-Selection"))
                 {
                     std::vector<bool> arr= GlobalViewerSettings::getInstance()->get_test();
