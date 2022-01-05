@@ -224,7 +224,8 @@ namespace vOS
                 //ImGui::Text("   ");ImGui::SameLine();
                 if(ImGui::Button("Mesh-Selection"))
                     showPopup = true;
-                ImGui::SetNextWindowPos(ImVec2(100,400));
+                ImVec2 cursorPos = ImGui::GetCursorPos();
+                ImGui::SetNextWindowPos(ImVec2(cursorPos.x + 100,cursorPos.y));
                 if (ImGui::BeginPopup("Mesh-Selection"))
                 {
                     int nbr_Meshes = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes();
@@ -232,7 +233,6 @@ namespace vOS
                     for (int i = 0; i < nbr_Meshes; i++) {
                         meshes[i] = GlobalViewerSettings::getInstance()->get_Visibility_of_Mesh(nbr_Meshes-1-i);
                     }
-
                     for (size_t i = 0; i < GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes(); i++)
                     {
                         const char* label = ("Mesh " + std::to_string(i+1)).c_str();

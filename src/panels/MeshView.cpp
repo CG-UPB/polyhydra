@@ -291,10 +291,9 @@ namespace vOS
 
         int counter = 0;
         std::vector<bool> test = GlobalViewerSettings::getInstance()->get_test();
-        LogWindow::getInstance()->addLog("Schleife startet");
+        //LogWindow::getInstance()->addLog("Schleife startet");
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
-            LogWindow::getInstance()->addLog(std::to_string(counter));
            if (test[counter]){
                 auto mesh = m.second;
 
