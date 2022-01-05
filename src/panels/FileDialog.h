@@ -22,6 +22,8 @@ namespace vOS
 
     private:
 
+        bool m_open_file = true;
+        bool m_open_snap = true;
         bool m_is_open_fileloader = false;
         bool m_is_open_snapshot_saver = false;
         bool m_ok_file_loader = false;

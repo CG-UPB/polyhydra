@@ -85,9 +85,11 @@ namespace vOS
             std::string path;
             if (Window::instance().ShowFileDialog(path,".bmp",1))
             {
+
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
                 if(path != ""){
-                    //GlobalViewerSettings::getInstance()->m_set_take_snapshot(true);
-                    //GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename(path);
                     Window::instance().take_screenshot(path);
                     m_open_file = false;
                     LogWindow::getInstance()->addLog("1");
@@ -100,7 +102,11 @@ namespace vOS
                 LogWindow::getInstance()->addLog("2");
             }
             if(path != "")
+            {
                 Window::instance().take_screenshot(path);
+                m_open_file = false;
+                LogWindow::getInstance()->addLog("1");
+            }
 
         }
         ImGui::SameLine();
