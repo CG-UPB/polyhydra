@@ -289,16 +289,23 @@ namespace vOS
         }
         m_render_data.mesh.offset = m_zoom_point;
 
+        int counter = 0;
+        std::vector<bool> test = GlobalViewerSettings::getInstance()->get_test();
+        LogWindow::getInstance()->addLog("Schleife startet");
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
-            auto mesh = m.second;
+            LogWindow::getInstance()->addLog(std::to_string(counter));
+           if (test[counter]){
+                auto mesh = m.second;
 
-            mesh->update_vertex_buffer();
+                mesh->update_vertex_buffer();
 
-            // render all passes
-            if (mesh->get_vao() != nullptr) {
-                m_mesh_pass.render(mesh->get_vao(), m_render_data);
+                // render all passes
+                if (mesh->get_vao() != nullptr) {
+                    m_mesh_pass.render(mesh->get_vao(), m_render_data);
+                }
             }
+           counter++;
         }
         m_highlight_pass.render(nullptr, m_render_data);
         m_shape_pass.render(nullptr, m_render_data);
@@ -542,7 +549,8 @@ namespace vOS
         handleResize();
         handleMouseControl();
         renderMesh();
-        renderSelection();
+        if(GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+            renderSelection();
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();

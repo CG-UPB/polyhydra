@@ -52,6 +52,10 @@ namespace vOS
 
         std::vector<bool> get_test(){return m_sel;};
 
+        bool get_Visibility_of_Mesh(int i);
+
+        void set_Visibility_of_Mesh(int i, bool b);
+
     private:
         GlobalViewerSettings();
         static GlobalViewerSettings* instance;

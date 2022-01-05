@@ -22,7 +22,9 @@ namespace vOS
         //delete instance;
     }
 
-    GlobalViewerSettings::GlobalViewerSettings() {};
+    GlobalViewerSettings::GlobalViewerSettings() {
+        //m_sel.push_back(false);
+    };
 
     void GlobalViewerSettings::m_new_Mesh()
     {
@@ -33,8 +35,16 @@ namespace vOS
         }
         new_selected_meshes[m_nbr_meshes] = false;
 */
-        m_sel.push_back(false);
+        m_sel.push_back(true);
         m_nbr_meshes++;
         
+    }
+
+    bool GlobalViewerSettings::get_Visibility_of_Mesh(int i) {
+        return m_sel[i];
+    }
+
+    void GlobalViewerSettings::set_Visibility_of_Mesh(int i, bool b) {
+        m_sel[i] = b;
     }
 }

@@ -67,9 +67,12 @@ namespace vOS
 
 
 
-        ImGui::InputInt("Active Mesh", &m_active_mesh);
+        ImGui::InputInt("Mesh in Focus", &m_active_mesh);
+        if (m_active_mesh < 0) m_active_mesh = 0;
+        if (m_active_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
         GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
         GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
+
 
 
 
@@ -210,7 +213,7 @@ namespace vOS
             if (ImGui::BeginTable("split", 1))
             {
                 // Decision on which mesh(es), the actual values should be used
-                // Idea: iterate over meshes, for each mesh create an Selectable, which is represented by a bool. In Meshview: For each Mesh: check if bool is true -> change Color etc.
+                // Idea: iterate over meshes, for each mesh create a Selectable, which is represented by a bool. In Meshview: For each Mesh: check if bool is true -> change Color etc.
                 ImGui::TableNextColumn();
                 //ImGui::Text("   ");ImGui::SameLine();
                 if(ImGui::Button("Mesh-Selection"))
@@ -218,10 +221,32 @@ namespace vOS
                 ImGui::SetNextWindowPos(ImVec2(100,400));
                 if (ImGui::BeginPopup("Mesh-Selection"))
                 {
-                    std::vector<bool> arr= GlobalViewerSettings::getInstance()->get_test();
+                    int nbr_Meshes = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes();
+                    bool meshes[nbr_Meshes];
+                    for (int i = 0; i < nbr_Meshes; i++) {
+                        meshes[i] = GlobalViewerSettings::getInstance()->get_Visibility_of_Mesh(nbr_Meshes-1-i);
+                    }
+
+                    for (size_t i = 0; i < GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes(); i++)
+                    {
+                        const char* label = ("Mesh " + std::to_string(i+1)).c_str();
+                        ImGui::Text("   ");ImGui::SameLine();
+                        ImGui::Selectable(label,&meshes[i]);
+                        LogWindow::getInstance()->addLog("Hier2:");
+                        LogWindow::getInstance()->addLog(std::to_string(meshes[i]));
+                    }
+
+                    for (int i = 0; i < nbr_Meshes; i++) {
+                        GlobalViewerSettings::getInstance()->set_Visibility_of_Mesh(nbr_Meshes - 1 - i, meshes[i]);
+                    }
+
+                    /*
+
+                    std::vector<bool> arr = GlobalViewerSettings::getInstance()->get_test();
                     bool selected_mesh[arr.size()];
                     for (size_t i = 0; i < arr.size(); i++)
                     {
+                        std::cout << "Hier gehts noch rein";
                         LogWindow::getInstance()->addLog("Hier:");
                         LogWindow::getInstance()->addLog(std::to_string(arr[i]));
                         selected_mesh[i] = arr[i];
@@ -231,7 +256,7 @@ namespace vOS
                     {
                         const char* label = ("Mesh " + std::to_string(i+1)).c_str();
                         ImGui::Text("   ");ImGui::SameLine();
-                        ImGui::Selectable(label,&test_selected[i]);
+                        ImGui::Selectable(label,&selected_mesh[i]);
                         LogWindow::getInstance()->addLog("Hier2:");
                         LogWindow::getInstance()->addLog(std::to_string(selected_mesh[i]));
                     }
@@ -244,7 +269,7 @@ namespace vOS
                         newArr[i] = selected_mesh[i];
                     }
                     
-                    GlobalViewerSettings::getInstance()->m_set_test(newArr);
+                    GlobalViewerSettings::getInstance()->m_set_test(newArr);*/
                     if(ImGui::Button("Close"))
                     {
                         showPopup = false;
