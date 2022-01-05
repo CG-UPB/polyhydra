@@ -225,7 +225,8 @@ namespace vOS
         rendering_mutex.lock();
         MeshObject* mesh = get_mesh_obj(mesh_id);
 
-        mesh->unselect_all();
+        if(mesh != nullptr)
+            mesh->unselect_all();
         rendering_mutex.unlock();
     }
 
@@ -278,9 +279,7 @@ namespace vOS
     }
     void Window::highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, Color color)
     {
-        //static int i;
         rendering_mutex.lock();
-        //std::cout << "I did stuff "<< i++ << std::endl;
 
         Highlight highlight(color, v_h);
 
@@ -406,8 +405,6 @@ namespace vOS
         if (shape == nullptr)
             return -1;
 
-        // Greedy Approach
-
         rendering_mutex.lock();
 
         // Give the shape a unique ID
@@ -418,7 +415,6 @@ namespace vOS
         ShapePass::add_shape(shape);
         rendering_mutex.unlock();
 
-        // Command Queue Approach
         return shape_id;
     }
     // Read Methods ///////////////////////////////////////////////////////////////////////////////

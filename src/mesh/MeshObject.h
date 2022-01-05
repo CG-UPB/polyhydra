@@ -66,7 +66,7 @@ namespace vOS
         void select_element(int id, int type);
         void unselect_element(int id, int type);
         void unselect_all();
-        bool element_is_selected(int id, int type);
+        bool is_element_selected(int id, int type);
 
         void load_from_file(std::string file_path);
         void write_to_file(const std::string& file_path) const;

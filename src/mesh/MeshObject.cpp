@@ -46,7 +46,7 @@ namespace vOS
         int shape_key = type * 114748364 + id;
 
         // We can't select an element twice
-        bool already_selected = element_is_selected(id,type);
+        bool already_selected = is_element_selected(id, type);
         if(already_selected)
             return;
 
@@ -168,7 +168,7 @@ namespace vOS
 
     void MeshObject::unselect_element(int id, int type){
         // Element must be selected to be unselectable
-        bool is_selected = element_is_selected(id,type);
+        bool is_selected = is_element_selected(id, type);
         if(!is_selected)
             return;
 
@@ -195,7 +195,7 @@ namespace vOS
         Window::instance().remove_shape(shape_id);
         Window::instance().rendering_mutex.lock();
     }
-    bool MeshObject::element_is_selected(int id, int type){
+    bool MeshObject::is_element_selected(int id, int type){
 
         id = type * 114748364 + id;
 
