@@ -184,16 +184,16 @@ namespace vOS
 
         bool found = false;
 
-        auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
-        box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
-        box_start->set_base_color(0.2f, 0.2f, 1.0f);
-
-        auto* box_end = new vOS::Box(0.05f, 0.05f, 0.05f);
-        box_end->set_position(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2]);
-        box_end->set_base_color(0.2f, 0.2f, 1.0f);
-
-        window.add_shape(box_start);
-        window.add_shape(box_end);
+//        auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
+//        box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
+//        box_start->set_base_color(0.2f, 0.2f, 1.0f);
+//
+//        auto* box_end = new vOS::Box(0.05f, 0.05f, 0.05f);
+//        box_end->set_position(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2]);
+//        box_end->set_base_color(0.2f, 0.2f, 1.0f);
+//
+//        window.add_shape(box_start);
+//        window.add_shape(box_end);
 
         while (!found && !queue.empty() && !m_reset)
         {
@@ -256,18 +256,18 @@ namespace vOS
             {
                 auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
 
-                auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
-                box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
-                if (i == res.size() - 1 || first)
-                {
-                    //window.highlight_vertex(vertex, true, 0, 0, 1, 1);
-                    box->set_base_color(0.2f, 0.2f, 1.0f);
-                } else
-                {
-                    //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
-                    box->set_base_color(1.0f, 0.2f, 0.2f);
-                }
-                window.add_shape(box);
+//                auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
+//                box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
+//                if (i == res.size() - 1 || first)
+//                {
+//                    //window.highlight_vertex(vertex, true, 0, 0, 1, 1);
+//                    box->set_base_color(0.2f, 0.2f, 1.0f);
+//                } else
+//                {
+//                    //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
+//                    box->set_base_color(1.0f, 0.2f, 0.2f);
+//                }
+//                window.add_shape(box);
                 first = false;
 
                 std::cout << "Vertex: " << vertex.idx() << std::endl;

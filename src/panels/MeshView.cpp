@@ -381,7 +381,7 @@ namespace vOS
                 {
                     // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                     // there is no valid ID (e.g when clicking background)
-                    int face_id = (int) mesh->to_faceID(picked_id - from) - 1;
+                    int face_id = mesh->to_faceID(picked_id - from) - 1;
 
                     m_selection_hover_pass.select(*mesh, m_render_data, type, face_id);
 
@@ -399,7 +399,7 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
                 {
-                    int vertex_id = picked_id - from;
+                    int vertex_id = mesh->to_vertexID(picked_id - from) - 1;
 
                     m_selection_hover_pass.select(*mesh, m_render_data, type, vertex_id);
 
@@ -416,7 +416,7 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_EDGE)
                 {
-                    int edge_id = (int) mesh->to_edgeID(picked_id - from) - 1;
+                    int edge_id = mesh->to_edgeID(picked_id - from) - 1;
 
                     m_selection_hover_pass.select(*mesh, m_render_data, type, edge_id);
 

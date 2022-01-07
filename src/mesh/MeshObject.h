@@ -47,8 +47,9 @@ namespace vOS
         void remove_highlights();
         void update_vertex_buffer();
 
-        unsigned int to_faceID(unsigned int value);
-        unsigned int to_edgeID(unsigned int value);
+        int to_vertexID(int value);
+        int to_edgeID(int value);
+        int to_faceID(int value);
 
         std::tuple<int, int> selection_offset(){ return m_selection_offset;};
         void set_selection_offset(int start);

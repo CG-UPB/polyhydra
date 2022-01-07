@@ -20,6 +20,7 @@ namespace vOS
         void m_set_current_separation_type(int separation_type){m_separation_type = separation_type;};
         void m_set_current_lighting_type(int lighting_type){m_lighting_type = lighting_type;};
         void m_set_current_rendering_mode(int rend_mode){m_rendering_mode = rend_mode;};
+        void m_set_current_cell_size(float size){m_cell_size = size;};
 
 
         bool m_get_take_snapshot(){return m_take_snapshot;};
@@ -33,6 +34,7 @@ namespace vOS
         int m_get_current_separation_type(){return m_separation_type;};
         int m_get_current_lighting_type(){return m_lighting_type;};
         int m_get_current_rendering_mode(){return m_rendering_mode;};
+        float m_get_current_cell_size(){return m_cell_size;};
 
     private:
         GlobalViewerSettings();
@@ -42,13 +44,14 @@ namespace vOS
         std::string m_actual_snapshot_filename = "default.png";
         int m_current_selection_mode;
         bool m_color_activated = true;
-        float m_color[4] = {1.0f,0.0f,0.0f,1.0f};
+        float m_color[4] = {1.0f,1.0f,1.0f,1.0f};
         int m_slider_slicer = 0;
         int m_slider_peel = 0;
         bool m_isolation_started = false;
         int m_separation_type = 2;
         int m_lighting_type = 3;
         int m_rendering_mode = 1;
+        float m_cell_size = 1.0f;
     };
 
 }

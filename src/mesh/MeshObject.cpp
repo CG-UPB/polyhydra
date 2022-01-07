@@ -58,6 +58,7 @@ namespace vOS
 
         remove_highlights();
         m_should_update = true;
+        update_vertex_buffer();
     }
 
     void MeshObject::update_vertex_buffer()
@@ -119,15 +120,21 @@ namespace vOS
         m_mesh_offset_from_center = min + (max - min) * 0.5f;
     }
 
-    unsigned int MeshObject::to_faceID(unsigned int value)
+    int MeshObject::to_vertexID(int value)
+    {
+        return m_mvb->to_vertexID(value);
+    }
+
+    int MeshObject::to_edgeID(int value)
+    {
+        return m_mvb->to_edgeID(value);
+    }
+
+    int MeshObject::to_faceID(int value)
     {
         return m_mvb->to_faceID(value);
     }
 
-    unsigned int MeshObject::to_edgeID(unsigned int value)
-    {
-        return m_mvb->to_edgeID(value);
-    }
 
     void MeshObject::add_highlight(Highlight highlight)
     {
@@ -154,7 +161,6 @@ namespace vOS
         }
         */
     }
-
 
     void MeshObject::remove_highlight(OpenVolumeMesh::VertexHandle vh) {
 
@@ -201,7 +207,7 @@ namespace vOS
     int MeshObject::calculate_selection_size() const
     {
         // make sure that we choose the biggest possible vertex, edge or face id as the offset
-        return (int) std::max(std::max(m_mesh->n_vertices(), m_mesh->n_edges()), m_mesh->n_faces());
+        return (int) m_mvb->get_num_visible_vertices();
     }
 
     int MeshObject::get_num_visible_vertices() const

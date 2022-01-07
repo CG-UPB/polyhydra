@@ -12,6 +12,7 @@ namespace vOS
         int depth = spec.peel_depth;
 
         Mesh* current_mesh = mesh;
+        m_original_vertices = get_vertices(*current_mesh);
         if (depth > 0)
         {
             current_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
@@ -24,37 +25,30 @@ namespace vOS
             }
         }
 
-        m_vertices = get_vertices(*current_mesh);
-        m_faces = get_indices(*current_mesh);
-        auto vertex_normals = get_vertex_normals(*current_mesh);
-        m_face_ids = get_face_ids(*current_mesh);
-        m_edge_ids = get_edge_ids(*current_mesh, m_faces);
-        auto from_to_vertices = get_from_and_to_vertices(*current_mesh, m_faces);
+        generate_buffer(*current_mesh);
 
-        m_original_vertices = m_vertices;
-
-        m_vao = new VertexArrayObject(m_vertices, m_faces);
-        m_vao->add_attribute(vertex_normals, 1, 3);
+        m_vao = new VertexArrayObject(m_positions, m_indices);
+        m_vao->add_attribute(m_normals, 1, 3);
+        m_vao->add_attribute(m_cell_centers, 2, 3);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
 
-        m_sphere_vao->add_attribute(vertex_normals, 1, 3, true);
-        m_sphere_vao->add_attribute(m_vertices, 2, 3, true);
+        m_sphere_vao->add_attribute(m_normals, 1, 3, true);
+        m_sphere_vao->add_attribute(m_positions, 2, 3, true);
+        m_sphere_vao->add_attribute(m_cell_centers, 3, 3, true);
 
         m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                CommonMeshes::Cylinder::edge_cylinder().indices());
 
-        m_cylinder_vao->add_attribute(from_to_vertices.first, 1, 3, true);
-        m_cylinder_vao->add_attribute(from_to_vertices.second, 2, 3, true);
+        m_cylinder_vao->add_attribute(m_from_vertices, 1, 3, true);
+        m_cylinder_vao->add_attribute(m_to_vertices, 2, 3, true);
+        m_cylinder_vao->add_attribute(m_cell_centers, 3, 3, true);
 
         if (depth > 0)
         {
             delete current_mesh;
         }
-
-        std::cout << "num_vertices: " << m_vertices.size() << std::endl;
-        std::cout << "num faces: " << m_faces.size() << std::endl;
     }
 
     MeshVertexBuffer::~MeshVertexBuffer()
@@ -62,6 +56,219 @@ namespace vOS
         delete m_vao;
         delete m_sphere_vao;
         delete m_cylinder_vao;
+    }
+
+    void MeshVertexBuffer::generate_buffer(Mesh& mesh)
+    {
+        // first update the normal face attribute for all faces
+        OpenVolumeMesh::NormalAttrib normals(mesh);
+        normals.update_face_normals();
+
+        for (auto c_it : mesh.cells())
+        {
+            add_cell(mesh, c_it);
+        }
+    }
+
+    void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
+    {
+        std::vector<FaceData> faces;
+        std::vector<glm::vec3> vertices;
+
+        // iterate over all faces of the cell
+        for (auto chf_it : mesh.cell_halffaces(cell))
+        {
+            FaceData faceData;
+            int face_id = mesh.face_handle(chf_it).idx();
+
+            // get the normal
+            auto hf_normal = mesh.normal(chf_it);
+
+            // iterate over the halfedges of the halfface
+            for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+            {
+                // get the corresponding edge vertex
+                auto v = mesh.from_vertex_handle(hfhe_it);
+                auto v_pos = mesh.vertex(v);
+
+                VertexData v_data;
+                v_data.position.x = v_pos[0];
+                v_data.position.y = v_pos[1];
+                v_data.position.z = v_pos[2];
+                v_data.normal.x = -hf_normal[0];
+                v_data.normal.y = -hf_normal[1];
+                v_data.normal.z = -hf_normal[2];
+                v_data.ovm_handle = v;
+
+                vertices.push_back(v_data.position);
+                faceData.vertices.push_back(v_data);
+
+                // store ids for selection
+                faceData.vertex_ids.push_back(v_data.ovm_handle.idx());
+            }
+
+            faceData.face_ids.push_back(face_id);
+            int num_face_vertices = (int) faceData.vertices.size();
+            if (num_face_vertices == 4)
+            {
+                faceData.face_ids.push_back(face_id);
+            }
+
+            add_face_indices(mesh, faceData);
+            m_num_vertices += num_face_vertices;
+
+            faces.push_back(faceData);
+        }
+
+        glm::vec3 cell_center = get_center(vertices);
+
+        // now that we collected the data we need, we can update or buffer arrays
+        for (const FaceData& face : faces)
+        {
+            // fill up vertex data
+            for (const VertexData& vertex : face.vertices)
+            {
+                // position
+                m_positions.push_back(vertex.position.x);
+                m_positions.push_back(vertex.position.y);
+                m_positions.push_back(vertex.position.z);
+
+                // normal
+                m_normals.push_back(vertex.normal.x);
+                m_normals.push_back(vertex.normal.y);
+                m_normals.push_back(vertex.normal.z);
+
+                // cell center
+                m_cell_centers.push_back(cell_center.x);
+                m_cell_centers.push_back(cell_center.y);
+                m_cell_centers.push_back(cell_center.z);
+            }
+
+            // add all indices of the face
+            m_indices.insert(m_indices.end(), face.indices.begin(), face.indices.end());
+
+            // add ids, depending on how many triangles we actually render, we need to put the id twice or more,
+            // since those triangles share the same face
+            m_vertex_ids.insert(m_vertex_ids.end(), face.vertex_ids.begin(), face.vertex_ids.end());
+            m_edge_ids.insert(m_edge_ids.end(), face.edge_ids.begin(), face.edge_ids.end());
+            m_face_ids.insert(m_face_ids.end(), face.face_ids.begin(), face.face_ids.end());
+        }
+    }
+
+    void MeshVertexBuffer::add_face_indices(Mesh& mesh, FaceData& face)
+    {
+        switch (face.vertices.size())
+        {
+            case 3:
+            {
+                face.indices.push_back(m_num_vertices + 0);
+                face.indices.push_back(m_num_vertices + 2);
+                face.indices.push_back(m_num_vertices + 1);
+
+                // for selection edge rendering, we need to store data for each edge
+                add_from_to_vertex(face.vertices[0], face.vertices[2]);
+                add_from_to_vertex(face.vertices[2], face.vertices[1]);
+                add_from_to_vertex(face.vertices[1], face.vertices[0]);
+
+                add_edge_id(mesh, face, 0, 2);
+                add_edge_id(mesh, face, 2, 1);
+                add_edge_id(mesh, face, 1, 0);
+                break;
+            }
+            case 4:
+            {
+                // we have 4 vertices, so we need to create two triangles out of it
+                face.indices.push_back(m_num_vertices + 0);
+                face.indices.push_back(m_num_vertices + 2);
+                face.indices.push_back(m_num_vertices + 1);
+
+                face.indices.push_back(m_num_vertices + 0);
+                face.indices.push_back(m_num_vertices + 3);
+                face.indices.push_back(m_num_vertices + 2);
+
+                // for selection edge rendering, we need to store data for each edge
+                add_from_to_vertex(face.vertices[0], face.vertices[3]);
+                add_from_to_vertex(face.vertices[3], face.vertices[2]);
+                add_from_to_vertex(face.vertices[2], face.vertices[1]);
+                add_from_to_vertex(face.vertices[1], face.vertices[0]);
+
+                add_edge_id(mesh, face, 0, 3);
+                add_edge_id(mesh, face, 3, 2);
+                add_edge_id(mesh, face, 2, 1);
+                add_edge_id(mesh, face, 1, 0);
+                break;
+            }
+            default:
+            {
+                // in this case, we have undefined behavior, since we don't triangulate any further
+                for (int i = 0; i < face.vertices.size(); i++)
+                {
+                    face.indices.push_back(m_num_vertices + i);
+                    add_from_to_vertex(face.vertices[i], face.vertices[(i + 1) % face.vertices.size()]);
+                }
+            }
+        }
+    }
+
+    void MeshVertexBuffer::add_edge_id(Mesh& mesh, FaceData& face, int idx0, int idx1)
+    {
+        auto vh0 = face.vertices[idx0].ovm_handle;
+        auto vh1 = face.vertices[idx1].ovm_handle;
+
+        for (auto heh: mesh.outgoing_halfedges(vh0))
+        {
+            auto out = mesh.to_vertex_handle(heh);
+            if (out == vh1)
+            {
+                face.edge_ids.push_back(mesh.edge_handle(heh).idx());
+                break;
+            }
+        }
+    }
+
+    void MeshVertexBuffer::add_from_to_vertex(const VertexData& from, const VertexData& to)
+    {
+        m_from_vertices.push_back(from.position.x);
+        m_from_vertices.push_back(from.position.y);
+        m_from_vertices.push_back(from.position.z);
+        m_to_vertices.push_back(to.position.x);
+        m_to_vertices.push_back(to.position.y);
+        m_to_vertices.push_back(to.position.z);
+    }
+
+    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
+    {
+        glm::vec3 min = vertices[0];
+        glm::vec3 max = vertices[0];
+        for (int i = 1; i < vertices.size(); i++)
+        {
+            const glm::vec3& vertex = vertices[i];
+            if (vertex.x < min.x)
+            {
+                min.x = vertex.x;
+            }
+            else if (vertex.x > max.x)
+            {
+                max.x = vertex.x;
+            }
+            if (vertex.y < min.y)
+            {
+                min.y = vertex.y;
+            }
+            else if (vertex.y > max.y)
+            {
+                max.y = vertex.y;
+            }
+            if (vertex.z < min.z)
+            {
+                min.z = vertex.z;
+            }
+            else if (vertex.z > max.z)
+            {
+                max.z = vertex.z;
+            }
+        }
+        return min + (max - min) * 0.5f;
     }
 
     void MeshVertexBuffer::delete_boundary_cells(Mesh& mesh)
@@ -79,13 +286,6 @@ namespace vOS
             mesh.delete_vertex(v);
         }
         mesh.collect_garbage();
-        std::cout << "n_vertices: " << mesh.n_vertices() << std::endl;
-        std::cout << "n_cells: " << mesh.n_cells() << std::endl;
-    }
-
-    VertexArrayObject* MeshVertexBuffer::get_vao()
-    {
-        return m_vao;
     }
 
     std::vector<float> MeshVertexBuffer::get_vertices(Mesh& mesh)
@@ -105,242 +305,34 @@ namespace vOS
         return vertices;
     }
 
-    std::vector<unsigned int> MeshVertexBuffer::get_indices(Mesh& mesh)
+    VertexArrayObject* MeshVertexBuffer::get_vao()
     {
-        std::vector<unsigned int> faces;
-
-        int count;
-        std::vector<int> vert_idx;
-
-        for (OpenVolumeMesh::FaceIter f_it = mesh.faces_begin();
-             f_it != mesh.faces_end(); ++f_it)
-        {
-            for (auto halfface: mesh.face_halffaces(*f_it))
-            {
-                if (!mesh.is_boundary(halfface))
-                {
-                    continue;
-                }
-                auto face_vertex_ids = mesh.halfface_vertices(halfface);
-
-                count = 0;
-                vert_idx.clear();
-
-                //count how many vertices the face has
-                for (auto fv_it = face_vertex_ids.first;
-                     fv_it != face_vertex_ids.second; ++fv_it)
-                {
-                    count++;
-                    vert_idx.push_back(fv_it->idx());
-                }
-
-                //save indices depending on count
-                if (count == 3)
-                {
-                    // create 1 triangles out of 3 indices
-                    faces.push_back(vert_idx[0]);
-                    faces.push_back(vert_idx[1]);
-                    faces.push_back(vert_idx[2]);
-                }
-                else if (count == 4)
-                {
-                    // create 2 triangles out of 4 indices
-                    faces.push_back(vert_idx[0]);
-                    faces.push_back(vert_idx[1]);
-                    faces.push_back(vert_idx[2]);
-
-                    faces.push_back(vert_idx[0]);
-                    faces.push_back(vert_idx[2]);
-                    faces.push_back(vert_idx[3]);
-                }
-                    // unpredictable behaviour
-                else
-                {
-                    for (int i = 0; i < count; i++)
-                    {
-                        faces.push_back(vert_idx[i]);
-                    }
-                }
-            }
-        }
-        return faces;
+        return m_vao;
     }
 
-    std::vector<unsigned int> MeshVertexBuffer::get_edge_ids(Mesh& mesh, std::vector<unsigned int>& faces)
+    int MeshVertexBuffer::to_vertexID(int value)
     {
-        std::vector<unsigned int> edge_ids;
-        for (int i = 0; i < faces.size(); i += 3)
+        if (m_vertex_ids.size() > value)
         {
-            auto vh0 = OpenVolumeMesh::VertexHandle(faces[i + 0]);
-            auto vh1 = OpenVolumeMesh::VertexHandle(faces[i + 1]);
-            auto vh2 = OpenVolumeMesh::VertexHandle(faces[i + 2]);
-
-            for (auto heh: mesh.outgoing_halfedges(vh0))
-            {
-                auto out = mesh.to_vertex_handle(heh);
-                if (out == vh1)
-                {
-                    edge_ids.push_back(mesh.edge_handle(heh).idx());
-                    break;
-                }
-            }
-            for (auto heh: mesh.outgoing_halfedges(vh1))
-            {
-                auto out = mesh.to_vertex_handle(heh);
-                if (out == vh2)
-                {
-                    edge_ids.push_back(mesh.edge_handle(heh).idx());
-                    break;
-                }
-            }
-            for (auto heh: mesh.outgoing_halfedges(vh2))
-            {
-                auto out = mesh.to_vertex_handle(heh);
-                if (out == vh0)
-                {
-                    edge_ids.push_back(mesh.edge_handle(heh).idx());
-                    break;
-                }
-            }
-        }
-        return edge_ids;
-    }
-
-    std::vector<unsigned int> MeshVertexBuffer::get_face_ids(Mesh& mesh)
-    {
-        std::vector<unsigned int> face_ids;
-        for (OpenVolumeMesh::FaceIter f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it)
-        {
-            for (auto halfface: mesh.face_halffaces(*f_it))
-            {
-                if (!mesh.is_boundary(halfface))
-                {
-                    continue;
-                }
-                face_ids.push_back(f_it->idx());
-            }
-        }
-        return face_ids;
-    }
-
-    std::vector<float> MeshVertexBuffer::get_vertex_normals(Mesh& mesh)
-    {
-        std::vector<float> vertex_normals;
-
-        OpenVolumeMesh::NormalAttrib normals(mesh);
-        normals.update_face_normals();
-
-        // normal calculation based on OpenVolumeMesh's update_vertex_normals() method
-        for (const auto& _vh: mesh.vertices())
-        {
-            std::set<std::pair<OpenVolumeMesh::HalfFaceHandle, float>> halffaces;
-            for (auto voh_it = mesh.voh_iter(_vh); voh_it.valid(); ++voh_it)
-            {
-                for (auto hehf_it = mesh.hehf_iter(*voh_it); hehf_it.valid(); ++hehf_it)
-                {
-                    // find points of this halfface to calculate the angle of the face from the vertex
-                    std::vector<glm::vec3> points;
-                    for (auto hfv_it : mesh.halfface_vertices(*hehf_it))
-                    {
-                        if (hfv_it.idx() != _vh.idx())
-                        {
-                            auto point = mesh.vertex(hfv_it);
-                            points.emplace_back(point[0], point[1], point[2]);
-                        }
-                    }
-
-                    // calculate face angle
-                    float angle = M_PI * 2.0f;
-                    if (points.size() == 2)
-                    {
-                        auto p = mesh.vertex(_vh);
-                        glm::vec3 pivot = glm::vec3(p[0], p[1], p[2]);
-                        glm::vec3 first = glm::normalize(points[0] - pivot);
-                        glm::vec3 second = glm::normalize(points[1] - pivot);
-                        angle = glm::acos(glm::dot(first, second));
-                    }
-                    if (mesh.is_boundary(*hehf_it))
-                    {
-                        halffaces.insert(std::make_pair(*hehf_it, angle));
-                    }
-                }
-            }
-
-            // sum up normals of adjacent faces, but assign weight based on the angle size for better results
-            auto normal = glm::vec3(0.0f);
-            for (auto halfface: halffaces)
-            {
-                auto n = mesh.normal(std::get<0>(halfface));
-                float angle = std::get<1>(halfface);
-                normal += glm::vec3(n[0], n[1], n[2]) * (float) (angle / M_PI * 2.0f);
-            }
-
-            auto norm = glm::normalize(normal);
-            vertex_normals.push_back(norm.x);
-            vertex_normals.push_back(norm.y);
-            vertex_normals.push_back(norm.z);
-        }
-        return vertex_normals;
-    }
-
-    std::pair<std::vector<float>, std::vector<float>>
-    MeshVertexBuffer::get_from_and_to_vertices(Mesh& mesh, std::vector<unsigned int>& faces)
-    {
-        std::vector<float> from_vertices;
-        std::vector<float> to_vertices;
-
-        for (int i = 0; i < faces.size(); i += 3)
-        {
-            auto vh0 = OpenVolumeMesh::VertexHandle(faces[i + 0]);
-            auto vh1 = OpenVolumeMesh::VertexHandle(faces[i + 1]);
-            auto vh2 = OpenVolumeMesh::VertexHandle(faces[i + 2]);
-
-            auto v0 = mesh.vertex(vh0);
-            auto v1 = mesh.vertex(vh1);
-            auto v2 = mesh.vertex(vh2);
-
-            from_vertices.push_back(v0[0]);
-            from_vertices.push_back(v0[1]);
-            from_vertices.push_back(v0[2]);
-
-            to_vertices.push_back(v1[0]);
-            to_vertices.push_back(v1[1]);
-            to_vertices.push_back(v1[2]);
-
-            from_vertices.push_back(v1[0]);
-            from_vertices.push_back(v1[1]);
-            from_vertices.push_back(v1[2]);
-
-            to_vertices.push_back(v2[0]);
-            to_vertices.push_back(v2[1]);
-            to_vertices.push_back(v2[2]);
-
-            from_vertices.push_back(v2[0]);
-            from_vertices.push_back(v2[1]);
-            from_vertices.push_back(v2[2]);
-
-            to_vertices.push_back(v0[0]);
-            to_vertices.push_back(v0[1]);
-            to_vertices.push_back(v0[2]);
-        }
-
-        return std::make_pair(from_vertices, to_vertices);
-    }
-
-    unsigned int MeshVertexBuffer::to_faceID(unsigned int value)
-    {
-        if (m_face_ids.size() > value)
-        {
-            return m_face_ids[value] + 1;
+            return m_vertex_ids[value] + 1;
         }
         return 0;
     }
 
-    unsigned int MeshVertexBuffer::to_edgeID(unsigned int value)
+    int MeshVertexBuffer::to_edgeID(int value)
     {
         if (m_edge_ids.size() > value)
         {
             return m_edge_ids[value] + 1;
+        }
+        return 0;
+    }
+
+    int MeshVertexBuffer::to_faceID(int value)
+    {
+        if (m_face_ids.size() > value)
+        {
+            return m_face_ids[value] + 1;
         }
         return 0;
     }
@@ -362,11 +354,11 @@ namespace vOS
 
     int MeshVertexBuffer::get_num_visible_vertices() const
     {
-        return (int) m_vertices.size() / 3;
+        return (int) m_positions.size() / 3;
     }
 
     int MeshVertexBuffer::get_num_visible_edges() const
     {
-        return (int) m_faces.size();
+        return (int) m_indices.size();
     }
 }

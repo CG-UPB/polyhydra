@@ -32,12 +32,13 @@ namespace vOS
 
         int m_current_selection_mode;
         bool m_color_activated = true;
-        float m_color[4] = {1.0f,0.0f,0.0f,1.0f};
+        float m_color[4] = {1.0f,1.0f,1.0f,1.0f};
         int m_slider_slicer = 0;
         int m_slider_peel = 0;
         bool m_isolation_started = false;
         int m_separation_type = 2;
         int m_lighting_type = 3;
         int m_rendering_mode = 1;
+        float m_cell_size = 1.0f;
     };
 }
