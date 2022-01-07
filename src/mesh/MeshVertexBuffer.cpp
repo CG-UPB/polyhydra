@@ -35,15 +35,15 @@ namespace vOS
                                              CommonMeshes::Sphere::selection_sphere().indices());
 
         m_sphere_vao->add_attribute(m_normals, 1, 3, true);
-        m_sphere_vao->add_attribute(m_positions, 2, 3, true);
-        m_sphere_vao->add_attribute(m_cell_centers, 3, 3, true);
+        m_sphere_vao->add_attribute(m_selection_vertices, 2, 3, true);
+        m_sphere_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
 
         m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                CommonMeshes::Cylinder::edge_cylinder().indices());
 
         m_cylinder_vao->add_attribute(m_from_vertices, 1, 3, true);
         m_cylinder_vao->add_attribute(m_to_vertices, 2, 3, true);
-        m_cylinder_vao->add_attribute(m_cell_centers, 3, 3, true);
+        m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
 
         if (depth > 0)
         {
@@ -64,6 +64,7 @@ namespace vOS
         OpenVolumeMesh::NormalAttrib normals(mesh);
         normals.update_face_normals();
 
+        // add every cell to the vertex buffer
         for (auto c_it : mesh.cells())
         {
             add_cell(mesh, c_it);
@@ -75,13 +76,48 @@ namespace vOS
         std::vector<FaceData> faces;
         std::vector<glm::vec3> vertices;
 
-        // iterate over all faces of the cell
+        // add every vertex only once for the selection, no need to render them twice
+        int num_selection_vertices = 0;
+        for (auto cv_it : mesh.cell_vertices(cell))
+        {
+            auto v_pos = mesh.vertex(cv_it);
+            vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
+            m_selection_vertices.push_back(v_pos[0]);
+            m_selection_vertices.push_back(v_pos[1]);
+            m_selection_vertices.push_back(v_pos[2]);
+            m_vertex_ids.push_back(cv_it.idx());
+            num_selection_vertices++;
+        }
+
+        // get the center, so we can add it as a vertex attribute
+        glm::vec3 cell_center = get_center(vertices);
+
+        for (int i = 0; i < num_selection_vertices; i++)
+        {
+            m_sphere_cell_centers.push_back(cell_center.x);
+            m_sphere_cell_centers.push_back(cell_center.y);
+            m_sphere_cell_centers.push_back(cell_center.z);
+        }
+
+        // same for the edges, only add them once for the selection
+        for (auto ce_it : mesh.cell_edges(cell))
+        {
+            auto [v0, v1] = mesh.edge_vertices(ce_it);
+            add_from_to_vertex(mesh, v0, v1);
+            m_edge_ids.push_back(ce_it.idx());
+
+            m_cylinder_cell_centers.push_back(cell_center.x);
+            m_cylinder_cell_centers.push_back(cell_center.y);
+            m_cylinder_cell_centers.push_back(cell_center.z);
+        }
+
+        // now we collect the geometry data from ovm, and create data for each face of the cell individually
         for (auto chf_it : mesh.cell_halffaces(cell))
         {
             FaceData faceData;
             int face_id = mesh.face_handle(chf_it).idx();
 
-            // get the normal
+            // get the face normal
             auto hf_normal = mesh.normal(chf_it);
 
             // iterate over the halfedges of the halfface
@@ -91,6 +127,7 @@ namespace vOS
                 auto v = mesh.from_vertex_handle(hfhe_it);
                 auto v_pos = mesh.vertex(v);
 
+                // get geometry data
                 VertexData v_data;
                 v_data.position.x = v_pos[0];
                 v_data.position.y = v_pos[1];
@@ -100,13 +137,10 @@ namespace vOS
                 v_data.normal.z = -hf_normal[2];
                 v_data.ovm_handle = v;
 
-                vertices.push_back(v_data.position);
                 faceData.vertices.push_back(v_data);
-
-                // store ids for selection
-                faceData.vertex_ids.push_back(v_data.ovm_handle.idx());
             }
 
+            // if we have a face with 4 face vertices, it gets split into 2 triangles, so we need to put the id twice
             faceData.face_ids.push_back(face_id);
             int num_face_vertices = (int) faceData.vertices.size();
             if (num_face_vertices == 4)
@@ -119,8 +153,6 @@ namespace vOS
 
             faces.push_back(faceData);
         }
-
-        glm::vec3 cell_center = get_center(vertices);
 
         // now that we collected the data we need, we can update or buffer arrays
         for (const FaceData& face : faces)
@@ -149,8 +181,6 @@ namespace vOS
 
             // add ids, depending on how many triangles we actually render, we need to put the id twice or more,
             // since those triangles share the same face
-            m_vertex_ids.insert(m_vertex_ids.end(), face.vertex_ids.begin(), face.vertex_ids.end());
-            m_edge_ids.insert(m_edge_ids.end(), face.edge_ids.begin(), face.edge_ids.end());
             m_face_ids.insert(m_face_ids.end(), face.face_ids.begin(), face.face_ids.end());
         }
     }
@@ -161,18 +191,10 @@ namespace vOS
         {
             case 3:
             {
+                // simplest case, just connect the three vertices to a triangle
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 2);
                 face.indices.push_back(m_num_vertices + 1);
-
-                // for selection edge rendering, we need to store data for each edge
-                add_from_to_vertex(face.vertices[0], face.vertices[2]);
-                add_from_to_vertex(face.vertices[2], face.vertices[1]);
-                add_from_to_vertex(face.vertices[1], face.vertices[0]);
-
-                add_edge_id(mesh, face, 0, 2);
-                add_edge_id(mesh, face, 2, 1);
-                add_edge_id(mesh, face, 1, 0);
                 break;
             }
             case 4:
@@ -185,17 +207,6 @@ namespace vOS
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 3);
                 face.indices.push_back(m_num_vertices + 2);
-
-                // for selection edge rendering, we need to store data for each edge
-                add_from_to_vertex(face.vertices[0], face.vertices[3]);
-                add_from_to_vertex(face.vertices[3], face.vertices[2]);
-                add_from_to_vertex(face.vertices[2], face.vertices[1]);
-                add_from_to_vertex(face.vertices[1], face.vertices[0]);
-
-                add_edge_id(mesh, face, 0, 3);
-                add_edge_id(mesh, face, 3, 2);
-                add_edge_id(mesh, face, 2, 1);
-                add_edge_id(mesh, face, 1, 0);
                 break;
             }
             default:
@@ -204,36 +215,21 @@ namespace vOS
                 for (int i = 0; i < face.vertices.size(); i++)
                 {
                     face.indices.push_back(m_num_vertices + i);
-                    add_from_to_vertex(face.vertices[i], face.vertices[(i + 1) % face.vertices.size()]);
                 }
             }
         }
     }
 
-    void MeshVertexBuffer::add_edge_id(Mesh& mesh, FaceData& face, int idx0, int idx1)
+    void MeshVertexBuffer::add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from, const OpenVolumeMesh::VertexHandle& to)
     {
-        auto vh0 = face.vertices[idx0].ovm_handle;
-        auto vh1 = face.vertices[idx1].ovm_handle;
-
-        for (auto heh: mesh.outgoing_halfedges(vh0))
-        {
-            auto out = mesh.to_vertex_handle(heh);
-            if (out == vh1)
-            {
-                face.edge_ids.push_back(mesh.edge_handle(heh).idx());
-                break;
-            }
-        }
-    }
-
-    void MeshVertexBuffer::add_from_to_vertex(const VertexData& from, const VertexData& to)
-    {
-        m_from_vertices.push_back(from.position.x);
-        m_from_vertices.push_back(from.position.y);
-        m_from_vertices.push_back(from.position.z);
-        m_to_vertices.push_back(to.position.x);
-        m_to_vertices.push_back(to.position.y);
-        m_to_vertices.push_back(to.position.z);
+        auto from_pos = mesh.vertex(from);
+        auto to_pos = mesh.vertex(to);
+        m_from_vertices.push_back(from_pos[0]);
+        m_from_vertices.push_back(from_pos[1]);
+        m_from_vertices.push_back(from_pos[2]);
+        m_to_vertices.push_back(to_pos[0]);
+        m_to_vertices.push_back(to_pos[1]);
+        m_to_vertices.push_back(to_pos[2]);
     }
 
     glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
@@ -352,13 +348,13 @@ namespace vOS
         return m_sphere_vao;
     }
 
-    int MeshVertexBuffer::get_num_visible_vertices() const
+    int MeshVertexBuffer::get_num_selection_vertices() const
     {
-        return (int) m_positions.size() / 3;
+        return (int) m_vertex_ids.size();
     }
 
-    int MeshVertexBuffer::get_num_visible_edges() const
+    int MeshVertexBuffer::get_num_selection_edges() const
     {
-        return (int) m_indices.size();
+        return (int) m_edge_ids.size();
     }
 }

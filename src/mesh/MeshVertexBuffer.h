@@ -25,8 +25,6 @@ namespace vOS
     {
         std::vector<VertexData> vertices;
         std::vector<unsigned int> indices;
-        std::vector<unsigned int> vertex_ids;
-        std::vector<unsigned int> edge_ids;
         std::vector<unsigned int> face_ids;
     };
 
@@ -51,9 +49,9 @@ namespace vOS
 
         VertexArrayObject* get_cylinder_vao();
 
-        [[nodiscard]] int get_num_visible_vertices() const;
+        [[nodiscard]] int get_num_selection_vertices() const;
 
-        [[nodiscard]] int get_num_visible_edges() const;
+        [[nodiscard]] int get_num_selection_edges() const;
 
     private:
 
@@ -63,9 +61,7 @@ namespace vOS
 
         void add_face_indices(Mesh& mesh, FaceData& face);
 
-        void add_edge_id(Mesh& mesh, FaceData& face, int idx0, int idx1);
-
-        void add_from_to_vertex(const VertexData& from, const VertexData& to);
+        void add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from, const OpenVolumeMesh::VertexHandle& to);
 
         glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
 
@@ -90,10 +86,13 @@ namespace vOS
         std::vector<float> m_positions;
         std::vector<float> m_normals;
         std::vector<float> m_cell_centers;
+        std::vector<float> m_sphere_cell_centers;
+        std::vector<float> m_cylinder_cell_centers;
 
         std::vector<unsigned int> m_indices;
         std::vector<float> m_from_vertices;
         std::vector<float> m_to_vertices;
+        std::vector<float> m_selection_vertices;
 
         int m_num_vertices = 0;
     };

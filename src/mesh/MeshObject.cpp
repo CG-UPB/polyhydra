@@ -207,17 +207,17 @@ namespace vOS
     int MeshObject::calculate_selection_size() const
     {
         // make sure that we choose the biggest possible vertex, edge or face id as the offset
-        return (int) m_mvb->get_num_visible_vertices();
+        return (int) m_mvb->get_num_selection_vertices() * 3;
     }
 
     int MeshObject::get_num_visible_vertices() const
     {
-        return m_mvb->get_num_visible_vertices();
+        return m_mvb->get_num_selection_vertices();
     }
 
     int MeshObject::get_num_visible_edges() const
     {
-        return m_mvb->get_num_visible_edges();
+        return m_mvb->get_num_selection_edges();
     }
 
     void MeshObject::set_selection_offset(int start)
