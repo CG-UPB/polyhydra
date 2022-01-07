@@ -92,20 +92,20 @@ namespace vOS
                 if(path != ""){
                     Window::instance().take_screenshot(path);
                     m_open_file = false;
-                    LogWindow::getInstance()->addLog("1");
+                    //LogWindow::getInstance()->addLog("1");
                 }
             }
             if (path == "")
             {
                 m_open_file = false;
                 Window::instance().m_file_dialog->set_open_snapshot_saver(false);
-                LogWindow::getInstance()->addLog("2");
+                //LogWindow::getInstance()->addLog("2");
             }
             if(path != "")
             {
                 Window::instance().take_screenshot(path);
                 m_open_file = false;
-                LogWindow::getInstance()->addLog("1");
+                //LogWindow::getInstance()->addLog("1");
             }
 
         }
@@ -238,8 +238,8 @@ namespace vOS
                         const char* label = ("Mesh " + std::to_string(i+1)).c_str();
                         ImGui::Text("   ");ImGui::SameLine();
                         ImGui::Selectable(label,&meshes[i]);
-                        LogWindow::getInstance()->addLog("Hier2:");
-                        LogWindow::getInstance()->addLog(std::to_string(meshes[i]));
+                        //LogWindow::getInstance()->addLog("Hier2:");
+                        //LogWindow::getInstance()->addLog(std::to_string(meshes[i]));
                     }
 
                     for (int i = 0; i < nbr_Meshes; i++) {
