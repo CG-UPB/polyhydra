@@ -90,6 +90,7 @@ namespace vOS
         bool m_should_update;
 
         int m_last_peel_level;
+        int m_last_slice_level;
 
     };
 }

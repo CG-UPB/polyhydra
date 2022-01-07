@@ -20,6 +20,8 @@ namespace vOS
 
         BufferSpecification spec;
         spec.peel_depth = 0;
+        spec.slice_depth = 0;
+
         m_mvb = new MeshVertexBuffer(m_mesh, spec);
 
         m_should_update = false;
@@ -67,6 +69,7 @@ namespace vOS
     void MeshObject::update_vertex_buffer()
     {
         int current_peel_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_peel_level();
+        int current_slice_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_slice_level();
         if (m_should_update || current_peel_level != m_last_peel_level)
         {
             m_last_peel_level = current_peel_level;

@@ -9,20 +9,31 @@ namespace vOS
 
     MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh, BufferSpecification spec): m_spec(spec)
     {
-        int depth = spec.peel_depth;
+        int peel_depth = spec.peel_depth;
+        int slice_depth = spec.slice_depth;
 
         Mesh* current_mesh = mesh;
         m_original_vertices = get_vertices(*current_mesh);
-        if (depth > 0)
+
+        if (peel_depth > 0 || slice_depth > 0)
         {
             current_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
             current_mesh->enable_deferred_deletion(true);
             current_mesh->assign(mesh);
+        }
 
-            for (int i = 0; i < depth; i++)
+        if (peel_depth > 0)
+        {
+            for (int i = 0; i < peel_depth; i++)
             {
                 delete_boundary_cells(*current_mesh);
             }
+        }
+
+        if (slice_depth > 0)
+        {
+            slice_cells(*current_mesh, slice_depth);
+
         }
 
         generate_buffer(*current_mesh);
@@ -45,7 +56,7 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_to_vertices, 2, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
 
-        if (depth > 0)
+        if (peel_depth > 0 || slice_depth > 0)
         {
             delete current_mesh;
         }
@@ -232,7 +243,7 @@ namespace vOS
         m_to_vertices.push_back(to_pos[2]);
     }
 
-    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
+    std::pair<glm::vec3,glm::vec3> MeshVertexBuffer::get_bounding_box(const std::vector<glm::vec3>& vertices)
     {
         glm::vec3 min = vertices[0];
         glm::vec3 max = vertices[0];
@@ -264,6 +275,15 @@ namespace vOS
                 max.z = vertex.z;
             }
         }
+        auto bb = std::make_pair(min, max);
+        return bb;
+    }
+
+    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
+    {
+        auto bb = get_bounding_box(vertices);
+        auto min = bb.first;
+        auto max = bb.second;
         return min + (max - min) * 0.5f;
     }
 
@@ -278,6 +298,43 @@ namespace vOS
             }
         }
         for (auto v : boundary_vertices)
+        {
+            mesh.delete_vertex(v);
+        }
+        mesh.collect_garbage();
+    }
+
+    void MeshVertexBuffer::slice_cells(Mesh& mesh, int slice_depth)
+    {
+        // für x Koordinate
+        int coord = 0;
+
+        // get bounding box
+        std::vector<glm::vec3> vertices;
+
+        // add every vertex only once for the selection, no need to render them twice
+        for (auto cell : mesh.cells())
+        {
+            for (auto cv_it: mesh.cell_vertices(cell))
+            {
+                auto v_pos = mesh.vertex(cv_it);
+                vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
+            }
+        }
+        auto bb = get_bounding_box(vertices);
+        auto min = bb.first;
+        auto max = bb.second;
+
+        std::vector<OpenVolumeMesh::VertexHandle> slice_vertices;
+        for (auto vh : mesh.vertices())
+        {
+            auto vertex = mesh.vertex(vh);
+            if ( vertex[coord] > min.x + slice_depth * 0.1 * (max.x - min.x))
+            {
+                slice_vertices.push_back(vh);
+            }
+        }
+        for (auto v : slice_vertices)
         {
             mesh.delete_vertex(v);
         }
