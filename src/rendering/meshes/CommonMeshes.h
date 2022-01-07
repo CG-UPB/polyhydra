@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "IcoSphereMesh.h"
+#include "ClosedCylinderMesh.h"
 #include "CylinderMesh.h"
 
 namespace vOS
@@ -195,6 +196,12 @@ namespace vOS
 
         public:
 
+            static IcoSphereMesh& selection_sphere()
+            {
+                static IcoSphereMesh s_selection_sphere = IcoSphereMesh(0);
+                return s_selection_sphere;
+            }
+
             static const std::vector<float>& vertices()
             {
                 return default_sphere().vertices();
@@ -216,9 +223,9 @@ namespace vOS
 
         private:
 
-            static CylinderMesh& default_cylinder()
+            static ClosedCylinderMesh& default_cylinder()
             {
-                static CylinderMesh s_default_cylinder = CylinderMesh(20, 0.5f, 1.0f);
+                static ClosedCylinderMesh s_default_cylinder = ClosedCylinderMesh(20, 0.5f, 1.0f);
                 return s_default_cylinder;
             }
 

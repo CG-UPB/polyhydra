@@ -1,7 +1,9 @@
 
+#include <iostream>
 #include "glad/glad.h"
 
 #include "MeshPass.h"
+#include "../../settings/GlobalViewerSettings.h"
 
 namespace vOS
 {
@@ -21,7 +23,7 @@ namespace vOS
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glEnable(GL_LINE_SMOOTH);
-            glLineWidth(1);
+            glLineWidth(2);
             glEnable(GL_BLEND);
         }
         else
@@ -34,6 +36,8 @@ namespace vOS
         glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
         glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
 
+        float cell_size = GlobalViewerSettings::getInstance()->m_get_current_cell_size();
+
         // set all of our uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
         m_mesh_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
@@ -42,8 +46,27 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_mesh_shader->set_uniform_vec3f("u_objectColor", data.mesh.color);
+        m_mesh_shader->set_uniform_float("u_cell_size", cell_size);
 
         vao->draw();
+
+//        // render edges on top of the mesh
+//        if (!m_render_wireframe)
+//        {
+//            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//            glEnable(GL_LINE_SMOOTH);
+//            glLineWidth(2);
+//            glEnable(GL_BLEND);
+//
+//            // move a small epsilon to the camera, else it would overlay with the mesh
+//            float epsilon = 0.02;
+//            glm::mat4 temp = glm::translate(glm::vec3(0.0, 0.0, epsilon));
+//            transform = temp * data.camera.world * data.mesh.transform * positionOffset;
+//            m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
+//            m_mesh_shader->set_uniform_vec3f("u_objectColor", glm::vec3(0.0, 0.0, 0.0));
+//            vao->draw();
+//            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//        }
 
         m_mesh_shader->unbind();
 

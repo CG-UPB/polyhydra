@@ -59,5 +59,9 @@ namespace vOS
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
         SelectionHoverPass m_selection_hover_pass;
+
+        // render selection every 4th frame
+        int m_frame_limit = 4;
+        int m_current_frame = 0;
     };
 }
