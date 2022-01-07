@@ -11,12 +11,14 @@ namespace vOS
         ~FileDialog() override = default;
         void show() override;
 
+        void close();
+
         void open(const std::string& extension, int nbr_of_dialog);
         const std::string& get_file_path_file_loader();
         const std::string& get_file_path_snapshot_saver();
         void set_open_fileloader(bool open);
         void set_open_snapshot_saver(bool open);
-        
+        bool file_dialogue_open(){return m_is_open_fileloader || m_is_open_snapshot_saver;}
         bool is_ok_file_loader() const;
         bool is_ok_snapshot_saver() const;
 

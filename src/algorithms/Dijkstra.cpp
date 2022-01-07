@@ -140,29 +140,21 @@ namespace vOS
 
         if (ImGui::Button("Open File"))
         {
-            m_open_file = true;
+            Window::instance().OpenFileDialogue();
         }
 
-        if (m_open_file)
+        if (Window::instance().FileDialogueOpen())
         {
-            std::string path;
-            if (Window::instance().ShowFileDialog(path))
-            {
-                if(path != "")
-                {
-                    std::cout << "Pfad:" << path << std::endl;
-                    OpenVolumeMesh::IO::FileManager file_manager;
-                    file_manager.readFile(path, m_mesh);
-                    Window::instance().set_mesh(&m_mesh);
+            std::string path = Window::instance().GetFileDialoguePath();
+            std::cout << path << " ??" <<std::endl;
+            if (path != "") {
 
-                    linear_run();
-                    m_open_file = false;
-                }
-            }
-            if(path == "")
-            {
-                m_open_file = false;
-                Window::instance().m_file_dialog->set_open_fileloader(false);
+                OpenVolumeMesh::IO::FileManager file_manager;
+                file_manager.readFile(path, m_mesh);
+                Window::instance().set_mesh(&m_mesh);
+                std::cout << "Got a path" << std::endl;
+                linear_run();
+                Window::instance().EndFileDialogue();
             }
         }
 
@@ -331,19 +323,15 @@ namespace vOS
             step_button_pressed();
         }
 
+
         if (ImGui::Button("Open File"))
         {
-            m_open_file = true;
+            Window::instance().OpenFileDialogue();
         }
 
-        if (m_open_file)
-        {
-            std::string path;
-            if (Window::instance().ShowFileDialog(path))
-            {
-                m_open_file = false;
-            }
-        }
+
+        if (!Window::instance().FileDialogueOpen())
+            Window::instance().EndFileDialogue();
 
         ImGui::End();
     }

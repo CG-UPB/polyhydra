@@ -83,7 +83,7 @@ namespace vOS
         if(m_open_file)
         {
             std::string path;
-            if (Window::instance().ShowFileDialog(path,".bmp",1))
+            /*if (Window::instance().ShowFileDialog(path,".bmp",1))
             {
 
 
@@ -94,7 +94,7 @@ namespace vOS
                     m_open_file = false;
                     //LogWindow::getInstance()->addLog("1");
                 }
-            }
+            }*/
             if (path == "")
             {
                 m_open_file = false;

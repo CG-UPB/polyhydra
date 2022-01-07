@@ -373,23 +373,34 @@ namespace vOS
         this->m_mesh_view->m_take_screenshot(filename);
     }
 
-    bool Window::ShowFileDialog(std::string& path, const std::string& extension, int nbr_of_dialog)
+    bool Window::FileDialogueOpen()
     {
+        return instance().m_file_dialog->file_dialogue_open();
+    }
 
-        instance().m_file_dialog->open(extension, nbr_of_dialog);
+    void Window::OpenFileDialogue() {
 
-        if (nbr_of_dialog == 0)
+        instance().m_file_dialog->open(".ovm", 0);
+    }
+
+    void Window::EndFileDialogue(){
+        if(instance().FileDialogueOpen())
+            instance().m_file_dialog->close();
+    }
+
+    std::string Window::GetFileDialoguePath()
+    {
+        std::string  path = "";
+
+        if(instance().m_file_dialog->is_ok_file_loader())
         {
-            if(instance().m_file_dialog->is_ok_file_loader())
-            {
-                path = instance().m_file_dialog->get_file_path_file_loader();
-                instance().m_file_dialog->set_open_fileloader(false);
-                instance().set_loaded_file_path_name( path);
+            path = instance().m_file_dialog->get_file_path_file_loader();
+            instance().set_loaded_file_path_name( path);
+        }
+        return path;
 
-            }
-            return instance().m_file_dialog->is_ok_file_loader();
-
-        }else if (nbr_of_dialog == 1)
+        /*
+        if (nbr_of_dialog == 1)
         {
             if (instance().m_file_dialog->is_ok_snapshot_saver())
             {
@@ -397,7 +408,7 @@ namespace vOS
                 instance().m_file_dialog->set_open_snapshot_saver(false);
             }
             return instance().m_file_dialog->is_ok_snapshot_saver();
-        }
+        }*/
 
     }
 

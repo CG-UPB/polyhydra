@@ -143,6 +143,7 @@ namespace vOS {
 
         bool is_running();
 
+
         // Selections //////////////////////////////////////////////////////////////////////////////////////////////////
 
         /*
@@ -169,10 +170,13 @@ namespace vOS {
         void run();
 
         //void run(void_callback vc);
-        // Custom ImGui Methods
 
-        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm",int nbr_of_dialog = 0);
+        static void OpenFileDialogue();
 
+        static std::string GetFileDialoguePath();
+        static bool FileDialogueOpen();
+
+        static void EndFileDialogue();
         /*
          * Selects a given element (Face, Vertex, Edge) from given mesh
          * Element Types are:

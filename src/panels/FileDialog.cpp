@@ -20,7 +20,6 @@ namespace vOS
         {
             if (m_open_file){
                 m_ok_file_loader = false;
-                m_open_file = false;
             }
             // action if OK
             if (m_instance_file_loader.IsOk())
@@ -28,18 +27,16 @@ namespace vOS
                 std::string filePathName = m_instance_file_loader.GetFilePathName();
                 std::string filePath = m_instance_file_loader.GetCurrentPath();
                 m_ok_file_loader = true;
-                m_open_file = true;
                 m_file_path_file_loader = std::string(filePathName);
-            }
-            Input::accept_input(true);
-            m_instance_file_loader.Close();
+                std::cout << " We picked a path " << m_file_path_file_loader << std::endl;
+            }else
+                close();
         }
 
         if (m_instance_snapshot_saver.Display("ChooseBMPFile", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
         {
             if (m_open_snap){
                 m_ok_snapshot_saver = false;
-                m_open_snap = false;
             }
 
             // action if OK
@@ -49,18 +46,18 @@ namespace vOS
                 LogWindow::getInstance()->addLog("Nach OK");
                 std::string filePathName = m_instance_snapshot_saver.GetFilePathName();
                 std::string filePath = m_instance_snapshot_saver.GetCurrentPath();
-                m_open_snap = true;
                 m_ok_snapshot_saver = true;
                 m_file_path_snapshot_saver = std::string(filePathName);;
             }
-            Input::accept_input(true);
+            else
+            close();
             LogWindow::getInstance()->addLog("Vor Close");
-            m_instance_snapshot_saver.Close();
         }
     }
 
     void FileDialog::open(const std::string& extension, int nbr_of_dialog)
     {
+        std::cout << " Opening " << std::endl;
         if (!m_is_open_fileloader && nbr_of_dialog == 0)
         {
             m_instance_file_loader.OpenDialog("ChooseOVMFIle", "Choose File", extension.c_str(), ".");
@@ -108,5 +105,20 @@ namespace vOS
     void FileDialog::set_open_snapshot_saver(bool open)
     {
         m_is_open_snapshot_saver = open;
+    }
+
+    void FileDialog::close(){
+        set_open_fileloader(false);
+        set_open_snapshot_saver(false);
+        m_is_open_snapshot_saver = false;
+
+        m_is_open_fileloader = false;
+        m_instance_file_loader.Close();
+        m_instance_snapshot_saver.Close();
+        Input::accept_input(true);
+
+        m_file_path_file_loader = "";
+
+        std::cout << "Close File Dialog" << std::endl;
     }
 }
