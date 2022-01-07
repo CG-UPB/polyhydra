@@ -17,7 +17,7 @@
 #include "../mesh/MeshObject.h"
 
 #include "../util/BitMap.h"
-
+#include "../util/shader_enum.h"
 
 
 namespace vOS
@@ -220,6 +220,9 @@ namespace vOS
         {
             auto mesh = m.second;
 
+            if(!mesh->get_data().m_visible)
+                continue;
+
             mesh->update_vertex_buffer();
 
             // render all passes
@@ -235,7 +238,34 @@ namespace vOS
 
     void MeshView::m_take_screenshot(std::string filename)
     {
+        //LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
         m_meshFrameBuffer->bind();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if(!m_zoom)
+        {
+            m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
+        }
+        Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
+
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+
+            if(!mesh->get_data().m_visible)
+                continue;
+            mesh->update_vertex_buffer();
+
+            // render all passes
+            if (mesh->get_vao() != nullptr) {
+                m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
+                m_highlight_pass.render(nullptr, m_render_data, m.first);
+                m_shape_pass.render(nullptr, m_render_data, m.first);
+            }
+        }
+
         std::ofstream ofp;
 
         glFlush();
@@ -262,6 +292,7 @@ namespace vOS
         // copying the contents of the
         // string to char array
         strcpy(char_array, filename.c_str());
+
 
         BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
 
@@ -309,17 +340,18 @@ namespace vOS
 
         m_pixel_buffer->finish_read();
 
-        // we need to clear our framebuffer as well
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_current_frame = (m_current_frame + 1) % m_frame_limit;
+        if (m_current_frame == 0) {
+            // we need to clear our framebuffer as well
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-            m_selection_pass.render_mesh(mesh, m_render_data, m.first);
-            m_selection_hover_pass.render(nullptr, m_render_data, m.first);
+            for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
+                auto mesh = m.second;
+                m_selection_pass.render_mesh(mesh, m_render_data, m.first);
+                m_selection_hover_pass.render(nullptr, m_render_data, m.first);
+            }
         }
-
         m_selectionFrameBuffer->unbind();
 
         m_meshFrameBuffer->bind();
@@ -345,7 +377,7 @@ namespace vOS
                 {
                     // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                     // there is no valid ID (e.g when clicking background)
-                    int face_id = (int) mesh->to_faceID(picked_id - from) - 1;
+                    int face_id = mesh->to_faceID(picked_id - from) - 1;
 
                     m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
 
@@ -362,7 +394,7 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
                 {
-                    int vertex_id = picked_id - from;
+                    int vertex_id = mesh->to_vertexID(picked_id - from) - 1;
 
                     m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, vertex_id);
 
@@ -378,7 +410,7 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_EDGE)
                 {
-                    int edge_id = (int) mesh->to_edgeID(picked_id - from) - 1;
+                    int edge_id = mesh->to_edgeID(picked_id - from) - 1;
 
                     m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, edge_id);
 

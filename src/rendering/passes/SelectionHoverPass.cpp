@@ -159,16 +159,25 @@ namespace vOS
         OpenVolumeMesh::FaceHandle face(face_id);
         if (face.is_valid())
         {
-            int index = 0;
+            int num_vertices = 0;
             for (auto v_h : mesh.m_mesh->face_vertices(face))
             {
                 auto vertex = mesh.m_mesh->vertex(v_h);
                 res.vertices.push_back(vertex[0]);
                 res.vertices.push_back(vertex[1]);
                 res.vertices.push_back(vertex[2]);
+                num_vertices++;
+            }
 
-                res.indices.push_back(index++);
+            res.indices.push_back(0);
+            res.indices.push_back(2);
+            res.indices.push_back(1);
 
+            if (num_vertices == 4)
+            {
+                res.indices.push_back(0);
+                res.indices.push_back(3);
+                res.indices.push_back(2);
             }
 
             auto pos = mesh.m_mesh->barycenter(face);

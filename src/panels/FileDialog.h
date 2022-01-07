@@ -16,12 +16,14 @@ namespace vOS
         const std::string& get_file_path_snapshot_saver();
         void set_open_fileloader(bool open);
         void set_open_snapshot_saver(bool open);
-
+        
         bool is_ok_file_loader() const;
         bool is_ok_snapshot_saver() const;
 
     private:
 
+        bool m_open_file = true;
+        bool m_open_snap = true;
         bool m_is_open_fileloader = false;
         bool m_is_open_snapshot_saver = false;
         bool m_ok_file_loader = false;

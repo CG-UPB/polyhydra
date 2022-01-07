@@ -4,12 +4,13 @@
 
 namespace vOS
 {
-    class CylinderMesh
+    class ClosedCylinderMesh
     {
+
     public:
 
-        explicit CylinderMesh(int samples = 10, float radius = 1.0f, float height = 1.0f);
-        ~CylinderMesh() = default;
+        explicit ClosedCylinderMesh(int samples = 10, float radius = 1.0f, float height = 1.0f);
+        ~ClosedCylinderMesh() = default;
 
         const std::vector<float>& vertices();
         const std::vector<unsigned int>& indices();

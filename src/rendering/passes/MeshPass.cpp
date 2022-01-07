@@ -1,7 +1,9 @@
 
+#include <iostream>
 #include "glad/glad.h"
 #include "../../Window.h"
 #include "MeshPass.h"
+#include "../../settings/GlobalViewerSettings.h"
 
 namespace vOS
 {
@@ -35,7 +37,7 @@ namespace vOS
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glEnable(GL_LINE_SMOOTH);
-            glLineWidth(1);
+            glLineWidth(2);
             glEnable(GL_BLEND);
         }
         else
@@ -52,6 +54,8 @@ namespace vOS
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
 
+        float cell_size = GlobalViewerSettings::getInstance()->m_get_current_cell_size();
+
         // set all of our uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
         m_mesh_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
@@ -59,6 +63,7 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_lightPos", data.light.position);
         m_mesh_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
+        m_mesh_shader->set_uniform_float("u_cell_size", cell_size);
         m_mesh_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get());
 
         vao->draw();

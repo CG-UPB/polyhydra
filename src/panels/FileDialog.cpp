@@ -15,16 +15,20 @@ namespace vOS
 
     void FileDialog::show()
     {
+
         if (m_instance_file_loader.Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
         {
-
-            m_ok_file_loader = false;
+            if (m_open_file){
+                m_ok_file_loader = false;
+                m_open_file = false;
+            }
             // action if OK
             if (m_instance_file_loader.IsOk())
             {
                 std::string filePathName = m_instance_file_loader.GetFilePathName();
                 std::string filePath = m_instance_file_loader.GetCurrentPath();
                 m_ok_file_loader = true;
+                m_open_file = true;
                 m_file_path_file_loader = std::string(filePathName);
             }
             Input::accept_input(true);
@@ -33,7 +37,11 @@ namespace vOS
 
         if (m_instance_snapshot_saver.Display("ChooseBMPFile", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
         {
-             m_ok_snapshot_saver = false;
+            if (m_open_snap){
+                m_ok_snapshot_saver = false;
+                m_open_snap = false;
+            }
+
             // action if OK
             LogWindow::getInstance()->addLog("Vor OK");
             if (m_instance_snapshot_saver.IsOk())
@@ -41,6 +49,7 @@ namespace vOS
                 LogWindow::getInstance()->addLog("Nach OK");
                 std::string filePathName = m_instance_snapshot_saver.GetFilePathName();
                 std::string filePath = m_instance_snapshot_saver.GetCurrentPath();
+                m_open_snap = true;
                 m_ok_snapshot_saver = true;
                 m_file_path_snapshot_saver = std::string(filePathName);;
             }

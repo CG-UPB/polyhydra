@@ -368,20 +368,27 @@ namespace vOS
     }
 
 
+    void Window::take_screenshot(std::string filename)
+    {
+        this->m_mesh_view->m_take_screenshot(filename);
+    }
+
     bool Window::ShowFileDialog(std::string& path, const std::string& extension, int nbr_of_dialog)
     {
 
         instance().m_file_dialog->open(extension, nbr_of_dialog);
+
         if (nbr_of_dialog == 0)
         {
-            if (instance().m_file_dialog->is_ok_file_loader())
+            if(instance().m_file_dialog->is_ok_file_loader())
             {
                 path = instance().m_file_dialog->get_file_path_file_loader();
                 instance().m_file_dialog->set_open_fileloader(false);
-            }
-            if(instance().m_file_dialog->is_ok_file_loader())
                 instance().set_loaded_file_path_name( path);
+
+            }
             return instance().m_file_dialog->is_ok_file_loader();
+
         }else if (nbr_of_dialog == 1)
         {
             if (instance().m_file_dialog->is_ok_snapshot_saver())

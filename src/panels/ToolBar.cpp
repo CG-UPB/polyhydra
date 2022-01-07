@@ -30,7 +30,8 @@ namespace vOS
 
     }
 
-    ToolBar::ToolBar() {}
+    ToolBar::ToolBar() {
+    }
 
     // Destruktor
     ToolBar::~ToolBar()
@@ -64,7 +65,17 @@ namespace vOS
             return;
         }
 
-        
+
+
+        ImGui::InputInt("Mesh in Focus", &m_active_mesh);
+        if (m_active_mesh < 0) m_active_mesh = 0;
+        if (m_active_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
+        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+        GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
+
+
+
+
         if(ImGui::Button("Snapshot"))
         {
             m_open_file = true;
@@ -72,40 +83,62 @@ namespace vOS
         if(m_open_file)
         {
             std::string path;
-            if (Window::ShowFileDialog(path,".bmp",1))
+            if (Window::instance().ShowFileDialog(path,".bmp",1))
             {
-                GlobalViewerSettings::getInstance()->m_set_take_snapshot(true);
-                GlobalViewerSettings::getInstance()->m_set_actual_snapshot_filename(path);
-                LogWindow::getInstance()->addLog("hier" + path);
-                m_open_file = false;
+
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+                if(path != ""){
+                    Window::instance().take_screenshot(path);
+                    m_open_file = false;
+                    //LogWindow::getInstance()->addLog("1");
+                }
             }
-            
+            if (path == "")
+            {
+                m_open_file = false;
+                Window::instance().m_file_dialog->set_open_snapshot_saver(false);
+                //LogWindow::getInstance()->addLog("2");
+            }
+            if(path != "")
+            {
+                Window::instance().take_screenshot(path);
+                m_open_file = false;
+                //LogWindow::getInstance()->addLog("1");
+            }
 
         }
         ImGui::SameLine();
         HelpMarkerWithQuestionMark("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
-                   "choose a file in which you want to save your image of the actual Mesh");
+                                   "choose a file in which you want to save your image of the actual Mesh");
 
         if (ImGui::BeginPopup("Selection")) {
+
+            ImGui::Checkbox("Activate Selection",&m_selection_activated);
+            GlobalViewerSettings::getInstance()->m_set_current_selection_activated(m_selection_activated);
             //ImGui::Checkbox("Vertex-Selection", &m_vertex_selection);
-            if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
+            if(m_selection_activated)
             {
-                m_current_selection_mode = Vertex;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Vertex);
+                if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
+                {
+                    m_current_selection_mode = Vertex;
+                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Vertex);
+                }
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
+                if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
+                {
+                    m_current_selection_mode = Edge;
+                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Edge);
+                }
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
+                if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
+                {
+                    m_current_selection_mode = Face;
+                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Face);
+                }
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
             }
-            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
-            if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
-            {
-                m_current_selection_mode = Edge;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Edge);
-            }
-            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
-            if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
-            {
-                m_current_selection_mode = Face;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Face);
-            }
-            ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
             ImGui::EndPopup();
         }
         if (ImGui::Button("Selection"))
@@ -128,12 +161,16 @@ namespace vOS
                 ImGui::Text("Slicer:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                               "inview of the mesh");
-                ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
+                ImGui::SliderInt("", &m_slider_slicer, 0, 10);
                 GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
                 ImGui::Text("Peel:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
-                ImGui::SliderFloat(" ", &m_slider_peel, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_None);
+                ImGui::SliderInt(" ", &m_slider_peel, 0, 10);
                 GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
+                if (ImGui::SliderFloat("Cell Size:", &m_cell_size, 0.0f, 1.0f))
+                {
+                    GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
+                }
                 // Therefore a picker has to work
                 ImGui::Text("Start Isolation:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("With this button you can start a selection of a "
@@ -179,11 +216,95 @@ namespace vOS
             ImGui::EndTooltip();
         }
 
+        
+        
         if (ImGui::CollapsingHeader("Rendering Options"))
         {
             if (ImGui::BeginTable("split", 1))
             {
+                // Decision on which mesh(es), the actual values should be used
+                // Idea: iterate over meshes, for each mesh create a Selectable, which is represented by a bool. In Meshview: For each Mesh: check if bool is true -> change Color etc.
                 ImGui::TableNextColumn();
+                //ImGui::Text("   ");ImGui::SameLine();
+                if(ImGui::Button("Mesh-Selection"))
+                    showPopup = true;
+                ImVec2 cursorPos = ImGui::GetCursorPos();
+                ImGui::SetNextWindowPos(ImVec2(cursorPos.x + 100,cursorPos.y));
+                if (ImGui::BeginPopup("Mesh-Selection"))
+                {
+                    int nbr_Meshes = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes();
+                    bool meshes[nbr_Meshes];
+                    for (int i = 0; i < nbr_Meshes; i++) {
+                        meshes[i] = GlobalViewerSettings::getInstance()->get_Visibility_of_Mesh(nbr_Meshes-1-i);
+                    }
+                    for (size_t i = 0; i < GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes(); i++)
+                    {
+                        const char* label = ("Mesh " + std::to_string(i+1)).c_str();
+                        ImGui::Text("   ");ImGui::SameLine();
+                        ImGui::Selectable(label,&meshes[i]);
+                        //LogWindow::getInstance()->addLog("Hier2:");
+                        //LogWindow::getInstance()->addLog(std::to_string(meshes[i]));
+                    }
+
+                    for (int i = 0; i < nbr_Meshes; i++) {
+                        GlobalViewerSettings::getInstance()->set_Visibility_of_Mesh(nbr_Meshes - 1 - i, meshes[i]);
+                    }
+
+                    /*
+
+                    std::vector<bool> arr = GlobalViewerSettings::getInstance()->get_test();
+                    bool selected_mesh[arr.size()];
+                    for (size_t i = 0; i < arr.size(); i++)
+                    {
+                        std::cout << "Hier gehts noch rein";
+                        LogWindow::getInstance()->addLog("Hier:");
+                        LogWindow::getInstance()->addLog(std::to_string(arr[i]));
+                        selected_mesh[i] = arr[i];
+                    }
+                    
+                    for (size_t i = 0; i < GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes(); i++)
+                    {
+                        const char* label = ("Mesh " + std::to_string(i+1)).c_str();
+                        ImGui::Text("   ");ImGui::SameLine();
+                        ImGui::Selectable(label,&selected_mesh[i]);
+                        LogWindow::getInstance()->addLog("Hier2:");
+                        LogWindow::getInstance()->addLog(std::to_string(selected_mesh[i]));
+                    }
+
+                    
+                    std::vector<bool> newArr(GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes());
+                    newArr.clear();
+                    for (size_t i = 0; i < GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes(); i++)
+                    {
+                        newArr[i] = selected_mesh[i];
+                    }
+                    
+                    GlobalViewerSettings::getInstance()->m_set_test(newArr);*/
+                    if(ImGui::Button("Close"))
+                    {
+                        showPopup = false;
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+                if (showPopup)
+                    ImGui::OpenPopup("Mesh-Selection");
+                
+/*
+                if (ImGui::BeginPopup("Mesh-Selection"))
+                {
+                    for (size_t i = 0; i < m_nbr_meshes; i++)
+                    {
+                        const char* label = ("Mesh " + std::to_string(i)).c_str();
+                        ImGui::Selectable(label,&m_selected_mesh[i]);
+                    }
+                    ImGui::EndPopup();
+                }
+                if (ImGui::Button("Mesh-Selcetion"))
+                    ImGui::OpenPopup("Mesh-Selection");
+                
+*/
+                
                 ImGui::Text("Color:");
                 ImGui::Checkbox("", &m_color_activated);
                 ImGui::SameLine();
@@ -191,20 +312,26 @@ namespace vOS
                 GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color_activated, m_color[0],m_color[1],m_color[2],m_color[3]);
                 ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
-                
+
                 // Select an item type
                 const char* rendering_mode_names[] =
                         {
-                                "WireFrame", "Phong"
+                                "Phong", "Wireframe", "Normal", "Flat"
+                        };
+                const char* rendering_mode_internal_names[] =
+                        {
+                                "mesh_phong", "mesh_wireframe", "mesh_normal", "mesh_flat"
                         };
                 ImGui::Text("Rendering Mode:");
                 ImGui::Combo("  ", &m_rendering_mode, rendering_mode_names, IM_ARRAYSIZE(rendering_mode_names), IM_ARRAYSIZE(rendering_mode_names));
                 // TODO
-                Window::instance().set_mesh_rendering_mode("mesh_phong");
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_rendering_mode(rendering_mode_internal_names[m_rendering_mode]);
+                Window::instance().rendering_mutex.lock();
                 ImGui::SameLine();
                 HelpMarkerWithQuestionMark("You can choose between multiple rendering modes for the mesh");
-                
-                
+
+
                 // Select an item type
                 const char* item_names[] =
                         {

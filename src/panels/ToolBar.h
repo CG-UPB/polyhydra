@@ -22,6 +22,8 @@ namespace vOS
         static ToolBar* getInstance();
         void show() override;
 
+        //void setSelectedMeshes(std::vector<bool> sel){m_selected_meshs = sel};
+
     private:
         ToolBar();
 
@@ -30,14 +32,21 @@ namespace vOS
         static ToolBar* instance;
         int m_timer_treshold = 3;
 
+        bool m_selection_activated = false;
         int m_current_selection_mode;
         bool m_color_activated = true;
-        float m_color[4] = {1.0f,0.0f,0.0f,1.0f};
-        float m_slider_slicer = 0.5f;
-        float m_slider_peel = 0.5f;
+        float m_color[4] = {1.0f,1.0f,1.0f,1.0f};
+        int m_slider_slicer = 0;
+        int m_slider_peel = 0;
         bool m_isolation_started = false;
         int m_separation_type = 2;
         int m_lighting_type = 3;
         int m_rendering_mode = 1;
+        float m_cell_size = 1.0f;
+        int m_active_mesh = 0;
+
+        bool showPopup = false;
+
+        bool test_selected[3] = {false,true,false};
     };
 }

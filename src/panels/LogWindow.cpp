@@ -81,10 +81,10 @@ namespace vOS
     // show log window and corresponding buttons
     void LogWindow::show()
     {
-        const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        int size_y = main_viewport->WorkSize.y * 0.7;
-        ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 5, main_viewport->WorkPos.y + main_viewport->WorkSize.y * 0.7), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(500, main_viewport->WorkSize.y - size_y), ImGuiCond_Once);
+//        const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+//        int size_y = main_viewport->WorkSize.y * 0.7;
+//        ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 5, main_viewport->WorkPos.y + main_viewport->WorkSize.y * 0.7), ImGuiCond_Once);
+//        ImGui::SetNextWindowSize(ImVec2(500, main_viewport->WorkSize.y - size_y), ImGuiCond_Once);
 
         if (!ImGui::Begin("Log-ImguiRenderer"))
         {
