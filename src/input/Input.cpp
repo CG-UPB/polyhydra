@@ -105,6 +105,7 @@ namespace vOS
         m_currentMouseY = ypos;
     }
     void Input::glw_callback_mouse_scroll(GLFWwindow *window, double xoffset, double yoffset){
+
         if(!m_accept_inputs || m_ignore_mouse_commands)
             return;
 

@@ -52,12 +52,11 @@ namespace vOS
 
     void FileDialog::open(const std::string& extension, int nbr_of_dialog)
     {
-
-        Input::accept_input(false);
         if (!m_is_open_fileloader && nbr_of_dialog == 0)
         {
             m_instance_file_loader.OpenDialog("ChooseOVMFIle", "Choose File", extension.c_str(), ".");
             m_is_open_fileloader = true;
+            Input::accept_input(false);
         }
         if (!m_is_open_snapshot_saver && nbr_of_dialog == 1)
         {
@@ -65,6 +64,7 @@ namespace vOS
             time_t rawtime;
             time ( &rawtime );
             str << rawtime;
+            Input::accept_input(false);
             m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Save File", extension.c_str(), ".",str.str());
             m_is_open_snapshot_saver = true;
         }
