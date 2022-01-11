@@ -70,10 +70,6 @@ namespace vOS
 
         std::vector<float> get_vertices(Mesh& mesh);
 
-        void delete_boundary_cells(Mesh& mesh);
-
-        void slice_cells(Mesh& mesh, int slice_depth);
-
         BufferSpecification m_spec;
 
         std::vector<float> m_original_vertices;
@@ -93,6 +89,7 @@ namespace vOS
         std::vector<float> m_cell_centers;
         std::vector<float> m_sphere_cell_centers;
         std::vector<float> m_cylinder_cell_centers;
+        std::vector<float> m_peel_depths;
 
         std::vector<unsigned int> m_indices;
         std::vector<float> m_from_vertices;

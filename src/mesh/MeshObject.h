@@ -58,6 +58,9 @@ namespace vOS
         glm::vec3 &get_mesh_offset();
         [[nodiscard]] VertexArrayObject* get_vao() const;
 
+        glm::vec3 &get_min(){return m_min;};
+        glm::vec3 &get_max(){return m_max;};
+
         /**
          * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
          * we would have to update the vertex array with the data every time we render.
@@ -73,6 +76,7 @@ namespace vOS
     private:
         void calculate_mesh_offset();
         [[nodiscard]] int calculate_selection_size() const;
+        void calculate_peel_depth();
 
         std::vector<float> m_vert_colors;
         std::vector<float> m_face_colors;
@@ -91,6 +95,9 @@ namespace vOS
 
         int m_last_peel_level;
         int m_last_slice_level;
+
+        glm::vec3 m_min;
+        glm::vec3 m_max;
 
     };
 }

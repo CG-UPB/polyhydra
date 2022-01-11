@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderPass.h"
+#include "../../mesh/MeshObject.h"
 
 namespace vOS
 {
@@ -18,6 +19,8 @@ namespace vOS
         [[nodiscard]] bool get_use_phong() const;
 
         void render(VertexArrayObject* vao, const RenderData& data) override;
+
+        void renderMesh(MeshObject* mesh_object, const RenderData& data);
 
         void set_mesh_shader(Shader* shader){m_mesh_shader = shader;}
     private:

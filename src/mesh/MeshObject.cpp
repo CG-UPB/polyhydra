@@ -7,6 +7,7 @@
 #include "../panels/LogWindow.h"
 #include <array>
 #include <string>
+#include <unordered_set>
 #include "../Window.h"
 #include "../rendering/meshes/CommonMeshes.h"
 #include "../settings/GlobalViewerSettings.h"
@@ -60,6 +61,10 @@ namespace vOS
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
         m_mesh->assign(mesh);
 
+        OpenVolumeMesh::CellPropertyT<int> peel_property = m_mesh->request_cell_property<int>("PeelDepth");
+        peel_property->set_persistent(true);
+        calculate_peel_depth();
+
         remove_highlights();
         m_should_update = true;
         update_vertex_buffer();
@@ -70,20 +75,11 @@ namespace vOS
     {
         int current_peel_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_peel_level();
         int current_slice_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_slice_level();
-        if (m_should_update || current_peel_level != m_last_peel_level)
+        if (m_should_update)
         {
-            m_last_peel_level = current_peel_level;
-
-            auto mvb = m_peel_cache[current_peel_level];
-            if (mvb == nullptr)
-            {
-                BufferSpecification spec;
-                spec.peel_depth = current_peel_level;
-                m_peel_cache[current_peel_level] = new MeshVertexBuffer(m_mesh, spec);
-            }
-
-            m_mvb = m_peel_cache[current_peel_level];
-
+            BufferSpecification spec;
+            spec.peel_depth = current_peel_level;
+            m_mvb = new MeshVertexBuffer(m_mesh, spec);
             calculate_mesh_offset();
         }
         m_should_update = false;
@@ -123,7 +119,79 @@ namespace vOS
                 max.z = vertex.z;
             }
         }
+        m_min = min;
+        m_max = max;
         m_mesh_offset_from_center = min + (max - min) * 0.5f;
+    }
+
+    void MeshObject::calculate_peel_depth()
+    {
+        OpenVolumeMesh::CellPropertyT<int> peel_property = m_mesh->request_cell_property<int>("PeelDepth");
+        std::vector<OpenVolumeMesh::CellHandle> cell_cache;
+
+        // Initialize all boundary Cells with depth = 0 and everything else with -1
+        for (auto cell : m_mesh->cells())
+        {
+            peel_property[cell] = -1;
+            // determine boundary cells
+            if (m_mesh->is_boundary(cell))
+            {
+                peel_property[cell] = 0;
+                cell_cache.push_back(cell);
+            }
+        }
+
+        // actual depth
+        int depth = -1;
+
+
+        std::vector<OpenVolumeMesh::CellHandle> next_level_cache;
+        std::unordered_set <int> visited;
+        while(!cell_cache.empty())
+        {
+            // start with depth == 0
+            depth++;
+            visited.clear();
+            for (auto cell : cell_cache)
+            {
+                for (auto neighbour :  m_mesh->cell_cells(cell))
+                {
+                    if (visited.find(neighbour.idx()) != visited.end())
+                    {
+                        for (auto vertex : m_mesh->cell_vertices(OpenVolumeMesh::CellHandle(neighbour.idx())))
+                        {
+                            if (m_mesh->is_boundary(vertex))
+                            {
+                                peel_property[neighbour] = depth;
+                                continue;
+                            }
+
+                            for (auto vertex_cell : m_mesh->vertex_cells(vertex))
+                            {
+                                if(peel_property[vertex_cell ] < depth)
+                                {
+                                    peel_property[neighbour] = depth;
+                                    continue;
+                                }
+                            }
+                        }
+                        continue;
+                    }
+
+                    if (peel_property[neighbour] == -1)
+                    {
+                        peel_property[neighbour] = depth + 1;
+                        visited.insert(neighbour.idx());
+                    }
+                }
+            }
+
+            cell_cache.clear();
+            for(auto neighbour : visited)
+            {
+                cell_cache.emplace_back(neighbour);
+            }
+        }
     }
 
     int MeshObject::to_vertexID(int value)

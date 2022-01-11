@@ -16,10 +16,6 @@ namespace vOS
 
         if (m_instance_file_loader.Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
         {
-            if (m_open_file){
-                m_ok_file_loader = false;
-                m_open_file = false;
-            }
             // action if OK
             if (m_instance_file_loader.IsOk())
             {
@@ -57,10 +53,12 @@ namespace vOS
 
     void FileDialog::open(const std::string& extension, int nbr_of_dialog)
     {
+
         if (!m_is_open_fileloader && nbr_of_dialog == 0)
         {
             m_instance_file_loader.OpenDialog("ChooseOVMFIle", "Choose File", extension.c_str(), ".");
             m_is_open_fileloader = true;
+            show();
         }
         if (!m_is_open_snapshot_saver && nbr_of_dialog == 1)
         {
@@ -71,6 +69,7 @@ namespace vOS
             m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Save File", extension.c_str(), ".",str.str());
             m_is_open_snapshot_saver = true;
         }
+
     }
 
 
