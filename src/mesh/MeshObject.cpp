@@ -126,71 +126,60 @@ namespace vOS
 
     void MeshObject::calculate_peel_depth()
     {
-        OpenVolumeMesh::CellPropertyT<int> peel_property = m_mesh->request_cell_property<int>("PeelDepth");
-        std::vector<OpenVolumeMesh::CellHandle> cell_cache;
+        OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
+        OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
 
-        // Initialize all boundary Cells with depth = 0 and everything else with -1
-        for (auto cell : m_mesh->cells())
+        std::vector<OpenVolumeMesh::VertexHandle> act_level;
+        std::vector<OpenVolumeMesh::VertexHandle> next_level;
+
+        for(auto vertex : m_mesh->vertices())
         {
-            peel_property[cell] = -1;
-            // determine boundary cells
-            if (m_mesh->is_boundary(cell))
+            if(m_mesh->is_boundary(vertex))
             {
-                peel_property[cell] = 0;
-                cell_cache.push_back(cell);
+                vertex_peel_property[vertex] = 0;
+                act_level.push_back(vertex);
+            }
+            else
+            {
+                vertex_peel_property[vertex] = -1;
             }
         }
 
-        // actual depth
-        int depth = -1;
+        int depth = 0;
 
-
-        std::vector<OpenVolumeMesh::CellHandle> next_level_cache;
-        std::unordered_set <int> visited;
-        while(!cell_cache.empty())
+        while(!act_level.empty())
         {
-            // start with depth == 0
             depth++;
-            visited.clear();
-            for (auto cell : cell_cache)
+            for(auto vertex : act_level)
             {
-                for (auto neighbour :  m_mesh->cell_cells(cell))
+                for (auto neighbour : m_mesh->vertex_vertices(vertex))
                 {
-                    if (visited.find(neighbour.idx()) != visited.end())
+                    if(vertex_peel_property[neighbour] == -1)
                     {
-                        for (auto vertex : m_mesh->cell_vertices(OpenVolumeMesh::CellHandle(neighbour.idx())))
-                        {
-                            if (m_mesh->is_boundary(vertex))
-                            {
-                                peel_property[neighbour] = depth;
-                                continue;
-                            }
-
-                            for (auto vertex_cell : m_mesh->vertex_cells(vertex))
-                            {
-                                if(peel_property[vertex_cell ] < depth)
-                                {
-                                    peel_property[neighbour] = depth;
-                                    continue;
-                                }
-                            }
-                        }
-                        continue;
-                    }
-
-                    if (peel_property[neighbour] == -1)
-                    {
-                        peel_property[neighbour] = depth + 1;
-                        visited.insert(neighbour.idx());
+                        vertex_peel_property[neighbour] = depth;
+                        next_level.push_back(neighbour);
                     }
                 }
             }
-
-            cell_cache.clear();
-            for(auto neighbour : visited)
+            act_level.clear();
+            for(auto vertex : next_level)
             {
-                cell_cache.emplace_back(neighbour);
+                act_level.push_back(vertex);
             }
+            next_level.clear();
+        }
+
+        for(auto cell : m_mesh->cells())
+        {
+            int minimum = 100000;
+            for(auto cell_vertex : m_mesh->cell_vertices(cell))
+            {
+                if(vertex_peel_property[cell_vertex] < minimum)
+                {
+                    minimum = vertex_peel_property[cell_vertex];
+                }
+            }
+            cell_peel_property[cell] = minimum;
         }
     }
 
