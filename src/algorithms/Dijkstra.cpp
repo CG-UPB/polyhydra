@@ -81,7 +81,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = true;
+        bool linear = false;
 
         if(linear)
         {
@@ -146,15 +146,13 @@ namespace vOS
         if (Window::instance().FileDialogueOpen())
         {
             std::string path = Window::instance().GetFileDialoguePath();
-            std::cout << path << " ??" <<std::endl;
             if (path != "") {
 
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
                 Window::instance().set_mesh(&m_mesh);
-                std::cout << "Got a path" << std::endl;
-                linear_run();
                 Window::instance().EndFileDialogue();
+                linear_run();
             }
         }
 
@@ -345,15 +343,17 @@ namespace vOS
 
         std::cout << "Start waiting " << std::endl;
         // Read file
-        while(window.get_loaded_file_name() == empty){}
+        while(window.GetFileDialoguePath() == empty){}
 
         std::cout << "Continue " << std::endl;
 
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(window.get_loaded_file_name(), m_mesh);
+        std::cout << window.GetFileDialoguePath() << std::endl;
+        file_manager.readFile(window.GetFileDialoguePath(), m_mesh);
+
+        window.EndFileDialogue();
 
         Window::instance().set_mesh(&m_mesh);
-        std::cout << window.get_loaded_file_name() << std::endl;
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
         window.remove_all_vertex_highlights();

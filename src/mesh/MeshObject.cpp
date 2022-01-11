@@ -238,7 +238,7 @@ namespace vOS
     void MeshObject::update_vertex_buffer()
     {
         int current_peel_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_peel_level();
-        if (m_should_update || current_peel_level != m_last_peel_level)
+        if (m_should_update)
         {
             m_last_peel_level = current_peel_level;
 

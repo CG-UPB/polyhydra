@@ -185,12 +185,16 @@ namespace vOS
 
     void MeshView::renderMesh(int mesh_id)
     {
+
         // Get Mesh
         MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
         if (obj == nullptr)
             return;
 
         MeshData mesh_data = obj->get_data();
+
+        if(!mesh_data.m_visible)
+            return;
 
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
@@ -216,21 +220,14 @@ namespace vOS
 
         obj->set_data(mesh_data);
 
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
 
-            if(!mesh->get_data().m_visible)
-                continue;
+        obj->update_vertex_buffer();
 
-            mesh->update_vertex_buffer();
-
-            // render all passes
-            if (mesh->get_vao() != nullptr) {
-                m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
-                m_highlight_pass.render(nullptr, m_render_data, m.first);
-                m_shape_pass.render(nullptr, m_render_data, m.first);
-            }
+        // render all passes
+        if (obj->get_vao() != nullptr) {
+            m_mesh_pass.render(obj->get_vao(), m_render_data, mesh_id);
+            m_highlight_pass.render(nullptr, m_render_data, mesh_id);
+            m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
 
         m_meshFrameBuffer->unbind();

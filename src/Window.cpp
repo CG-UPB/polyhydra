@@ -305,7 +305,7 @@ namespace vOS
 
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index) {
-        //rendering_mutex.lock();
+        rendering_mutex.lock();
         auto* mesh_obj = new MeshObject();
         mesh_obj->set_mesh(mesh);
         mesh_obj->set_data(MeshData());
@@ -323,7 +323,7 @@ namespace vOS
         set_mesh_active(index);
 
         calculate_selection_offsets();
-        //rendering_mutex.unlock();
+        rendering_mutex.unlock();
     }
 
     void Window::calculate_selection_offsets()
@@ -395,7 +395,6 @@ namespace vOS
         if(instance().m_file_dialog->is_ok_file_loader())
         {
             path = instance().m_file_dialog->get_file_path_file_loader();
-            instance().set_loaded_file_path_name( path);
         }
         return path;
 

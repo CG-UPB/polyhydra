@@ -119,10 +119,6 @@ namespace vOS {
 
         // Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
 
-        const std::string& get_loaded_file_name() { return m_loaded_file_path; };
-
-        void set_loaded_file_path_name(std::string path) { m_loaded_file_path = path; };
-
         /*
          * Sets custom function that will be called along other Vos UI panel elements
          * Updates will be adopted after the current rendering frame has ended
@@ -233,7 +229,6 @@ namespace vOS {
 
         // Variables //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        std::string m_loaded_file_path = "";
         unsigned int shape_id_counter = 0;
 
         bool m_initialized = false;
