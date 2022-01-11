@@ -12,6 +12,13 @@ namespace vOS
 
     void MeshPass::render(VertexArrayObject* vao, const RenderData& data)
     {
+
+    }
+
+    void MeshPass::renderMesh(MeshObject* mesh_object, const RenderData& data)
+    {
+        auto vao = mesh_object->get_vao();
+
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
@@ -37,6 +44,16 @@ namespace vOS
         glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
 
         float cell_size = GlobalViewerSettings::getInstance()->m_get_current_cell_size();
+        int peel_depth = GlobalViewerSettings::getInstance()->m_get_current_mesh_peel_level();
+        int slice_depth = GlobalViewerSettings::getInstance()->m_get_current_mesh_slice_level();
+        int slice_coord = 0;
+        glm::vec3 min = mesh_object->get_min();
+        glm::vec3 max = mesh_object->get_max();
+        float slice_min = min.x + slice_depth * 0.1 * (max.x - min.x);
+        std::cout << "Min: " << min.x << std::endl;
+        std::cout << "Max: " << max.x << std::endl;
+        std::cout << "SliceMin: " << slice_min << std::endl;
+
 
         // set all of our uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
@@ -47,6 +64,10 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_mesh_shader->set_uniform_vec3f("u_objectColor", data.mesh.color);
         m_mesh_shader->set_uniform_float("u_cell_size", cell_size);
+        m_mesh_shader->set_uniform_int("u_peelDepth", peel_depth);
+        m_mesh_shader->set_uniform_int("u_sliceCoord", slice_coord);
+        m_mesh_shader->set_uniform_float("u_sliceMin", slice_min);
+
 
         vao->draw();
 

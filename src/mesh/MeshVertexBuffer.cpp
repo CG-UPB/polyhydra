@@ -15,32 +15,12 @@ namespace vOS
         Mesh* current_mesh = mesh;
         m_original_vertices = get_vertices(*current_mesh);
 
-        if (peel_depth > 0 || slice_depth > 0)
-        {
-            current_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
-            current_mesh->enable_deferred_deletion(true);
-            current_mesh->assign(mesh);
-        }
-
-        if (peel_depth > 0)
-        {
-            for (int i = 0; i < peel_depth; i++)
-            {
-                delete_boundary_cells(*current_mesh);
-            }
-        }
-
-        if (slice_depth > 0)
-        {
-            slice_cells(*current_mesh, slice_depth);
-
-        }
-
         generate_buffer(*current_mesh);
 
         m_vao = new VertexArrayObject(m_positions, m_indices);
         m_vao->add_attribute(m_normals, 1, 3);
         m_vao->add_attribute(m_cell_centers, 2, 3);
+        m_vao->add_attribute(m_peel_depths, 3, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -67,6 +47,7 @@ namespace vOS
         delete m_vao;
         delete m_sphere_vao;
         delete m_cylinder_vao;
+
     }
 
     void MeshVertexBuffer::generate_buffer(Mesh& mesh)
@@ -80,10 +61,15 @@ namespace vOS
         {
             add_cell(mesh, c_it);
         }
+        std::cout << "Size: " << m_normals.size() <<std::endl;
+        std::cout << "PeelSize: " << m_peel_depths.size() <<std::endl;
     }
 
     void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
     {
+        OpenVolumeMesh::CellPropertyT<int> peel_property = mesh.request_cell_property<int>("PeelDepth");
+
+
         std::vector<FaceData> faces;
         std::vector<glm::vec3> vertices;
 
@@ -102,6 +88,9 @@ namespace vOS
 
         // get the center, so we can add it as a vertex attribute
         glm::vec3 cell_center = get_center(vertices);
+
+        // get peel depth of the cell
+        int peel_depth = peel_property[cell];
 
         for (int i = 0; i < num_selection_vertices; i++)
         {
@@ -185,6 +174,10 @@ namespace vOS
                 m_cell_centers.push_back(cell_center.x);
                 m_cell_centers.push_back(cell_center.y);
                 m_cell_centers.push_back(cell_center.z);
+
+                m_peel_depths.push_back((float)peel_depth);
+                //std::cout << peel_property[cell] <<std::endl;
+
             }
 
             // add all indices of the face
@@ -285,60 +278,6 @@ namespace vOS
         auto min = bb.first;
         auto max = bb.second;
         return min + (max - min) * 0.5f;
-    }
-
-    void MeshVertexBuffer::delete_boundary_cells(Mesh& mesh)
-    {
-        std::vector<OpenVolumeMesh::VertexHandle> boundary_vertices;
-        for (auto vh : mesh.vertices())
-        {
-            if (mesh.is_boundary(vh))
-            {
-                boundary_vertices.push_back(vh);
-            }
-        }
-        for (auto v : boundary_vertices)
-        {
-            mesh.delete_vertex(v);
-        }
-        mesh.collect_garbage();
-    }
-
-    void MeshVertexBuffer::slice_cells(Mesh& mesh, int slice_depth)
-    {
-        // für x Koordinate
-        int coord = 0;
-
-        // get bounding box
-        std::vector<glm::vec3> vertices;
-
-        // add every vertex only once for the selection, no need to render them twice
-        for (auto cell : mesh.cells())
-        {
-            for (auto cv_it: mesh.cell_vertices(cell))
-            {
-                auto v_pos = mesh.vertex(cv_it);
-                vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
-            }
-        }
-        auto bb = get_bounding_box(vertices);
-        auto min = bb.first;
-        auto max = bb.second;
-
-        std::vector<OpenVolumeMesh::VertexHandle> slice_vertices;
-        for (auto vh : mesh.vertices())
-        {
-            auto vertex = mesh.vertex(vh);
-            if ( vertex[coord] > min.x + slice_depth * 0.1 * (max.x - min.x))
-            {
-                slice_vertices.push_back(vh);
-            }
-        }
-        for (auto v : slice_vertices)
-        {
-            mesh.delete_vertex(v);
-        }
-        mesh.collect_garbage();
     }
 
     std::vector<float> MeshVertexBuffer::get_vertices(Mesh& mesh)

@@ -301,7 +301,7 @@ namespace vOS
 
                 // render all passes
                 if (mesh->get_vao() != nullptr) {
-                    m_mesh_pass.render(mesh->get_vao(), m_render_data);
+                    m_mesh_pass.renderMesh(mesh, m_render_data);
                 }
             }
            counter++;
@@ -334,7 +334,7 @@ namespace vOS
 
             // render all passes
             if (mesh->get_vao() != nullptr) {
-                m_mesh_pass.render(mesh->get_vao(), m_render_data);
+                m_mesh_pass.renderMesh(mesh, m_render_data);
             }
         }
         m_highlight_pass.render(nullptr, m_render_data);
