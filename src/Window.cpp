@@ -370,31 +370,38 @@ namespace vOS
 
     void Window::take_screenshot(std::string filename)
     {
+        rendering_mutex.lock();
         this->m_mesh_view->m_take_screenshot(filename);
+        rendering_mutex.unlock();
     }
 
     bool Window::FileDialogueOpen()
     {
-        return instance().m_file_dialog->file_dialogue_open();
+        return m_file_dialog->file_dialogue_open();
     }
 
     void Window::OpenFileDialogue() {
 
-        instance().m_file_dialog->open(".ovm", 0);
+        rendering_mutex.lock();
+        m_file_dialog->open(".ovm", 0);
+        rendering_mutex.unlock();
     }
 
     void Window::EndFileDialogue(){
-        if(instance().FileDialogueOpen())
-            instance().m_file_dialog->close();
+        if(FileDialogueOpen()) {
+            rendering_mutex.lock();
+            m_file_dialog->close();
+            rendering_mutex.unlock();
+        }
     }
 
     std::string Window::GetFileDialoguePath()
     {
         std::string  path = "";
 
-        if(instance().m_file_dialog->is_ok_file_loader())
+        if(m_file_dialog->is_ok_file_loader())
         {
-            path = instance().m_file_dialog->get_file_path_file_loader();
+            path = m_file_dialog->get_file_path_file_loader();
         }
         return path;
 

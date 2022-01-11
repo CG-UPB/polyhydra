@@ -167,12 +167,12 @@ namespace vOS {
 
         //void run(void_callback vc);
 
-        static void OpenFileDialogue();
+        void OpenFileDialogue();
 
-        static std::string GetFileDialoguePath();
-        static bool FileDialogueOpen();
+        std::string GetFileDialoguePath();
+        bool FileDialogueOpen();
 
-        static void EndFileDialogue();
+        void EndFileDialogue();
         /*
          * Selects a given element (Face, Vertex, Edge) from given mesh
          * Element Types are:

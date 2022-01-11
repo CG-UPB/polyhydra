@@ -348,7 +348,6 @@ namespace vOS
         std::cout << "Continue " << std::endl;
 
         OpenVolumeMesh::IO::FileManager file_manager;
-        std::cout << window.GetFileDialoguePath() << std::endl;
         file_manager.readFile(window.GetFileDialoguePath(), m_mesh);
 
         window.EndFileDialogue();
