@@ -124,7 +124,7 @@ namespace vOS
 
     private:
 
-        Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
+        Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath);
         ~Shader() = default;
 
         // all loaded shaders by name

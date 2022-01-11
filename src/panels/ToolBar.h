@@ -41,7 +41,7 @@ namespace vOS
         bool m_isolation_started = false;
         int m_separation_type = 2;
         int m_lighting_type = 3;
-        int m_rendering_mode = 1;
+        int m_rendering_mode = 0;
         float m_cell_size = 1.0f;
         int m_active_mesh = 0;
 

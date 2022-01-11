@@ -12,7 +12,7 @@ namespace vOS
 {
     std::unordered_map<std::string, Shader*> Shader::s_shaders;
 
-    Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath)
+    Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath)
     {
         std::string vertexSource = FileManager::load_as_string(vertexPath, true);
         std::string fragmentSource = FileManager::load_as_string(fragmentPath, true);
@@ -43,6 +43,26 @@ namespace vOS
             std::cout << "Error when compiling fragment shader: " << infoLog << std::endl;
         }
 
+        unsigned int geometryID = -1;
+        if (!geometryPath.empty())
+        {
+            std::string geometrySource = FileManager::load_as_string(geometryPath, true);
+
+            geometryID = glCreateShader(GL_GEOMETRY_SHADER);
+
+            const GLchar* geomBuf = geometrySource.c_str();
+            glShaderSource(geometryID, 1, &geomBuf, nullptr);
+            glCompileShader(geometryID);
+            glGetShaderiv(geometryID, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
+                std::cout << "Error when compiling geometry shader: " << infoLog << std::endl;
+            }
+
+            glAttachShader(m_shaderID, geometryID);
+        }
+
         glAttachShader(m_shaderID, vertexID);
         glAttachShader(m_shaderID, fragmentID);
         glLinkProgram(m_shaderID);
@@ -56,6 +76,11 @@ namespace vOS
 
         glDeleteShader(vertexID);
         glDeleteShader(fragmentID);
+
+        if (geometryID > 0)
+        {
+            glDeleteShader(geometryID);
+        }
     }
 
     void Shader::bind() const
@@ -133,6 +158,7 @@ namespace vOS
         struct ShaderSourcePath
         {
             std::filesystem::path vertex;
+            std::filesystem::path geometry;
             std::filesystem::path fragment;
         };
 
@@ -157,6 +183,8 @@ namespace vOS
             std::filesystem::path* source;
             if (extension == "vert")
             { source = &shader_source_path.vertex; }
+            else if (extension == "geom")
+            { source = &shader_source_path.geometry; }
             else if (extension == "frag")
             { source = &shader_source_path.fragment; }
             else
@@ -169,7 +197,8 @@ namespace vOS
         {
             s_shaders[shader_source_path.first] = new Shader(
                     shader_source_path.second.vertex,
-                    shader_source_path.second.fragment
+                    shader_source_path.second.fragment,
+                    shader_source_path.second.geometry
             );
         }
     }

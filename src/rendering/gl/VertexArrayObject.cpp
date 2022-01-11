@@ -85,7 +85,6 @@ namespace vOS
         { gl_type = GL_INT; }
         else if constexpr(std::is_same_v<T, unsigned int>)
         { gl_type = GL_UNSIGNED_INT; }
-
         else
         { throw std::invalid_argument("Invalid data type for gl buffer"); }
 
