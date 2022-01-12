@@ -31,10 +31,17 @@ namespace vOS
             glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
             glm::mat4 rotation = glm::mat4(1.0f);
             transform = position * rotation * scale;
+            peel_level = 0;
+            slice_level =0;
+            cell_size = 1;
         }
         Color m_color;
         bool m_visible;
         std::string rendering_mode;
+
+        int peel_level;
+        float slice_level;
+        float cell_size;
 
         glm::vec3 offset;
         glm::mat4 transform;

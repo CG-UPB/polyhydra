@@ -243,8 +243,8 @@ namespace vOS
 
     void MeshObject::update_vertex_buffer()
     {
-        int current_peel_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_peel_level();
-        int current_slice_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_slice_level();
+        int current_peel_level = m_data.peel_level;
+        int current_slice_level =  m_data.slice_level;
         if (m_should_update)
         {
             BufferSpecification spec;

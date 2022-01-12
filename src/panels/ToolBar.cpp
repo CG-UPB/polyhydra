@@ -143,14 +143,24 @@ namespace vOS
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                               "inview of the mesh");
                 ImGui::SliderInt("", &m_slider_slicer, 0, 10);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
+
+                auto& window = Window::instance();
+
+                window.rendering_mutex.unlock();
+                window.set_slice_level(window.get_mesh_active(), m_slider_slicer);
+                window.rendering_mutex.lock();
+
                 ImGui::Text("Peel:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
                 ImGui::SliderInt(" ", &m_slider_peel, 0, 10);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
+                window.rendering_mutex.unlock();
+                window.set_peel_level(window.get_mesh_active(), m_slider_peel);
+                window.rendering_mutex.lock();
                 if (ImGui::SliderFloat("Cell Size:", &m_cell_size, 0.0f, 1.0f))
                 {
-                    GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
+                    window.rendering_mutex.unlock();
+                    window.set_cell_size(window.get_mesh_active(), m_cell_size);
+                    window.rendering_mutex.lock();
                 }
                 // Therefore a picker has to work
                 ImGui::Text("Start Isolation:");

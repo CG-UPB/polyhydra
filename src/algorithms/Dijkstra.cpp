@@ -180,6 +180,8 @@ namespace vOS
         window.set_mesh_rendering_mode(hand_mesh, "mesh_normal");
         window.set_mesh_rendering_mode(guy_mesh, "mesh_wireframe");
 
+        //window.remove_mesh(hand_mesh);
+
         window.remove_all_vertex_highlights();
         init();
 

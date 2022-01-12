@@ -337,6 +337,37 @@ namespace vOS
         return false;
     }
 
+    void Window::set_peel_level(int mesh_id, int level) {
+        rendering_mutex.lock();
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().peel_level = level;
+        }
+        rendering_mutex.unlock();
+
+    }
+
+    void Window::set_slice_level(int mesh_id, float value) {
+        rendering_mutex.lock();
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().slice_level = value;
+        }
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_cell_size(int mesh_id, float size) {
+        rendering_mutex.lock();
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().cell_size = size;
+        }
+        rendering_mutex.unlock();
+    }
+
     void Window::set_custom_imgui(void_callback vc) {
         rendering_mutex.lock();
         m_temporary_new_custom_ui_function = vc;
@@ -438,9 +469,10 @@ namespace vOS
 
         // Delete from our Map
         auto iterator = m_mesh_objects.find(index);
+
         m_mesh_objects.erase(iterator);
 
-
+        delete mesh_obj;
 
         rendering_mutex.unlock();
     }
@@ -457,6 +489,8 @@ namespace vOS
     }
 
     void Window::set_mesh_active(int index) {
+        if(index < 0)
+            return;
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
         {
@@ -527,18 +561,6 @@ namespace vOS
             path = m_file_dialog->get_file_path_file_loader();
         }
         return path;
-
-        /*
-        if (nbr_of_dialog == 1)
-        {
-            if (instance().m_file_dialog->is_ok_snapshot_saver())
-            {
-                path = instance().m_file_dialog->get_file_path_snapshot_saver();
-                instance().m_file_dialog->set_open_snapshot_saver(false);
-            }
-            return instance().m_file_dialog->is_ok_snapshot_saver();
-        }*/
-
     }
 
     void Window::remove_shape(unsigned int id){

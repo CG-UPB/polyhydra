@@ -54,9 +54,9 @@ namespace vOS
 
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
-        float cell_size = GlobalViewerSettings::getInstance()->m_get_current_cell_size();
-        int peel_depth = GlobalViewerSettings::getInstance()->m_get_current_mesh_peel_level();
-        int slice_depth = GlobalViewerSettings::getInstance()->m_get_current_mesh_slice_level();
+        float cell_size = obj->get_data().cell_size;
+        int peel_depth = obj->get_data().peel_level;
+        int slice_depth = obj->get_data().slice_level;
         int slice_coord = 0;
         glm::vec3 min = obj->get_min();
         glm::vec3 max = obj->get_max();
