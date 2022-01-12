@@ -60,9 +60,6 @@ namespace vOS
         glm::vec3 min = obj->get_min();
         glm::vec3 max = obj->get_max();
         float slice_min = min.x + slice_depth * 0.1 * (max.x - min.x);
-        std::cout << "Min: " << min.x << std::endl;
-        std::cout << "Max: " << max.x << std::endl;
-        std::cout << "SliceMin: " << slice_min << std::endl;
 
 
         // set all of our uniforms
