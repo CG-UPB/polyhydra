@@ -9,27 +9,18 @@ namespace vOS
 
     MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh, BufferSpecification spec): m_spec(spec)
     {
-        int depth = spec.peel_depth;
+        int peel_depth = spec.peel_depth;
+        int slice_depth = spec.slice_depth;
 
         Mesh* current_mesh = mesh;
         m_original_vertices = get_vertices(*current_mesh);
-        if (depth > 0)
-        {
-            current_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
-            current_mesh->enable_deferred_deletion(true);
-            current_mesh->assign(mesh);
-
-            for (int i = 0; i < depth; i++)
-            {
-                delete_boundary_cells(*current_mesh);
-            }
-        }
 
         generate_buffer(*current_mesh);
 
         m_vao = new VertexArrayObject(m_positions, m_indices);
         m_vao->add_attribute(m_normals, 1, 3);
         m_vao->add_attribute(m_cell_centers, 2, 3);
+        m_vao->add_attribute(m_peel_depths, 3, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -45,7 +36,7 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_to_vertices, 2, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
 
-        if (depth > 0)
+        if (peel_depth > 0 || slice_depth > 0)
         {
             delete current_mesh;
         }
@@ -56,6 +47,7 @@ namespace vOS
         delete m_vao;
         delete m_sphere_vao;
         delete m_cylinder_vao;
+
     }
 
     void MeshVertexBuffer::generate_buffer(Mesh& mesh)
@@ -69,10 +61,15 @@ namespace vOS
         {
             add_cell(mesh, c_it);
         }
+        std::cout << "Size: " << m_normals.size() <<std::endl;
+        std::cout << "PeelSize: " << m_peel_depths.size() <<std::endl;
     }
 
     void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
     {
+        OpenVolumeMesh::CellPropertyT<int> peel_property = mesh.request_cell_property<int>("PeelDepth");
+
+
         std::vector<FaceData> faces;
         std::vector<glm::vec3> vertices;
 
@@ -91,6 +88,9 @@ namespace vOS
 
         // get the center, so we can add it as a vertex attribute
         glm::vec3 cell_center = get_center(vertices);
+
+        // get peel depth of the cell
+        int peel_depth = peel_property[cell];
 
         for (int i = 0; i < num_selection_vertices; i++)
         {
@@ -174,6 +174,10 @@ namespace vOS
                 m_cell_centers.push_back(cell_center.x);
                 m_cell_centers.push_back(cell_center.y);
                 m_cell_centers.push_back(cell_center.z);
+
+                m_peel_depths.push_back((float)peel_depth);
+                //std::cout << peel_property[cell] <<std::endl;
+
             }
 
             // add all indices of the face
@@ -232,7 +236,7 @@ namespace vOS
         m_to_vertices.push_back(to_pos[2]);
     }
 
-    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
+    std::pair<glm::vec3,glm::vec3> MeshVertexBuffer::get_bounding_box(const std::vector<glm::vec3>& vertices)
     {
         glm::vec3 min = vertices[0];
         glm::vec3 max = vertices[0];
@@ -264,24 +268,16 @@ namespace vOS
                 max.z = vertex.z;
             }
         }
-        return min + (max - min) * 0.5f;
+        auto bb = std::make_pair(min, max);
+        return bb;
     }
 
-    void MeshVertexBuffer::delete_boundary_cells(Mesh& mesh)
+    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
     {
-        std::vector<OpenVolumeMesh::VertexHandle> boundary_vertices;
-        for (auto vh : mesh.vertices())
-        {
-            if (mesh.is_boundary(vh))
-            {
-                boundary_vertices.push_back(vh);
-            }
-        }
-        for (auto v : boundary_vertices)
-        {
-            mesh.delete_vertex(v);
-        }
-        mesh.collect_garbage();
+        auto bb = get_bounding_box(vertices);
+        auto min = bb.first;
+        auto max = bb.second;
+        return min + (max - min) * 0.5f;
     }
 
     std::vector<float> MeshVertexBuffer::get_vertices(Mesh& mesh)

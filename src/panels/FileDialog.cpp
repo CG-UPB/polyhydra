@@ -74,6 +74,7 @@ namespace vOS
             m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Save File", extension.c_str(), ".",str.str());
             m_is_open_snapshot_saver = true;
         }
+
     }
 
 

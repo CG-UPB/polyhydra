@@ -12,6 +12,7 @@ namespace vOS
     struct BufferSpecification
     {
         int peel_depth = 0;
+        int slice_depth = 0;
     };
 
     struct VertexData
@@ -65,9 +66,9 @@ namespace vOS
 
         glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
 
-        std::vector<float> get_vertices(Mesh& mesh);
+        std::pair<glm::vec3,glm::vec3> get_bounding_box(const std::vector<glm::vec3>& vertices);
 
-        void delete_boundary_cells(Mesh& mesh);
+        std::vector<float> get_vertices(Mesh& mesh);
 
         BufferSpecification m_spec;
 
@@ -88,6 +89,7 @@ namespace vOS
         std::vector<float> m_cell_centers;
         std::vector<float> m_sphere_cell_centers;
         std::vector<float> m_cylinder_cell_centers;
+        std::vector<float> m_peel_depths;
 
         std::vector<unsigned int> m_indices;
         std::vector<float> m_from_vertices;
