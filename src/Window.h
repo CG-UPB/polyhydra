@@ -79,6 +79,7 @@ namespace vOS {
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index = 0);
 
         void set_mesh_active(int index);
+        int get_mesh_active();
 
         MeshObject* get_active_mesh_obj(){return get_mesh_obj(m_active_mesh);}
         MeshObject *get_mesh_obj(int index);
@@ -327,6 +328,7 @@ namespace vOS {
         default_translate_operation_function(double x, double y, double z, Translation_Mode translation_mode) {};
 
         static void default_rendering_operation_function(Rendering_Mode rendering_mode) {};
+
 
 
     };

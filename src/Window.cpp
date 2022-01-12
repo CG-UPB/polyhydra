@@ -409,6 +409,11 @@ namespace vOS
         }
     }
 
+    int Window::get_mesh_active()
+    {
+        return m_active_mesh;
+    }
+
     MeshObject* Window::get_mesh_obj(int index) {
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
