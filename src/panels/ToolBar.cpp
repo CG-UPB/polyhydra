@@ -227,7 +227,7 @@ namespace vOS
                 ImGui::TableNextColumn();
                 //ImGui::Text("   ");ImGui::SameLine();
                 if(ImGui::Button("Mesh-Selection"))
-                    showPopup = true;
+                    showPopup1 = true;
                 ImVec2 cursorPos = ImGui::GetCursorPos();
                 ImGui::SetNextWindowPos(ImVec2(cursorPos.x + 100,cursorPos.y));
                 if (ImGui::BeginPopup("Mesh-Selection"))
@@ -282,12 +282,12 @@ namespace vOS
                     GlobalViewerSettings::getInstance()->m_set_test(newArr);*/
                     if(ImGui::Button("Close"))
                     {
-                        showPopup = false;
+                        showPopup1 = false;
                         ImGui::CloseCurrentPopup();
                     }
                     ImGui::EndPopup();
                 }
-                if (showPopup)
+                if (showPopup1)
                     ImGui::OpenPopup("Mesh-Selection");
                 
 /*
@@ -309,6 +309,12 @@ namespace vOS
                 ImGui::Checkbox("", &m_color_activated);
                 ImGui::SameLine();
                 ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+                if (m_color_activated)
+                {
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_color(Color(m_color[0],m_color[1],m_color[2],m_color[3]));
+                    Window::instance().rendering_mutex.lock();
+                }
                 GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color_activated, m_color[0],m_color[1],m_color[2],m_color[3]);
                 ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
@@ -340,8 +346,7 @@ namespace vOS
                 ImGui::Text("Separation:");
                 ImGui::Combo("   ", &m_separation_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
                 GlobalViewerSettings::getInstance()->m_set_current_separation_type(m_separation_type);
-                //TODO: Fix the next line that it works:
-                //ImGui::SliderFloat("",&m_separation_value, 0.0f, 1.0f,"ratio = %.3f");
+
                 ImGui::SameLine();
                 HelpMarkerWithQuestionMark("You can choose between multiple Separation-types. This could be useful, if you want to watch inside of the mesh");
                 ImGui::Text("Lighting:");
@@ -358,6 +363,70 @@ namespace vOS
                 ImGui::EndTable();
             }
         }
+
+        if(ImGui::Button("Single Mesh Options"))
+        {
+            showPopup2 = true;
+        }
+        if (ImGui::BeginPopup("Single Mesh Options"))
+        {
+            int nbr_Meshes = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes();
+            if (nbr_Meshes < 1){
+
+            }else {
+                const char *meshList[nbr_Meshes];
+                for (int i = 0; i < nbr_Meshes; i++) {
+                    std::string str = "Mesh" + std::to_string(i + 1);
+                    meshList[i] = str.c_str();
+                }
+                m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_active_mesh();
+                ImGui::Combo("   ", &m_active_mesh, meshList, IM_ARRAYSIZE(meshList), IM_ARRAYSIZE(meshList));
+                GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+
+                bool visible = Window::instance().get_mesh_visibility(m_active_mesh);
+                ImGui::Checkbox("Visible", &visible);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_visibility(m_active_mesh, visible);
+                Window::instance().rendering_mutex.lock();
+
+                Color color = Window::instance().get_mesh_color(m_active_mesh);
+                m_color[0] = color.get().r;
+                m_color[1] = color.get().g;
+                m_color[2] = color.get().b;
+                ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_color(m_active_mesh, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
+                Window::instance().rendering_mutex.lock();
+
+                std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m_active_mesh);
+                int current_rendering_mode_int = 0;
+                if (current_rendering_mode == "mesh_wireframe")
+                    current_rendering_mode_int = 1;
+                if (current_rendering_mode == "mesh_normal")
+                    current_rendering_mode_int = 2;
+                if (current_rendering_mode == "mesh_flat")
+                    current_rendering_mode_int = 3;
+                const char *rendering_mode_internal_names[] =
+                        {
+                                "mesh_phong", "mesh_wireframe", "mesh_normal", "mesh_flat"
+                        };
+                ImGui::Text("Rendering Mode:");
+                ImGui::Combo("  ", &current_rendering_mode_int, rendering_mode_internal_names,
+                             IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_rendering_mode(rendering_mode_internal_names[current_rendering_mode_int]);
+                Window::instance().rendering_mutex.lock();
+            }
+            if(ImGui::Button("Close"))
+            {
+                showPopup2 = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        if (showPopup2)
+            ImGui::OpenPopup("Single Mesh Options");
+
         if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
         {
             ImGui::BeginTooltip();

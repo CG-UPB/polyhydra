@@ -107,6 +107,44 @@ namespace vOS {
         void set_mesh_rendering_mode( std::string mode);
 
         /*
+         * Returns the actual rendering mode for mesh with id = mesh_id
+         */
+        std::string get_mesh_rendering_mode(int mesh_id);
+
+        /*
+         * Applies color to mesh with given mesh_id
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_color(int mesh_id, Color m_color);
+        /*
+         * Applies color to the currently active mesh
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_color( Color m_color);
+
+        /*
+         * Returns the actual color for mesh with id = mesh_id
+         */
+        Color get_mesh_color(int mesh_id);
+
+        /*
+         * Applies visibility to the given mesh_id.
+         * A mesh that is not visible, will not be rendered in the Meshview class
+         */
+        void set_mesh_visibility(int mesh_id,bool visible);
+
+        /*
+         * Applies visibility to the actual active mesh.
+         * A mesh that is not visible, will not be rendered in the Meshview class
+         */
+        void set_mesh_visibility(bool visible);
+
+        /*
+         * returns the visibility of the mesh with given mesh_id
+         */
+        bool get_mesh_visibility(int mesh_id);
+
+        /*
          * If set to false, the Vos Window will no longer interprete any inputs from Keys or Mouse
          * Useful for File Dialogues and similar processes in which you do not which the interface to change.
          */
@@ -289,6 +327,7 @@ namespace vOS {
         default_translate_operation_function(double x, double y, double z, Translation_Mode translation_mode) {};
 
         static void default_rendering_operation_function(Rendering_Mode rendering_mode) {};
+
 
     };
 

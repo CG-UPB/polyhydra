@@ -271,6 +271,71 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
+    std::string Window::get_mesh_rendering_mode(int mesh_id){
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.rendering_mode;
+        }
+    }
+
+    void Window::set_mesh_color(Color m_color) {
+        set_mesh_color(0, m_color);
+    }
+
+    void Window::set_mesh_color(int mesh_id, Color m_color) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_color = m_color;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    Color Window::get_mesh_color(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_color;
+        }
+    }
+
+    void Window::set_mesh_visibility(bool visible) {
+        set_mesh_visibility(0,visible);
+    }
+
+    void Window::set_mesh_visibility(int mesh_id, bool visible) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_visible = visible;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    bool Window::get_mesh_visibility(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_visible;
+        }
+    }
+
     void Window::set_custom_imgui(void_callback vc) {
         rendering_mutex.lock();
         m_temporary_new_custom_ui_function = vc;

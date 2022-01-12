@@ -193,9 +193,6 @@ namespace vOS
 
         MeshData mesh_data = obj->get_data();
 
-        if(!mesh_data.m_visible)
-            return;
-
         // now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
 
@@ -206,11 +203,19 @@ namespace vOS
             obj.color = glm::vec3{color[0], color[1], color[2]};
         }*/
 
+        if(mesh_id == 0)
+        {
+            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            m_background_pass.render(nullptr, m_render_data, 0);
+        }
         // we need to clear our framebuffer as well
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data, 0);
 
+        if(!mesh_data.m_visible)
+        {
+            m_meshFrameBuffer->unbind();
+            return;
+        }
 
         if(!m_zoom)
         {

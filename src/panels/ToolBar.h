@@ -45,7 +45,8 @@ namespace vOS
         float m_cell_size = 1.0f;
         int m_active_mesh = 0;
 
-        bool showPopup = false;
+        bool showPopup1 = false;
+        bool showPopup2 = false;
 
         bool test_selected[3] = {false,true,false};
     };
