@@ -78,34 +78,14 @@ namespace vOS
 
         if(ImGui::Button("Snapshot"))
         {
-            m_open_file = true;
+            Window::instance().OpenFileDialogue(1);
         }
-        if(m_open_file)
+        if(Window::instance().FileDialogueOpen(1))
         {
-            std::string path;
-            /*if (Window::instance().ShowFileDialog(path,".bmp",1))
-            {
-
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-                if(path != ""){
-                    Window::instance().take_screenshot(path);
-                    m_open_file = false;
-                    //LogWindow::getInstance()->addLog("1");
-                }
-            }*/
-            if (path == "")
-            {
-                m_open_file = false;
-                Window::instance().m_file_dialog->set_open_snapshot_saver(false);
-                //LogWindow::getInstance()->addLog("2");
-            }
-            if(path != "")
-            {
+            std::string path = Window::instance().GetFileDialoguePath(1);
+            if (path != "") {
                 Window::instance().take_screenshot(path);
-                m_open_file = false;
-                //LogWindow::getInstance()->addLog("1");
+                Window::instance().EndFileDialogue(1);
             }
 
         }
@@ -374,10 +354,11 @@ namespace vOS
             if (nbr_Meshes < 1){
 
             }else {
-                const char *meshList[nbr_Meshes];
+                char *meshList[nbr_Meshes];
                 for (int i = 0; i < nbr_Meshes; i++) {
-                    std::string str = "Mesh" + std::to_string(i + 1);
-                    meshList[i] = str.c_str();
+                    std::string str = "Mesh " + std::to_string(i + 1);
+                    char* char_type = new char[str.length()];
+                    meshList[i] = strcpy(char_type, str.c_str());
                 }
                 m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_active_mesh();
                 ImGui::Combo("   ", &m_active_mesh, meshList, IM_ARRAYSIZE(meshList), IM_ARRAYSIZE(meshList));

@@ -102,6 +102,14 @@ namespace vOS
         return m_file_path_snapshot_saver;
     }
 
+    bool FileDialog::file_dialogue_open(int nbr_of_dialog)
+    {
+        if (nbr_of_dialog == 0)
+            return m_is_open_fileloader;
+        else if(nbr_of_dialog == 1)
+            return m_is_open_snapshot_saver;
+    }
+
     void FileDialog::set_open_snapshot_saver(bool open)
     {
         m_is_open_snapshot_saver = open;

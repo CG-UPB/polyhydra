@@ -203,12 +203,10 @@ namespace vOS
             obj.color = glm::vec3{color[0], color[1], color[2]};
         }*/
 
-        if(mesh_id == 0)
-        {
-            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            m_background_pass.render(nullptr, m_render_data, 0);
-        }
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_background_pass.render(nullptr, m_render_data, 0);
+
         // we need to clear our framebuffer as well
 
         if(!mesh_data.m_visible)
@@ -471,7 +469,9 @@ namespace vOS
         {
             renderMesh(m.first);
         }
-        renderSelection();
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
+            renderSelection();
+        }
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();

@@ -440,33 +440,46 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    bool Window::FileDialogueOpen()
+    bool Window::FileDialogueOpen(int nbr_of_dialog)
     {
-        return m_file_dialog->file_dialogue_open();
+        return m_file_dialog->file_dialogue_open(nbr_of_dialog);
     }
 
-    void Window::OpenFileDialogue() {
+    void Window::OpenFileDialogue(int nbr_of_dialog) {
 
         rendering_mutex.lock();
-        m_file_dialog->open(".ovm", 0);
+        m_file_dialog->open(".ovm", nbr_of_dialog);
         rendering_mutex.unlock();
     }
 
-    void Window::EndFileDialogue(){
-        if(FileDialogueOpen()) {
+    void Window::EndFileDialogue(int nbr_of_dialog){
+        if(nbr_of_dialog == 0 && FileDialogueOpen(0)) {
+            rendering_mutex.lock();
+            m_file_dialog->close();
+            rendering_mutex.unlock();
+        }
+        if(nbr_of_dialog == 1 && FileDialogueOpen(1)) {
             rendering_mutex.lock();
             m_file_dialog->close();
             rendering_mutex.unlock();
         }
     }
 
-    std::string Window::GetFileDialoguePath()
+    std::string Window::GetFileDialoguePath(int nbr_of_dialog)
     {
         std::string  path = "";
-
-        if(m_file_dialog->is_ok_file_loader())
+        if (nbr_of_dialog == 0)
         {
-            path = m_file_dialog->get_file_path_file_loader();
+            if(m_file_dialog->is_ok_file_loader())
+            {
+                path = m_file_dialog->get_file_path_file_loader();
+            }
+        } else if(nbr_of_dialog == 1)
+        {
+            if(m_file_dialog->is_ok_snapshot_saver())
+            {
+                path = m_file_dialog->get_file_path_snapshot_saver();
+            }
         }
         return path;
 
