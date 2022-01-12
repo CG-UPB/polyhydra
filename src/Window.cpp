@@ -516,6 +516,7 @@ namespace vOS
             rendering_mutex.lock();
             m_file_dialog->close();
             rendering_mutex.unlock();
+
         }
     }
 
