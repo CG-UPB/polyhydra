@@ -16,6 +16,7 @@ namespace vOS
         if(obj == nullptr)
             return;
 
+
         // Activate Wireframe mode if desired
         std::string rendering_mode = obj->get_data().rendering_mode;
         bool render_in_wireframe_mode = false;
