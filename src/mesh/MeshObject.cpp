@@ -251,6 +251,7 @@ namespace vOS
             spec.peel_depth = current_peel_level;
             m_mvb = new MeshVertexBuffer(m_mesh, spec);
             calculate_mesh_offset();
+
         }
         m_should_update = false;
     }

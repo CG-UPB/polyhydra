@@ -81,7 +81,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = true;
+        bool linear = false;
 
         if(linear)
         {
@@ -366,7 +366,7 @@ namespace vOS
 
         std::cout << "Start waiting " << std::endl;
         // Read file
-        while(window.GetFileDialoguePath() == empty){}
+        while(window.GetFileDialoguePath() == ""){}
 
         std::cout << "Continue " << std::endl;
 
