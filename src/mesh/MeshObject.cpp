@@ -237,7 +237,6 @@ namespace vOS
 
         remove_highlights();
         m_should_update = true;
-        update_vertex_buffer();
         GlobalViewerSettings::getInstance()->m_new_Mesh();
     }
 
