@@ -53,7 +53,6 @@ namespace vOS
 
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
-
         float cell_size = GlobalViewerSettings::getInstance()->m_get_current_cell_size();
 
         // set all of our uniforms

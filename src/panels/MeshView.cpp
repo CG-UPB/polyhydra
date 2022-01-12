@@ -193,25 +193,11 @@ namespace vOS
 
         MeshData mesh_data = obj->get_data();
 
-        // now render our mesh scene to the framebuffer texture
-        m_meshFrameBuffer->bind();
-
-        /* Deprecated
-        if(GlobalViewerSettings::getInstance()->m_get_color_activated())
-        {
-            float* color = GlobalViewerSettings::getInstance()->m_get_current_mesh_rendering_color();
-            obj.color = glm::vec3{color[0], color[1], color[2]};
-        }*/
-
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data, 0);
 
         // we need to clear our framebuffer as well
 
         if(!mesh_data.m_visible)
         {
-            m_meshFrameBuffer->unbind();
             return;
         }
 
@@ -233,7 +219,6 @@ namespace vOS
             m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
 
-        m_meshFrameBuffer->unbind();
     }
 
     void MeshView::m_take_screenshot(std::string filename)
@@ -465,10 +450,23 @@ namespace vOS
         // handle the things related to our mesh rendering canvas
         handleResize();
         handleMouseControl();
+
+        // Render Meshes
+
+        // Now render our mesh scene to the framebuffer texture
+        m_meshFrameBuffer->bind();
+
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_background_pass.render(nullptr, m_render_data, 0);
+
         for (const auto& m: Window::instance().get_mesh_list())
         {
             renderMesh(m.first);
         }
+
+        m_meshFrameBuffer->unbind();
+
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
             renderSelection();
         }
