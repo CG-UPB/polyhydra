@@ -106,6 +106,10 @@ namespace vOS
     {
 
         ImGui::Begin("Custom UI");
+        if (ImGui::Button("Go"))
+        {
+            linear_run();
+        }
         // Pause Button
         if (m_pause_toggled)
         {
@@ -166,7 +170,16 @@ namespace vOS
         /* One Time only Setup */
         Window& window = Window::instance();
 
-        LogWindow::getInstance()->addLog("Start Dijkstra");
+        OpenVolumeMesh::IO::FileManager file_manager;
+        file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
+        int hand_mesh =  window.add_mesh(&m_mesh);
+
+        file_manager.readFile("../res/sample_meshes/guy2500.1.ovm", m_mesh);
+        int guy_mesh = window.add_mesh(&m_mesh);
+
+        window.set_mesh_rendering_mode(hand_mesh, "mesh_normal");
+        window.set_mesh_rendering_mode(guy_mesh, "mesh_wireframe");
+
         window.remove_all_vertex_highlights();
         init();
 
