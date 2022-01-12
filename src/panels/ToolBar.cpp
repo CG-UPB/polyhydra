@@ -74,19 +74,19 @@ namespace vOS
         Window::instance().set_mesh_active(m_active_mesh);
         //GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
 
-
-
-
         if(ImGui::Button("Snapshot"))
         {
-            Window::instance().OpenFileDialogue(1);
+            Window::instance().m_file_dialog->open(".ovm", 1);;
         }
-        if(Window::instance().FileDialogueOpen(1))
+
+        if(Window::instance().m_file_dialog->file_dialogue_open(1))
         {
-            std::string path = Window::instance().GetFileDialoguePath(1);
+            std::string path = Window::instance().m_file_dialog->is_ok_snapshot_saver() ? Window::instance().m_file_dialog->get_file_path_snapshot_saver() : "";
             if (path != "") {
+                Window::instance().rendering_mutex.unlock();
                 Window::instance().take_screenshot(path);
-                Window::instance().EndFileDialogue(1);
+                Window::instance().rendering_mutex.lock();
+                Window::instance().m_file_dialog->close();
             }
 
         }

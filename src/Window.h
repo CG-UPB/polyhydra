@@ -76,6 +76,8 @@ namespace vOS {
         void remove_all_vertex_highlights();
         void remove_vertex_highlight(int mesh_id, OpenVolumeMesh::VertexHandle v_h);
 
+        int add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
+        void remove_mesh(int index);
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index = 0);
 
         void set_mesh_active(int index);
@@ -90,7 +92,6 @@ namespace vOS {
 
         unsigned int add_shape(Shape* shape);
         void remove_shape(unsigned int id);
-        void take_screenshot(std::string filename);
 
         //   Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -206,12 +207,19 @@ namespace vOS {
 
         //void run(void_callback vc);
 
-        void OpenFileDialogue(int nbr_of_dialog);
 
-        std::string GetFileDialoguePath(int nbr_of_dialog);
-        bool FileDialogueOpen(int nbr_of_dialog);
+        // IO //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        void EndFileDialogue(int nbr_of_dialog);
+        void take_screenshot(std::string filename);
+
+        void OpenFileDialogue();
+
+        std::string GetFileDialoguePath();
+        bool FileDialogueOpen();
+
+        void EndFileDialogue();
+
+
         /*
          * Selects a given element (Face, Vertex, Edge) from given mesh
          * Element Types are:
@@ -291,10 +299,10 @@ namespace vOS {
         LogWindow* m_log_window;
         ToolBar* m_toolbar = ToolBar::getInstance();
 
-        v3d *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
 
-        int m_active_mesh = 0;
+        int m_active_mesh = -1;
+        int m_total_number_of_loaded_meshes = 0;
         std::unordered_map<int, MeshObject*> m_mesh_objects;
 
         MenuBar* get_menu_bar(){return m_menu_bar;}
@@ -309,6 +317,7 @@ namespace vOS {
         void open();
 
         void close();
+
 
         // Callback Interface //////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -385,11 +385,65 @@ namespace vOS
         } else {
             m_mesh_objects.emplace(index, mesh_obj);
         }
-        set_mesh_active(index);
+        if(m_mesh_objects.size() == 1)
+            set_mesh_active(index);
 
         calculate_selection_offsets();
         rendering_mutex.unlock();
     }
+
+    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh) {
+        rendering_mutex.lock();
+        int index = m_total_number_of_loaded_meshes++;
+
+        // Create Mesh Object
+        auto* mesh_obj = new MeshObject();
+        mesh_obj->set_mesh(mesh);
+        mesh_obj->set_data(MeshData());
+
+        // Add mesh to our map
+        m_mesh_objects.emplace(index, mesh_obj);
+
+        // Make the mesh the active mesh, if it is the only one available
+        if(m_mesh_objects.size() == 1)
+            set_mesh_active(index);
+
+        calculate_selection_offsets();
+        rendering_mutex.unlock();
+        return index;
+    }
+
+    void Window::remove_mesh(int index) {
+        rendering_mutex.lock();
+        // Get Mesh Object
+        auto* mesh_obj = get_mesh_obj(index);
+        if(mesh_obj == nullptr){
+            // Mesh Object does not exist at given index
+            return;
+        }
+
+        // Update Active Mesh
+        bool was_active_mesh = m_active_mesh == index;
+        if(was_active_mesh){
+            int new_active_mesh = -1;
+            // Find the first element in our map
+            for(auto obj : m_mesh_objects){
+                new_active_mesh = obj.first;
+                break;
+            }
+            // Set new active mesh
+            set_mesh_active(new_active_mesh);
+        }
+
+        // Delete from our Map
+        auto iterator = m_mesh_objects.find(index);
+        m_mesh_objects.erase(iterator);
+
+
+
+        rendering_mutex.unlock();
+    }
+
 
     void Window::calculate_selection_offsets()
     {
@@ -445,46 +499,30 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    bool Window::FileDialogueOpen(int nbr_of_dialog)
+    bool Window::FileDialogueOpen()
     {
-        return m_file_dialog->file_dialogue_open(nbr_of_dialog);
+        return m_file_dialog->file_dialogue_open(0);
     }
 
-    void Window::OpenFileDialogue(int nbr_of_dialog) {
+    void Window::OpenFileDialogue() {
 
         rendering_mutex.lock();
-        m_file_dialog->open(".ovm", nbr_of_dialog);
+        m_file_dialog->open(".ovm", 0);
         rendering_mutex.unlock();
     }
 
-    void Window::EndFileDialogue(int nbr_of_dialog){
-        if(nbr_of_dialog == 0 && FileDialogueOpen(0)) {
-            rendering_mutex.lock();
-            m_file_dialog->close();
-            rendering_mutex.unlock();
-        }
-        if(nbr_of_dialog == 1 && FileDialogueOpen(1)) {
+    void Window::EndFileDialogue(){
+        if(FileDialogueOpen()) {
             rendering_mutex.lock();
             m_file_dialog->close();
             rendering_mutex.unlock();
         }
     }
 
-    std::string Window::GetFileDialoguePath(int nbr_of_dialog)
-    {
-        std::string  path = "";
-        if (nbr_of_dialog == 0)
-        {
-            if(m_file_dialog->is_ok_file_loader())
-            {
-                path = m_file_dialog->get_file_path_file_loader();
-            }
-        } else if(nbr_of_dialog == 1)
-        {
-            if(m_file_dialog->is_ok_snapshot_saver())
-            {
-                path = m_file_dialog->get_file_path_snapshot_saver();
-            }
+    std::string Window::GetFileDialoguePath() {
+        std::string path = "";
+        if (m_file_dialog->is_ok_file_loader()) {
+            path = m_file_dialog->get_file_path_file_loader();
         }
         return path;
 

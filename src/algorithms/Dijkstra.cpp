@@ -140,18 +140,18 @@ namespace vOS
 
         if (ImGui::Button("Open File"))
         {
-            Window::instance().OpenFileDialogue(0);
+            Window::instance().OpenFileDialogue();
         }
 
-        if (Window::instance().FileDialogueOpen(0))
+        if (Window::instance().FileDialogueOpen())
         {
-            std::string path = Window::instance().GetFileDialoguePath(0);
+            std::string path = Window::instance().GetFileDialoguePath();
             if (path != "") {
 
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
-                Window::instance().set_mesh(&m_mesh);
-                Window::instance().EndFileDialogue(0);
+                Window::instance().add_mesh(&m_mesh);
+                Window::instance().EndFileDialogue();
                 linear_run();
             }
         }
@@ -324,12 +324,12 @@ namespace vOS
 
         if (ImGui::Button("Open File"))
         {
-            Window::instance().OpenFileDialogue(0);
+            Window::instance().OpenFileDialogue();
         }
 
 
-        if (!Window::instance().FileDialogueOpen(0))
-            Window::instance().EndFileDialogue(0);
+        if (!Window::instance().FileDialogueOpen())
+            Window::instance().EndFileDialogue();
 
         ImGui::End();
     }
@@ -343,16 +343,16 @@ namespace vOS
 
         std::cout << "Start waiting " << std::endl;
         // Read file
-        while(window.GetFileDialoguePath(0) == empty){}
+        while(window.GetFileDialoguePath() == empty){}
 
         std::cout << "Continue " << std::endl;
 
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(window.GetFileDialoguePath(0), m_mesh);
+        file_manager.readFile(window.GetFileDialoguePath(), m_mesh);
 
-        window.EndFileDialogue(0);
+        window.EndFileDialogue();
 
-        Window::instance().set_mesh(&m_mesh);
+        Window::instance().add_mesh(&m_mesh);
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
         window.remove_all_vertex_highlights();
@@ -396,6 +396,8 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
+        {
+        }
                 window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
@@ -470,12 +472,7 @@ namespace vOS
             LogWindow::getInstance()->addLog("Continue");
 
         }
-        if (window.is_running())
-        {
-            LogWindow::getInstance()->addLog("Reset Variables");
-            m_reset = false;
-            m_step = false;
-        }
+        while (window.is_running()){}
         std::cout << "End Dijkstra" << std::endl;
     }
     void Dijkstra::step()
