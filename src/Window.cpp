@@ -334,6 +334,7 @@ namespace vOS
             auto data = mesh_obj->get_data();
             return data.m_visible;
         }
+        return false;
     }
 
     void Window::set_custom_imgui(void_callback vc) {
