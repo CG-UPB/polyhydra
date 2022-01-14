@@ -228,7 +228,7 @@ namespace vOS
         //LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
         m_meshFrameBuffer->bind();
 
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if(!m_zoom)
@@ -338,12 +338,14 @@ namespace vOS
             for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
                 auto mesh = m.second;
                 m_selection_pass.render_mesh(mesh, m_render_data, m.first);
-                m_selection_hover_pass.render(nullptr, m_render_data, m.first);
             }
         }
         m_selectionFrameBuffer->unbind();
 
         m_meshFrameBuffer->bind();
+        for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
+            m_selection_hover_pass.render(nullptr, m_render_data, m.first);
+        }
         m_meshFrameBuffer->unbind();
     }
 
@@ -357,6 +359,8 @@ namespace vOS
             int from = std::get<0>(mesh->selection_offset());
             int to = std::get<1>(mesh->selection_offset());
 
+            //std::cout << "from: " << from << ", to: " << to << " picked_id: " << picked_id << std::endl;
+
             if (picked_id >= from && picked_id <= to)
             {
 
@@ -367,6 +371,8 @@ namespace vOS
                     // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                     // there is no valid ID (e.g when clicking background)
                     int face_id = mesh->to_faceID(picked_id - from) - 1;
+
+                    //std::cout << "hovering face with id: " << face_id << std::endl;
 
                     m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
 

@@ -29,7 +29,7 @@ namespace vOS
     void SelectionHoverPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
         // Get Mesh
-        MeshObject *obj = Window::instance().get_active_mesh_obj();
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
         if (obj == nullptr)
             return;
 

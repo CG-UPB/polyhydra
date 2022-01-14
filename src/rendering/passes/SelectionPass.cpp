@@ -32,7 +32,7 @@ namespace vOS {
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
 
-        float cell_size = GlobalViewerSettings::getInstance()->m_get_current_cell_size();
+        float cell_size = obj->get_data().m_cell_size;
 
         // draw faces
         m_selection_shader->bind();

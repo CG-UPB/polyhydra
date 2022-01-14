@@ -237,6 +237,7 @@ namespace vOS
 
         remove_highlights();
         m_should_update = true;
+        calculate_mesh_offset();
         GlobalViewerSettings::getInstance()->m_new_Mesh();
     }
 
@@ -249,14 +250,21 @@ namespace vOS
             BufferSpecification spec;
             spec.peel_depth = current_peel_level;
             m_mvb = new MeshVertexBuffer(m_mesh, spec);
-            calculate_mesh_offset();
         }
         m_should_update = false;
     }
 
     void MeshObject::calculate_mesh_offset()
     {
-        auto vertices = m_mvb->get_original_vertices();
+        std::vector<float> vertices;
+
+        for (auto v_it : m_mesh->vertices())
+        {
+            auto v_pos = m_mesh->vertex(v_it);
+            vertices.push_back(v_pos[0]);
+            vertices.push_back(v_pos[1]);
+            vertices.push_back(v_pos[2]);
+        }
 
         glm::vec3 min(vertices[0], vertices[1], vertices[2]);
         glm::vec3 max(vertices[0], vertices[1], vertices[2]);
@@ -442,7 +450,7 @@ namespace vOS
     int MeshObject::calculate_selection_size() const
     {
         // make sure that we choose the biggest possible vertex, edge or face id as the offset
-        return (int) m_mvb->get_num_selection_vertices() * 3;
+        return (int) m_mesh->n_cells() * 24;
     }
 
     int MeshObject::get_num_visible_vertices() const
