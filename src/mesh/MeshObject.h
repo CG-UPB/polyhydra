@@ -36,6 +36,10 @@ namespace vOS
         bool m_visible;
         std::string rendering_mode;
 
+        int m_slider_slicer = 0;
+        int m_slider_peel = 0;
+        float m_cell_size = 1.0f;
+
         glm::vec3 offset;
         glm::mat4 transform;
         int selection_offset;

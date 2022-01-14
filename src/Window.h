@@ -148,6 +148,52 @@ namespace vOS {
         bool get_mesh_visibility(int mesh_id);
 
         /*
+         * Applies slice level to the given mesh_id.
+         */
+        void set_mesh_slice_level(int mesh_id,int slice_level);
+
+        /*
+         * Applies slice level to the actual active mesh.
+         */
+        void set_mesh_slice_level(int slice_level);
+
+        /*
+         * returns the slice level of the mesh with given mesh_id
+         */
+        int get_mesh_slice_level(int mesh_id);
+
+        /*
+        * Applies peel level to the given mesh_id.
+        */
+        void set_mesh_peel_level(int mesh_id,int peel_level);
+
+        /*
+         * Applies peel level to the actual active mesh.
+         */
+        void set_mesh_peel_level(int peel_level);
+
+        /*
+         * returns the peel level of the mesh with given mesh_id
+         */
+        int get_mesh_peel_level(int mesh_id);
+
+        /*
+        * Applies cell size to the given mesh_id.
+        */
+        void set_mesh_cell_size(int mesh_id,float cell_size);
+
+        /*
+         * Applies cell size to the actual active mesh.
+         */
+        void set_mesh_cell_size(float cell_size);
+
+        /*
+         * returns the cell size of the mesh with given mesh_id
+         */
+        float get_mesh_cell_size(int mesh_id);
+
+
+        /*
          * If set to false, the Vos Window will no longer interprete any inputs from Keys or Mouse
          * Useful for File Dialogues and similar processes in which you do not which the interface to change.
          */

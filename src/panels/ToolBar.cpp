@@ -137,19 +137,32 @@ namespace vOS
         {
             if(ImGui::BeginTable("split1", 1))
             {
+                int active_mesh = Window::instance().get_mesh_active();
                 ImGui::TableNextColumn();
                 ImGui::Text("Slicer:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                               "inview of the mesh");
+                m_slider_slicer = Window::instance().get_mesh_slice_level(active_mesh);
                 ImGui::SliderInt("", &m_slider_slicer, 0, 10);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
+                //GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_slice_level(active_mesh,m_slider_slicer);
+                Window::instance().rendering_mutex.lock();
                 ImGui::Text("Peel:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
+                m_slider_peel = Window::instance().get_mesh_peel_level(active_mesh);
                 ImGui::SliderInt(" ", &m_slider_peel, 0, 10);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
+                //GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_peel_level(active_mesh,m_slider_peel);
+                Window::instance().rendering_mutex.lock();
+                m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
                 if (ImGui::SliderFloat("Cell Size:", &m_cell_size, 0.0f, 1.0f))
                 {
-                    GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
+                    //GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_cell_size(active_mesh,m_cell_size);
+                    Window::instance().rendering_mutex.lock();
                 }
                 // Therefore a picker has to work
                 ImGui::Text("Start Isolation:");

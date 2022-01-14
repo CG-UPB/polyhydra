@@ -56,12 +56,15 @@ namespace vOS
             ImGui::End();
             return;
         }
-
+        int active_mesh = Window::instance().get_mesh_active();
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             std::string str = "Mesh " + std::to_string(m.first);
             char* char_type = new char[str.length()];
-            ImGui::Text(strcpy(char_type, str.c_str()));ImGui::SameLine();
+
+            ImGui::RadioButton(strcpy(char_type, str.c_str()),&active_mesh, m.first);ImGui::SameLine();
+
+            //ImGui::TextColored(ImColor(ImVec4(1.0,0.0,0.0,1.0)),strcpy(char_type, str.c_str()));ImGui::SameLine();
 
             bool visible = Window::instance().get_mesh_visibility(m.first);
             str = "Visible " + std::to_string(m.first);
@@ -103,6 +106,9 @@ namespace vOS
             Window::instance().set_mesh_rendering_mode(m.first,rendering_mode_internal_names[current_rendering_mode_int]);
             Window::instance().rendering_mutex.lock();
         }
+        Window::instance().rendering_mutex.unlock();
+        Window::instance().set_mesh_active(active_mesh);
+        Window::instance().rendering_mutex.lock();
 
         ImGui::End();
     }

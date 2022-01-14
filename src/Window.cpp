@@ -340,6 +340,93 @@ namespace vOS
         return false;
     }
 
+    void Window::set_mesh_slice_level(int slice_level) {
+        set_mesh_slice_level(0,slice_level);
+    }
+
+    void Window::set_mesh_slice_level(int mesh_id, int slice_level) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_slider_slicer = slice_level;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    int Window::get_mesh_slice_level(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_slider_slicer;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_peel_level(int peel_level) {
+        set_mesh_slice_level(0,peel_level);
+    }
+
+    void Window::set_mesh_peel_level(int mesh_id, int peel_level) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_slider_peel = peel_level;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    int Window::get_mesh_peel_level(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_slider_peel;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_cell_size(float cell_size) {
+        set_mesh_slice_level(0,cell_size);
+    }
+
+    void Window::set_mesh_cell_size(int mesh_id, float cell_size) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_cell_size = cell_size;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    float Window::get_mesh_cell_size(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_cell_size;
+        }
+        return false;
+    }
+
     void Window::set_custom_imgui(void_callback vc) {
         rendering_mutex.lock();
         m_temporary_new_custom_ui_function = vc;
