@@ -21,7 +21,7 @@ namespace vOS
         m_vao->add_attribute(m_normals, 1, 3);
         m_vao->add_attribute(m_cell_centers, 2, 3);
         m_vao->add_attribute(m_peel_depths, 3, 1);
-        //m_vao->add_attribute(m_is_face_boundary, 4, 1);
+        m_vao->add_attribute(m_is_face_boundary, 4, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -116,11 +116,13 @@ namespace vOS
         for (auto chf_it : mesh.cell_halffaces(cell))
         {
             FaceData faceData;
-            int face_id = mesh.face_handle(chf_it).idx();
+            auto face_handle = mesh.face_handle(chf_it);
+            int face_id = face_handle.idx();
 
             // remember if face is boundary, so that we can discard non boundary faces in the shader if needed
-            if (mesh.is_boundary(chf_it))
+            if (mesh.is_boundary(face_handle))
             {
+                std::cout << "is boundary" << std::endl;
                 faceData.is_boundary = true;
             }
 

@@ -34,7 +34,7 @@ void main()
         v_Visible = 0;
     }
 
-//    if (u_cell_size == 1.0 && a_isBoundary == 0.0)
+//    if (u_cell_size == 1.0 && u_peelDepth == 0 && a_isBoundary == 0.0)
 //    {
 //        v_Visible = 0;
 //    }
