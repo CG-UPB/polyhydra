@@ -167,6 +167,7 @@ void ExampleClass::bounding_demonstration_ui() {
     if(bounding_box_thickness != pre_thickness)
         bounding_run();
 
+
     ImGui::End();
 }
 
