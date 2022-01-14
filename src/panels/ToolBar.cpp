@@ -65,7 +65,6 @@ namespace vOS
             return;
         }
 
-
         m_active_mesh = Window::instance().get_mesh_active();
         ImGui::InputInt("Mesh in Focus", &m_active_mesh);
         if (m_active_mesh < 0) m_active_mesh = 0;
@@ -198,7 +197,7 @@ namespace vOS
         }
 
         
-        
+        /*
         if (ImGui::CollapsingHeader("Rendering Options"))
         {
             if (ImGui::BeginTable("split", 1))
@@ -260,7 +259,7 @@ namespace vOS
                         newArr[i] = selected_mesh[i];
                     }
                     
-                    GlobalViewerSettings::getInstance()->m_set_test(newArr);*/
+                    GlobalViewerSettings::getInstance()->m_set_test(newArr);
                     if(ImGui::Button("Close"))
                     {
                         showPopup1 = false;
@@ -284,7 +283,7 @@ namespace vOS
                 if (ImGui::Button("Mesh-Selcetion"))
                     ImGui::OpenPopup("Mesh-Selection");
                 
-*/
+
                 
                 ImGui::Text("Color:");
                 ImGui::Checkbox("", &m_color_activated);
@@ -313,7 +312,7 @@ namespace vOS
                 ImGui::Combo("  ", &m_rendering_mode, rendering_mode_names, IM_ARRAYSIZE(rendering_mode_names), IM_ARRAYSIZE(rendering_mode_names));
                 // TODO
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_rendering_mode(rendering_mode_internal_names[m_rendering_mode]);
+                //Window::instance().set_mesh_rendering_mode(rendering_mode_internal_names[m_rendering_mode]);
                 Window::instance().rendering_mutex.lock();
                 ImGui::SameLine();
                 HelpMarkerWithQuestionMark("You can choose between multiple rendering modes for the mesh");
@@ -344,7 +343,8 @@ namespace vOS
                 ImGui::EndTable();
             }
         }
-
+        */
+    /*
         if(ImGui::Button("Single Mesh Options"))
         {
             showPopup2 = true;
@@ -361,9 +361,13 @@ namespace vOS
                     char* char_type = new char[str.length()];
                     meshList[i] = strcpy(char_type, str.c_str());
                 }
-                m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_active_mesh();
+                //m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_active_mesh();
+                m_active_mesh = Window::instance().get_mesh_active();
                 ImGui::Combo("   ", &m_active_mesh, meshList, IM_ARRAYSIZE(meshList), IM_ARRAYSIZE(meshList));
-                GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+                //GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_active(m_active_mesh);
+                Window::instance().rendering_mutex.lock();
 
                 bool visible = Window::instance().get_mesh_visibility(m_active_mesh);
                 ImGui::Checkbox("Visible", &visible);
@@ -396,7 +400,7 @@ namespace vOS
                 ImGui::Combo("  ", &current_rendering_mode_int, rendering_mode_internal_names,
                              IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_rendering_mode(rendering_mode_internal_names[current_rendering_mode_int]);
+                Window::instance().set_mesh_rendering_mode(m_active_mesh,rendering_mode_internal_names[current_rendering_mode_int]);
                 Window::instance().rendering_mutex.lock();
             }
             if(ImGui::Button("Close"))
@@ -408,7 +412,7 @@ namespace vOS
         }
         if (showPopup2)
             ImGui::OpenPopup("Single Mesh Options");
-
+        */
         if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
         {
             ImGui::BeginTooltip();

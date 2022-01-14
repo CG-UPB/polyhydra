@@ -170,7 +170,7 @@ namespace vOS
         /* One Time only Setup */
         Window& window = Window::instance();
 
-        OpenVolumeMesh::IO::FileManager file_manager;
+       /* OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
         int hand_mesh =  window.add_mesh(&m_mesh);
 
@@ -179,7 +179,7 @@ namespace vOS
 
         window.set_mesh_rendering_mode(hand_mesh, "mesh_normal");
         window.set_mesh_rendering_mode(guy_mesh, "mesh_wireframe");
-
+*/
         window.remove_all_vertex_highlights();
         init();
 

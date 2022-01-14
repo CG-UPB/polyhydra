@@ -24,6 +24,7 @@
 #include "panels/MeshView.h"
 #include <mutex>
 #include "panels/ToolBar.h"
+#include "panels/MeshLayerView.h"
 #include "settings/GlobalViewerSettings.h"
 
 namespace vOS {
@@ -262,6 +263,10 @@ namespace vOS {
 
         // Panels
         FileDialog* m_file_dialog;
+
+        // Mutex and thread safety
+        /// Set to guard GL when reading from and rendering our mesh
+        std::mutex rendering_mutex;
     private:
         Window();
 
@@ -286,9 +291,7 @@ namespace vOS {
         void_callback m_temporary_new_custom_ui_function;
         bool m_new_custom_ui_function_set = false;
 
-        // Mutex and thread safety
-        /// Set to guard GL when reading from and rendering our mesh
-        std::mutex rendering_mutex;
+
 
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,6 +301,7 @@ namespace vOS {
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
         ToolBar* m_toolbar = ToolBar::getInstance();
+        MeshLayerView* m_mesh_layer_view = MeshLayerView::getInstance();
 
         ImguiRenderer *m_imgui_renderer;
 

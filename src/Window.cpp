@@ -151,6 +151,9 @@ namespace vOS
         // ToolBar
         m_toolbar->show();
 
+        // MeshLayerView
+        m_mesh_layer_view->show();
+
         rendering_mutex.unlock();
 
         // Custom UI
