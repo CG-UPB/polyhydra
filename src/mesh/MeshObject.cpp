@@ -321,12 +321,15 @@ namespace vOS
             depth++;
             for(auto vertex : act_level)
             {
-                for (auto neighbour : m_mesh->vertex_vertices(vertex))
+                for (auto neighbour_cell : m_mesh->vertex_cells(vertex))
                 {
-                    if(vertex_peel_property[neighbour] == -1)
+                    for(auto neighbour : m_mesh->cell_vertices(neighbour_cell))
                     {
-                        vertex_peel_property[neighbour] = depth;
-                        next_level.push_back(neighbour);
+                        if (vertex_peel_property[neighbour] == -1)
+                        {
+                            vertex_peel_property[neighbour] = depth;
+                            next_level.push_back(neighbour);
+                        }
                     }
                 }
             }
