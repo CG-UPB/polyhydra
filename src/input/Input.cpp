@@ -1,4 +1,135 @@
+#include "GLFW/glfw3.h"
+#include "Input.h"
+#include <functional>
+#include "../Window.h"
 
+namespace vOS
+{
+    // Static Variables
+    bool Input::m_ignore_keyboard_commands;
+    bool Input::m_accept_inputs;
+    bool Input::m_ignore_mouse_commands;
+    double Input::m_currentMouseX;
+    double Input::m_currentMouseY;
+    bool Input::m_mouse_pressed;
+    double Input::m_currentScrollOffsetX;
+    double Input::m_currentScrollOffsetY;
+    std::map<int,int> Input::m_keybinds;
+    GLFWwindow* Input::m_window;
+
+    void Input::setup(GLFWwindow* window)
+    {
+        m_window = window;
+
+        m_mouse_pressed = false;
+
+        // Setup
+        accept_input(true);
+        // We may want to read from a persistent Data file in the future
+
+        // Assign Callbacks
+        glfwSetKeyCallback(m_window, Input::glfw_callback_key);
+        glfwSetMouseButtonCallback(m_window, Input::glw_callback_mouse_button);
+        glfwSetCursorPosCallback(m_window, Input::glw_callback_mouse_position);
+        glfwSetScrollCallback(m_window, Input::glw_callback_mouse_scroll);
+    }
+
+    void Input::accept_input(bool accept) {
+        m_accept_inputs = accept;
+    }
+
+    void Input::cleanup() {
+
+    }
+
+    void Input::ignore_keyboard(bool ignore) {
+        m_ignore_keyboard_commands = ignore;
+    }
+
+    void Input::ignore_mouse(bool ignore) {
+        m_ignore_mouse_commands = ignore;
+    }
+
+    void Input::set_keybind(int from, int to) {
+        if(m_keybinds.find(from) != m_keybinds.end())
+            m_keybinds.erase(from);
+        if(m_keybinds.find(to) != m_keybinds.end())
+            m_keybinds.erase(to);
+
+        m_keybinds.insert(std::pair<int,int>(to,from) );
+        m_keybinds.insert(std::pair<int,int>(from,to) );
+    }
+
+    void Input::reset_keybinds() {
+        m_keybinds.clear();
+    }
+
+    void Input::glfw_callback_key(GLFWwindow *window, int key, int scancode, int action, int mods){
+        if(! (action == GLFW_PRESS && m_accept_inputs) || m_ignore_keyboard_commands)
+            return;
+
+        // Rebind if an entry in our rebind map is found
+        int rebind = m_keybinds.find(key) != m_keybinds.end() ? m_keybinds[key] : key;
+
+        // Do Action Depending on Input Key
+        // Rendering Mode Switches
+        // Occupied Letters: Q, W, E, R
+        if(rebind == GLFW_KEY_Q)
+            Window::instance().set_mesh_rendering_mode("mesh_phong");
+        else if(rebind == GLFW_KEY_W)
+            Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+        else if(rebind == GLFW_KEY_E)
+            Window::instance().set_mesh_rendering_mode("mesh_flat");
+        else if(rebind == GLFW_KEY_R)
+            Window::instance().set_mesh_rendering_mode("mesh_normal");
+
+        // Mesh Views
+        if(rebind == GLFW_KEY_S)
+            Window::instance().set_mesh_active(0);
+        if(rebind == GLFW_KEY_F)
+            Window::instance().set_mesh_active(1);
+    }
+
+    void Input::glw_callback_mouse_button(GLFWwindow *window, int button, int action, int mods){
+        if(!m_accept_inputs)
+            return;
+
+        m_mouse_pressed = button == 0 && action == GLFW_PRESS;
+    }
+
+    void Input::glw_callback_mouse_position(GLFWwindow *window, double xpos, double ypos){
+        if(!m_accept_inputs || m_ignore_mouse_commands)
+            return;
+
+        m_currentMouseX = xpos;
+        m_currentMouseY = ypos;
+    }
+    void Input::glw_callback_mouse_scroll(GLFWwindow *window, double xoffset, double yoffset){
+
+        if(!m_accept_inputs || m_ignore_mouse_commands)
+            return;
+
+        m_currentScrollOffsetX = xoffset;
+        m_currentScrollOffsetY = yoffset;
+    }
+
+    void Input::reset_offset()
+    {
+        m_currentScrollOffsetX = 0.0;
+        m_currentScrollOffsetY = 0.0;
+    }
+
+     bool Input::mouse_pressed(){return m_mouse_pressed;}
+
+     double Input::get_mouse_X(){return m_currentMouseX;}
+
+     double Input::get_mouse_Y(){return m_currentMouseY;}
+
+     double Input::get_scroll_offset_X(){return m_currentScrollOffsetX;}
+
+     double Input::get_scroll_offset_Y(){return m_currentScrollOffsetY;}
+}
+/*
 #include "GLFW/glfw3.h"
 #include "Input.h"
 
@@ -93,4 +224,4 @@ namespace vOS
         Input::getInstance().m_currentScrollOffsetX = 0.0;
         Input::getInstance().m_currentScrollOffsetY = 0.0;
     }
-}
+}*/

@@ -79,12 +79,37 @@ namespace vOS
         m_reset = true;
     }
 
+    void Dijkstra::start()
+    {
+        bool linear = true;
+
+        if(linear)
+        {
+            // Run Dijkstra linearly
+            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
+            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            Window::instance().run();
+        }else{
+            // Run Dijkstra parallel
+            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_parallel, this));
+            std::cout << " Parallel approach " << std::endl;
+            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            std::thread* vos_thread = new std::thread(&Window::run, &Window::instance());
+
+            parallel_run();
+
+            vos_thread->join();
+        }
+    }
+
     void Dijkstra::debugging_template_ui_linear()
     {
 
-        static int mesh_count = 0;
-
         ImGui::Begin("Custom UI");
+        if (ImGui::Button("Go"))
+        {
+            linear_run();
+        }
         // Pause Button
         if (m_pause_toggled)
         {
@@ -119,50 +144,25 @@ namespace vOS
 
         if (ImGui::Button("Open File"))
         {
-            m_open_file = true;
+            Window::instance().OpenFileDialogue();
         }
 
-        if (m_open_file)
+        if (Window::instance().FileDialogueOpen())
         {
-            std::string path;
-            if (Window::instance().ShowFileDialog(path))
-            {
-                std::cout << "Pfad:" << path << std::endl;
+            std::string path = Window::instance().GetFileDialoguePath();
+            if (path != "") {
+
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(path, m_mesh);
-                Window::instance().set_mesh(&m_mesh, mesh_count++);
-
+                Window::instance().add_mesh(&m_mesh);
+                Window::instance().EndFileDialogue();
                 linear_run();
-                if(path != "")
-                {
-                    m_open_file = false;
-                }
             }
         }
 
         ImGui::End();
     }
 
-    void Dijkstra::start()
-    {
-        bool linear = true;
-
-        if(linear)
-        {
-            // Run Dijkstra linearly
-            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
-            Window::instance().run();
-        }else{
-            // Run Dijkstra parallel
-            Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_parallel, this));
-            std::cout << " Parallel approach " << std::endl;
-            std::thread* vos_thread = new std::thread(&Window::run, &Window::instance());
-
-            parallel_run();
-
-            vos_thread->join();
-        }
-    }
 
     void Dijkstra::linear_run()
     {
@@ -170,8 +170,16 @@ namespace vOS
         /* One Time only Setup */
         Window& window = Window::instance();
 
-        LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.get_mesh_obj()->remove_highlights();
+       /* OpenVolumeMesh::IO::FileManager file_manager;
+        file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
+        int hand_mesh =  window.add_mesh(&m_mesh);
+
+        file_manager.readFile("../res/sample_meshes/guy2500.1.ovm", m_mesh);
+        int guy_mesh = window.add_mesh(&m_mesh);
+
+        window.set_mesh_rendering_mode(hand_mesh, "mesh_normal");
+        window.set_mesh_rendering_mode(guy_mesh, "mesh_wireframe");
+*/
         window.remove_all_vertex_highlights();
         init();
 
@@ -188,16 +196,21 @@ namespace vOS
 
         bool found = false;
 
-//        auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
-//        box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
-//        box_start->set_base_color(0.2f, 0.2f, 1.0f);
-//
-//        auto* box_end = new vOS::Box(0.05f, 0.05f, 0.05f);
-//        box_end->set_position(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2]);
-//        box_end->set_base_color(0.2f, 0.2f, 1.0f);
-//
-//        window.add_shape(box_start);
-//        window.add_shape(box_end);
+        // Wait for Vos to initialize
+        window.is_ready();
+
+        auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
+        box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
+        box_start->set_base_color(0.2f, 0.2f, 1.0f);
+
+        auto* box_end = new vOS::Box(0.05f, 0.05f, 0.05f);
+        box_end->set_position(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2]);
+        box_end->set_base_color(0.2f, 0.2f, 1.0f);
+
+        window.add_shape(box_start);
+        window.add_shape(box_end);
+
+        window.unselect_all_elements();
 
         while (!found && !queue.empty() && !m_reset)
         {
@@ -208,7 +221,9 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                //window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
+                {
+                }
+                window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -253,25 +268,27 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.remove_all_vertex_highlights();
+            window.get_mesh_obj(0)->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)
             {
                 auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
 
-//                auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
-//                box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
-//                if (i == res.size() - 1 || first)
-//                {
-//                    //window.highlight_vertex(vertex, true, 0, 0, 1, 1);
-//                    box->set_base_color(0.2f, 0.2f, 1.0f);
-//                } else
-//                {
-//                    //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
-//                    box->set_base_color(1.0f, 0.2f, 0.2f);
-//                }
-//                window.add_shape(box);
+                /*
+                auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
+                box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
+                if (i == res.size() - 1 || first)
+                {
+                    //window.highlight_vertex(vertex, true, 0, 0, 1, 1);
+                    box->set_base_color(0.2f, 0.2f, 1.0f);
+                } else
+                {
+                    //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
+                    box->set_base_color(1.0f, 0.2f, 0.2f);
+                }
+                window.add_shape(box);*/
+                window.select_element(0, res[i], 1);
                 first = false;
 
                 std::cout << "Vertex: " << vertex.idx() << std::endl;
@@ -325,20 +342,15 @@ namespace vOS
             step_button_pressed();
         }
 
+
         if (ImGui::Button("Open File"))
         {
-            m_open_file = true;
+            Window::instance().OpenFileDialogue();
         }
 
-        if (m_open_file)
-        {
-            std::string path;
-            if (Window::instance().ShowFileDialog(path))
-            {
 
-                m_open_file = false;
-            }
-        }
+        if (!Window::instance().FileDialogueOpen())
+            Window::instance().EndFileDialogue();
 
         ImGui::End();
     }
@@ -350,12 +362,18 @@ namespace vOS
         /* One Time only Setup */
         Window& window = Window::instance();
 
+        std::cout << "Start waiting " << std::endl;
         // Read file
-        while(window.get_loaded_file_name() == empty){}
+        while(window.GetFileDialoguePath() == empty){}
+
+        std::cout << "Continue " << std::endl;
+
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(window.get_loaded_file_name(), m_mesh);
-        Window::instance().set_mesh(&m_mesh);
-        std::cout << window.get_loaded_file_name() << std::endl;
+        file_manager.readFile(window.GetFileDialoguePath(), m_mesh);
+
+        window.EndFileDialogue();
+
+        Window::instance().add_mesh(&m_mesh);
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
         window.remove_all_vertex_highlights();
@@ -388,6 +406,7 @@ namespace vOS
         window.add_shape(box_start);
         window.add_shape(box_end);
 
+        window.unselect_all_elements();
 
         while (!found && !queue.empty() && !m_reset)
         {
@@ -398,7 +417,9 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                window.remove_vertex_highlight(OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
+        {
+        }
+                window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -443,13 +464,14 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj()->remove_highlights();
+            window.get_mesh_obj(0)->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)
             {
                 auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
 
+                /*
                 auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
                 box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
                 if (i == res.size() - 1 || first)
@@ -461,7 +483,8 @@ namespace vOS
                     //window.highlight_vertex(vertex, true, 1, 0, 0, 1);
                     box->set_base_color(1.0f, 0.2f, 0.2f);
                 }
-                window.add_shape(box);
+                window.add_shape(box);*/
+                window.select_element(0, res[i], 1);
                 first = false;
 
                 std::cout << "Vertex: " << vertex.idx() << std::endl;
@@ -470,12 +493,7 @@ namespace vOS
             LogWindow::getInstance()->addLog("Continue");
 
         }
-        if (window.is_running())
-        {
-            LogWindow::getInstance()->addLog("Reset Variables");
-            m_reset = false;
-            m_step = false;
-        }
+        while (window.is_running()){}
         std::cout << "End Dijkstra" << std::endl;
     }
     void Dijkstra::step()

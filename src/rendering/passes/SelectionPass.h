@@ -14,8 +14,8 @@ namespace vOS
         SelectionPass();
         ~SelectionPass() = default;
 
-        void render(VertexArrayObject* vao, const RenderData& data) override;
-        void render_mesh(MeshObject* mesh, RenderData& data);
+        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render_mesh(MeshObject* mesh, RenderData& data, int mesh_id);
 
     private:
 

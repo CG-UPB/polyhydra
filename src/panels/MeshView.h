@@ -12,9 +12,11 @@
 
 namespace vOS
 {
+
     class MeshView: public WindowPanel
     {
     public:
+
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
@@ -24,9 +26,9 @@ namespace vOS
 
         void handleResize();
         void handleMouseControl();
-        void renderMesh();
+        void renderMesh(int mesh_id);
         void renderSelection();
-        void handleSelection(int type, int picked_id);
+        void querySelection(int type, int picked_id);
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
 

@@ -65,47 +65,27 @@ namespace vOS
             return;
         }
 
-
-
+        m_active_mesh = Window::instance().get_mesh_active();
         ImGui::InputInt("Mesh in Focus", &m_active_mesh);
         if (m_active_mesh < 0) m_active_mesh = 0;
         if (m_active_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
         GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
-        GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
-
-
-
+        Window::instance().set_mesh_active(m_active_mesh);
+        //GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
 
         if(ImGui::Button("Snapshot"))
         {
-            m_open_file = true;
+            Window::instance().m_file_dialog->open(".ovm", 1);;
         }
-        if(m_open_file)
+
+        if(Window::instance().m_file_dialog->file_dialogue_open(1))
         {
-            std::string path;
-            if (Window::instance().ShowFileDialog(path,".bmp",1))
-            {
-
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-                if(path != ""){
-                    Window::instance().take_screenshot(path);
-                    m_open_file = false;
-                    //LogWindow::getInstance()->addLog("1");
-                }
-            }
-            if (path == "")
-            {
-                m_open_file = false;
-                Window::instance().m_file_dialog->set_open_snapshot_saver(false);
-                //LogWindow::getInstance()->addLog("2");
-            }
-            if(path != "")
-            {
+            std::string path = Window::instance().m_file_dialog->is_ok_snapshot_saver() ? Window::instance().m_file_dialog->get_file_path_snapshot_saver() : "";
+            if (path != "") {
+                Window::instance().rendering_mutex.unlock();
                 Window::instance().take_screenshot(path);
-                m_open_file = false;
-                //LogWindow::getInstance()->addLog("1");
+                Window::instance().rendering_mutex.lock();
+                Window::instance().m_file_dialog->close();
             }
 
         }
@@ -157,19 +137,32 @@ namespace vOS
         {
             if(ImGui::BeginTable("split1", 1))
             {
+                int active_mesh = Window::instance().get_mesh_active();
                 ImGui::TableNextColumn();
                 ImGui::Text("Slicer:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                               "inview of the mesh");
+                m_slider_slicer = Window::instance().get_mesh_slice_level(active_mesh);
                 ImGui::SliderInt("", &m_slider_slicer, 0, 10);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
+                //GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_slice_level(active_mesh,m_slider_slicer);
+                Window::instance().rendering_mutex.lock();
                 ImGui::Text("Peel:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
+                m_slider_peel = Window::instance().get_mesh_peel_level(active_mesh);
                 ImGui::SliderInt(" ", &m_slider_peel, 0, 10);
-                GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
+                //GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_peel_level(active_mesh,m_slider_peel);
+                Window::instance().rendering_mutex.lock();
+                m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
                 if (ImGui::SliderFloat("Cell Size:", &m_cell_size, 0.0f, 1.0f))
                 {
-                    GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
+                    //GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_cell_size(active_mesh,m_cell_size);
+                    Window::instance().rendering_mutex.lock();
                 }
                 // Therefore a picker has to work
                 ImGui::Text("Start Isolation:");
@@ -217,7 +210,7 @@ namespace vOS
         }
 
         
-        
+        /*
         if (ImGui::CollapsingHeader("Rendering Options"))
         {
             if (ImGui::BeginTable("split", 1))
@@ -227,7 +220,7 @@ namespace vOS
                 ImGui::TableNextColumn();
                 //ImGui::Text("   ");ImGui::SameLine();
                 if(ImGui::Button("Mesh-Selection"))
-                    showPopup = true;
+                    showPopup1 = true;
                 ImVec2 cursorPos = ImGui::GetCursorPos();
                 ImGui::SetNextWindowPos(ImVec2(cursorPos.x + 100,cursorPos.y));
                 if (ImGui::BeginPopup("Mesh-Selection"))
@@ -279,15 +272,15 @@ namespace vOS
                         newArr[i] = selected_mesh[i];
                     }
                     
-                    GlobalViewerSettings::getInstance()->m_set_test(newArr);*/
+                    GlobalViewerSettings::getInstance()->m_set_test(newArr);
                     if(ImGui::Button("Close"))
                     {
-                        showPopup = false;
+                        showPopup1 = false;
                         ImGui::CloseCurrentPopup();
                     }
                     ImGui::EndPopup();
                 }
-                if (showPopup)
+                if (showPopup1)
                     ImGui::OpenPopup("Mesh-Selection");
                 
 /*
@@ -303,12 +296,18 @@ namespace vOS
                 if (ImGui::Button("Mesh-Selcetion"))
                     ImGui::OpenPopup("Mesh-Selection");
                 
-*/
+
                 
                 ImGui::Text("Color:");
                 ImGui::Checkbox("", &m_color_activated);
                 ImGui::SameLine();
                 ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+                if (m_color_activated)
+                {
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_color(Color(m_color[0],m_color[1],m_color[2],m_color[3]));
+                    Window::instance().rendering_mutex.lock();
+                }
                 GlobalViewerSettings::getInstance()->m_set_current_mesh_rendering_color(m_color_activated, m_color[0],m_color[1],m_color[2],m_color[3]);
                 ImGui::SameLine(); HelpMarkerWithQuestionMark(
                         "You can choose which color you want to use rendering the mesh");
@@ -316,11 +315,18 @@ namespace vOS
                 // Select an item type
                 const char* rendering_mode_names[] =
                         {
-                                "Phong", "Wireframe", "Normal", "Tangent", "Bitangent", "Flat"
+                                "Phong", "Wireframe", "Normal", "Flat"
+                        };
+                const char* rendering_mode_internal_names[] =
+                        {
+                                "mesh_phong", "mesh_wireframe", "mesh_normal", "mesh_flat"
                         };
                 ImGui::Text("Rendering Mode:");
                 ImGui::Combo("  ", &m_rendering_mode, rendering_mode_names, IM_ARRAYSIZE(rendering_mode_names), IM_ARRAYSIZE(rendering_mode_names));
-                GlobalViewerSettings::getInstance()->m_set_current_rendering_mode(m_rendering_mode);
+                // TODO
+                Window::instance().rendering_mutex.unlock();
+                //Window::instance().set_mesh_rendering_mode(rendering_mode_internal_names[m_rendering_mode]);
+                Window::instance().rendering_mutex.lock();
                 ImGui::SameLine();
                 HelpMarkerWithQuestionMark("You can choose between multiple rendering modes for the mesh");
 
@@ -333,8 +339,7 @@ namespace vOS
                 ImGui::Text("Separation:");
                 ImGui::Combo("   ", &m_separation_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
                 GlobalViewerSettings::getInstance()->m_set_current_separation_type(m_separation_type);
-                //TODO: Fix the next line that it works:
-                //ImGui::SliderFloat("",&m_separation_value, 0.0f, 1.0f,"ratio = %.3f");
+
                 ImGui::SameLine();
                 HelpMarkerWithQuestionMark("You can choose between multiple Separation-types. This could be useful, if you want to watch inside of the mesh");
                 ImGui::Text("Lighting:");
@@ -351,6 +356,76 @@ namespace vOS
                 ImGui::EndTable();
             }
         }
+        */
+    /*
+        if(ImGui::Button("Single Mesh Options"))
+        {
+            showPopup2 = true;
+        }
+        if (ImGui::BeginPopup("Single Mesh Options"))
+        {
+            int nbr_Meshes = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes();
+            if (nbr_Meshes < 1){
+
+            }else {
+                char *meshList[nbr_Meshes];
+                for (int i = 0; i < nbr_Meshes; i++) {
+                    std::string str = "Mesh " + std::to_string(i + 1);
+                    char* char_type = new char[str.length()];
+                    meshList[i] = strcpy(char_type, str.c_str());
+                }
+                //m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_active_mesh();
+                m_active_mesh = Window::instance().get_mesh_active();
+                ImGui::Combo("   ", &m_active_mesh, meshList, IM_ARRAYSIZE(meshList), IM_ARRAYSIZE(meshList));
+                //GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_active(m_active_mesh);
+                Window::instance().rendering_mutex.lock();
+
+                bool visible = Window::instance().get_mesh_visibility(m_active_mesh);
+                ImGui::Checkbox("Visible", &visible);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_visibility(m_active_mesh, visible);
+                Window::instance().rendering_mutex.lock();
+
+                Color color = Window::instance().get_mesh_color(m_active_mesh);
+                m_color[0] = color.get().r;
+                m_color[1] = color.get().g;
+                m_color[2] = color.get().b;
+                ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_color(m_active_mesh, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
+                Window::instance().rendering_mutex.lock();
+
+                std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m_active_mesh);
+                int current_rendering_mode_int = 0;
+                if (current_rendering_mode == "mesh_wireframe")
+                    current_rendering_mode_int = 1;
+                if (current_rendering_mode == "mesh_normal")
+                    current_rendering_mode_int = 2;
+                if (current_rendering_mode == "mesh_flat")
+                    current_rendering_mode_int = 3;
+                const char *rendering_mode_internal_names[] =
+                        {
+                                "mesh_phong", "mesh_wireframe", "mesh_normal", "mesh_flat"
+                        };
+                ImGui::Text("Rendering Mode:");
+                ImGui::Combo("  ", &current_rendering_mode_int, rendering_mode_internal_names,
+                             IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_rendering_mode(m_active_mesh,rendering_mode_internal_names[current_rendering_mode_int]);
+                Window::instance().rendering_mutex.lock();
+            }
+            if(ImGui::Button("Close"))
+            {
+                showPopup2 = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        if (showPopup2)
+            ImGui::OpenPopup("Single Mesh Options");
+        */
         if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
         {
             ImGui::BeginTooltip();

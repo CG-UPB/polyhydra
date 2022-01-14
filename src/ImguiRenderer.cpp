@@ -95,11 +95,14 @@ namespace vOS
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1); // Enable vsync
 
-        // add input callbacks
+        // Setup Input Class
+        Input::setup(m_window);
+        /*
         glfwSetKeyCallback(m_window, Input::glfwKeyCallback);
         glfwSetMouseButtonCallback(m_window, Input::glfwMouseButtonCallback);
         glfwSetCursorPosCallback(m_window, Input::glfwMouseCursorPosCallback);
         glfwSetScrollCallback(m_window, Input::glfwScrollCallback);
+         */
 
         // load opengl functions
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -279,8 +282,7 @@ namespace vOS
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(get_window());
 
-        Input::resetOffset();
-
+        Input::reset_offset();
     }
 
 }

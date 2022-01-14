@@ -2,6 +2,7 @@
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
 #include <vector>
 #include <map>
+#include <unordered_set>
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 #include "MeshVertexBuffer.h"
@@ -11,14 +12,37 @@
 
 namespace vOS
 {
+
     struct Color
     {
         Color(float _r, float _g, float _b) : r(_r), g(_g), b(_b), a(1){}
         Color(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a){}
+        glm::vec3 get(){return glm::vec3(r,g,b);}
         float r;
         float g;
         float b;
         float a;
+    };
+
+    struct MeshData
+    {
+        MeshData() : m_color(1,1,1,1), m_visible(true), rendering_mode("mesh_phong"){
+            glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
+            glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
+            glm::mat4 rotation = glm::mat4(1.0f);
+            transform = position * rotation * scale;
+        }
+        Color m_color;
+        bool m_visible;
+        std::string rendering_mode;
+
+        int m_slider_slicer = 0;
+        int m_slider_peel = 0;
+        float m_cell_size = 1.0f;
+
+        glm::vec3 offset;
+        glm::mat4 transform;
+        int selection_offset;
     };
 
     struct Highlight
@@ -39,6 +63,18 @@ namespace vOS
 
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
+        // Selection Functionality
+        std::unordered_set<int>& get_all_selected_faces(){return m_selected_faces;}
+        std::unordered_set<int>& get_all_selected_vertices(){return m_selected_vertices;}
+        std::unordered_set<int>& get_all_selected_edges(){return m_selected_edges;}
+        std::unordered_set<int>& get_all_selected_cells(){return m_selected_cells;}
+        void select_element(int id, int type);
+        void unselect_element(int id, int type);
+        void unselect_all();
+        bool is_element_selected(int id, int type);
+        MeshData& get_data(){return m_data;}
+        void set_data(MeshData data) {m_data =data;}
+
         void load_from_file(std::string file_path);
         void write_to_file(const std::string& file_path) const;
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
@@ -51,7 +87,7 @@ namespace vOS
         int to_edgeID(int value);
         int to_faceID(int value);
 
-        std::tuple<int, int> selection_offset(){ return m_selection_offset;};
+        std::tuple<int, int>& selection_offset(){ return m_selection_offset;};
         void set_selection_offset(int start);
         std::map<OpenVolumeMesh::VertexHandle, Highlight>& get_highlights();
 
@@ -80,6 +116,11 @@ namespace vOS
 
         std::vector<float> m_vert_colors;
         std::vector<float> m_face_colors;
+        std::unordered_set<int> m_selected_faces;
+        std::unordered_set<int> m_selected_vertices;
+        std::unordered_set<int> m_selected_edges;
+        std::unordered_set<int> m_selected_cells;
+        std::map<int, int> m_created_shapes;
 
         std::map<OpenVolumeMesh::VertexHandle, Highlight> highlight_map;
 
@@ -90,6 +131,8 @@ namespace vOS
         MeshVertexBuffer* m_mvb;
 
         std::unordered_map<unsigned int, MeshVertexBuffer*> m_peel_cache;
+
+        MeshData m_data;
 
         bool m_should_update;
 

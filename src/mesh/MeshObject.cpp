@@ -7,9 +7,10 @@
 #include "../panels/LogWindow.h"
 #include <array>
 #include <string>
-#include <unordered_set>
 #include "../Window.h"
 #include "../rendering/meshes/CommonMeshes.h"
+#include "../rendering/shapes/Sphere.h"
+#include "../rendering/shapes/Cylinder.h"
 #include "../settings/GlobalViewerSettings.h"
 
 namespace vOS
@@ -48,6 +49,175 @@ namespace vOS
         remove_highlights();
         m_should_update = true;
 
+    }
+
+    void MeshObject::select_element(int id, int type){
+        int shape_key = type * 114748364 + id;
+
+        // We can't select an element twice
+        bool already_selected = is_element_selected(id, type);
+        if(already_selected)
+            return;
+
+        if(type == 0) {
+            m_selected_faces.insert(id);
+
+            // Add Shape
+
+            OpenVolumeMesh::FaceHandle face(id);
+
+            auto pick_pos = m_mesh->barycenter(face);
+            auto* shape = new Cylinder();
+            shape->set_scale(0.02f, 0.02f, 0.02f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(1.0f, 0.0f, 0.0f);
+
+            // There a guaranteed Mutex Guard around this method
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
+
+            m_created_shapes.insert({shape_key, shape_id});
+        }else if(type == 1) {
+            m_selected_vertices.insert(id);
+
+            // Add Shape
+
+            OpenVolumeMesh::VertexHandle vertex(id);
+
+            auto pick_pos = m_mesh->vertex(vertex);
+            auto* shape = new Sphere();
+            shape->set_scale(0.02f, 0.02f, 0.02f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(0.0f, 1.0f, 0.0f);
+
+            // There a guaranteed Mutex Guard around this method
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
+
+            m_created_shapes.insert({shape_key, shape_id});
+        }else if(type == 2){
+            m_selected_edges.insert(id);
+
+            // Add Shape
+            OpenVolumeMesh::EdgeHandle edge(id);
+            auto vertices = m_mesh->edge_vertices(edge);
+            auto v0 = m_mesh->vertex(vertices[0]);
+            auto v1 = m_mesh->vertex(vertices[1]);
+            auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
+            auto* shape = new Box();
+            shape->set_scale(0.02f, 0.02f, 0.02f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(0.0f, 0.0f, 1.0f);
+
+            // There a guaranteed Mutex Guard around this method
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
+
+            m_created_shapes.insert({shape_key, shape_id});
+        }else {
+            m_selected_cells.insert(id);
+
+        }
+    }
+
+    void MeshObject::unselect_all(){
+        // Delete Face Elements
+        for(int element : m_selected_faces)
+        {
+            // Delete Shape Element
+            int shape_key = 0 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_faces.clear();
+
+        // Delete Vertex Elements
+        for(int element : m_selected_vertices)
+        {
+            // Delete Shape Element
+            int shape_key = 1 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_vertices.clear();
+        // Delete Edge Elements
+        for(int element : m_selected_edges)
+        {
+            // Delete Shape Element
+            int shape_key = 2 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_edges.clear();
+        // Delete Face Elements
+        for(int element : m_selected_cells)
+        {
+            // Delete Shape Element
+            int shape_key = 3 * 114748364 + element;
+            int shape_id = m_created_shapes[shape_key];
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().remove_shape(shape_id);
+            Window::instance().rendering_mutex.lock();
+        }
+        m_selected_cells.clear();
+    }
+
+    void MeshObject::unselect_element(int id, int type){
+        // Element must be selected to be unselectable
+        bool is_selected = is_element_selected(id, type);
+        if(!is_selected)
+            return;
+
+        if(type == 0) {
+
+            auto entry = m_selected_faces.find(id);
+            m_selected_faces.erase(entry);
+        }else if(type == 1) {
+            auto entry = m_selected_vertices.find(id);
+            m_selected_vertices.erase(entry);
+        }else if(type == 2) {
+            auto entry = m_selected_edges.find(id);
+            m_selected_edges.erase(entry);
+        }else {
+            auto entry =  m_selected_cells.find(id);
+            m_selected_cells.erase(entry);
+        }
+
+        // Delete Shape Element
+        int shape_key = type * 114748364 + id;
+        int shape_id = m_created_shapes[shape_key];
+
+        Window::instance().rendering_mutex.unlock();
+        Window::instance().remove_shape(shape_id);
+        Window::instance().rendering_mutex.lock();
+    }
+    bool MeshObject::is_element_selected(int id, int type){
+
+        id = type * 114748364 + id;
+
+        auto it = m_selected_vertices.find(id);
+
+        if(type == 0)
+            return m_selected_faces.find(id) != m_selected_faces.end();
+        else if(type == 1)
+            return m_selected_vertices.find(id) != m_selected_vertices.end();
+        else if(type == 2)
+            return m_selected_edges.find(id) != m_selected_edges.end();
+        else
+            return m_selected_cells.find(id) != m_selected_cells.end();
     }
 
     void MeshObject::write_to_file(const std::string& file_path) const
@@ -126,71 +296,60 @@ namespace vOS
 
     void MeshObject::calculate_peel_depth()
     {
-        OpenVolumeMesh::CellPropertyT<int> peel_property = m_mesh->request_cell_property<int>("PeelDepth");
-        std::vector<OpenVolumeMesh::CellHandle> cell_cache;
+        OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
+        OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
 
-        // Initialize all boundary Cells with depth = 0 and everything else with -1
-        for (auto cell : m_mesh->cells())
+        std::vector<OpenVolumeMesh::VertexHandle> act_level;
+        std::vector<OpenVolumeMesh::VertexHandle> next_level;
+
+        for(auto vertex : m_mesh->vertices())
         {
-            peel_property[cell] = -1;
-            // determine boundary cells
-            if (m_mesh->is_boundary(cell))
+            if(m_mesh->is_boundary(vertex))
             {
-                peel_property[cell] = 0;
-                cell_cache.push_back(cell);
+                vertex_peel_property[vertex] = 0;
+                act_level.push_back(vertex);
+            }
+            else
+            {
+                vertex_peel_property[vertex] = -1;
             }
         }
 
-        // actual depth
-        int depth = -1;
+        int depth = 0;
 
-
-        std::vector<OpenVolumeMesh::CellHandle> next_level_cache;
-        std::unordered_set <int> visited;
-        while(!cell_cache.empty())
+        while(!act_level.empty())
         {
-            // start with depth == 0
             depth++;
-            visited.clear();
-            for (auto cell : cell_cache)
+            for(auto vertex : act_level)
             {
-                for (auto neighbour :  m_mesh->cell_cells(cell))
+                for (auto neighbour : m_mesh->vertex_vertices(vertex))
                 {
-                    if (visited.find(neighbour.idx()) != visited.end())
+                    if(vertex_peel_property[neighbour] == -1)
                     {
-                        for (auto vertex : m_mesh->cell_vertices(OpenVolumeMesh::CellHandle(neighbour.idx())))
-                        {
-                            if (m_mesh->is_boundary(vertex))
-                            {
-                                peel_property[neighbour] = depth;
-                                continue;
-                            }
-
-                            for (auto vertex_cell : m_mesh->vertex_cells(vertex))
-                            {
-                                if(peel_property[vertex_cell ] < depth)
-                                {
-                                    peel_property[neighbour] = depth;
-                                    continue;
-                                }
-                            }
-                        }
-                        continue;
-                    }
-
-                    if (peel_property[neighbour] == -1)
-                    {
-                        peel_property[neighbour] = depth + 1;
-                        visited.insert(neighbour.idx());
+                        vertex_peel_property[neighbour] = depth;
+                        next_level.push_back(neighbour);
                     }
                 }
             }
-
-            cell_cache.clear();
-            for(auto neighbour : visited)
+            act_level.clear();
+            for(auto vertex : next_level)
             {
-                cell_cache.emplace_back(neighbour);
+                act_level.push_back(vertex);
             }
+            next_level.clear();
+        }
+
+        for(auto cell : m_mesh->cells())
+        {
+            int minimum = 100000;
+            for(auto cell_vertex : m_mesh->cell_vertices(cell))
+            {
+                if(vertex_peel_property[cell_vertex] < minimum)
+                {
+                    minimum = vertex_peel_property[cell_vertex];
+                }
+            }
+            cell_peel_property[cell] = minimum;
         }
     }
 

@@ -4,6 +4,7 @@
 #include "MeshPass.h"
 #include "../meshes/CommonMeshes.h"
 #include "../../settings/GlobalViewerSettings.h"
+#include "../../Window.h"
 
 namespace vOS {
     SelectionPass::SelectionPass(): m_selection_shader(Shader::selection_face())
@@ -13,8 +14,13 @@ namespace vOS {
         m_selection_cylinder_shader = Shader::selection_edge_shader();
     }
 
-    void SelectionPass::render(VertexArrayObject* vao, const RenderData &data)
+    void SelectionPass::render(VertexArrayObject* vao, const RenderData &data, int mesh_id)
     {
+        // Get Mesh
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        if (obj == nullptr)
+            return;
+
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
@@ -23,8 +29,8 @@ namespace vOS {
         glDepthMask(GL_TRUE);
         glDisable(GL_BLEND);
 
-        glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
-        glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
 
         float cell_size = GlobalViewerSettings::getInstance()->m_get_current_cell_size();
 
@@ -34,7 +40,7 @@ namespace vOS {
         m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_selection_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
+        m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_shader->set_uniform_float("u_cell_size", cell_size);
 
@@ -49,7 +55,7 @@ namespace vOS {
         m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_selection_cylinder_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
+        m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
 
@@ -66,7 +72,7 @@ namespace vOS {
         m_selection_sphere_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
-        m_selection_sphere_shader->set_uniform_int("u_selection_offset", data.mesh.selection_offset);
+        m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_sphere_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
 
@@ -75,16 +81,24 @@ namespace vOS {
         m_selection_sphere_shader->unbind();
     }
 
-    void SelectionPass::render_mesh(MeshObject* mesh, RenderData& data)
+    void SelectionPass::render_mesh(MeshObject* mesh, RenderData& data, int mesh_id)
     {
+        // Get Mesh
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        if (obj == nullptr)
+            return;
+
         if (mesh != nullptr && mesh->get_vao() != nullptr)
         {
-            data.mesh.selection_offset = std::get<0>(mesh->selection_offset());
+            int offset = std::get<0>(mesh->selection_offset());
+            auto d = obj->get_data();
+            d.selection_offset = offset;
+            obj->set_data((d));
             m_sphere_vao = mesh->get_sphere_vao();
             m_num_vertices = mesh->get_num_visible_vertices();
             m_cylinder_vao = mesh->get_cylinder_vao();
             m_num_edges = mesh->get_num_visible_edges();
-            render(mesh->get_vao(), data);
+            render(mesh->get_vao(), data, mesh_id);
         }
     }
 }

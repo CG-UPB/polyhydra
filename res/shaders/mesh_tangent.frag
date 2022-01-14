@@ -27,4 +27,6 @@ void main()
         }
 
         FragColor = vec4(normalize(tangent), 1.0);
+
+        FragColor = vec4(v_Normal, 1.0);
 }

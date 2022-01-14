@@ -24,6 +24,8 @@
 #include "panels/MeshView.h"
 #include <mutex>
 #include "panels/ToolBar.h"
+#include "panels/MeshLayerView.h"
+#include "settings/GlobalViewerSettings.h"
 
 namespace vOS {
 
@@ -54,14 +56,12 @@ namespace vOS {
         static Window &instance();
 
         // Renamed Classes for convenience
-        using v3f = OpenVolumeMesh::GeometricPolyhedralMeshV3f;
+        using v3d = OpenVolumeMesh::GeometricPolyhedralMeshV3d;
 
-        typedef std::tuple<OpenVolumeMesh::VertexHandle, float, float, float, float, bool> operation_set_highlight;
-        typedef std::tuple<Shape*, unsigned int, bool> operation_shape;
-        typedef std::function<void(OpenVolumeMesh::VertexHandle* vertices_array, int length, Selection_Mode selection_mode)> vertex_selection_callback;
-        typedef std::function<void(OpenVolumeMesh::EdgeHandle* edges_array, int length, Selection_Mode selection_mode)> edge_selection_callback;
-        typedef std::function<void(OpenVolumeMesh::FaceHandle* faces_array, int length, Selection_Mode selection_mode)> face_selection_callback;
-        typedef std::function<void(OpenVolumeMesh::CellHandle* cells_array, int length, Selection_Mode selection_mode)> cell_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> vertex_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> edge_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> face_selection_callback;
+        typedef std::function<void(int mesh,int id, bool selected)> cell_selection_callback;
 
         //typedef std::function<void(double x, double y, double z, Translation_Mode translation_mode)> operation_translation_callback;
         //typedef std::function<void(Rendering_Mode rendering_mode)> operation_rendering_callback;
@@ -72,49 +72,139 @@ namespace vOS {
 
         // Meshes /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        void highlight_vertex(OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha);
-        void highlight_vertex(OpenVolumeMesh::VertexHandle v_h, Color color);
+        void highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha);
+        void highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, Color color);
         void remove_all_vertex_highlights();
-        void remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h);
+        void remove_vertex_highlight(int mesh_id, OpenVolumeMesh::VertexHandle v_h);
 
+        int add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
+        void remove_mesh(int index);
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index = 0);
 
         void set_mesh_active(int index);
+        int get_mesh_active();
 
-        MeshObject *get_mesh_obj(int index = -1);
+        MeshObject* get_active_mesh_obj(){return get_mesh_obj(m_active_mesh);}
+        MeshObject *get_mesh_obj(int index);
+
+        bool has_mesh();
 
         const std::unordered_map<int, MeshObject*>& get_mesh_list() { return m_mesh_objects; };
 
         unsigned int add_shape(Shape* shape);
         void remove_shape(unsigned int id);
-        void take_screenshot(std::string filename);
 
         //   Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /*
+         * Applies rendering mode to mesh with given mesh_id
+         * Prebuild modes are: mesh_phong, mesh_wireframe, mesh_flat, mesh_normal
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_rendering_mode(int mesh_id, std::string mode);
+        /*
+         * Applies rendering mode to the currently active mesh
+         * Prebuild modes are: mesh_phong, mesh_wireframe, mesh_flat, mesh_normal
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_rendering_mode( std::string mode);
 
         /*
-         * Resets all given materials and color values back to the default value
+         * Returns the actual rendering mode for mesh with id = mesh_id
          */
-        void default_all() {};
+        std::string get_mesh_rendering_mode(int mesh_id);
 
         /*
-         * Applies the given material shader to all vertices in array
-         * TODO: Only for Vertices at the moment
+         * Applies color to mesh with given mesh_id
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
-        void apply_material(OpenVolumeMesh::VertexHandle *vertices_array, std::string material_path) {};
+        void set_mesh_color(int mesh_id, Color m_color);
+        /*
+         * Applies color to the currently active mesh
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_color( Color m_color);
 
         /*
-         * Applies given material shader to all elements with given property
+         * Returns the actual color for mesh with id = mesh_id
          */
-        void apply_material(std::string property, std::string material_path) {};
+        Color get_mesh_color(int mesh_id);
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////// Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /*
+         * Applies visibility to the given mesh_id.
+         * A mesh that is not visible, will not be rendered in the Meshview class
+         */
+        void set_mesh_visibility(int mesh_id,bool visible);
 
-        const std::string& get_loaded_file_name() { return m_loaded_file_path; };
+        /*
+         * Applies visibility to the actual active mesh.
+         * A mesh that is not visible, will not be rendered in the Meshview class
+         */
+        void set_mesh_visibility(bool visible);
 
-        void set_loaded_file_path_name(std::string path) { m_loaded_file_path = path; };
+        /*
+         * returns the visibility of the mesh with given mesh_id
+         */
+        bool get_mesh_visibility(int mesh_id);
+
+        /*
+         * Applies slice level to the given mesh_id.
+         */
+        void set_mesh_slice_level(int mesh_id,int slice_level);
+
+        /*
+         * Applies slice level to the actual active mesh.
+         */
+        void set_mesh_slice_level(int slice_level);
+
+        /*
+         * returns the slice level of the mesh with given mesh_id
+         */
+        int get_mesh_slice_level(int mesh_id);
+
+        /*
+        * Applies peel level to the given mesh_id.
+        */
+        void set_mesh_peel_level(int mesh_id,int peel_level);
+
+        /*
+         * Applies peel level to the actual active mesh.
+         */
+        void set_mesh_peel_level(int peel_level);
+
+        /*
+         * returns the peel level of the mesh with given mesh_id
+         */
+        int get_mesh_peel_level(int mesh_id);
+
+        /*
+        * Applies cell size to the given mesh_id.
+        */
+        void set_mesh_cell_size(int mesh_id,float cell_size);
+
+        /*
+         * Applies cell size to the actual active mesh.
+         */
+        void set_mesh_cell_size(float cell_size);
+
+        /*
+         * returns the cell size of the mesh with given mesh_id
+         */
+        float get_mesh_cell_size(int mesh_id);
+
+
+        /*
+         * If set to false, the Vos Window will no longer interprete any inputs from Keys or Mouse
+         * Useful for File Dialogues and similar processes in which you do not which the interface to change.
+         */
+        void set_intepret_input(bool interpret_input);
+
+        /*
+         * Rebinds the given GLFW key
+         */
+        void set_keybind_manual(int glfw_key_from, int glfw_key_to);
+
+        // Callback Interface ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /*
          * Sets custom function that will be called along other Vos UI panel elements
@@ -135,6 +225,7 @@ namespace vOS {
         bool is_closed();
 
         bool is_running();
+
 
         // Selections //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -162,13 +253,46 @@ namespace vOS {
         void run();
 
         //void run(void_callback vc);
-        // Custom ImGui Methods
 
-        static bool ShowFileDialog(std::string& path, const std::string& extension = ".ovm",int nbr_of_dialog = 0);
-        FileDialog* get_file_dialog(){return m_file_dialog;}
 
-        // User Input Reactions //////////////////////////////////////////////////////////////////////////////////////////////////
+        // IO //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        void take_screenshot(std::string filename);
+
+        void OpenFileDialogue();
+
+        std::string GetFileDialoguePath();
+        bool FileDialogueOpen();
+
+        void EndFileDialogue();
+
+
+        /*
+         * Selects a given element (Face, Vertex, Edge) from given mesh
+         * Element Types are:
+         * 0 : Face
+         * 1 : Vertex
+         * 2 : Edge
+         * 3 : Cell
+         */
+        void select_element(int mesh, int element_handle_id, int element_type);
+        /*
+         * Unselects a given element (Face, Vertex, Edge) from given mesh
+         * Element Types are:
+         * 0 : Face
+         * 1 : Vertex
+         * 2 : Edge
+         * 3 : Cell
+         */
+        void unselect_element(int mesh, int element_handle_id, int element_type);
+/*
+         * Unselects all elements given Mesh has marked as selected
+         */
+        void unselect_all_elements(int mesh);
+        /*
+         * Unselects all elements any Mesh has marked as selected
+         */
+        void unselect_all_elements();
         // Called when a number of vertices have been selected
         vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
         // Called when a number of edges have been selected
@@ -185,17 +309,24 @@ namespace vOS {
 
         // Panels
         FileDialog* m_file_dialog;
+
+        // Mutex and thread safety
+        /// Set to guard GL when reading from and rendering our mesh
+        std::mutex rendering_mutex;
     private:
         Window();
 
         ~Window();
+
+        friend class MeshView;
+        friend class MeshObject;
+        friend class ToolBar;
 
         // Debugging //////////////////////////////////////////////////////////////////////////////////////////////////
         bool m_pause_toggled = false;
 
         // Variables //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        std::string m_loaded_file_path = "";
         unsigned int shape_id_counter = 0;
 
         bool m_initialized = false;
@@ -206,14 +337,8 @@ namespace vOS {
         void_callback m_temporary_new_custom_ui_function;
         bool m_new_custom_ui_function_set = false;
 
-        // Mutex and thread safety
-        /// Set to guard GL when reading from and rendering our mesh
-        std::mutex rendering_mutex;
 
-        // Operations /////////////////////////////////////////////////////////////////////////////////////////////////
 
-        std::list<operation_set_highlight> operation_list_vertex_highlights;
-        std::list<operation_shape> operation_list_shapes;
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -222,12 +347,13 @@ namespace vOS {
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
         ToolBar* m_toolbar = ToolBar::getInstance();
+        MeshLayerView* m_mesh_layer_view = MeshLayerView::getInstance();
 
-        v3f *m_mesh_reference;
         ImguiRenderer *m_imgui_renderer;
 
+        int m_active_mesh = -1;
+        int m_total_number_of_loaded_meshes = 0;
         std::unordered_map<int, MeshObject*> m_mesh_objects;
-        MeshObject *m_mesh_obj;
 
         MenuBar* get_menu_bar(){return m_menu_bar;}
 
@@ -242,28 +368,27 @@ namespace vOS {
 
         void close();
 
+
         // Callback Interface //////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Callback Functions //////////////////////////////////////////////////////////////////////////////////////////////////
         /// Default Empty Callback Function
         static void default_callback_function(){};
 
-        static void default_vertex_selection_function(OpenVolumeMesh::VertexHandle *vertices_array, int length,
-                                                      Selection_Mode selection_mode) {};
+        static void default_vertex_selection_function(int mesh, int id, bool selected) {};
 
-        static void default_edge_selection_function(OpenVolumeMesh::EdgeHandle *edge_array, int length,
-                                                    Selection_Mode selection_mode) {};
+        static void default_edge_selection_function(int mesh,int id, bool selected) {};
 
-        static void default_face_selection_function(OpenVolumeMesh::FaceHandle *face_array, int length,
-                                                    Selection_Mode selection_mode) {};
+        static void default_face_selection_function(int mesh,int id, bool selected) {};
 
-        static void default_cell_selection_function(OpenVolumeMesh::CellHandle *cell_array, int length,
-                                                    Selection_Mode selection_mode) {};
+        static void default_cell_selection_function(int mesh,int id, bool selected) {};
 
         static void
         default_translate_operation_function(double x, double y, double z, Translation_Mode translation_mode) {};
 
         static void default_rendering_operation_function(Rendering_Mode rendering_mode) {};
+
+
 
     };
 

@@ -5,6 +5,7 @@
 
 #include "../meshes/CommonMeshes.h"
 #include <cmath>
+#include "../../Window.h"
 
 namespace vOS
 {
@@ -25,8 +26,13 @@ namespace vOS
         delete m_quad_vao;
     }
 
-    void SelectionHoverPass::render(VertexArrayObject* vao, const RenderData& data)
+    void SelectionHoverPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
+        // Get Mesh
+        MeshObject *obj = Window::instance().get_active_mesh_obj();
+        if (obj == nullptr)
+            return;
+
         if (m_selected_type == SELECTION_TYPE_NONE)
         {
             return;
@@ -37,8 +43,8 @@ namespace vOS
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-        glm::mat4 positionOffset = glm::translate(-data.mesh.offset);
-        glm::mat4 transform = data.camera.world * data.mesh.transform * positionOffset;
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
 
         if (m_selected_type == SELECTION_TYPE_FACE)
         {
@@ -87,7 +93,7 @@ namespace vOS
         }
     }
 
-    void SelectionHoverPass::select(MeshObject& mesh, const RenderData& data, int type, int id)
+    void SelectionHoverPass::select(MeshObject& mesh, const RenderData& data, int mesh_id, int type, int id)
     {
         if (m_selected_id == id && m_selected_type == type)
         {
@@ -146,9 +152,9 @@ namespace vOS
         }
     }
 
-    SelectionHoverPass::MeshData SelectionHoverPass::get_face_mesh_data(MeshObject& mesh, int face_id)
+    SelectionHoverPass::SelectionMeshData SelectionHoverPass::get_face_mesh_data(MeshObject& mesh, int face_id)
     {
-        MeshData res;
+        SelectionMeshData res;
 
         OpenVolumeMesh::FaceHandle face(face_id);
         if (face.is_valid())
@@ -183,9 +189,14 @@ namespace vOS
         return res;
     }
 
-    SelectionHoverPass::MeshData SelectionHoverPass::get_edge_mesh_data(MeshObject& mesh, const RenderData& data, int edge_id)
+    SelectionHoverPass::SelectionMeshData SelectionHoverPass::get_edge_mesh_data(MeshObject& mesh, const RenderData& data, int mesh_id, int edge_id)
     {
-        MeshData res;
+        SelectionMeshData res;
+
+        // Get Mesh
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        if (obj == nullptr)
+            return res;
 
         float width = 0.003;
 
@@ -195,7 +206,7 @@ namespace vOS
         auto v1 = mesh.m_mesh->vertex(edge_vertices[1]);
         glm::vec3 pos0 = glm::vec3(v0[0], v0[1], v0[2]);
         glm::vec3 pos1 = glm::vec3(v1[0], v1[1], v1[2]);
-        auto mat = data.camera.projection * data.camera.view * data.camera.world * data.mesh.transform;
+        auto mat = data.camera.projection * data.camera.view * data.camera.world * obj->get_data().transform;
         auto p0_transformed = mat * glm::vec4(pos0, 1.0f);
         auto p1_transformed = mat * glm::vec4(pos1, 1.0f);
         glm::vec3 edge_normal = glm::normalize(glm::cross(glm::vec3(p1_transformed - p0_transformed), glm::vec3(0.0, 0.0, 1.0)));

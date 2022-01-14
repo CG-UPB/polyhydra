@@ -2,6 +2,7 @@
 
 #include "../panels/ToolBar.h"
 #include "../util/shader_enum.h"
+#include "../mesh/MeshObject.h"
 
 namespace vOS
 {
@@ -24,7 +25,6 @@ namespace vOS
         void m_set_current_isolation_state(bool isolation_state){m_isolation_started = isolation_state;};
         void m_set_current_separation_type(int separation_type){m_separation_type = separation_type;};
         void m_set_current_lighting_type(int lighting_type){m_lighting_type = lighting_type;};
-        void m_set_current_rendering_mode(int rend_mode){m_rendering_mode = rend_mode;};
         void m_set_current_cell_size(float size){m_cell_size = size;};
         void m_set_current_new_active_mesh(bool new_active){m_new_active_mesh = new_active;};
         void m_set_current_active_mesh(int active_mesh){m_active_mesh = active_mesh;};

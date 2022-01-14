@@ -60,7 +60,6 @@ namespace vOS
     void Window::open() {
         m_window_open = true;
         m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
-        m_mesh_obj = new MeshObject();
 
         // Create default UI Panels
         initPanels();
@@ -152,6 +151,9 @@ namespace vOS
         // ToolBar
         m_toolbar->show();
 
+        // MeshLayerView
+        m_mesh_layer_view->show();
+
         rendering_mutex.unlock();
 
         // Custom UI
@@ -177,43 +179,293 @@ namespace vOS
 
     // Setter Methods (Programmer to Vos) /////////////////////////////////////////////////////////
 
+    void Window::select_element(int mesh_id, int element_handle_id, int element_type)
+    {
+        rendering_mutex.lock();
+        auto mesh = get_mesh_obj(mesh_id);
+
+        if(mesh != nullptr)
+            mesh->select_element(element_handle_id, element_type);
+        rendering_mutex.unlock();
+
+        // Call the Selection Callback Function
+        if(element_type == 0){
+            m_on_face_selection(mesh_id,element_handle_id, true);
+        }else if(element_type == 1){
+            m_on_vertex_selection(mesh_id,element_handle_id, true);
+        }else if(element_type == 2){
+            m_on_edge_selection(mesh_id,element_handle_id, true);
+        }else
+            m_on_cell_selection(mesh_id,element_handle_id, true);
+
+    }
+
+    void Window::unselect_element(int mesh_id, int element_handle_id, int element_type)
+    {
+        rendering_mutex.lock();
+
+        auto mesh = get_mesh_obj(mesh_id);
+
+        if(mesh != nullptr)
+            mesh->unselect_element(mesh_id, element_type);
+
+        rendering_mutex.unlock();
+
+        // Call the Selection Callback Function
+        if(element_type == 0){
+            m_on_face_selection(mesh_id,element_handle_id, false);
+        }else if(element_type == 1){
+            m_on_vertex_selection(mesh_id,element_handle_id, false);
+        }else if(element_type == 2){
+            m_on_edge_selection(mesh_id,element_handle_id, false);
+        }else
+            m_on_cell_selection(mesh_id,element_handle_id, false);
+
+    }
+
+    void Window::unselect_all_elements(int mesh_id)
+    {
+        rendering_mutex.lock();
+        MeshObject* mesh = get_mesh_obj(mesh_id);
+
+        if(mesh != nullptr)
+            mesh->unselect_all();
+        rendering_mutex.unlock();
+    }
+
+    void Window::unselect_all_elements()
+    {
+        rendering_mutex.lock();
+        for(std::pair<int, MeshObject*> element : m_mesh_objects)
+        {
+            element.second->unselect_all();
+        }
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_keybind_manual(int glfw_key_from, int glfw_key_to) {
+        rendering_mutex.lock();
+        Input::set_keybind(glfw_key_from, glfw_key_to);
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_intepret_input(bool interpret) {
+        rendering_mutex.lock();
+        Input::accept_input(interpret);
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_mesh_rendering_mode(std::string mode) {
+        set_mesh_rendering_mode(0, mode);
+    }
+
+    void Window::set_mesh_rendering_mode(int mesh_id, std::string mode) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.rendering_mode = mode;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    std::string Window::get_mesh_rendering_mode(int mesh_id){
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.rendering_mode;
+        }
+    }
+
+    void Window::set_mesh_color(Color m_color) {
+        set_mesh_color(0, m_color);
+    }
+
+    void Window::set_mesh_color(int mesh_id, Color m_color) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_color = m_color;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    Color Window::get_mesh_color(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_color;
+        }
+    }
+
+    void Window::set_mesh_visibility(bool visible) {
+        set_mesh_visibility(0,visible);
+    }
+
+    void Window::set_mesh_visibility(int mesh_id, bool visible) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_visible = visible;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    bool Window::get_mesh_visibility(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_visible;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_slice_level(int slice_level) {
+        set_mesh_slice_level(0,slice_level);
+    }
+
+    void Window::set_mesh_slice_level(int mesh_id, int slice_level) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_slider_slicer = slice_level;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    int Window::get_mesh_slice_level(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_slider_slicer;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_peel_level(int peel_level) {
+        set_mesh_slice_level(0,peel_level);
+    }
+
+    void Window::set_mesh_peel_level(int mesh_id, int peel_level) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_slider_peel = peel_level;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    int Window::get_mesh_peel_level(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_slider_peel;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_cell_size(float cell_size) {
+        set_mesh_slice_level(0,cell_size);
+    }
+
+    void Window::set_mesh_cell_size(int mesh_id, float cell_size) {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_cell_size = cell_size;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    float Window::get_mesh_cell_size(int mesh_id) {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_cell_size;
+        }
+        return false;
+    }
+
     void Window::set_custom_imgui(void_callback vc) {
         rendering_mutex.lock();
         m_temporary_new_custom_ui_function = vc;
         m_new_custom_ui_function_set = true;
         rendering_mutex.unlock();
     }
-    void Window::highlight_vertex(OpenVolumeMesh::VertexHandle v_h, Color color)
+    void Window::highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, Color color)
     {
-        //static int i;
         rendering_mutex.lock();
-        //std::cout << "I did stuff "<< i++ << std::endl;
 
         Highlight highlight(color, v_h);
 
-        m_mesh_obj->add_highlight(highlight);
+        if(get_mesh_obj(mesh_id) != nullptr)
+            get_mesh_obj(mesh_id)->add_highlight(highlight);
 
         rendering_mutex.unlock();
     }
-    void Window::highlight_vertex(OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha)
+    void Window::highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, float red, float green, float blue, float alpha)
     {
         Color color(red,green,blue,alpha);
-        highlight_vertex(v_h, color);
+        highlight_vertex(mesh_id, v_h, color);
     }
 
-    void Window::remove_vertex_highlight(OpenVolumeMesh::VertexHandle v_h) {
+    void Window::remove_vertex_highlight(int mesh_id, OpenVolumeMesh::VertexHandle v_h) {
         rendering_mutex.lock();
 
-        m_mesh_obj->remove_highlight((v_h));
+        if(get_mesh_obj(mesh_id) != nullptr)
+            get_mesh_obj(mesh_id)->remove_highlight((v_h));
 
         rendering_mutex.unlock();
     }
 
 
     void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index) {
-        //rendering_mutex.lock();
+        rendering_mutex.lock();
         auto* mesh_obj = new MeshObject();
         mesh_obj->set_mesh(mesh);
+        mesh_obj->set_data(MeshData());
+        std::cout << "Adding mesh with id " << index << std::endl;
 
         // check if index of mesh already exist: yes -> replace it, no -> just insert it
         auto search = m_mesh_objects.find(index);
@@ -224,11 +476,65 @@ namespace vOS
         } else {
             m_mesh_objects.emplace(index, mesh_obj);
         }
-        set_mesh_active(index);
+        if(m_mesh_objects.size() == 1)
+            set_mesh_active(index);
 
         calculate_selection_offsets();
-        //rendering_mutex.unlock();
+        rendering_mutex.unlock();
     }
+
+    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh) {
+        rendering_mutex.lock();
+        int index = m_total_number_of_loaded_meshes++;
+
+        // Create Mesh Object
+        auto* mesh_obj = new MeshObject();
+        mesh_obj->set_mesh(mesh);
+        mesh_obj->set_data(MeshData());
+
+        // Add mesh to our map
+        m_mesh_objects.emplace(index, mesh_obj);
+
+        // Make the mesh the active mesh, if it is the only one available
+        if(m_mesh_objects.size() == 1)
+            set_mesh_active(index);
+
+        calculate_selection_offsets();
+        rendering_mutex.unlock();
+        return index;
+    }
+
+    void Window::remove_mesh(int index) {
+        rendering_mutex.lock();
+        // Get Mesh Object
+        auto* mesh_obj = get_mesh_obj(index);
+        if(mesh_obj == nullptr){
+            // Mesh Object does not exist at given index
+            return;
+        }
+
+        // Update Active Mesh
+        bool was_active_mesh = m_active_mesh == index;
+        if(was_active_mesh){
+            int new_active_mesh = -1;
+            // Find the first element in our map
+            for(auto obj : m_mesh_objects){
+                new_active_mesh = obj.first;
+                break;
+            }
+            // Set new active mesh
+            set_mesh_active(new_active_mesh);
+        }
+
+        // Delete from our Map
+        auto iterator = m_mesh_objects.find(index);
+        m_mesh_objects.erase(iterator);
+
+
+
+        rendering_mutex.unlock();
+    }
+
 
     void Window::calculate_selection_offsets()
     {
@@ -244,8 +550,13 @@ namespace vOS
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
         {
-            m_mesh_obj = search->second;
+            m_active_mesh = index;
         }
+    }
+
+    int Window::get_mesh_active()
+    {
+        return m_active_mesh;
     }
 
     MeshObject* Window::get_mesh_obj(int index) {
@@ -256,43 +567,59 @@ namespace vOS
         }
         else
         {
-            return m_mesh_obj;
+            //std::cout << "Could not find mesh object with index " << index << std::endl;
+            return nullptr;
         }
     }
 
     void Window::remove_all_vertex_highlights(){
-        // Greedy Approach
-
         rendering_mutex.lock();
 
-        m_mesh_obj->remove_highlights();
+        for (auto it = m_mesh_objects.begin(); it != m_mesh_objects.end(); it++)
+        {
+            it->second->remove_highlights();
+        }
         rendering_mutex.unlock();
     }
 
-    void Window::remove_shape(unsigned int id){
-        // TODO: No method available for this yet
-    }
 
     void Window::take_screenshot(std::string filename)
     {
+        rendering_mutex.lock();
         this->m_mesh_view->m_take_screenshot(filename);
+        rendering_mutex.unlock();
     }
 
-    bool Window::ShowFileDialog(std::string& path, const std::string& extension, int nbr_of_dialog)
+    bool Window::FileDialogueOpen()
     {
-        instance().m_file_dialog->open(extension, nbr_of_dialog);
+        return m_file_dialog->file_dialogue_open(0);
+    }
 
-        if (nbr_of_dialog == 0)
-        {
-            if(instance().m_file_dialog->is_ok_file_loader())
-            {
-                
-                    path = instance().m_file_dialog->get_file_path_file_loader();
-                    instance().m_file_dialog->set_open_fileloader(false);
-                
-                return instance().m_file_dialog->is_ok_file_loader();
-            }
-        }else if (nbr_of_dialog == 1)
+    void Window::OpenFileDialogue() {
+
+        rendering_mutex.lock();
+        m_file_dialog->open(".ovm", 0);
+        rendering_mutex.unlock();
+    }
+
+    void Window::EndFileDialogue(){
+        if(FileDialogueOpen()) {
+            rendering_mutex.lock();
+            m_file_dialog->close();
+            rendering_mutex.unlock();
+
+        }
+    }
+
+    std::string Window::GetFileDialoguePath() {
+        std::string path = "";
+        if (m_file_dialog->is_ok_file_loader()) {
+            path = m_file_dialog->get_file_path_file_loader();
+        }
+        return path;
+
+        /*
+        if (nbr_of_dialog == 1)
         {
             if (instance().m_file_dialog->is_ok_snapshot_saver())
             {
@@ -300,20 +627,20 @@ namespace vOS
                 instance().m_file_dialog->set_open_snapshot_saver(false);
             }
             return instance().m_file_dialog->is_ok_snapshot_saver();
-        }
+        }*/
 
     }
 
-
-    // Read Methods ///////////////////////////////////////////////////////////////////////////////
-
+    void Window::remove_shape(unsigned int id){
+        rendering_mutex.lock();
+        ShapePass::remove_shape(id);
+        rendering_mutex.unlock();
+    }
     unsigned int Window::add_shape(Shape* shape)
     {
         // TODO Add good exception handling
         if (shape == nullptr)
             return -1;
-
-        // Greedy Approach
 
         rendering_mutex.lock();
 
@@ -325,8 +652,13 @@ namespace vOS
         ShapePass::add_shape(shape);
         rendering_mutex.unlock();
 
-        // Command Queue Approach
         return shape_id;
+    }
+    // Read Methods ///////////////////////////////////////////////////////////////////////////////
+
+
+    bool Window::has_mesh() {
+        return !m_mesh_objects.empty();
     }
     bool Window::is_ready()
     {

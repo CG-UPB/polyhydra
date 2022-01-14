@@ -15,8 +15,6 @@
 #include "glm/gtx/vec_swizzle.hpp"
 
 #include "../mesh/MeshObject.h"
-#include "../rendering/shapes/Sphere.h"
-#include "../rendering/shapes/Cylinder.h"
 
 #include "../util/BitMap.h"
 #include "../util/shader_enum.h"
@@ -38,13 +36,8 @@ namespace vOS
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
-        m_render_data.mesh.color = glm::vec3{1.0f, 1.0f, 1.0f};
 
         // set up the initial camera position, direction and orientation of the mesh
-        glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
-        glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
-        glm::mat4 rotation = glm::mat4(1.0f);
-        m_render_data.mesh.transform = position * rotation * scale;
         m_render_data.camera.world = glm::mat4(1.0f);
         m_render_data.camera.projection = glm::perspective(
                 glm::radians(50.0f),
@@ -124,14 +117,14 @@ namespace vOS
         vMin.y += ImGui::GetWindowPos().y;
         vMax.x += ImGui::GetWindowPos().x;
         vMax.y += ImGui::GetWindowPos().y;
-        glm::vec2 mousePos = {Input::getMouseX(), Input::getMouseY()};
+        glm::vec2 mousePos = {Input::get_mouse_X(), Input::get_mouse_Y()};
 
         if (!ImGui::IsWindowHovered() && !m_arcBallOn)
         {
             return;
         }
 
-        bool isDown = Input::isKeyDown(GLFW_MOUSE_BUTTON_LEFT);
+        bool isDown = Input::mouse_pressed();
 
         // the cursor is inside the mesh viewport, so now we can manipulate the mesh view
         if (mousePos.x > vMin.x && mousePos.x < vMax.x && mousePos.y > vMin.y && mousePos.y < vMax.y)
@@ -151,11 +144,18 @@ namespace vOS
 
             // scroll scaling of the mesh
             float scaleSpeed = 0.1f;
-            glm::mat4 transform = glm::scale(
-                    m_render_data.mesh.transform,
-                    glm::vec3(1.0f + (float) Input::getScrollOffsetY() * scaleSpeed)
-            );
-            m_render_data.mesh.transform = transform;
+
+            for (const auto& m: Window::instance().get_mesh_list())
+            {
+                glm::mat4 transform = glm::scale(
+                        m.second->get_data().transform,
+                        glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
+                );
+
+                auto d = m.second->get_data();
+                d.transform = transform;
+                m.second->set_data(d);
+            }
         }
         m_lastDown = isDown;
 
@@ -183,133 +183,42 @@ namespace vOS
         m_lastY = mousePos.y;
     }
 
-    void MeshView::renderMesh()
+    void MeshView::renderMesh(int mesh_id)
     {
-        switch (GlobalViewerSettings::getInstance()->m_get_current_rendering_mode())
-        {
-        case vos::PHONG:
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-            break;
-        case vos::WIREFRAME:
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(true);
-            break;
-        case vos::NORMAL:
-            m_mesh_pass.set_mesh_shader(Shader::mesh_normal_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-            break;
-        case vos::TANGENT:
-            m_mesh_pass.set_mesh_shader(Shader::mesh_tangent_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-            break;
-        case vos::BITANGENT:
-            m_mesh_pass.set_mesh_shader(Shader::mesh_bitangent_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-            break;
-        case vos::FLAT:
-            m_mesh_pass.set_mesh_shader(Shader::mesh_flat_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-            break;
-        }
-        /*
-        if(ImGui::IsKeyPressed(GLFW_KEY_Q))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_W))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(true);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_E))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_normal_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_R))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_tangent_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_T))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_bitangent_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_U))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_flat_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        if(ImGui::IsKeyPressed(GLFW_KEY_I))
-        {
-            m_mesh_pass.set_mesh_shader(Shader::mesh_phong_shader());
-            m_mesh_pass.set_wireframe_mode(false);
-        }
-        */
-        // now render our mesh scene to the framebuffer texture
-        m_meshFrameBuffer->bind();
 
-        if(GlobalViewerSettings::getInstance()->m_get_color_activated())
-        {
-            float* color = GlobalViewerSettings::getInstance()->m_get_current_mesh_rendering_color();
-            m_render_data.mesh.color = glm::vec3{color[0], color[1], color[2]};
-        }
+        // Get Mesh
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        if (obj == nullptr)
+            return;
+
+        MeshData mesh_data = obj->get_data();
+
 
         // we need to clear our framebuffer as well
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data);
 
-
-        if(GlobalViewerSettings::getInstance()->m_get_current_new_active_mesh())
+        if(!mesh_data.m_visible)
         {
-            Window::instance().set_mesh_active(GlobalViewerSettings::getInstance()->m_get_current_active_mesh());
-            GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(false);
+            return;
         }
-/*
-        if (ImGui::IsKeyPressed(GLFW_KEY_S))
-        {
-            Window::instance().set_mesh_active(0);
-        }
-        if (ImGui::IsKeyPressed(GLFW_KEY_F))
-        {
-            Window::instance().set_mesh_active(1);
-        }
-        if (ImGui::IsKeyPressed(GLFW_KEY_T))
-        {
-            Window::instance().set_mesh_active(2);
-        }*/
 
         if(!m_zoom)
         {
-            m_zoom_point = Window::instance().get_mesh_obj()->get_mesh_offset();
+            m_zoom_point = obj->get_mesh_offset();
         }
-        m_render_data.mesh.offset = m_zoom_point;
+        mesh_data.offset = m_zoom_point;
 
-        int counter = 0;
-        std::vector<bool> test = GlobalViewerSettings::getInstance()->get_test();
-        //LogWindow::getInstance()->addLog("Schleife startet");
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
-        {
-           if (test[counter]){
-                auto mesh = m.second;
+        obj->set_data(mesh_data);
 
-                mesh->update_vertex_buffer();
 
-                // render all passes
-                if (mesh->get_vao() != nullptr) {
-                    m_mesh_pass.renderMesh(mesh, m_render_data);
-                }
-            }
-           counter++;
+        obj->update_vertex_buffer();
+
+        // render all passes
+        if (obj->get_vao() != nullptr) {
+            m_mesh_pass.render(obj->get_vao(), m_render_data, mesh_id);
+            m_highlight_pass.render(nullptr, m_render_data, mesh_id);
+            m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
-        m_highlight_pass.render(nullptr, m_render_data);
-        m_shape_pass.render(nullptr, m_render_data);
 
-        m_meshFrameBuffer->unbind();
     }
 
     void MeshView::m_take_screenshot(std::string filename)
@@ -322,23 +231,25 @@ namespace vOS
 
         if(!m_zoom)
         {
-            m_zoom_point = Window::instance().get_mesh_obj()->get_mesh_offset();
+            m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
         }
-        m_render_data.mesh.offset = m_zoom_point;
+        Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
 
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
 
+            if(!mesh->get_data().m_visible)
+                continue;
             mesh->update_vertex_buffer();
 
             // render all passes
             if (mesh->get_vao() != nullptr) {
-                m_mesh_pass.renderMesh(mesh, m_render_data);
+                m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
+                m_highlight_pass.render(nullptr, m_render_data, m.first);
+                m_shape_pass.render(nullptr, m_render_data, m.first);
             }
         }
-        m_highlight_pass.render(nullptr, m_render_data);
-        m_shape_pass.render(nullptr, m_render_data);
 
         std::ofstream ofp;
 
@@ -367,11 +278,6 @@ namespace vOS
         // string to char array
         strcpy(char_array, filename.c_str());
 
-        /*for (size_t i = 0; i < 4*swidth*sheight; i += 4)
-        {
-            LogWindow::getInstance()->addLog(std::to_string(sdata[i]));   
-        }*/
-        
 
         BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
 
@@ -413,33 +319,31 @@ namespace vOS
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
             }
-            handleSelection(type, id);
+
+            querySelection(type,id);
         }
 
         m_pixel_buffer->finish_read();
 
         m_current_frame = (m_current_frame + 1) % m_frame_limit;
-        if (m_current_frame == 0)
-        {
+        if (m_current_frame == 0) {
             // we need to clear our framebuffer as well
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-            {
+            for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
                 auto mesh = m.second;
-                m_selection_pass.render_mesh(mesh, m_render_data);
+                m_selection_pass.render_mesh(mesh, m_render_data, m.first);
+                m_selection_hover_pass.render(nullptr, m_render_data, m.first);
             }
         }
-
         m_selectionFrameBuffer->unbind();
 
         m_meshFrameBuffer->bind();
-        m_selection_hover_pass.render(nullptr, m_render_data);
         m_meshFrameBuffer->unbind();
     }
 
-    void MeshView::handleSelection(int type, int picked_id)
+    void MeshView::querySelection(int type, int picked_id)
     {
         // evaluate which in which mesh the color was selected
         bool any_mesh_hovered = false;
@@ -460,55 +364,49 @@ namespace vOS
                     // there is no valid ID (e.g when clicking background)
                     int face_id = mesh->to_faceID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type, face_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
 
                     OpenVolumeMesh::FaceHandle face(face_id);
                     if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-
-                        auto pick_pos = mesh->m_mesh->barycenter(face);
-                        auto* shape = new Cylinder();
-                        shape->set_scale(0.02f, 0.02f, 0.02f);
-                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                        shape->set_base_color(1.0f, 0.0f, 0.0f);
-                        ShapePass::add_shape(shape);
+                        // Select element via Window class, to activate Callback function
+                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().select_element(m.first, face_id, type);
+                        Window::instance().rendering_mutex.lock();
                     }
+
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
                 {
                     int vertex_id = mesh->to_vertexID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type, vertex_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        auto pick_pos = mesh->m_mesh->vertex(vertex);
-                        auto* shape = new Sphere();
-                        shape->set_scale(0.02f, 0.02f, 0.02f);
-                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                        shape->set_base_color(0.0f, 1.0f, 0.0f);
-                        ShapePass::add_shape(shape);
+                        // Select element via Window class, to activate Callback function
+                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().select_element(m.first, vertex_id, type);
+                        Window::instance().rendering_mutex.lock();
                     }
                 }
                 else if (type == SELECTION_TYPE_EDGE)
                 {
                     int edge_id = mesh->to_edgeID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data, type, edge_id);
+                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        auto vertices = mesh->m_mesh->edge_vertices(edge);
-                        auto v0 = mesh->m_mesh->vertex(vertices[0]);
-                        auto v1 = mesh->m_mesh->vertex(vertices[1]);
-                        auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
-                        auto* shape = new Box();
-                        shape->set_scale(0.02f, 0.02f, 0.02f);
-                        shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-                        shape->set_base_color(0.0f, 0.0f, 1.0f);
-                        ShapePass::add_shape(shape);
+                        // Select element via Window class, to activate Callback function
+                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().select_element(m.first, edge_id, type);
+                        Window::instance().rendering_mutex.lock();
                     }
                 }
 
@@ -529,9 +427,10 @@ namespace vOS
 
         if (!any_mesh_hovered)
         {
-            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(), m_render_data, 0, 0);
+            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(0), m_render_data, 0, 0, 0);
         }
     }
+
 
     void MeshView::show()
     {
@@ -551,9 +450,26 @@ namespace vOS
         // handle the things related to our mesh rendering canvas
         handleResize();
         handleMouseControl();
-        renderMesh();
-        if(GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+
+        // Render Meshes
+
+        // Now render our mesh scene to the framebuffer texture
+        m_meshFrameBuffer->bind();
+
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_background_pass.render(nullptr, m_render_data, 0);
+
+        for (const auto& m: Window::instance().get_mesh_list())
+        {
+            renderMesh(m.first);
+        }
+
+        m_meshFrameBuffer->unbind();
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
             renderSelection();
+        }
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -586,14 +502,14 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
-        if (Window::instance().get_mesh_obj()->m_mesh != nullptr)
+        if (Window::instance().has_mesh() &&  Window::instance().get_mesh_obj(0)->m_mesh != nullptr)
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj()->m_mesh->n_vertices());
+            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj()->m_mesh->n_edges());
+            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj()->m_mesh->n_faces());
+            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_faces());
         }
 
         ImGui::End();
