@@ -81,7 +81,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = true;
+        bool linear = false;
 
         if(linear)
         {
@@ -169,7 +169,7 @@ namespace vOS
         /* One Time only Setup */
         Window& window = Window::instance();
 
-       /* OpenVolumeMesh::IO::FileManager file_manager;
+        OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
         int hand_mesh =  window.add_mesh(&m_mesh);
 
@@ -178,7 +178,9 @@ namespace vOS
 
         window.set_mesh_rendering_mode(hand_mesh, "mesh_normal");
         window.set_mesh_rendering_mode(guy_mesh, "mesh_wireframe");
-*/
+
+        //window.remove_mesh(hand_mesh);
+
         window.remove_all_vertex_highlights();
         init();
 
@@ -361,7 +363,7 @@ namespace vOS
 
         std::cout << "Start waiting " << std::endl;
         // Read file
-        while(window.GetFileDialoguePath() == empty){}
+        while(window.GetFileDialoguePath() == ""){}
 
         std::cout << "Continue " << std::endl;
 

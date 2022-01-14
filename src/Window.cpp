@@ -71,13 +71,6 @@ namespace vOS
 
         m_initialized = true;
     }
-/*
-    void Window::run(void_callback vc)
-    {
-        set_custom_imgui(vc);
-
-        run();
-    }*/
 
     void Window::run()
     {
@@ -366,9 +359,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if(mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_slider_slicer = slice_level;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().slice_level = slice_level;
         }
 
         rendering_mutex.unlock();
@@ -379,7 +370,7 @@ namespace vOS
         if(mesh_obj != nullptr)
         {
             auto data = mesh_obj->get_data();
-            return data.m_slider_slicer;
+            return data.slice_level;
         }
         return false;
     }
@@ -395,9 +386,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if(mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_slider_peel = peel_level;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().peel_level = peel_level;
         }
 
         rendering_mutex.unlock();
@@ -408,7 +397,7 @@ namespace vOS
         if(mesh_obj != nullptr)
         {
             auto data = mesh_obj->get_data();
-            return data.m_slider_peel;
+            return data.peel_level;
         }
         return false;
     }
@@ -424,9 +413,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if(mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_cell_size = cell_size;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().cell_size = cell_size;
         }
 
         rendering_mutex.unlock();
@@ -437,7 +424,7 @@ namespace vOS
         if(mesh_obj != nullptr)
         {
             auto data = mesh_obj->get_data();
-            return data.m_cell_size;
+            return data.cell_size;
         }
         return false;
     }
@@ -554,9 +541,10 @@ namespace vOS
 
         // Delete from our Map
         auto iterator = m_mesh_objects.find(index);
+
         m_mesh_objects.erase(iterator);
 
-
+        delete mesh_obj;
 
         rendering_mutex.unlock();
     }
@@ -592,6 +580,8 @@ namespace vOS
     }
 
     void Window::set_mesh_active(int index) {
+        if(index < 0)
+            return;
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
         {
@@ -662,18 +652,6 @@ namespace vOS
             path = m_file_dialog->get_file_path_file_loader();
         }
         return path;
-
-        /*
-        if (nbr_of_dialog == 1)
-        {
-            if (instance().m_file_dialog->is_ok_snapshot_saver())
-            {
-                path = instance().m_file_dialog->get_file_path_snapshot_saver();
-                instance().m_file_dialog->set_open_snapshot_saver(false);
-            }
-            return instance().m_file_dialog->is_ok_snapshot_saver();
-        }*/
-
     }
 
     void Window::remove_all_shapes(){

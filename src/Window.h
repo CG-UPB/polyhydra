@@ -153,6 +153,12 @@ namespace vOS {
          */
         bool get_mesh_visibility(int mesh_id);
 
+        void set_peel_level(int mesh_id, int level);
+
+        void set_slice_level(int mesh_id, float value);
+
+        void set_cell_size(int mesh_id, float size);
+
         /*
          * Applies slice level to the given mesh_id.
          */

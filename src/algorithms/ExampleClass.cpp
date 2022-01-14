@@ -66,6 +66,7 @@ void ExampleClass::set_mesh_data()
 }
 
 void ExampleClass::toolbar_demonstration_ui(){
+    std::cout << "HHHHHH" << std::endl;
     ImGui::Begin("Custom UI");
     // Next Phase
     if (ImGui::Button("Next"))
@@ -112,7 +113,6 @@ void ExampleClass::toolbar_run(){
 
     // Set Variables
     set_mesh_data();
-
 };
 
 
