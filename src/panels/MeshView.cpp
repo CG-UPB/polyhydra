@@ -264,7 +264,7 @@ namespace vOS
         ImVec2 screen_pos = ImGui::GetCursorScreenPos();
         int swidth = viewport[2];
         int sheight = viewport[3];
-        unsigned char sdata[4*swidth*sheight];
+        auto* sdata = new unsigned char[4*swidth*sheight];
         //unsigned char data[4*viewport[2]*viewport[3]];
 
         glReadPixels(0,0,swidth,sheight,GL_BGRA,GL_UNSIGNED_BYTE, sdata);
@@ -280,6 +280,8 @@ namespace vOS
 
 
         BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
+
+        delete[] sdata;
 
         m_meshFrameBuffer->unbind();
 
