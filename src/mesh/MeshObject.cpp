@@ -96,6 +96,7 @@ namespace vOS
             int shape_id = Window::instance().add_shape(shape);
             Window::instance().rendering_mutex.lock();
 
+
             m_created_shapes.insert({shape_key, shape_id});
         }else if(type == 2){
             m_selected_edges.insert(id);
@@ -130,7 +131,6 @@ namespace vOS
             // Delete Shape Element
             int shape_key = 0 * 114748364 + element;
             int shape_id = m_created_shapes[shape_key];
-
             Window::instance().rendering_mutex.unlock();
             Window::instance().remove_shape(shape_id);
             Window::instance().rendering_mutex.lock();
@@ -161,7 +161,7 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
         }
         m_selected_edges.clear();
-        // Delete Face Elements
+        // Delete Cell Elements
         for(int element : m_selected_cells)
         {
             // Delete Shape Element
@@ -173,6 +173,7 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
         }
         m_selected_cells.clear();
+        m_created_shapes.clear();
     }
 
     void MeshObject::unselect_element(int id, int type){
@@ -203,6 +204,8 @@ namespace vOS
         Window::instance().rendering_mutex.unlock();
         Window::instance().remove_shape(shape_id);
         Window::instance().rendering_mutex.lock();
+
+        m_created_shapes.erase(m_created_shapes.find(shape_key));
     }
     bool MeshObject::is_element_selected(int id, int type){
 

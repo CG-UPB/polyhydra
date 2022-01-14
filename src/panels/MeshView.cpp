@@ -502,14 +502,14 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
-        if (Window::instance().has_mesh() &&  Window::instance().get_mesh_obj(0)->m_mesh != nullptr)
+        if (Window::instance().has_mesh() &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_vertices());
+            ImGui::Text("vertices: %zu", Window::instance().get_active_mesh_obj()->m_mesh->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_edges());
+            ImGui::Text("edges: %zu", Window::instance().get_active_mesh_obj()->m_mesh->n_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_faces());
+            ImGui::Text("faces: %zu", Window::instance().get_active_mesh_obj()->m_mesh->n_faces());
         }
 
         ImGui::End();

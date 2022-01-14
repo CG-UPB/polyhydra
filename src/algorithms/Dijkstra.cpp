@@ -166,7 +166,6 @@ namespace vOS
 
     void Dijkstra::linear_run()
     {
-
         /* One Time only Setup */
         Window& window = Window::instance();
 
@@ -221,8 +220,6 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                {
-                }
                 window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
@@ -417,8 +414,6 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-        {
-        }
                 window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
