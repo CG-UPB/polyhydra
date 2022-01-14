@@ -342,7 +342,6 @@ namespace vOS {
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        MenuBar* m_menu_bar;
         MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
@@ -354,8 +353,6 @@ namespace vOS {
         int m_active_mesh = -1;
         int m_total_number_of_loaded_meshes = 0;
         std::unordered_map<int, MeshObject*> m_mesh_objects;
-
-        MenuBar* get_menu_bar(){return m_menu_bar;}
 
         void calculate_selection_offsets();
 

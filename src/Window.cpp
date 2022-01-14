@@ -47,7 +47,6 @@ namespace vOS
 
     void Window::initPanels() {
         m_file_dialog = new FileDialog();
-        m_menu_bar = new MenuBar();
 
         m_mesh_view = new MeshView(720, 480);
         auto *mesh_view = new MeshView(720, 480);
@@ -95,7 +94,6 @@ namespace vOS
 
         // Destroy Imgui Elements
         delete m_file_dialog;
-        delete m_menu_bar;
         delete m_mesh_view;
         delete m_custom_ui;
 
@@ -138,9 +136,6 @@ namespace vOS
 
         // File Dialog
         m_file_dialog->show();
-
-        // Menu Bar
-        m_menu_bar->show();
 
         // Mesh View
         m_mesh_view->show();

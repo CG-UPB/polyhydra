@@ -8,8 +8,8 @@ namespace vOS
 {
 
     BackgroundPass::BackgroundPass():
-        m_top_color(glm::vec4(0.15, 0.15, 0.15, 1.0)),
-        m_bottom_color(glm::vec4(0.3, 0.3, 0.3, 1.0))
+        m_top_color(glm::vec4(0.1, 0.1, 0.1, 1.0)),
+        m_bottom_color(glm::vec4(0.2, 0.2, 0.2, 1.0))
     {
         m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f), CommonMeshes::PlaneXY::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);

@@ -62,8 +62,6 @@ namespace vOS
         {
             add_cell(mesh, c_it);
         }
-        std::cout << "Size: " << m_normals.size() <<std::endl;
-        std::cout << "PeelSize: " << m_peel_depths.size() <<std::endl;
     }
 
     void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
@@ -122,7 +120,6 @@ namespace vOS
             // remember if face is boundary, so that we can discard non boundary faces in the shader if needed
             if (mesh.is_boundary(face_handle))
             {
-                std::cout << "is boundary" << std::endl;
                 faceData.is_boundary = true;
             }
 
