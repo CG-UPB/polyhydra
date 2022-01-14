@@ -19,6 +19,8 @@
 #include "../util/BitMap.h"
 #include "../util/shader_enum.h"
 
+#include "../rendering/meshes/CommonMeshes.h"
+
 
 namespace vOS
 {
@@ -30,9 +32,10 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        m_meshFrameBuffer = new FrameBufferObject(width, height);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, true);
         m_selectionFrameBuffer = new FrameBufferObject(width, height);
         m_pixel_buffer = new PixelBufferObject(2, width, height);
+        m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -54,7 +57,7 @@ namespace vOS
 
         glm::mat4 inverse = glm::inverse(m_render_data.camera.view);
         glm::vec3 view_dir = {inverse[2][0], inverse[2][1], inverse[2][2]};
-        m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 10.0f;
+        m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
 
         m_zoom = false;
         m_zoom_point = glm::vec3(0, 0, 0);
@@ -78,6 +81,7 @@ namespace vOS
             m_viewportPanelWidth = (int) width;
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
@@ -218,6 +222,7 @@ namespace vOS
             m_highlight_pass.render(nullptr, m_render_data, mesh_id);
             m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
+
 
     }
 
@@ -477,6 +482,21 @@ namespace vOS
 
         m_meshFrameBuffer->unbind();
 
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_meshFrameBuffer->get_id());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_quad_frameBuffer->get_id());
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glBlitFramebuffer(
+                0, 0,
+                m_meshFrameBuffer->get_width(), m_meshFrameBuffer->get_height(),
+                0, 0,
+                m_screen_quad_frameBuffer->get_width(), m_screen_quad_frameBuffer->get_height(),
+                GL_COLOR_BUFFER_BIT,
+                GL_LINEAR);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
             renderSelection();
         }
@@ -493,7 +513,7 @@ namespace vOS
         }
         else
         {
-            texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
+            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
         }
 
         // finally, add the framebuffer texture as an image to the imgui window

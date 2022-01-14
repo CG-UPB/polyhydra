@@ -23,7 +23,7 @@ void main()
         discard;
     }
     //ambient
-    float ambientStrength = 0.1;
+    float ambientStrength = 0.3;
     vec3 ambient = ambientStrength * u_lightColor;
 
     // Phong Shading

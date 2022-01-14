@@ -83,6 +83,7 @@ namespace vOS
 #endif
         glfwWindowHint(GLFW_DEPTH_BITS, 24);
         glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+        glfwWindowHint(GLFW_SAMPLES, 4);
 
         // Create window with graphics context
         m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
@@ -109,6 +110,8 @@ namespace vOS
             printError("Failed to initialize OpenGL context");
             return;
         }
+
+        glEnable(GL_MULTISAMPLE);
     }
 
     void ImguiRenderer::initImGui()
