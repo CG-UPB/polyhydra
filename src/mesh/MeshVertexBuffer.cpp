@@ -21,6 +21,7 @@ namespace vOS
         m_vao->add_attribute(m_normals, 1, 3);
         m_vao->add_attribute(m_cell_centers, 2, 3);
         m_vao->add_attribute(m_peel_depths, 3, 1);
+        //m_vao->add_attribute(m_is_face_boundary, 4, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -117,6 +118,12 @@ namespace vOS
             FaceData faceData;
             int face_id = mesh.face_handle(chf_it).idx();
 
+            // remember if face is boundary, so that we can discard non boundary faces in the shader if needed
+            if (mesh.is_boundary(chf_it))
+            {
+                faceData.is_boundary = true;
+            }
+
             // get the face normal
             auto hf_normal = mesh.normal(chf_it);
 
@@ -178,6 +185,7 @@ namespace vOS
                 m_peel_depths.push_back((float)peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
 
+                m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
             }
 
             // add all indices of the face

@@ -4,6 +4,7 @@ layout (location = 0) in vec3 a_Pos;
 layout (location = 1) in vec3 a_Normal;
 layout (location = 2) in vec3 a_Center;
 layout (location = 3) in float a_peelDepth;
+layout (location = 4) in float a_isBoundary;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -32,6 +33,12 @@ void main()
     {
         v_Visible = 0;
     }
+
+//    if (u_cell_size == 1.0 && a_isBoundary == 0.0)
+//    {
+//        v_Visible = 0;
+//    }
+
     vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
