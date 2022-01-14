@@ -75,7 +75,7 @@ namespace vOS
 
         if(ImGui::Button("Snapshot"))
         {
-            Window::instance().m_file_dialog->open(".ovm", 1);;
+            Window::instance().m_file_dialog->open(".bmp", 1);
         }
 
         if(Window::instance().m_file_dialog->file_dialogue_open(1))

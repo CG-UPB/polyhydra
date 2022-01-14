@@ -223,6 +223,8 @@ namespace vOS
 
     void MeshView::m_take_screenshot(std::string filename)
     {
+        static int num = 0;
+
         //LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
         m_meshFrameBuffer->bind();
 
@@ -276,8 +278,8 @@ namespace vOS
 
         // copying the contents of the
         // string to char array
-        strcpy(char_array, filename.c_str());
-
+        strcpy(char_array, (filename + std::to_string(num)).c_str());
+        num++;
 
         BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
 

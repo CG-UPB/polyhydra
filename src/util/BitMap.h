@@ -48,6 +48,8 @@ namespace vOS
                 0,0,0,0, /// important color count
         };
 
+        int image_bytes = width * height * BYTES_PER_PIXEL;
+
         infoHeader[ 0] = (unsigned char)(INFO_HEADER_SIZE);
         infoHeader[ 4] = (unsigned char)(width      );
         infoHeader[ 5] = (unsigned char)(width >>  8);
@@ -59,7 +61,19 @@ namespace vOS
         infoHeader[11] = (unsigned char)(height >> 24);
         infoHeader[12] = (unsigned char)(1);
         infoHeader[14] = (unsigned char)(BYTES_PER_PIXEL*8);
-
+        infoHeader[16] = (unsigned char)(3);
+        infoHeader[20] = (unsigned char)(image_bytes      );
+        infoHeader[21] = (unsigned char)(image_bytes >> 8 );
+        infoHeader[22] = (unsigned char)(image_bytes >> 16);
+        infoHeader[23] = (unsigned char)(image_bytes >> 24);
+        infoHeader[24] = (unsigned char)(0x2e30      );
+        infoHeader[25] = (unsigned char)(0x2e30 >> 8 );
+        infoHeader[26] = (unsigned char)(0x2e30 >> 16);
+        infoHeader[27] = (unsigned char)(0x2e30 >> 24);
+        infoHeader[28] = (unsigned char)(0x2e30      );
+        infoHeader[29] = (unsigned char)(0x2e30 >> 8 );
+        infoHeader[30] = (unsigned char)(0x2e30 >> 16);
+        infoHeader[31] = (unsigned char)(0x2e30 >> 24);
         return infoHeader;
     }
 
@@ -67,7 +81,7 @@ namespace vOS
     {
         int widthInBytes = width * BYTES_PER_PIXEL;
 
-        unsigned char padding[3] = {0, 0, 0};
+        unsigned char padding[4] = {0, 0, 0, 0};
         int paddingSize = (4 - (widthInBytes) % 4) % 4;
 
         int stride = (widthInBytes) + paddingSize;

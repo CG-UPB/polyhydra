@@ -29,8 +29,11 @@ namespace vOS
                 m_ok_file_loader = true;
                 m_file_path_file_loader = std::string(filePathName);
                 std::cout << " We picked a path " << m_file_path_file_loader << std::endl;
-            }else
+            }
+            else
+            {
                 close();
+            }
         }
 
         if (m_instance_snapshot_saver.Display("ChooseBMPFile", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
@@ -47,10 +50,12 @@ namespace vOS
                 std::string filePathName = m_instance_snapshot_saver.GetFilePathName();
                 std::string filePath = m_instance_snapshot_saver.GetCurrentPath();
                 m_ok_snapshot_saver = true;
-                m_file_path_snapshot_saver = std::string(filePathName);;
+                m_file_path_snapshot_saver = std::string(filePathName);
             }
             else
-            close();
+            {
+                close();
+            }
             LogWindow::getInstance()->addLog("Vor Close");
         }
     }
