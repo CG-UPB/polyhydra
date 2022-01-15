@@ -482,6 +482,10 @@ namespace vOS
 
         m_meshFrameBuffer->unbind();
 
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
+            renderSelection();
+        }
+
         glBindFramebuffer(GL_READ_FRAMEBUFFER, m_meshFrameBuffer->get_id());
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_quad_frameBuffer->get_id());
         glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -496,10 +500,6 @@ namespace vOS
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
-            renderSelection();
-        }
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
