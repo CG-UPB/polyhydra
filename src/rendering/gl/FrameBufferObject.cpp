@@ -7,7 +7,7 @@
 
 namespace vOS
 {
-    FrameBufferObject::FrameBufferObject(int width, int height)
+    FrameBufferObject::FrameBufferObject(int width, int height, bool multisample): m_multisample(multisample)
     {
         init(width, height);
     }
@@ -31,13 +31,24 @@ namespace vOS
     {
         unsigned int tex[1];
         glGenTextures(1, tex);
-        glBindTexture(GL_TEXTURE_2D, tex[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex[0], 0);
+        if (m_multisample)
+        {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, m_width, m_height, GL_TRUE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, tex[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex[0], 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
         return tex[0];
     }
 
@@ -45,11 +56,20 @@ namespace vOS
     {
         unsigned int tex[1];
         glGenTextures(1, tex);
-        glBindTexture(GL_TEXTURE_2D, tex[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex[0], 0);
+        if (m_multisample)
+        {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, tex[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex[0], 0);
+        }
         return tex[0];
     }
 
@@ -57,7 +77,14 @@ namespace vOS
     {
         glGetIntegerv(GL_VIEWPORT, m_previousViewPort);
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_previousFrameBufferID);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        if (m_multisample)
+        {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
         glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferID);
         glViewport(0, 0, m_width, m_height);
     }
@@ -104,5 +131,15 @@ namespace vOS
     unsigned int FrameBufferObject::get_id() const
     {
         return m_frameBufferID;
+    }
+
+    int FrameBufferObject::get_width() const
+    {
+        return m_width;
+    }
+
+    int FrameBufferObject::get_height() const
+    {
+        return m_height;
     }
 }

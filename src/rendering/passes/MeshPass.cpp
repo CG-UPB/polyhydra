@@ -67,6 +67,11 @@ namespace vOS
         glm::vec3 view_dir = {inverse[2][0], inverse[2][1], inverse[2][2]};
         auto slice_direction = view_dir;
 
+        int slice_coord = 0;
+//        glm::vec3 min = obj->get_min();
+//        glm::vec3 max = obj->get_max();
+//        float slice_min = min.x + slice_depth * 0.1 * (max.x - min.x);
+
 
         // set all of our uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
@@ -79,6 +84,7 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get());
         m_mesh_shader->set_uniform_int("u_peel_depth", peel_depth);
         m_mesh_shader->set_uniform_float("u_slice_depth", slice_depth);
+        //m_mesh_shader->set_uniform_float("u_sliceMin", slice_min);
         m_mesh_shader->set_uniform_vec3f("u_min", min);
         m_mesh_shader->set_uniform_vec3f("u_max", max);
         m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);

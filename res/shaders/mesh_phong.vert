@@ -54,7 +54,4 @@ void main()
     vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
-    gl_Position = u_Projection * u_View * u_Transform * vec4(pos, 1.0);
-
-
 }

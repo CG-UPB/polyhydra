@@ -157,7 +157,9 @@ namespace vOS
                 Window::instance().set_mesh_peel_level(active_mesh,m_slider_peel);
                 Window::instance().rendering_mutex.lock();
                 m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
-                if (ImGui::SliderFloat("Cell Size:", &m_cell_size, 0.0f, 1.0f))
+                ImGui::Text("Cell Size:");
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will change the size of each cell");
+                if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f))
                 {
                     //GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
                     Window::instance().rendering_mutex.unlock();

@@ -26,7 +26,7 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(1,1,1,1), m_visible(true), rendering_mode("mesh_phong"){
+        MeshData() : m_color(0.85f,0.85f,0.85f,1), m_visible(true), rendering_mode("mesh_phong"){
             glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
             glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
             glm::mat4 rotation = glm::mat4(1.0f);
@@ -114,7 +114,7 @@ namespace vOS
     private:
         void calculate_mesh_offset();
         [[nodiscard]] int calculate_selection_size() const;
-        void calculate_peel_depth();
+        void calculate_peel_depth() const;
 
         std::vector<float> m_vert_colors;
         std::vector<float> m_face_colors;
