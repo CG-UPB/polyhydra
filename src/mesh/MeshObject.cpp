@@ -301,7 +301,7 @@ namespace vOS
         m_mesh_offset_from_center = min + (max - min) * 0.5f;
     }
 
-    void MeshObject::calculate_peel_depth()
+    void MeshObject::calculate_peel_depth() const
     {
         OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
         OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
@@ -342,10 +342,7 @@ namespace vOS
                 }
             }
             act_level.clear();
-            for(auto vertex : next_level)
-            {
-                act_level.push_back(vertex);
-            }
+            act_level.insert(act_level.begin(), next_level.begin(), next_level.end());
             next_level.clear();
         }
 

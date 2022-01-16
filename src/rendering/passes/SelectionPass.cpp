@@ -32,7 +32,13 @@ namespace vOS {
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
 
-        float cell_size = obj->get_data().m_cell_size;
+        float cell_size = Window::instance().get_mesh_cell_size(mesh_id);
+        int peel_depth = Window::instance().get_mesh_peel_level(mesh_id);
+        int slice_depth = Window::instance().get_mesh_slice_level(mesh_id);
+        int slice_coord = 0;
+        glm::vec3 min = obj->get_min();
+        glm::vec3 max = obj->get_max();
+        float slice_min = min.x + slice_depth * 0.1 * (max.x - min.x);
 
         // draw faces
         m_selection_shader->bind();
@@ -43,6 +49,9 @@ namespace vOS {
         m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_shader->set_uniform_float("u_cell_size", cell_size);
+        m_selection_shader->set_uniform_int("u_peelDepth", peel_depth);
+        m_selection_shader->set_uniform_int("u_sliceCoord", slice_coord);
+        m_selection_shader->set_uniform_float("u_sliceMin", slice_min);
 
         vao->draw();
 
@@ -58,6 +67,9 @@ namespace vOS {
         m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
+        m_selection_cylinder_shader->set_uniform_int("u_peelDepth", peel_depth);
+        m_selection_cylinder_shader->set_uniform_int("u_sliceCoord", slice_coord);
+        m_selection_cylinder_shader->set_uniform_float("u_sliceMin", slice_min);
 
         m_cylinder_vao->draw_instanced(m_num_edges);
 
@@ -75,6 +87,9 @@ namespace vOS {
         m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_sphere_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
+        m_selection_sphere_shader->set_uniform_int("u_peelDepth", peel_depth);
+        m_selection_sphere_shader->set_uniform_int("u_sliceCoord", slice_coord);
+        m_selection_sphere_shader->set_uniform_float("u_sliceMin", slice_min);
 
         m_sphere_vao->draw_instanced(m_num_vertices);
 

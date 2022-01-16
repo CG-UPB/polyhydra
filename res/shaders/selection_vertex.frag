@@ -2,6 +2,7 @@
 
 flat in int v_discard;
 flat in int v_instance_id;
+flat in int v_visible;
 
 uniform int u_selection_offset;
 uniform bool u_debug_mode;
@@ -21,7 +22,7 @@ ivec4 get_id_bits(int id)
 
 void main()
 {
-    if (v_discard == 1)
+    if (v_discard == 1 || v_visible == 0)
     {
         discard;
     }

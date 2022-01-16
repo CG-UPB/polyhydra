@@ -33,8 +33,8 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_meshFrameBuffer = new FrameBufferObject(width, height, true);
-        m_selectionFrameBuffer = new FrameBufferObject(width, height);
-        m_pixel_buffer = new PixelBufferObject(2, width, height);
+        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
+        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
@@ -43,7 +43,7 @@ namespace vOS
         // set up the initial camera position, direction and orientation of the mesh
         m_render_data.camera.world = glm::mat4(1.0f);
         m_render_data.camera.projection = glm::perspective(
-                glm::radians(50.0f),
+                glm::radians(60.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                 0.001f,
                 100000.0f
@@ -82,7 +82,7 @@ namespace vOS
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_selectionFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
@@ -309,8 +309,8 @@ namespace vOS
         ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
         GLubyte* data = m_pixel_buffer->start_read(
-                (int) (m_lastX - screen_pos.x),
-                (int) (viewport[3] - (m_lastY - screen_pos.y)),
+                (int) (m_lastX - screen_pos.x) / 2,
+                (int) (viewport[3] * 2 - (m_lastY - screen_pos.y)) / 2,
                 1,
                 1
         );

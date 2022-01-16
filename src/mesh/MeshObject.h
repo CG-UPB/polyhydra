@@ -112,7 +112,7 @@ namespace vOS
     private:
         void calculate_mesh_offset();
         [[nodiscard]] int calculate_selection_size() const;
-        void calculate_peel_depth();
+        void calculate_peel_depth() const;
 
         std::vector<float> m_vert_colors;
         std::vector<float> m_face_colors;

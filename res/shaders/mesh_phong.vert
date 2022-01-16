@@ -27,7 +27,6 @@ uniform float u_sliceMin;
 void main()
 {
     v_Visible = 1;
-
     float slicePos = (u_sliceCoord == 0) ? a_Center.x : (u_sliceCoord == 1) ? a_Center.y : (u_sliceCoord == 2) ? a_Center.z : 0.0;
     if (a_peelDepth < u_peelDepth || slicePos < u_sliceMin)
     {
@@ -42,7 +41,4 @@ void main()
     vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
-    gl_Position = u_Projection * u_View * u_Transform * vec4(pos, 1.0);
-
-
 }

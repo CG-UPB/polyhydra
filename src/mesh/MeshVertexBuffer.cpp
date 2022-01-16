@@ -29,6 +29,7 @@ namespace vOS
         m_sphere_vao->add_attribute(m_normals, 1, 3, true);
         m_sphere_vao->add_attribute(m_selection_vertices, 2, 3, true);
         m_sphere_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
+        m_sphere_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
 
         m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                CommonMeshes::Cylinder::edge_cylinder().indices());
@@ -36,6 +37,7 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_from_vertices, 1, 3, true);
         m_cylinder_vao->add_attribute(m_to_vertices, 2, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
+        m_cylinder_vao->add_attribute(m_cylinder_peel_depths, 4, 1, true);
 
         if (peel_depth > 0 || slice_depth > 0)
         {
@@ -96,6 +98,8 @@ namespace vOS
             m_sphere_cell_centers.push_back(cell_center.x);
             m_sphere_cell_centers.push_back(cell_center.y);
             m_sphere_cell_centers.push_back(cell_center.z);
+
+            m_sphere_peel_depths.push_back((float) peel_depth);
         }
 
         // same for the edges, only add them once for the selection
@@ -108,6 +112,8 @@ namespace vOS
             m_cylinder_cell_centers.push_back(cell_center.x);
             m_cylinder_cell_centers.push_back(cell_center.y);
             m_cylinder_cell_centers.push_back(cell_center.z);
+
+            m_cylinder_peel_depths.push_back((float) peel_depth);
         }
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
