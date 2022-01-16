@@ -4,22 +4,19 @@
 #include "MeshView.h"
 #include "../input/Input.h"
 #include "LogWindow.h"
-#include "../Window.h"
 
-#include <algorithm>
 #include <cmath>
 #include <fstream>
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
-#include "glm/gtx/vec_swizzle.hpp"
 
 #include "../mesh/MeshObject.h"
 
-#include "../util/BitMap.h"
-#include "../util/shader_enum.h"
-
 #include "../rendering/meshes/CommonMeshes.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 
 namespace vOS
@@ -83,6 +80,8 @@ namespace vOS
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
+            delete m_pixel_buffer;
+            m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
@@ -226,14 +225,20 @@ namespace vOS
 
     }
 
-    void MeshView::m_take_screenshot(std::string filename)
+    void MeshView::m_take_screenshot(const std::string& filename)
     {
-        static int num = 0;
+        // export x times the original resolution -> we should make this configurable when taking a screenshot
+        float resolution_upscale = 2.0f;
 
-        //LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
-        m_meshFrameBuffer->bind();
+        int export_width = (int) ((float) m_viewportPanelWidth * resolution_upscale);
+        int export_height = (int) ((float) m_viewportPanelHeight * resolution_upscale);
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, true);
+        auto export_framebuffer = new FrameBufferObject(export_width, export_height);
+
+        export_framebuffer_ms->bind();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if(!m_zoom)
@@ -245,9 +250,11 @@ namespace vOS
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-
             if(!mesh->get_data().m_visible)
+            {
                 continue;
+            }
+
             mesh->update_vertex_buffer();
 
             // render all passes
@@ -258,40 +265,31 @@ namespace vOS
             }
         }
 
-        std::ofstream ofp;
-
         glFlush();
         glFinish();
 
+        export_framebuffer_ms->unbind();
+
+        // copy our multisampled framebuffer to the output framebuffer
+        FrameBufferObject::copy(export_framebuffer_ms, export_framebuffer);
+
+        export_framebuffer->bind();
+
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
+        int sWidth = export_framebuffer->get_width();
+        int sHeight = export_framebuffer->get_height();
+        std::vector<char> buffer(4 * sWidth * sHeight);
 
-        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-        int swidth = viewport[2];
-        int sheight = viewport[3];
-        auto* sdata = new unsigned char[4*swidth*sheight];
-        //unsigned char data[4*viewport[2]*viewport[3]];
+        glReadPixels(0, 0, sWidth, sHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 
-        glReadPixels(0,0,swidth,sheight,GL_BGRA,GL_UNSIGNED_BYTE, sdata);
+        stbi_flip_vertically_on_write(true);
+        stbi_write_bmp(filename.c_str(), sWidth, sHeight, 4, buffer.data());
 
-        int n = filename.length();
+        export_framebuffer->unbind();
 
-        // declaring character array
-        char char_array[n + 1];
-
-        // copying the contents of the
-        // string to char array
-        strcpy(char_array, (filename + std::to_string(num)).c_str());
-        num++;
-
-        BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
-
-        delete[] sdata;
-
-        m_meshFrameBuffer->unbind();
-
+        delete export_framebuffer_ms;
+        delete export_framebuffer;
     }
 
 
@@ -486,20 +484,8 @@ namespace vOS
             renderSelection();
         }
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_meshFrameBuffer->get_id());
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_quad_frameBuffer->get_id());
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-        glBlitFramebuffer(
-                0, 0,
-                m_meshFrameBuffer->get_width(), m_meshFrameBuffer->get_height(),
-                0, 0,
-                m_screen_quad_frameBuffer->get_width(), m_screen_quad_frameBuffer->get_height(),
-                GL_COLOR_BUFFER_BIT,
-                GL_LINEAR);
-
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        // copy multisampled framebuffer that we rendered on to the imgui texture for display
+        FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();

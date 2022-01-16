@@ -34,7 +34,7 @@ namespace vOS
         if (m_multisample)
         {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, m_width, m_height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA8, m_width, m_height, GL_TRUE);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
         }
@@ -59,7 +59,7 @@ namespace vOS
         if (m_multisample)
         {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
         }
         else
@@ -141,5 +141,23 @@ namespace vOS
     int FrameBufferObject::get_height() const
     {
         return m_height;
+    }
+
+    void FrameBufferObject::copy(const FrameBufferObject* src, const FrameBufferObject* dest)
+    {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, src->get_id());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->get_id());
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glBlitFramebuffer(
+                0, 0,
+                src->get_width(), src->get_height(),
+                0, 0,
+                dest->get_width(), dest->get_height(),
+                GL_COLOR_BUFFER_BIT,
+                GL_LINEAR);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 }

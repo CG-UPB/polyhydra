@@ -6,6 +6,8 @@ namespace vOS
     {
     public:
 
+        static void copy(const FrameBufferObject* src, const FrameBufferObject* dest);
+
         FrameBufferObject(int width, int height, bool multisample = false);
         ~FrameBufferObject();
 
