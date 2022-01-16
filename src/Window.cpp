@@ -335,11 +335,11 @@ namespace vOS
         return false;
     }
 
-    void Window::set_mesh_slice_level(int slice_level) {
+    void Window::set_mesh_slice_level(float slice_level) {
         set_mesh_slice_level(0,slice_level);
     }
 
-    void Window::set_mesh_slice_level(int mesh_id, int slice_level) {
+    void Window::set_mesh_slice_level(int mesh_id, float slice_level) {
         rendering_mutex.lock();
 
         // Change Mesh Settings
@@ -354,7 +354,7 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    int Window::get_mesh_slice_level(int mesh_id) {
+    float Window::get_mesh_slice_level(int mesh_id) {
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if(mesh_obj != nullptr)
         {

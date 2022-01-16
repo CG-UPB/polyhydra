@@ -36,7 +36,7 @@ namespace vOS
         int m_current_selection_mode;
         bool m_color_activated = true;
         float m_color[4] = {1.0f,1.0f,1.0f,1.0f};
-        int m_slider_slicer = 0;
+        float m_slider_slicer = 0.0f;
         int m_slider_peel = 0;
         bool m_isolation_started = false;
         int m_separation_type = 2;

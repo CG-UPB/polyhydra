@@ -150,17 +150,17 @@ namespace vOS {
         /*
          * Applies slice level to the given mesh_id.
          */
-        void set_mesh_slice_level(int mesh_id,int slice_level);
+        void set_mesh_slice_level(int mesh_id,float slice_level);
 
         /*
          * Applies slice level to the actual active mesh.
          */
-        void set_mesh_slice_level(int slice_level);
+        void set_mesh_slice_level(float slice_level);
 
         /*
          * returns the slice level of the mesh with given mesh_id
          */
-        int get_mesh_slice_level(int mesh_id);
+        float get_mesh_slice_level(int mesh_id);
 
         /*
         * Applies peel level to the given mesh_id.

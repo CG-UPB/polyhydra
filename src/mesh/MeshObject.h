@@ -36,7 +36,7 @@ namespace vOS
         bool m_visible;
         std::string rendering_mode;
 
-        int m_slider_slicer = 0;
+        float m_slider_slicer = 0.0f;
         int m_slider_peel = 0;
         float m_cell_size = 1.0f;
 
@@ -97,6 +97,8 @@ namespace vOS
         glm::vec3 &get_min(){return m_min;};
         glm::vec3 &get_max(){return m_max;};
 
+        std::pair<glm::vec3,glm::vec3> get_transformed_bb(glm::mat4 transform);
+
         /**
          * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
          * we would have to update the vertex array with the data every time we render.
@@ -136,7 +138,7 @@ namespace vOS
 
         bool m_should_update;
 
-        int m_last_peel_level;
+        float m_last_peel_level;
         int m_last_slice_level;
 
         glm::vec3 m_min;
