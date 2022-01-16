@@ -465,6 +465,59 @@ namespace vOS
         m_selection_offset = {start, start + calculate_selection_size()};
     }
 
+    std::pair<glm::vec3,glm::vec3> MeshObject::get_transformed_bb(glm::mat4 transform)
+    {
+
+        std::vector<float> vertices;
+
+        for (auto v_it : m_mesh->vertices())
+        {
+            auto v_pos = m_mesh->vertex(v_it);
+            glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);
+            vec = transform * vec;
+
+            vertices.push_back(vec[0]);
+            vertices.push_back(vec[1]);
+            vertices.push_back(vec[2]);
+        }
+
+        glm::vec4 min(vertices[0], vertices[1], vertices[2], 1.0);
+        glm::vec4 max(vertices[0], vertices[1], vertices[2], 1.0);
+        for (int i = 0; i < vertices.size(); i += 3)
+        {
+            glm::vec3 vertex(vertices[i], vertices[i + 1], vertices[i + 2]);
+            if (vertex.x < min.x)
+            {
+                min.x = vertex.x;
+            }
+            else if (vertex.x > max.x)
+            {
+                max.x = vertex.x;
+            }
+            if (vertex.y < min.y)
+            {
+                min.y = vertex.y;
+            }
+            else if (vertex.y > max.y)
+            {
+                max.y = vertex.y;
+            }
+            if (vertex.z < min.z)
+            {
+                min.z = vertex.z;
+            }
+            else if (vertex.z > max.z)
+            {
+                max.z = vertex.z;
+            }
+        }
+        glm::vec3 m1(min * glm::inverse(transform));
+        glm::vec3 m2(max * glm::inverse(transform));
+        auto bb = std::make_pair(m1,m2);
+        return bb;
+    }
+
+
     MeshObject::~MeshObject()
     {
         for (auto mvb : m_peel_cache)
