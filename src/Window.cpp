@@ -364,6 +364,33 @@ namespace vOS
         return false;
     }
 
+    void Window::set_mesh_slice_locked(int mesh_id, bool locked)
+    {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            data.m_slice_locked = locked;
+            mesh_obj->set_data(data);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    bool Window::get_mesh_slice_locked(int mesh_id)
+    {
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if(mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_slice_locked;
+        }
+        return false;
+    }
+
     void Window::set_mesh_peel_level(int peel_level) {
         set_mesh_slice_level(0,peel_level);
     }

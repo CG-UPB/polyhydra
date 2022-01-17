@@ -465,8 +465,12 @@ namespace vOS
         m_selection_offset = {start, start + calculate_selection_size()};
     }
 
-    std::pair<glm::vec3,glm::vec3> MeshObject::get_transformed_bb(glm::mat4 transform)
+    std::pair<glm::vec3,glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
     {
+        if (m_data.m_slice_locked)
+        {
+            return m_transformed_bb;
+        }
 
         std::vector<float> vertices;
 
@@ -511,12 +515,30 @@ namespace vOS
                 max.z = vertex.z;
             }
         }
-        glm::vec3 m1(min * glm::inverse(transform));
-        glm::vec3 m2(max * glm::inverse(transform));
-        auto bb = std::make_pair(m1,m2);
-        return bb;
+        glm::vec3 m1(glm::inverse(transform) * min);
+        glm::vec3 m2(glm::inverse(transform) * max);
+        m_transformed_bb = std::make_pair(m1,m2);
+        return m_transformed_bb;
     }
 
+
+    glm::vec3& MeshObject::get_slice_dir(const glm::mat4& transform, const glm::vec3& view_dir)
+    {
+        if (!m_data.m_slice_locked)
+        {
+            m_just_locked = true;
+            m_slice_dir = view_dir;
+        }
+        else
+        {
+            if (m_just_locked)
+            {
+                m_just_locked = false;
+                m_slice_dir = glm::vec3{glm::inverse(transform) * glm::vec4(view_dir, 0.0)};
+            }
+        }
+        return m_slice_dir;
+    }
 
     MeshObject::~MeshObject()
     {

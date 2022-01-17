@@ -1,7 +1,7 @@
 #version 330 core
 
 layout (triangles) in;
-layout (triangle_strip, max_vertices = 12) out;
+layout (triangle_strip, max_vertices = 8) out;
 
 in vec3 v_Pos[3];
 in vec3 v_Normal[3];

@@ -143,10 +143,14 @@ namespace vOS
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                               "inview of the mesh");
                 m_slider_slicer = Window::instance().get_mesh_slice_level(active_mesh);
+                m_slicer_locked = Window::instance().get_mesh_slice_locked(active_mesh);
                 ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
+                ImGui::SameLine();
+                ImGui::Checkbox("Lock", &m_slicer_locked);
                 //GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
                 Window::instance().rendering_mutex.unlock();
                 Window::instance().set_mesh_slice_level(active_mesh,m_slider_slicer);
+                Window::instance().set_mesh_slice_locked(active_mesh, m_slicer_locked);
                 Window::instance().rendering_mutex.lock();
                 ImGui::Text("Peel:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");

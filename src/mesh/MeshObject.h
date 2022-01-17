@@ -1,14 +1,14 @@
+#pragma once
+
 #include <OpenVolumeMesh/Geometry/VectorT.hh>
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
+#include <utility>
 #include <vector>
 #include <map>
 #include <unordered_set>
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 #include "MeshVertexBuffer.h"
-
-#ifndef VOLUMESHOS_MESH_OBJECT_H
-#define VOLUMESHOS_MESH_OBJECT_H
 
 namespace vOS
 {
@@ -17,7 +17,7 @@ namespace vOS
     {
         Color(float _r, float _g, float _b) : r(_r), g(_g), b(_b), a(1){}
         Color(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a){}
-        glm::vec3 get(){return glm::vec3(r,g,b);}
+        [[nodiscard]] glm::vec3 get() const{return {r,g,b};}
         float r;
         float g;
         float b;
@@ -37,6 +37,7 @@ namespace vOS
         std::string rendering_mode;
 
         float m_slider_slicer = 0.0f;
+        bool m_slice_locked = false;
         int m_slider_peel = 0;
         float m_cell_size = 1.0f;
 
@@ -73,7 +74,7 @@ namespace vOS
         void unselect_all();
         bool is_element_selected(int id, int type);
         MeshData& get_data(){return m_data;}
-        void set_data(MeshData data) {m_data =data;}
+        void set_data(MeshData data) {m_data =std::move(data);}
 
         void load_from_file(std::string file_path);
         void write_to_file(const std::string& file_path) const;
@@ -97,7 +98,8 @@ namespace vOS
         glm::vec3 &get_min(){return m_min;};
         glm::vec3 &get_max(){return m_max;};
 
-        std::pair<glm::vec3,glm::vec3> get_transformed_bb(glm::mat4 transform);
+        std::pair<glm::vec3,glm::vec3>& get_transformed_bb(const glm::mat4& transform);
+        glm::vec3& get_slice_dir(const glm::mat4& transform, const glm::vec3& view_dir);
 
         /**
          * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
@@ -144,7 +146,8 @@ namespace vOS
         glm::vec3 m_min;
         glm::vec3 m_max;
 
+        std::pair<glm::vec3, glm::vec3> m_transformed_bb;
+        glm::vec3 m_slice_dir;
+        bool m_just_locked;
     };
 }
-
-#endif //VOLUMESHOS_MESH_OBJECT_H

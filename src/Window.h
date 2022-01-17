@@ -162,6 +162,10 @@ namespace vOS {
          */
         float get_mesh_slice_level(int mesh_id);
 
+        void set_mesh_slice_locked(int mesh_id, bool locked);
+
+        bool get_mesh_slice_locked(int mesh_id);
+
         /*
         * Applies peel level to the given mesh_id.
         */

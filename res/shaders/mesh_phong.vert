@@ -24,17 +24,26 @@ uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;
 uniform vec3 u_slice_direction;
+uniform bool u_slice_locked;
 
 
 void main()
 {
+    ////////////////////////////////////////////////////////
+    // Slicing and Peeling
+    ////////////////////////////////////////////////////////
     v_Visible = 1;
 
-    //float slicePos = (u_sliceCoord == 0) ? a_Center.x : (u_sliceCoord == 1) ? a_Center.y : (u_sliceCoord == 2) ? a_Center.z : 0.0;
-    // point in the slicing plane
     vec3 min = vec3(u_Transform * vec4(u_min, 1.0));
     vec3 max = vec3(u_Transform * vec4(u_max, 1.0));
-    vec3 slice_dir = vec3(u_Transform * vec4(normalize(u_slice_direction), 0.0));
+
+    vec4 temp_dir = vec4(normalize(u_slice_direction), 0.0);
+    if (u_slice_locked)
+    {
+        temp_dir = u_Transform * temp_dir;
+    }
+
+    vec3 slice_dir = temp_dir.xyz;
 
     vec3 slice_point = max + u_slice_depth * (min - max);
     vec3 dir = slice_dir;
@@ -45,11 +54,7 @@ void main()
     {
         v_Visible = 0;
     }
-
-//    if (u_cell_size == 1.0 && u_peelDepth == 0 && a_isBoundary == 0.0)
-//    {
-//        v_Visible = 0;
-//    }
+    ////////////////////////////////////////////////////////
 
     vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
