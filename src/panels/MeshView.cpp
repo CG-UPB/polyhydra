@@ -94,16 +94,17 @@ namespace vOS
 
     glm::vec3 MeshView::get_arc_ball_vector(float x, float y) const
     {
+        auto viewport_start = ImGui::GetCursorScreenPos();
         glm::vec3 res = glm::vec3(
-                x / (float) m_viewportPanelWidth * 2.0f - 1.0f,
-                y / (float) m_viewportPanelHeight * 2.0f - 1.0f,
+                (x - viewport_start.x) / (float) m_viewportPanelWidth * 1.5f - 0.75f,
+                (y - viewport_start.y) / (float) m_viewportPanelHeight * 1.5f - 0.75f,
                 0.0f
         );
         res.y = -res.y;
         float squared = res.x * res.x + res.y * res.y;
         if (squared <= 1.0f)
         {
-            res.z = (float) sqrt(1.0 - squared);
+            res.z = (float) sqrt(1.0f - squared);
         }
         else
         {
@@ -165,7 +166,7 @@ namespace vOS
 
         if (m_arcBallOn)
         {
-            float speed = 0.05;
+            float speed = 0.04;
 
             double dx = mousePos.x - m_lastX;
             double dy = mousePos.y - m_lastY;
