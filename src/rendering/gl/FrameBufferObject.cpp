@@ -7,8 +7,18 @@
 
 namespace vOS
 {
+    int FrameBufferObject::s_num_samples = -1;
+
     FrameBufferObject::FrameBufferObject(int width, int height, bool multisample): m_multisample(multisample)
     {
+        if (s_num_samples < 0)
+        {
+            // use 16 samples if possible, else use the max supported value
+            int max_supported_samples;
+            glGetIntegerv(GL_MAX_SAMPLES, &max_supported_samples);
+            s_num_samples = std::min(max_supported_samples, 16);
+            std::cout << "Using " << s_num_samples << " MSAA samples" << std::endl;
+        }
         init(width, height);
     }
 
@@ -34,7 +44,7 @@ namespace vOS
         if (m_multisample)
         {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA8, m_width, m_height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, GL_RGBA8, m_width, m_height, GL_TRUE);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
         }
@@ -59,7 +69,7 @@ namespace vOS
         if (m_multisample)
         {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
         }
         else
