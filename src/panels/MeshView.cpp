@@ -243,27 +243,31 @@ namespace vOS
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if(!m_zoom)
+        auto active_mesh = Window::instance().get_active_mesh_obj();
+        if (active_mesh != nullptr)
         {
-            m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
-        }
-        Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
-
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-            if(!mesh->get_data().m_visible)
+            if(!m_zoom)
             {
-                continue;
+                m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
             }
+            Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
 
-            mesh->update_vertex_buffer();
+            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            {
+                auto mesh = m.second;
+                if(!mesh->get_data().m_visible)
+                {
+                    continue;
+                }
 
-            // render all passes
-            if (mesh->get_vao() != nullptr) {
-                m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
-                m_highlight_pass.render(nullptr, m_render_data, m.first);
-                m_shape_pass.render(nullptr, m_render_data, m.first);
+                mesh->update_vertex_buffer();
+
+                // render all passes
+                if (mesh->get_vao() != nullptr) {
+                    m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
+                    m_highlight_pass.render(nullptr, m_render_data, m.first);
+                    m_shape_pass.render(nullptr, m_render_data, m.first);
+                }
             }
         }
 

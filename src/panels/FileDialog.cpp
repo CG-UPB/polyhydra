@@ -15,12 +15,9 @@ namespace vOS
 
     void FileDialog::show()
     {
-
-        if (m_instance_file_loader.Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
+        m_ok_file_loader = false;
+        if (m_instance_file_loader.Display("ChooseOVMFIle", ImGuiWindowFlags_NoCollapse, ImVec2(400, 200),ImVec2(1200, 600)))
         {
-            if (m_open_file){
-                m_ok_file_loader = false;
-            }
             // action if OK
             if (m_instance_file_loader.IsOk())
             {
@@ -36,12 +33,9 @@ namespace vOS
             }
         }
 
-        if (m_instance_snapshot_saver.Display("ChooseBMPFile", ImGuiWindowFlags_NoCollapse, ImVec2(400,200), ImVec2(1200,600)))
+        m_ok_snapshot_saver = false;
+        if (m_instance_snapshot_saver.Display("ChooseBMPFile", ImGuiWindowFlags_NoCollapse, ImVec2(400, 200),ImVec2(1200, 600)))
         {
-            if (m_open_snap){
-                m_ok_snapshot_saver = false;
-            }
-
             // action if OK
             LogWindow::getInstance()->addLog("Vor OK");
             if (m_instance_snapshot_saver.IsOk())
@@ -73,10 +67,10 @@ namespace vOS
         {
             std::stringstream str;
             time_t rawtime;
-            time ( &rawtime );
+            time(&rawtime);
             str << rawtime;
             Input::accept_input(false);
-            m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Save File", extension.c_str(), ".",str.str());
+            m_instance_snapshot_saver.OpenDialog("ChooseBMPFile", "Save File", extension.c_str(), ".", str.str());
             m_is_open_snapshot_saver = true;
         }
 
@@ -112,7 +106,7 @@ namespace vOS
     {
         if (nbr_of_dialog == 0)
             return m_is_open_fileloader;
-        else if(nbr_of_dialog == 1)
+        else if (nbr_of_dialog == 1)
             return m_is_open_snapshot_saver;
         return false;
     }
@@ -122,12 +116,11 @@ namespace vOS
         m_is_open_snapshot_saver = open;
     }
 
-    void FileDialog::close(){
+    void FileDialog::close()
+    {
         set_open_fileloader(false);
         set_open_snapshot_saver(false);
-        m_is_open_snapshot_saver = false;
 
-        m_is_open_fileloader = false;
         m_instance_file_loader.Close();
         m_instance_snapshot_saver.Close();
         Input::accept_input(true);
