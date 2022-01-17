@@ -13,3 +13,6 @@
 [submodule "ext/stb"]
 	path = ext/stb
 	url = git@github.com:nothings/stb.git
+[submodule "ext/ImGuiFileDialog"]
+	path = ext/ImGuiFileDialog
+	url = git@github.com:aiekick/ImGuiFileDialog.git
