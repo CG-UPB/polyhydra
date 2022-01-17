@@ -155,7 +155,12 @@ namespace vOS
                 ImGui::Text("Peel:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
                 m_slider_peel = Window::instance().get_mesh_peel_level(active_mesh);
-                ImGui::SliderInt(" ", &m_slider_peel, 0, 10);
+                int peel_max = 10;
+                if (m_active_mesh >= 0)
+                {
+                    peel_max = Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth();
+                }
+                ImGui::SliderInt(" ", &m_slider_peel, 0, peel_max);
                 //GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
                 Window::instance().rendering_mutex.unlock();
                 Window::instance().set_mesh_peel_level(active_mesh,m_slider_peel);

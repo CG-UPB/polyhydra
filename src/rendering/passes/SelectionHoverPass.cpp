@@ -33,7 +33,7 @@ namespace vOS
         if (obj == nullptr)
             return;
 
-        if (m_selected_type == SELECTION_TYPE_NONE)
+        if (m_selected_type == SELECTION_TYPE_NONE || m_selected_mesh != mesh_id)
         {
             return;
         }
@@ -101,6 +101,7 @@ namespace vOS
         }
         m_selected_type = type;
         m_selected_id = id;
+        m_selected_mesh = mesh_id;
 
         if (m_selected_type == SELECTION_TYPE_FACE)
         {

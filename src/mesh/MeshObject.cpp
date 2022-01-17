@@ -249,6 +249,7 @@ namespace vOS
         {
             BufferSpecification spec;
             spec.peel_depth = current_peel_level;
+            delete m_mvb;
             m_mvb = new MeshVertexBuffer(m_mesh, spec);
         }
         m_should_update = false;
@@ -301,7 +302,7 @@ namespace vOS
         m_mesh_offset_from_center = min + (max - min) * 0.5f;
     }
 
-    void MeshObject::calculate_peel_depth() const
+    void MeshObject::calculate_peel_depth()
     {
         OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
         OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
@@ -346,6 +347,7 @@ namespace vOS
             next_level.clear();
         }
 
+        int max_depth = 0;
         for(auto cell : m_mesh->cells())
         {
             int minimum = 100000;
@@ -357,7 +359,13 @@ namespace vOS
                 }
             }
             cell_peel_property[cell] = minimum;
+            if (minimum > max_depth)
+            {
+                max_depth = minimum;
+            }
         }
+
+        m_max_peel_depth = max_depth;
     }
 
     int MeshObject::to_vertexID(int value)
@@ -540,12 +548,14 @@ namespace vOS
         return m_slice_dir;
     }
 
+    int MeshObject::get_max_peel_depth() const
+    {
+        return m_max_peel_depth;
+    }
+
     MeshObject::~MeshObject()
     {
-        for (auto mvb : m_peel_cache)
-        {
-            delete mvb.second;
-        }
+
     }
 }
 
