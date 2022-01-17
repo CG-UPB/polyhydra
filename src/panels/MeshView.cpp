@@ -1,6 +1,7 @@
 
 #include "glad/glad.h"
 
+#include "../util/StringUtil.h"
 #include "MeshView.h"
 #include "../input/Input.h"
 #include "LogWindow.h"
@@ -284,7 +285,18 @@ namespace vOS
         glReadPixels(0, 0, sWidth, sHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 
         stbi_flip_vertically_on_write(true);
-        stbi_write_bmp(filename.c_str(), sWidth, sHeight, 4, buffer.data());
+
+        auto split = StringUtil::split_str(filename, ".");
+        std::string extension = split[split.size() - 1];
+
+        if (extension == "bmp")
+        {
+            stbi_write_bmp(filename.c_str(), sWidth, sHeight, 4, buffer.data());
+        }
+        else if (extension == "png")
+        {
+            stbi_write_png(filename.c_str(), sWidth, sHeight, 4, buffer.data(), 4 * sWidth);
+        }
 
         export_framebuffer->unbind();
 

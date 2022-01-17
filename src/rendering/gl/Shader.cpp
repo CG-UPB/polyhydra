@@ -173,8 +173,8 @@ namespace vOS
         std::filesystem::path shader_path = "shaders";
         for (auto& file: std::filesystem::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
         {
-            auto path_split = split_str(file.path().string(), separator);
-            auto name_with_extension = split_str(path_split[path_split.size() - 1], ".");
+            auto path_split = StringUtil::split_str(file.path().string(), separator);
+            auto name_with_extension = StringUtil::split_str(path_split[path_split.size() - 1], ".");
             std::string name_without_extension = name_with_extension[0];
             std::string extension = name_with_extension[1];
 

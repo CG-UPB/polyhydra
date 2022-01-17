@@ -75,7 +75,7 @@ namespace vOS
 
         if(ImGui::Button("Snapshot"))
         {
-            Window::instance().m_file_dialog->open(".bmp", 1);
+            Window::instance().m_file_dialog->open(".png,.bmp", 1);
         }
 
         if(Window::instance().m_file_dialog->file_dialogue_open(1))
@@ -158,7 +158,7 @@ namespace vOS
                 int peel_max = 10;
                 if (m_active_mesh >= 0)
                 {
-                    peel_max = Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth();
+                    peel_max = Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1;
                 }
                 ImGui::SliderInt(" ", &m_slider_peel, 0, peel_max);
                 //GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
