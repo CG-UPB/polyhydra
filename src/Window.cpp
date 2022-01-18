@@ -273,9 +273,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.rendering_mode = mode;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().rendering_mode = std::move(mode);
         }
 
         rendering_mutex.unlock();
@@ -292,12 +290,12 @@ namespace vOS
         return "";
     }
 
-    void Window::set_mesh_color(Color m_color)
+    void Window::set_mesh_color(Color color)
     {
-        set_mesh_color(0, m_color);
+        set_mesh_color(0, color);
     }
 
-    void Window::set_mesh_color(int mesh_id, Color m_color)
+    void Window::set_mesh_color(int mesh_id, Color color)
     {
         rendering_mutex.lock();
 
@@ -305,9 +303,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_color = m_color;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().m_color = color;
         }
 
         rendering_mutex.unlock();
@@ -337,9 +333,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_visible = visible;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().m_visible = visible;
         }
 
         rendering_mutex.unlock();
@@ -369,9 +363,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_slider_slicer = slice_level;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().m_slider_slicer = slice_level;
         }
 
         rendering_mutex.unlock();
@@ -396,9 +388,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_slice_locked = locked;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().m_slice_locked = locked;
         }
 
         rendering_mutex.unlock();
@@ -428,9 +418,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_slider_peel = peel_level;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().m_slider_peel = peel_level;
         }
 
         rendering_mutex.unlock();
@@ -460,9 +448,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            auto data = mesh_obj->get_data();
-            data.m_cell_size = cell_size;
-            mesh_obj->set_data(data);
+            mesh_obj->get_data().m_cell_size = cell_size;
         }
 
         rendering_mutex.unlock();

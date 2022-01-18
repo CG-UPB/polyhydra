@@ -116,9 +116,7 @@ namespace vOS {
         if (mesh != nullptr && mesh->get_vao() != nullptr)
         {
             int offset = std::get<0>(mesh->selection_offset());
-            auto d = obj->get_data();
-            d.selection_offset = offset;
-            obj->set_data((d));
+            obj->get_data().selection_offset = offset;
             m_sphere_vao = mesh->get_sphere_vao();
             m_num_vertices = mesh->get_num_visible_vertices();
             m_cylinder_vao = mesh->get_cylinder_vao();

@@ -149,18 +149,10 @@ namespace vOS
 
             // scroll scaling of the mesh
             float scaleSpeed = 0.1f;
-
-            for (const auto& m: Window::instance().get_mesh_list())
-            {
-                glm::mat4 transform = glm::scale(
-                        m.second->get_data().transform,
-                        glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
-                );
-
-                auto d = m.second->get_data();
-                d.transform = transform;
-                m.second->set_data(d);
-            }
+            m_render_data.camera.world = glm::scale(
+                    m_render_data.camera.world,
+                    glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
+            );
         }
         m_lastDown = isDown;
 
@@ -196,7 +188,7 @@ namespace vOS
         if (obj == nullptr)
             return;
 
-        MeshData mesh_data = obj->get_data();
+        MeshData& mesh_data = obj->get_data();
 
 
         // we need to clear our framebuffer as well
@@ -211,9 +203,6 @@ namespace vOS
             m_zoom_point = obj->get_mesh_offset();
         }
         mesh_data.offset = m_zoom_point;
-
-        obj->set_data(mesh_data);
-
 
         obj->update_vertex_buffer();
 

@@ -118,12 +118,12 @@ namespace vOS {
          * Applies color to mesh with given mesh_id
          * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
-        void set_mesh_color(int mesh_id, Color m_color);
+        void set_mesh_color(int mesh_id, Color color);
         /*
          * Applies color to the currently active mesh
          * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
-        void set_mesh_color( Color m_color);
+        void set_mesh_color( Color color);
 
         /*
          * Returns the actual color for mesh with id = mesh_id
