@@ -444,6 +444,11 @@ namespace vOS
         }
     }
 
+    void MeshView::set_zoom_point(glm::vec3 zoom_point)
+    {
+        m_zoom_point = zoom_point;
+    }
+
 
     void MeshView::show()
     {

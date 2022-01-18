@@ -141,6 +141,8 @@ namespace vOS
         // ToolBar
         m_toolbar->show();
 
+        ImGui::ShowDemoWindow();
+
         // MeshLayerView
         m_mesh_layer_view->show();
 
@@ -488,6 +490,20 @@ namespace vOS
         if (mesh_obj != nullptr)
         {
             mesh_obj->get_data().scale = glm::vec3(scale, scale, scale);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_focus_mesh(int mesh_id)
+    {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if (mesh_obj != nullptr)
+        {
+            m_mesh_view->set_zoom_point(mesh_obj->get_mesh_offset());
         }
 
         rendering_mutex.unlock();

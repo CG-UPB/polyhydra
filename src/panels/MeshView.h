@@ -21,7 +21,7 @@ namespace vOS
         ~MeshView() override;
         void show() override;
         void m_take_screenshot(const std::string& filename);
-
+        void set_zoom_point(glm::vec3 zoom_point);
     private:
 
         void handleResize();
@@ -66,5 +66,7 @@ namespace vOS
         // render selection every 4th frame
         int m_frame_limit = 4;
         int m_current_frame = 0;
+
+
     };
 }

@@ -87,6 +87,8 @@ namespace vOS {
         MeshObject* get_active_mesh_obj(){return get_mesh_obj(m_active_mesh);}
         MeshObject *get_mesh_obj(int index);
 
+        void set_focus_mesh(int mesh_id);
+
         bool has_mesh();
 
         const std::unordered_map<int, MeshObject*>& get_mesh_list() { return m_mesh_objects; };

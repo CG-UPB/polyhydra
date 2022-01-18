@@ -4,6 +4,7 @@ flat in int v_visible;
 
 uniform int u_selection_offset;
 uniform bool u_debug_mode;
+uniform bool u_faces_selectable;
 
 out vec4 fragment_color;
 
@@ -31,5 +32,10 @@ void main()
     if (u_debug_mode)
     {
         fragment_color.a = 1.0;
+    }
+
+    if (!u_faces_selectable)
+    {
+        fragment_color = vec4(0.0,0.0,0.0,1.0);
     }
 }

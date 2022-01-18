@@ -64,7 +64,16 @@ namespace vOS
             std::string str = "Mesh " + std::to_string(m.first);
             char* char_type = new char[str.length()];
 
-            ImGui::RadioButton(strcpy(char_type, str.c_str()),&active_mesh, m.first);ImGui::SameLine();
+            ImGui::RadioButton(strcpy(char_type, str.c_str()),&active_mesh, m.first);
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+            {
+                LogWindow::getInstance()->addLog("New Focus Mesh");
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_focus_mesh(m.first);
+                Window::instance().rendering_mutex.lock();
+            }
+
+
             if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
             {
                 ImGui::BeginTooltip();
@@ -80,7 +89,7 @@ namespace vOS
             bool visible = Window::instance().get_mesh_visibility(m.first);
             str = "##Visible " + std::to_string(m.first);
             char_type = new char[str.length()];
-            ImGui::Checkbox(strcpy(char_type, str.c_str()), &visible);ImGui::SameLine();
+            ImGui::SameLine();ImGui::Checkbox(strcpy(char_type, str.c_str()), &visible);ImGui::SameLine();
             Window::instance().rendering_mutex.unlock();
             Window::instance().set_mesh_visibility(m.first, visible);
             Window::instance().rendering_mutex.lock();
