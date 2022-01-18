@@ -16,7 +16,7 @@ namespace vOS
             // use 16 samples if possible, else use the max supported value
             int max_supported_samples;
             glGetIntegerv(GL_MAX_SAMPLES, &max_supported_samples);
-            s_num_samples = std::min(max_supported_samples, 16);
+            s_num_samples = std::min(max_supported_samples, 4);
             std::cout << "Using " << s_num_samples << " MSAA samples" << std::endl;
         }
         init(width, height);

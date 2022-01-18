@@ -43,67 +43,82 @@ namespace vOS {
         glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
         auto slice_direction = obj->get_slice_dir(transform, view_dir);
 
-        // draw faces
-        m_selection_shader->bind();
+        int selection_mode = GlobalViewerSettings::getInstance()->m_get_current_selection_mode();
 
-        m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
-        m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-        m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
-        m_selection_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
-        m_selection_shader->set_uniform_float("u_cell_size", cell_size);
-        m_selection_shader->set_uniform_int("u_peel_depth", peel_depth);
-        m_selection_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_selection_shader->set_uniform_vec3f("u_min", min);
-        m_selection_shader->set_uniform_vec3f("u_max", max);
-        m_selection_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_selection_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        if(selection_mode == 0 || selection_mode == 3)
+        {
+            // draw faces
+            m_selection_shader->bind();
 
-        vao->draw();
+            m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
+            m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+            m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
+            m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
+            m_selection_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
+            m_selection_shader->set_uniform_float("u_cell_size", cell_size);
+            m_selection_shader->set_uniform_int("u_peel_depth", peel_depth);
+            m_selection_shader->set_uniform_float("u_slice_depth", slice_depth);
+            m_selection_shader->set_uniform_vec3f("u_min", min);
+            m_selection_shader->set_uniform_vec3f("u_max", max);
+            m_selection_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_selection_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
 
-        glDisable(GL_CULL_FACE);
-        glDepthMask(GL_FALSE);
+            vao->draw();
+
+            glDisable(GL_CULL_FACE);
+            glDepthMask(GL_FALSE);
+            m_selection_shader->unbind();
+        }
+
 
         // draw cylinders for each edge
-        m_selection_cylinder_shader->bind();
+        if(selection_mode == 0 || selection_mode == 2)
+        {
 
-        m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", transform);
-        m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-        m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
-        m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
-        m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
-        m_selection_cylinder_shader->set_uniform_int("u_peel_depth", peel_depth);
-        m_selection_cylinder_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_selection_cylinder_shader->set_uniform_vec3f("u_min", min);
-        m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
-        m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+            m_selection_cylinder_shader->bind();
 
-        m_cylinder_vao->draw_instanced(m_num_edges);
+            m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", transform);
+            m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+            m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
+            m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
+            m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
+            m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
+            m_selection_cylinder_shader->set_uniform_int("u_peel_depth", peel_depth);
+            m_selection_cylinder_shader->set_uniform_float("u_slice_depth", slice_depth);
+            m_selection_cylinder_shader->set_uniform_vec3f("u_min", min);
+            m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
+            m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
 
-        glDepthMask(GL_TRUE);
+            m_cylinder_vao->draw_instanced(m_num_edges);
 
-        // draw spheres for each vertex
-        m_selection_sphere_shader->bind();
+            glDepthMask(GL_TRUE);
+            m_selection_cylinder_shader->unbind();
+        }
 
-        m_selection_sphere_shader->set_uniform_mat4f("u_mesh_transform", transform);
-        m_selection_sphere_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-        m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
-        m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
-        m_selection_sphere_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
-        m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
-        m_selection_sphere_shader->set_uniform_int("u_peel_depth", peel_depth);
-        m_selection_sphere_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_selection_sphere_shader->set_uniform_vec3f("u_min", min);
-        m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
-        m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_selection_sphere_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        if (selection_mode == 0 || selection_mode == 1)
+        {
+            // draw spheres for each vertex
+            m_selection_sphere_shader->bind();
 
-        m_sphere_vao->draw_instanced(m_num_vertices);
+            m_selection_sphere_shader->set_uniform_mat4f("u_mesh_transform", transform);
+            m_selection_sphere_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+            m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
+            m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
+            m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
+            m_selection_sphere_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
+            m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
+            m_selection_sphere_shader->set_uniform_int("u_peel_depth", peel_depth);
+            m_selection_sphere_shader->set_uniform_float("u_slice_depth", slice_depth);
+            m_selection_sphere_shader->set_uniform_vec3f("u_min", min);
+            m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
+            m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_selection_sphere_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
 
-        m_selection_sphere_shader->unbind();
+            m_sphere_vao->draw_instanced(m_num_vertices);
+
+            m_selection_sphere_shader->unbind();
+        }
     }
 
     void SelectionPass::render_mesh(MeshObject* mesh, RenderData& data, int mesh_id)
