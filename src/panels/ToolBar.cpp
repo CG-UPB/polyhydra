@@ -133,12 +133,79 @@ namespace vOS
             ImGui::EndTooltip();
         }
 
-        if(ImGui::CollapsingHeader("Filters"))
+        if(ImGui::CollapsingHeader("Mesh Settings"))
         {
             if(ImGui::BeginTable("split1", 1))
             {
-                int active_mesh = Window::instance().get_mesh_active();
                 ImGui::TableNextColumn();
+                int active_mesh = Window::instance().get_mesh_active();
+
+                // Mesh transformations, such as position and scale
+                if (active_mesh >= 0)
+                {
+                    auto mesh = Window::instance().get_mesh_obj(active_mesh);
+                    auto pos = mesh->get_data().position;
+                    auto scl = mesh->get_data().scale;
+                    m_mesh_position[0] = pos.x;
+                    m_mesh_position[1] = pos.y;
+                    m_mesh_position[2] = pos.z;
+                    m_mesh_scale = scl.x;
+                }
+                ImGui::Text("Position:");
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("Adjust the mesh position");
+                if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -10.0f, 10.0f, "%.1f"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_position(active_mesh, m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_position(active_mesh, 0.0f, 0.0f, 0.0f);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::Text("Scale:");
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("Adjust the mesh scale");
+                if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_scale(active_mesh, m_mesh_scale);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::SameLine();
+
+                // Push a new id for imgui, so we can use the same button label as before
+                ImGui::PushID("ScaleReset");
+                if (ImGui::Button("Reset"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_scale(active_mesh, 1.0f);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::PopID();
+
+                // Add some y padding and a separator
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y);
+                // The default separator color is the same as the background, so change it here to something visible
+                ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+                ImGui::Separator();
+                ImGui::PopStyleColor();
+
+                // Mesh Filters
                 ImGui::Text("Slicer:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                               "inview of the mesh");

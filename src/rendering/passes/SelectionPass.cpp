@@ -30,7 +30,7 @@ namespace vOS {
         glDisable(GL_BLEND);
 
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
 
         float cell_size = Window::instance().get_mesh_cell_size(mesh_id);
         int peel_depth = Window::instance().get_mesh_peel_level(mesh_id);

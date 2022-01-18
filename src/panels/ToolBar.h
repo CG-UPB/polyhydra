@@ -45,6 +45,8 @@ namespace vOS
         int m_rendering_mode = 0;
         float m_cell_size = 1.0f;
         int m_active_mesh = 0;
+        float m_mesh_position[3] = {0.0f, 0.0f, 0.0f};
+        float m_mesh_scale = 1.0f;
 
         bool showPopup1 = false;
         bool showPopup2 = false;

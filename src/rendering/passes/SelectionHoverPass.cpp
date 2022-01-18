@@ -44,7 +44,7 @@ namespace vOS
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
 
         if (m_selected_type == SELECTION_TYPE_FACE)
         {
@@ -103,6 +103,8 @@ namespace vOS
         m_selected_id = id;
         m_selected_mesh = mesh_id;
 
+        auto mesh_transform = mesh.get_data().get_transform();
+
         if (m_selected_type == SELECTION_TYPE_FACE)
         {
             auto mesh_data = get_face_mesh_data(mesh, m_selected_id);
@@ -126,9 +128,7 @@ namespace vOS
                 m_selected_vertex_position.z = pos[2];
                 m_selected_vertex_position.w = 1.0f;
 
-                m_zoom_point.x = m_selected_vertex_position.x;
-                m_zoom_point.y = m_selected_vertex_position.y;
-                m_zoom_point.z = m_selected_vertex_position.z;
+                m_zoom_point = mesh_transform * m_selected_vertex_position;
             }
         }
         else if (m_selected_type == SELECTION_TYPE_EDGE)
@@ -146,9 +146,7 @@ namespace vOS
                 m_selected_edge_to.y = v1[1];
                 m_selected_edge_to.z = v1[2];
 
-                m_zoom_point.x = (m_selected_edge_from.x + m_selected_edge_to.x) / 2;
-                m_zoom_point.y = (m_selected_edge_from.y + m_selected_edge_to.y) / 2;
-                m_zoom_point.z = (m_selected_edge_from.z + m_selected_edge_to.z) / 2;
+                m_zoom_point = glm::vec3(mesh_transform * glm::vec4((m_selected_edge_from + m_selected_edge_to) / 2.0f, 1.0f));
             }
         }
     }
@@ -181,10 +179,10 @@ namespace vOS
                 res.indices.push_back(2);
             }
 
-            auto pos = mesh.m_mesh->barycenter(face);
-            m_zoom_point.x = pos[0];
-            m_zoom_point.y = pos[1];
-            m_zoom_point.z = pos[2];
+            auto mesh_transform = mesh.get_data().get_transform();
+            auto center = mesh.m_mesh->barycenter(face);
+            auto pos = mesh_transform * glm::vec4(center[0], center[1], center[2], 1.0f);
+            m_zoom_point = glm::vec3(pos);
 
         }
         return res;
@@ -207,7 +205,7 @@ namespace vOS
         auto v1 = mesh.m_mesh->vertex(edge_vertices[1]);
         glm::vec3 pos0 = glm::vec3(v0[0], v0[1], v0[2]);
         glm::vec3 pos1 = glm::vec3(v1[0], v1[1], v1[2]);
-        auto mat = data.camera.projection * data.camera.view * data.camera.world * obj->get_data().transform;
+        auto mat = data.camera.projection * data.camera.view * data.camera.world * obj->get_data().get_transform();
         auto p0_transformed = mat * glm::vec4(pos0, 1.0f);
         auto p1_transformed = mat * glm::vec4(pos1, 1.0f);
         glm::vec3 edge_normal = glm::normalize(glm::cross(glm::vec3(p1_transformed - p0_transformed), glm::vec3(0.0, 0.0, 1.0)));

@@ -465,6 +465,34 @@ namespace vOS
         return false;
     }
 
+    void Window::set_mesh_position(int mesh_id, float x, float y, float z)
+    {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if (mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().position = glm::vec3(x, y, z);
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    void Window::set_mesh_scale(int mesh_id, float scale)
+    {
+        rendering_mutex.lock();
+
+        // Change Mesh Settings
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if (mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().scale = glm::vec3(scale, scale, scale);
+        }
+
+        rendering_mutex.unlock();
+    }
+
     void Window::set_custom_imgui(void_callback vc)
     {
         rendering_mutex.lock();

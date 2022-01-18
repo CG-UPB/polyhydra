@@ -190,9 +190,6 @@ namespace vOS
 
         MeshData& mesh_data = obj->get_data();
 
-
-        // we need to clear our framebuffer as well
-
         if(!mesh_data.m_visible)
         {
             return;
@@ -212,8 +209,6 @@ namespace vOS
             m_highlight_pass.render(nullptr, m_render_data, mesh_id);
             m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
-
-
     }
 
     void MeshView::m_take_screenshot(const std::string& filename)
@@ -433,12 +428,12 @@ namespace vOS
             }
 
         }
-        if(ImGui::IsMouseDoubleClicked(0))
+        if(ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
         {
             m_zoom_point = m_selection_hover_pass.m_zoom_point;
             m_zoom = true;
         }
-        if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+        if(ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
         {
             std::cout << "ESCAPE" << std::endl;
             m_zoom = false;

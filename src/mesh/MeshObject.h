@@ -33,11 +33,13 @@ namespace vOS
     struct MeshData
     {
         MeshData() : m_color(0.85f, 0.85f, 0.85f, 1), m_visible(true), rendering_mode("mesh_phong")
+        {}
+
+        [[nodiscard]] glm::mat4 get_transform() const
         {
-            glm::mat4 position = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
-            glm::mat4 scale = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
-            glm::mat4 rotation = glm::mat4(1.0f);
-            transform = position * rotation * scale;
+            glm::mat4 pos = glm::translate(position);
+            glm::mat4 scl = glm::scale(scale);
+            return pos * scl;
         }
 
         Color m_color;
@@ -49,8 +51,9 @@ namespace vOS
         int m_slider_peel = 0;
         float m_cell_size = 1.0f;
 
-        glm::vec3 offset;
-        glm::mat4 transform;
+        glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
         int selection_offset = 0;
     };
 
