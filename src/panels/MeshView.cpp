@@ -327,8 +327,12 @@ namespace vOS
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
             }
-
-            querySelection(GlobalViewerSettings::getInstance()->m_get_current_selection_mode(),id);
+            if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == 0){
+                querySelection(type,id);
+            }else
+            {
+                querySelection(GlobalViewerSettings::getInstance()->m_get_current_selection_mode(),id);
+            }
         }
 
         m_pixel_buffer->finish_read();

@@ -100,6 +100,12 @@ namespace vOS
             //ImGui::Checkbox("Vertex-Selection", &m_vertex_selection);
             if(m_selection_activated)
             {
+                if (ImGui::RadioButton("All-Selection", m_current_selection_mode == 0))
+                {
+                    m_current_selection_mode = 0;
+                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(0);
+                }
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Vertex, Edge or Face of your pick");
                 if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
                 {
                     m_current_selection_mode = Vertex;
