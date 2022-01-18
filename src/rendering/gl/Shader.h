@@ -34,11 +34,7 @@ namespace vOS
          *
          * @return the specified shader
          */
-        static Shader* mesh_phong_shader() { return get("mesh_phong"); }
         static Shader* mesh_normal_shader() { return get("mesh_normal"); }
-        static Shader* mesh_tangent_shader() { return get("mesh_tangent"); }
-        static Shader* mesh_bitangent_shader() { return get("mesh_bitangent"); }
-        static Shader* mesh_flat_shader() { return get("mesh_flat"); }
         static Shader* background_shader() { return get("background"); }
         static Shader* basic_shape_shader() { return get("basic_shape"); }
         static Shader* selection_face() { return get("selection_face"); }

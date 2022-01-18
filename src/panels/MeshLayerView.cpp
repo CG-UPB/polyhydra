@@ -92,11 +92,9 @@ namespace vOS
                 current_rendering_mode_int = 1;
             if (current_rendering_mode == "mesh_normal")
                 current_rendering_mode_int = 2;
-            if (current_rendering_mode == "mesh_flat")
-                current_rendering_mode_int = 3;
             const char *rendering_mode_internal_names[] =
                     {
-                            "mesh_phong", "mesh_wireframe", "mesh_normal", "mesh_flat"
+                            "mesh_phong", "mesh_wireframe", "mesh_normal"
                     };
             str = "R-Mode " + std::to_string(m.first);
             char_type = new char[str.length()];
