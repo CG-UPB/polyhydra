@@ -451,7 +451,7 @@ namespace vOS
     int MeshObject::calculate_selection_size() const
     {
         // make sure that we choose the biggest possible vertex, edge or face id as the offset
-        return (int) m_mesh->n_cells() * 24;
+        return (int) m_mesh->n_cells() * 12;
     }
 
     int MeshObject::get_num_visible_vertices() const
