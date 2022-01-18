@@ -30,7 +30,7 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        m_meshFrameBuffer = new FrameBufferObject(width, height, false);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, true);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height);

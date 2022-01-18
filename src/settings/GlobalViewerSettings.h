@@ -59,7 +59,7 @@ namespace vOS
         bool m_take_snapshot = false;
         std::string m_actual_snapshot_filename = "default.png";
         bool m_current_selection_activated = false;
-        int m_current_selection_mode;
+        int m_current_selection_mode = 0;
         bool m_color_activated = true;
         float m_color[4] = {1.0f,1.0f,1.0f,1.0f};
         int m_slider_slicer = 0;

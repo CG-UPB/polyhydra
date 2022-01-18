@@ -71,13 +71,13 @@ namespace vOS {
 
         vao->draw();
 
-        glDisable(GL_CULL_FACE);
-        glDepthMask(GL_FALSE);
         m_selection_shader->unbind();
 
         // draw cylinders for each edge
         if(selection_mode == 0 || selection_mode == 2)
         {
+            glDisable(GL_CULL_FACE);
+            glDepthMask(GL_FALSE);
 
             m_selection_cylinder_shader->bind();
 
@@ -96,12 +96,14 @@ namespace vOS {
 
             m_cylinder_vao->draw_instanced(m_num_edges);
 
-            glDepthMask(GL_TRUE);
             m_selection_cylinder_shader->unbind();
         }
 
+        glDepthMask(GL_TRUE);
+
         if (selection_mode == 0 || selection_mode == 1)
         {
+
             // draw spheres for each vertex
             m_selection_sphere_shader->bind();
 
@@ -118,7 +120,7 @@ namespace vOS {
             m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
             m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_selection_sphere_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-            glDepthMask(GL_TRUE);
+
             m_sphere_vao->draw_instanced(m_num_vertices);
 
             m_selection_sphere_shader->unbind();
