@@ -33,7 +33,11 @@ namespace vOS
     struct MeshData
     {
         MeshData() : m_color(0.85f, 0.85f, 0.85f, 1), m_visible(true), rendering_mode("mesh_phong")
-        {}
+        {
+            m_peel_level = 0;
+            m_slice_level =0;
+            m_cell_size = 1;
+        }
 
         [[nodiscard]] glm::mat4 get_transform() const
         {
@@ -46,10 +50,10 @@ namespace vOS
         bool m_visible;
         std::string rendering_mode;
 
-        float m_slider_slicer = 0.0f;
+        int m_peel_level;
         bool m_slice_locked = false;
-        int m_slider_peel = 0;
-        float m_cell_size = 1.0f;
+        float m_slice_level;
+        float m_cell_size;
 
         glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -187,7 +191,6 @@ namespace vOS
         MeshData m_data;
 
         bool m_should_update;
-
         glm::vec3 m_min;
         glm::vec3 m_max;
 

@@ -39,10 +39,6 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_peel_depths, 4, 1, true);
 
-        if (peel_depth > 0 || slice_depth > 0)
-        {
-            delete current_mesh;
-        }
     }
 
     MeshVertexBuffer::~MeshVertexBuffer()

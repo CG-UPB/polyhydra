@@ -16,6 +16,7 @@ namespace vOS
         if(obj == nullptr)
             return;
 
+
         // Activate Wireframe mode if desired
         std::string rendering_mode = obj->get_data().rendering_mode;
         bool render_in_wireframe_mode = false;
@@ -49,10 +50,10 @@ namespace vOS
 
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        float cell_size = obj->get_data().m_cell_size;
+        int peel_depth = obj->get_data().m_peel_level;
+        float slice_depth = obj->get_data().m_slice_level;
 
-        float cell_size = Window::instance().get_mesh_cell_size(mesh_id);
-        int peel_depth = Window::instance().get_mesh_peel_level(mesh_id);
-        float slice_depth = Window::instance().get_mesh_slice_level(mesh_id);
         auto bb = obj->get_transformed_bb(transform);
         auto min = bb.first;
         auto max = bb.second;

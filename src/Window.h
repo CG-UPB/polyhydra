@@ -95,6 +95,12 @@ namespace vOS {
 
         unsigned int add_shape(Shape* shape);
         void remove_shape(unsigned int id);
+        void remove_all_shapes();
+
+        /*
+         * Deletes all loaded meshes
+         */
+        void remove_all_meshes();
 
         //   Algorithm to Vos ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -149,6 +155,12 @@ namespace vOS {
          */
         bool get_mesh_visibility(int mesh_id);
 
+        void set_peel_level(int mesh_id, int level);
+
+        void set_slice_level(int mesh_id, float value);
+
+        void set_cell_size(int mesh_id, float size);
+
         /*
          * Applies slice level to the given mesh_id.
          */
@@ -202,7 +214,7 @@ namespace vOS {
          */
         float get_mesh_cell_size(int mesh_id);
 
-
+        std::vector<int>* get_all_mesh_ids();
         /*
          * If set to false, the Vos Window will no longer interprete any inputs from Keys or Mouse
          * Useful for File Dialogues and similar processes in which you do not which the interface to change.
@@ -219,6 +231,7 @@ namespace vOS {
         /*
          * Sets custom function that will be called along other Vos UI panel elements
          * Updates will be adopted after the current rendering frame has ended
+         * Example:  set_custom_imgui(std::bind(&ExampleClass::ui_method, this));
          */
         void set_custom_imgui(void_callback vc);
 
@@ -261,6 +274,8 @@ namespace vOS {
 
 
         void run();
+
+        void end();
 
         //void run(void_callback vc);
 
@@ -342,6 +357,7 @@ namespace vOS {
         bool m_initialized = false;
         bool m_window_open;
         bool m_window_paused = false;
+        bool m_is_in_render_loop= false;
 
         // Custom UI Function
         void_callback m_temporary_new_custom_ui_function;
@@ -371,7 +387,7 @@ namespace vOS {
 
         void render();
 
-        void open();
+        void setup();
 
         void close();
 

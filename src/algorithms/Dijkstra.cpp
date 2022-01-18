@@ -81,7 +81,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = true;
+        bool linear = false;
 
         if(linear)
         {
@@ -166,19 +166,20 @@ namespace vOS
 
     void Dijkstra::linear_run()
     {
-
         /* One Time only Setup */
         Window& window = Window::instance();
 
-//        OpenVolumeMesh::IO::FileManager file_manager;
-//        file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
-//        int hand_mesh =  window.add_mesh(&m_mesh);
-//
-//        file_manager.readFile("../res/sample_meshes/guy2500.1.ovm", m_mesh);
-//        int guy_mesh = window.add_mesh(&m_mesh);
-//
-//        window.set_mesh_rendering_mode(hand_mesh, "mesh_normal");
-//        window.set_mesh_rendering_mode(guy_mesh, "mesh_wireframe");
+        OpenVolumeMesh::IO::FileManager file_manager;
+        file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
+        int hand_mesh =  window.add_mesh(&m_mesh);
+
+        file_manager.readFile("../res/sample_meshes/guy2500.1.ovm", m_mesh);
+        int guy_mesh = window.add_mesh(&m_mesh);
+
+        window.set_mesh_rendering_mode(hand_mesh, "mesh_normal");
+        window.set_mesh_rendering_mode(guy_mesh, "mesh_wireframe");
+
+        //window.remove_mesh(hand_mesh);
 
         window.remove_all_vertex_highlights();
         init();
@@ -221,8 +222,6 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                {
-                }
                 window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
@@ -364,7 +363,7 @@ namespace vOS
 
         std::cout << "Start waiting " << std::endl;
         // Read file
-        while(window.GetFileDialoguePath() == empty){}
+        while(window.GetFileDialoguePath() == ""){}
 
         std::cout << "Continue " << std::endl;
 
@@ -417,8 +416,6 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-        {
-        }
                 window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
