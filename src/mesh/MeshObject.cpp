@@ -20,13 +20,6 @@ namespace vOS
     {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
 
-
-        BufferSpecification spec;
-        spec.peel_depth = 0;
-        spec.slice_depth = 0;
-
-        m_mvb = new MeshVertexBuffer(m_mesh, spec);
-
         m_should_update = false;
 
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");

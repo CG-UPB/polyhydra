@@ -33,11 +33,6 @@ namespace vOS
         // Create Custom UI Panel Object
         m_custom_ui = new CustomUIPanel();
         m_file_dialog = new FileDialog();
-
-
-        rendering_mutex.lock();
-        setup();
-        rendering_mutex.unlock();
     }
 
     Window::~Window()
@@ -69,6 +64,8 @@ namespace vOS
             return;
 
         m_is_in_render_loop = true;
+
+        setup();
 
         // Render window forever until window is closed by user
         while (m_window_open)
