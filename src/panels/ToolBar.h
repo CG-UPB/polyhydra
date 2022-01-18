@@ -10,9 +10,9 @@
 namespace vOS
 {
     enum Selection{
-        Vertex = 0,
-        Edge = 1,
-        Face = 2
+        Vertex = 1,
+        Edge = 2,
+        Face = 3
     };
 
     class ToolBar final: public WindowPanel

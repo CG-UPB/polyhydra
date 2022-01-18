@@ -4,6 +4,8 @@
 
 #include "MeshLayerView.h"
 #include "../Window.h"
+#include "imgui.h"
+#include <imgui_internal.h>
 
 namespace vOS
 {
@@ -63,16 +65,33 @@ namespace vOS
             char* char_type = new char[str.length()];
 
             ImGui::RadioButton(strcpy(char_type, str.c_str()),&active_mesh, m.first);ImGui::SameLine();
+            if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::TextUnformatted("These Radio Buttons show which Mesh is active now. The filter functions of "
+                                       "the Toolbar will change only the active mesh");
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
 
             //ImGui::TextColored(ImColor(ImVec4(1.0,0.0,0.0,1.0)),strcpy(char_type, str.c_str()));ImGui::SameLine();
 
             bool visible = Window::instance().get_mesh_visibility(m.first);
-            str = "Visible " + std::to_string(m.first);
+            str = "##Visible " + std::to_string(m.first);
             char_type = new char[str.length()];
             ImGui::Checkbox(strcpy(char_type, str.c_str()), &visible);ImGui::SameLine();
             Window::instance().rendering_mutex.unlock();
             Window::instance().set_mesh_visibility(m.first, visible);
             Window::instance().rendering_mutex.lock();
+            if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::TextUnformatted("If the Checkbox is clicked, the mesh is visible");
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
 
             Color color = Window::instance().get_mesh_color(m.first);
             float m_color[3];
@@ -85,6 +104,14 @@ namespace vOS
             Window::instance().rendering_mutex.unlock();
             Window::instance().set_mesh_color(m.first, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
             Window::instance().rendering_mutex.lock();
+            if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::TextUnformatted("Sets the color of the mesh");
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
 
             std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m.first);
             int current_rendering_mode_int = 0;
@@ -96,13 +123,25 @@ namespace vOS
                     {
                             "mesh_phong", "mesh_wireframe", "mesh_normal"
                     };
-            str = "R-Mode " + std::to_string(m.first);
+            const char *rendering_mode_external_names[] =
+                    {
+                                "Phong", "Wireframe", "Normal"
+                    };
+            str = "##R-Mode " + std::to_string(m.first);
             char_type = new char[str.length()];
-            ImGui::Combo(strcpy(char_type, str.c_str()), &current_rendering_mode_int, rendering_mode_internal_names,
+            ImGui::Combo(strcpy(char_type, str.c_str()), &current_rendering_mode_int, rendering_mode_external_names,
                          IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
             Window::instance().rendering_mutex.unlock();
             Window::instance().set_mesh_rendering_mode(m.first,rendering_mode_internal_names[current_rendering_mode_int]);
             Window::instance().rendering_mutex.lock();
+            if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::TextUnformatted("Sets the rendering mode of the mesh");
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
         }
         Window::instance().rendering_mutex.unlock();
         Window::instance().set_mesh_active(active_mesh);

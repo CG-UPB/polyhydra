@@ -504,15 +504,6 @@ namespace vOS
         if (showPopup2)
             ImGui::OpenPopup("Single Mesh Options");
         */
-        if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("By pushing this button diverse options for Rendering the mesh. "
-                                   "There are multiple options for different rendering of the mesh");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-        ImGui::End();
+    ImGui::End();
     }
 } // namespace vOS

@@ -19,5 +19,6 @@ namespace vOS
         MeshLayerView();
 
         static MeshLayerView* instance;
+        int m_timer_treshold = 3;
     };
 }
