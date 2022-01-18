@@ -2,7 +2,7 @@
 
 out vec4 FragColor;
 
-in vec3 v_Pos;
+flat in int v_Visible;
 in vec3 v_Normal;
 
 uniform vec3 u_lightPos;
@@ -12,6 +12,9 @@ uniform vec3 u_objectColor;
 
 void main()
 {
+    if (v_Visible == 0)
+    {
+        discard;
+    }
     FragColor = vec4(normalize(v_Normal), 1.0);
-
 }

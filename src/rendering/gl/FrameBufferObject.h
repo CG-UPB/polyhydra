@@ -6,7 +6,9 @@ namespace vOS
     {
     public:
 
-        FrameBufferObject(int width, int height);
+        static void copy(const FrameBufferObject* src, const FrameBufferObject* dest);
+
+        FrameBufferObject(int width, int height, bool multisample = false);
         ~FrameBufferObject();
 
         void resize(int width, int height);
@@ -16,18 +18,23 @@ namespace vOS
 
         [[nodiscard]] unsigned int get_texture_id() const;
         [[nodiscard]] unsigned int get_id() const;
+        [[nodiscard]] int get_width() const;
+        [[nodiscard]] int get_height() const;
 
     private:
 
-        void init(int width, int height);
-        void clean_up();
+        static int s_num_samples;
 
+        void init(int width, int height);
+
+        void clean_up();
         unsigned int create_framebuffer();
         unsigned int create_texture_attachment();
-        unsigned int create_depth_texture_attachment();
 
+        unsigned int create_depth_texture_attachment();
         int m_width;
         int m_height;
+        bool m_multisample;
 
         unsigned int m_frameBufferID;
         unsigned int m_textureID;

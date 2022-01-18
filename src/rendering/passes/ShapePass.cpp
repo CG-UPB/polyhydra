@@ -25,7 +25,7 @@ namespace vOS
             return;
 
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
 
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);

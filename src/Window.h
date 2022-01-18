@@ -124,12 +124,12 @@ namespace vOS {
          * Applies color to mesh with given mesh_id
          * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
-        void set_mesh_color(int mesh_id, Color m_color);
+        void set_mesh_color(int mesh_id, Color color);
         /*
          * Applies color to the currently active mesh
          * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
-        void set_mesh_color( Color m_color);
+        void set_mesh_color( Color color);
 
         /*
          * Returns the actual color for mesh with id = mesh_id
@@ -162,17 +162,25 @@ namespace vOS {
         /*
          * Applies slice level to the given mesh_id.
          */
-        void set_mesh_slice_level(int mesh_id,int slice_level);
+        void set_mesh_slice_level(int mesh_id,float slice_level);
 
         /*
          * Applies slice level to the actual active mesh.
          */
-        void set_mesh_slice_level(int slice_level);
+        void set_mesh_slice_level(float slice_level);
 
         /*
          * returns the slice level of the mesh with given mesh_id
          */
-        int get_mesh_slice_level(int mesh_id);
+        float get_mesh_slice_level(int mesh_id);
+
+        void set_mesh_slice_locked(int mesh_id, bool locked);
+
+        bool get_mesh_slice_locked(int mesh_id);
+
+        void set_mesh_position(int mesh_id, float x, float y, float z);
+
+        void set_mesh_scale(int mesh_id, float scale);
 
         /*
         * Applies peel level to the given mesh_id.
@@ -358,7 +366,6 @@ namespace vOS {
 
         // References //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        MenuBar* m_menu_bar;
         MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
@@ -370,8 +377,6 @@ namespace vOS {
         int m_active_mesh = -1;
         int m_total_number_of_loaded_meshes = 0;
         std::unordered_map<int, MeshObject*> m_mesh_objects;
-
-        MenuBar* get_menu_bar(){return m_menu_bar;}
 
         void calculate_selection_offsets();
 

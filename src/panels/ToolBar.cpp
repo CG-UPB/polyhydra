@@ -75,7 +75,7 @@ namespace vOS
 
         if(ImGui::Button("Snapshot"))
         {
-            Window::instance().m_file_dialog->open(".ovm", 1);;
+            Window::instance().m_file_dialog->open(".png,.bmp", 1);
         }
 
         if(Window::instance().m_file_dialog->file_dialogue_open(1))
@@ -133,31 +133,109 @@ namespace vOS
             ImGui::EndTooltip();
         }
 
-        if(ImGui::CollapsingHeader("Filters"))
+        if(ImGui::CollapsingHeader("Mesh Settings"))
         {
             if(ImGui::BeginTable("split1", 1))
             {
-                int active_mesh = Window::instance().get_mesh_active();
                 ImGui::TableNextColumn();
+                int active_mesh = Window::instance().get_mesh_active();
+
+                // Mesh transformations, such as position and scale
+                if (active_mesh >= 0)
+                {
+                    auto mesh = Window::instance().get_mesh_obj(active_mesh);
+                    auto pos = mesh->get_data().position;
+                    auto scl = mesh->get_data().scale;
+                    m_mesh_position[0] = pos.x;
+                    m_mesh_position[1] = pos.y;
+                    m_mesh_position[2] = pos.z;
+                    m_mesh_scale = scl.x;
+                }
+                ImGui::Text("Position:");
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("Adjust the mesh position");
+                if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -10.0f, 10.0f, "%.1f"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_position(active_mesh, m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_position(active_mesh, 0.0f, 0.0f, 0.0f);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::Text("Scale:");
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("Adjust the mesh scale");
+                if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_scale(active_mesh, m_mesh_scale);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::SameLine();
+
+                // Push a new id for imgui, so we can use the same button label as before
+                ImGui::PushID("ScaleReset");
+                if (ImGui::Button("Reset"))
+                {
+                    if (active_mesh >= 0)
+                    {
+                        Window::instance().rendering_mutex.unlock();
+                        Window::instance().set_mesh_scale(active_mesh, 1.0f);
+                        Window::instance().rendering_mutex.lock();
+                    }
+                }
+                ImGui::PopID();
+
+                // Add some y padding and a separator
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y);
+                // The default separator color is the same as the background, so change it here to something visible
+                ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+                ImGui::Separator();
+                ImGui::PopStyleColor();
+
+                // Mesh Filters
                 ImGui::Text("Slicer:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                               "inview of the mesh");
                 m_slider_slicer = Window::instance().get_mesh_slice_level(active_mesh);
-                ImGui::SliderInt("", &m_slider_slicer, 0, 10);
+                m_slicer_locked = Window::instance().get_mesh_slice_locked(active_mesh);
+                ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
+                ImGui::SameLine();
+                ImGui::Checkbox("Lock", &m_slicer_locked);
                 //GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
                 Window::instance().rendering_mutex.unlock();
                 Window::instance().set_mesh_slice_level(active_mesh,m_slider_slicer);
+                Window::instance().set_mesh_slice_locked(active_mesh, m_slicer_locked);
                 Window::instance().rendering_mutex.lock();
                 ImGui::Text("Peel:");
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
                 m_slider_peel = Window::instance().get_mesh_peel_level(active_mesh);
-                ImGui::SliderInt(" ", &m_slider_peel, 0, 10);
+                int peel_max = 10;
+                if (m_active_mesh >= 0)
+                {
+                    peel_max = Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1;
+                }
+                ImGui::SliderInt(" ", &m_slider_peel, 0, peel_max);
                 //GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
                 Window::instance().rendering_mutex.unlock();
                 Window::instance().set_mesh_peel_level(active_mesh,m_slider_peel);
                 Window::instance().rendering_mutex.lock();
                 m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
-                if (ImGui::SliderFloat("Cell Size:", &m_cell_size, 0.0f, 1.0f))
+                ImGui::Text("Cell Size:");
+                ImGui::SameLine(); HelpMarkerWithQuestionMark("This slider will change the size of each cell");
+                if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f))
                 {
                     //GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
                     Window::instance().rendering_mutex.unlock();

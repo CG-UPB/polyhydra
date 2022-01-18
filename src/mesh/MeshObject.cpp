@@ -20,6 +20,7 @@ namespace vOS
     {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
 
+
         BufferSpecification spec;
         spec.peel_depth = 0;
         spec.slice_depth = 0;
@@ -95,7 +96,6 @@ namespace vOS
             Window::instance().rendering_mutex.unlock();
             int shape_id = Window::instance().add_shape(shape);
             Window::instance().rendering_mutex.lock();
-
 
             m_created_shapes.insert({shape_key, shape_id});
         }else if(type == 2){
@@ -240,27 +240,35 @@ namespace vOS
 
         remove_highlights();
         m_should_update = true;
+        calculate_mesh_offset();
         GlobalViewerSettings::getInstance()->m_new_Mesh();
     }
 
     void MeshObject::update_vertex_buffer()
     {
-        int current_peel_level = m_data.peel_level;
-        int current_slice_level =  m_data.slice_level;
+        int current_peel_level = m_data.m_peel_level;
+        int current_slice_level =  m_data.m_slice_level;
         if (m_should_update)
         {
             BufferSpecification spec;
             spec.peel_depth = current_peel_level;
+            delete m_mvb;
             m_mvb = new MeshVertexBuffer(m_mesh, spec);
-            calculate_mesh_offset();
-
         }
         m_should_update = false;
     }
 
     void MeshObject::calculate_mesh_offset()
     {
-        auto vertices = m_mvb->get_original_vertices();
+        std::vector<float> vertices;
+        std::cout <<" Calc offset " << m_mesh->n_vertices() << std::endl;
+        for (auto v_it : m_mesh->vertices())
+        {
+            auto v_pos = m_mesh->vertex(v_it);
+            vertices.push_back(v_pos[0]);
+            vertices.push_back(v_pos[1]);
+            vertices.push_back(v_pos[2]);
+        }
 
         glm::vec3 min(vertices[0], vertices[1], vertices[2]);
         glm::vec3 max(vertices[0], vertices[1], vertices[2]);
@@ -325,23 +333,24 @@ namespace vOS
             depth++;
             for(auto vertex : act_level)
             {
-                for (auto neighbour : m_mesh->vertex_vertices(vertex))
+                for (auto neighbour_cell : m_mesh->vertex_cells(vertex))
                 {
-                    if(vertex_peel_property[neighbour] == -1)
+                    for(auto neighbour : m_mesh->cell_vertices(neighbour_cell))
                     {
-                        vertex_peel_property[neighbour] = depth;
-                        next_level.push_back(neighbour);
+                        if (vertex_peel_property[neighbour] == -1)
+                        {
+                            vertex_peel_property[neighbour] = depth;
+                            next_level.push_back(neighbour);
+                        }
                     }
                 }
             }
             act_level.clear();
-            for(auto vertex : next_level)
-            {
-                act_level.push_back(vertex);
-            }
+            act_level.insert(act_level.begin(), next_level.begin(), next_level.end());
             next_level.clear();
         }
 
+        int max_depth = 0;
         for(auto cell : m_mesh->cells())
         {
             int minimum = 100000;
@@ -353,7 +362,13 @@ namespace vOS
                 }
             }
             cell_peel_property[cell] = minimum;
+            if (minimum > max_depth)
+            {
+                max_depth = minimum;
+            }
         }
+
+        m_max_peel_depth = max_depth;
     }
 
     int MeshObject::to_vertexID(int value)
@@ -443,7 +458,7 @@ namespace vOS
     int MeshObject::calculate_selection_size() const
     {
         // make sure that we choose the biggest possible vertex, edge or face id as the offset
-        return (int) m_mvb->get_num_selection_vertices() * 3;
+        return (int) m_mesh->n_cells() * 24;
     }
 
     int MeshObject::get_num_visible_vertices() const
@@ -461,12 +476,90 @@ namespace vOS
         m_selection_offset = {start, start + calculate_selection_size()};
     }
 
+    std::pair<glm::vec3,glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
+    {
+
+        if (m_data.m_slice_locked)
+        {
+            return m_transformed_bb;
+        }
+
+        std::vector<float> vertices;
+
+        for (auto v_it : m_mesh->vertices())
+        {
+            auto v_pos = m_mesh->vertex(v_it);
+            glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);
+            vec = transform * vec;
+
+            vertices.push_back(vec[0]);
+            vertices.push_back(vec[1]);
+            vertices.push_back(vec[2]);
+        }
+
+        glm::vec4 min(vertices[0], vertices[1], vertices[2], 1.0);
+        glm::vec4 max(vertices[0], vertices[1], vertices[2], 1.0);
+        for (int i = 0; i < vertices.size(); i += 3)
+        {
+            glm::vec3 vertex(vertices[i], vertices[i + 1], vertices[i + 2]);
+            if (vertex.x < min.x)
+            {
+                min.x = vertex.x;
+            }
+            else if (vertex.x > max.x)
+            {
+                max.x = vertex.x;
+            }
+            if (vertex.y < min.y)
+            {
+                min.y = vertex.y;
+            }
+            else if (vertex.y > max.y)
+            {
+                max.y = vertex.y;
+            }
+            if (vertex.z < min.z)
+            {
+                min.z = vertex.z;
+            }
+            else if (vertex.z > max.z)
+            {
+                max.z = vertex.z;
+            }
+        }
+        glm::vec3 m1(glm::inverse(transform) * min);
+        glm::vec3 m2(glm::inverse(transform) * max);
+        m_transformed_bb = std::make_pair(m1,m2);
+        return m_transformed_bb;
+    }
+
+
+    glm::vec3& MeshObject::get_slice_dir(const glm::mat4& transform, const glm::vec3& view_dir)
+    {
+        if (!m_data.m_slice_locked)
+        {
+            m_just_locked = true;
+            m_slice_dir = view_dir;
+        }
+        else
+        {
+            if (m_just_locked)
+            {
+                m_just_locked = false;
+                m_slice_dir = glm::vec3{glm::inverse(transform) * glm::vec4(view_dir, 0.0)};
+            }
+        }
+        return m_slice_dir;
+    }
+
+    int MeshObject::get_max_peel_depth() const
+    {
+        return m_max_peel_depth;
+    }
+
     MeshObject::~MeshObject()
     {
-        for (auto mvb : m_peel_cache)
-        {
-            delete mvb.second;
-        }
+
     }
 }
 

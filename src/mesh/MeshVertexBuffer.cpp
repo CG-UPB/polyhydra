@@ -21,6 +21,7 @@ namespace vOS
         m_vao->add_attribute(m_normals, 1, 3);
         m_vao->add_attribute(m_cell_centers, 2, 3);
         m_vao->add_attribute(m_peel_depths, 3, 1);
+        m_vao->add_attribute(m_is_face_boundary, 4, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -28,6 +29,7 @@ namespace vOS
         m_sphere_vao->add_attribute(m_normals, 1, 3, true);
         m_sphere_vao->add_attribute(m_selection_vertices, 2, 3, true);
         m_sphere_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
+        m_sphere_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
 
         m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                CommonMeshes::Cylinder::edge_cylinder().indices());
@@ -35,11 +37,8 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_from_vertices, 1, 3, true);
         m_cylinder_vao->add_attribute(m_to_vertices, 2, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
+        m_cylinder_vao->add_attribute(m_cylinder_peel_depths, 4, 1, true);
 
-        if (peel_depth > 0 || slice_depth > 0)
-        {
-            delete current_mesh;
-        }
     }
 
     MeshVertexBuffer::~MeshVertexBuffer()
@@ -61,8 +60,6 @@ namespace vOS
         {
             add_cell(mesh, c_it);
         }
-        std::cout << "Size: " << m_normals.size() <<std::endl;
-        std::cout << "PeelSize: " << m_peel_depths.size() <<std::endl;
     }
 
     void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
@@ -97,6 +94,8 @@ namespace vOS
             m_sphere_cell_centers.push_back(cell_center.x);
             m_sphere_cell_centers.push_back(cell_center.y);
             m_sphere_cell_centers.push_back(cell_center.z);
+
+            m_sphere_peel_depths.push_back((float) peel_depth);
         }
 
         // same for the edges, only add them once for the selection
@@ -109,13 +108,22 @@ namespace vOS
             m_cylinder_cell_centers.push_back(cell_center.x);
             m_cylinder_cell_centers.push_back(cell_center.y);
             m_cylinder_cell_centers.push_back(cell_center.z);
+
+            m_cylinder_peel_depths.push_back((float) peel_depth);
         }
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
         for (auto chf_it : mesh.cell_halffaces(cell))
         {
             FaceData faceData;
-            int face_id = mesh.face_handle(chf_it).idx();
+            auto face_handle = mesh.face_handle(chf_it);
+            int face_id = face_handle.idx();
+
+            // remember if face is boundary, so that we can discard non boundary faces in the shader if needed
+            if (mesh.is_boundary(face_handle))
+            {
+                faceData.is_boundary = true;
+            }
 
             // get the face normal
             auto hf_normal = mesh.normal(chf_it);
@@ -178,6 +186,7 @@ namespace vOS
                 m_peel_depths.push_back((float)peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
 
+                m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
             }
 
             // add all indices of the face

@@ -20,7 +20,7 @@ namespace vOS
         MeshView(int width, int height);
         ~MeshView() override;
         void show() override;
-        void m_take_screenshot(std::string filename);
+        void m_take_screenshot(const std::string& filename);
 
     private:
 
@@ -49,6 +49,7 @@ namespace vOS
         FrameBufferObject* m_meshFrameBuffer;
         FrameBufferObject* m_selectionFrameBuffer;
         PixelBufferObject* m_pixel_buffer;
+        FrameBufferObject* m_screen_quad_frameBuffer;
         RenderData m_render_data;
 
         bool m_zoom;

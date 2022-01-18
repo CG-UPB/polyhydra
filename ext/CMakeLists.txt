@@ -22,7 +22,8 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/ImGuiFileDialog.h"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/OpenVolumeMesh/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/glfw/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/glm/CMakeLists.txt"
-        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h")
+        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h"
+        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_image_write.h")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
@@ -84,3 +85,35 @@ add_library(ImGuiFileDialog ${ImGuiFileDialog_Headers} ${ImGuiFileDialog_Sources
 target_include_directories(ImGuiFileDialog PUBLIC ${ImGuiFileDialog_DIR})
 
 target_link_libraries(ImGuiFileDialog PUBLIC imgui)
+
+###########################
+# stb
+###########################
+
+# add stb library
+set(stb_DIR stb)
+set(stb_Headers
+        ${stb_DIR}/stb_c_lexer.h
+        ${stb_DIR}/stb_connected_components.h
+        ${stb_DIR}/stb_divide.h
+        ${stb_DIR}/stb_ds.h
+        ${stb_DIR}/stb_dxt.h
+        ${stb_DIR}/stb_easy_font.h
+        ${stb_DIR}/stb_herringbone_wang_tile.h
+        ${stb_DIR}/stb_hexwave.h
+        ${stb_DIR}/stb_image.h
+        ${stb_DIR}/stb_image_resize.h
+        ${stb_DIR}/stb_image_write.h
+        ${stb_DIR}/stb_include.h
+        ${stb_DIR}/stb_leakcheck.h
+        ${stb_DIR}/stb_rect_pack.h
+        ${stb_DIR}/stb_sprintf.h
+        ${stb_DIR}/stb_textedit.h
+        ${stb_DIR}/stb_tilemap_editor.h
+        ${stb_DIR}/stb_truetype.h
+        ${stb_DIR}/stb_voxel_render.h)
+
+set(stb_Sources ${stb_DIR}/stb_vorbis.c)
+
+add_library(stb STATIC ${stb_Headers} ${stb_Sources})
+target_include_directories(stb PUBLIC ${stb_DIR})

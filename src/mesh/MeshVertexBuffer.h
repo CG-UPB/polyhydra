@@ -24,6 +24,7 @@ namespace vOS
 
     struct FaceData
     {
+        bool is_boundary = false;
         std::vector<VertexData> vertices;
         std::vector<unsigned int> indices;
         std::vector<unsigned int> face_ids;
@@ -87,8 +88,11 @@ namespace vOS
         std::vector<float> m_positions;
         std::vector<float> m_normals;
         std::vector<float> m_cell_centers;
+        std::vector<float> m_is_face_boundary;
         std::vector<float> m_sphere_cell_centers;
         std::vector<float> m_cylinder_cell_centers;
+        std::vector<float> m_sphere_peel_depths;
+        std::vector<float> m_cylinder_peel_depths;
         std::vector<float> m_peel_depths;
 
         std::vector<unsigned int> m_indices;

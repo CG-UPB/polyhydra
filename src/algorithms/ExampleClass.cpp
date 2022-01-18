@@ -52,21 +52,20 @@ void ExampleClass::set_mesh_data()
     window.set_mesh_cell_size(hand, 0.6f);
     window.set_mesh_color(hand, Color(1,0,0,1));
     window.set_mesh_peel_level(hand, 1);
-    window.set_mesh_slice_level(hand, 4);
+    window.set_mesh_slice_level(hand, 0.2f);
     // Customize Guy Mesh
     Color hand_color = window.get_mesh_color(hand);
     hand_color.r -= 0.5f;
     hand_color.b += 0.8f;
     window.set_mesh_color(guy, hand_color);
     window.set_mesh_rendering_mode(guy, "mesh_wireframe");
-    window.set_mesh_slice_level(guy, 4);
+    window.set_mesh_slice_level(guy, 0.5f);
     window.set_mesh_peel_level(guy, 1);
     window.set_mesh_cell_size(guy, 0.6f);
 
 }
 
 void ExampleClass::toolbar_demonstration_ui(){
-    std::cout << "HHHHHH" << std::endl;
     ImGui::Begin("Custom UI");
     // Next Phase
     if (ImGui::Button("Next"))
@@ -110,6 +109,9 @@ void ExampleClass::toolbar_run(){
     Window& window = Window::instance();
     hand =  window.add_mesh(&m_mesh_1);
     guy =  window.add_mesh(&m_mesh_2);
+
+    LogWindow::getInstance()->addLog("We add some test logs here", 0);
+    LogWindow::getInstance()->addLog("Level 3 Info", 3);
 
     // Set Variables
     set_mesh_data();

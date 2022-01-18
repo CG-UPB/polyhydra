@@ -37,6 +37,7 @@ namespace vOS
 
         int m_selected_type = -1;
         int m_selected_id = -1;
+        int m_selected_mesh = -1;
 
         Shader* m_flat_color_shader;
         Shader* m_quad_circle_shader;

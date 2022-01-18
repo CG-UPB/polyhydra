@@ -12,7 +12,7 @@ namespace vOS
 {
     std::unordered_map<std::string, Shader*> Shader::s_shaders;
 
-    Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath)
+    Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath)
     {
         std::string vertexSource = FileManager::load_as_string(vertexPath, true);
         std::string fragmentSource = FileManager::load_as_string(fragmentPath, true);
@@ -43,6 +43,26 @@ namespace vOS
             std::cout << "Error when compiling fragment shader: " << infoLog << std::endl;
         }
 
+        unsigned int geometryID = -1;
+        if (!geometryPath.empty())
+        {
+            std::string geometrySource = FileManager::load_as_string(geometryPath, true);
+
+            geometryID = glCreateShader(GL_GEOMETRY_SHADER);
+
+            const GLchar* geomBuf = geometrySource.c_str();
+            glShaderSource(geometryID, 1, &geomBuf, nullptr);
+            glCompileShader(geometryID);
+            glGetShaderiv(geometryID, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
+                std::cout << "Error when compiling geometry shader: " << infoLog << std::endl;
+            }
+
+            glAttachShader(m_shaderID, geometryID);
+        }
+
         glAttachShader(m_shaderID, vertexID);
         glAttachShader(m_shaderID, fragmentID);
         glLinkProgram(m_shaderID);
@@ -56,6 +76,11 @@ namespace vOS
 
         glDeleteShader(vertexID);
         glDeleteShader(fragmentID);
+
+        if (geometryID > 0)
+        {
+            glDeleteShader(geometryID);
+        }
     }
 
     void Shader::bind() const
@@ -76,7 +101,7 @@ namespace vOS
             int loc = glGetUniformLocation(m_shaderID, name.c_str());
             if (loc == -1)
             {
-                std::cout << "Could not find uniform: " << name << std::endl;
+                std::cout << "Unused uniform: " << name << std::endl;
             }
             m_locations.emplace(name, loc);
         }
@@ -138,6 +163,7 @@ namespace vOS
         struct ShaderSourcePath
         {
             std::filesystem::path vertex;
+            std::filesystem::path geometry;
             std::filesystem::path fragment;
         };
 
@@ -147,8 +173,8 @@ namespace vOS
         std::filesystem::path shader_path = "shaders";
         for (auto& file: std::filesystem::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
         {
-            auto path_split = split_str(file.path().string(), separator);
-            auto name_with_extension = split_str(path_split[path_split.size() - 1], ".");
+            auto path_split = StringUtil::split_str(file.path().string(), separator);
+            auto name_with_extension = StringUtil::split_str(path_split[path_split.size() - 1], ".");
             std::string name_without_extension = name_with_extension[0];
             std::string extension = name_with_extension[1];
 
@@ -162,6 +188,8 @@ namespace vOS
             std::filesystem::path* source;
             if (extension == "vert")
             { source = &shader_source_path.vertex; }
+            else if (extension == "geom")
+            { source = &shader_source_path.geometry; }
             else if (extension == "frag")
             { source = &shader_source_path.fragment; }
             else
@@ -174,7 +202,8 @@ namespace vOS
         {
             s_shaders[shader_source_path.first] = new Shader(
                     shader_source_path.second.vertex,
-                    shader_source_path.second.fragment
+                    shader_source_path.second.fragment,
+                    shader_source_path.second.geometry
             );
         }
     }

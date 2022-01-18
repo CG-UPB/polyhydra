@@ -1,23 +1,23 @@
 
 #include "glad/glad.h"
 
+#include "../util/StringUtil.h"
 #include "MeshView.h"
 #include "../input/Input.h"
 #include "LogWindow.h"
-#include "../Window.h"
 
-#include <algorithm>
 #include <cmath>
 #include <fstream>
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
-#include "glm/gtx/vec_swizzle.hpp"
 
 #include "../mesh/MeshObject.h"
 
-#include "../util/BitMap.h"
-#include "../util/shader_enum.h"
+#include "../rendering/meshes/CommonMeshes.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 
 namespace vOS
@@ -30,9 +30,10 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        m_meshFrameBuffer = new FrameBufferObject(width, height);
-        m_selectionFrameBuffer = new FrameBufferObject(width, height);
-        m_pixel_buffer = new PixelBufferObject(2, width, height);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, false);
+        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
+        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
+        m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -40,7 +41,7 @@ namespace vOS
         // set up the initial camera position, direction and orientation of the mesh
         m_render_data.camera.world = glm::mat4(1.0f);
         m_render_data.camera.projection = glm::perspective(
-                glm::radians(50.0f),
+                glm::radians(60.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                 0.001f,
                 100000.0f
@@ -54,7 +55,7 @@ namespace vOS
 
         glm::mat4 inverse = glm::inverse(m_render_data.camera.view);
         glm::vec3 view_dir = {inverse[2][0], inverse[2][1], inverse[2][2]};
-        m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 10.0f;
+        m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
 
         m_zoom = false;
         m_zoom_point = glm::vec3(0, 0, 0);
@@ -78,7 +79,10 @@ namespace vOS
             m_viewportPanelWidth = (int) width;
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_selectionFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
+            delete m_pixel_buffer;
+            m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
@@ -90,16 +94,17 @@ namespace vOS
 
     glm::vec3 MeshView::get_arc_ball_vector(float x, float y) const
     {
+        auto viewport_start = ImGui::GetCursorScreenPos();
         glm::vec3 res = glm::vec3(
-                x / (float) m_viewportPanelWidth * 2.0f - 1.0f,
-                y / (float) m_viewportPanelHeight * 2.0f - 1.0f,
+                (x - viewport_start.x) / (float) m_viewportPanelWidth * 1.5f - 0.75f,
+                (y - viewport_start.y) / (float) m_viewportPanelHeight * 1.5f - 0.75f,
                 0.0f
         );
         res.y = -res.y;
         float squared = res.x * res.x + res.y * res.y;
         if (squared <= 1.0f)
         {
-            res.z = (float) sqrt(1.0 - squared);
+            res.z = (float) sqrt(1.0f - squared);
         }
         else
         {
@@ -144,24 +149,16 @@ namespace vOS
 
             // scroll scaling of the mesh
             float scaleSpeed = 0.1f;
-
-            for (const auto& m: Window::instance().get_mesh_list())
-            {
-                glm::mat4 transform = glm::scale(
-                        m.second->get_data().transform,
-                        glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
-                );
-
-                auto d = m.second->get_data();
-                d.transform = transform;
-                m.second->set_data(d);
-            }
+            m_render_data.camera.world = glm::scale(
+                    m_render_data.camera.world,
+                    glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
+            );
         }
         m_lastDown = isDown;
 
         if (m_arcBallOn)
         {
-            float speed = 0.05;
+            float speed = 0.04;
 
             double dx = mousePos.x - m_lastX;
             double dy = mousePos.y - m_lastY;
@@ -191,10 +188,7 @@ namespace vOS
         if (obj == nullptr)
             return;
 
-        MeshData mesh_data = obj->get_data();
-
-
-        // we need to clear our framebuffer as well
+        MeshData& mesh_data = obj->get_data();
 
         if(!mesh_data.m_visible)
         {
@@ -207,8 +201,6 @@ namespace vOS
         }
         mesh_data.offset = m_zoom_point;
 
-        obj->set_data(mesh_data);
-
 
         obj->update_vertex_buffer();
 
@@ -218,71 +210,88 @@ namespace vOS
             m_highlight_pass.render(nullptr, m_render_data, mesh_id);
             m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
-
     }
 
-    void MeshView::m_take_screenshot(std::string filename)
+    void MeshView::m_take_screenshot(const std::string& filename)
     {
-        //LogWindow::getInstance()->addLog("Jetzt wird gescreenshoted");
-        m_meshFrameBuffer->bind();
+        // export x times the original resolution -> we should make this configurable when taking a screenshot
+        float resolution_upscale = 2.0f;
+
+        int export_width = (int) ((float) m_viewportPanelWidth * resolution_upscale);
+        int export_height = (int) ((float) m_viewportPanelHeight * resolution_upscale);
+
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, true);
+        auto export_framebuffer = new FrameBufferObject(export_width, export_height);
+
+        export_framebuffer_ms->bind();
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if(!m_zoom)
+        auto active_mesh = Window::instance().get_active_mesh_obj();
+        if (active_mesh != nullptr)
         {
-            m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
-        }
-        Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
+            if(!m_zoom)
+            {
+                m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
+            }
+            Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
 
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
+            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            {
+                auto mesh = m.second;
+                if(!mesh->get_data().m_visible)
+                {
+                    continue;
+                }
 
-            if(!mesh->get_data().m_visible)
-                continue;
-            mesh->update_vertex_buffer();
+                mesh->update_vertex_buffer();
 
-            // render all passes
-            if (mesh->get_vao() != nullptr) {
-                m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
-                m_highlight_pass.render(nullptr, m_render_data, m.first);
-                m_shape_pass.render(nullptr, m_render_data, m.first);
+                // render all passes
+                if (mesh->get_vao() != nullptr) {
+                    m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
+                    m_highlight_pass.render(nullptr, m_render_data, m.first);
+                    m_shape_pass.render(nullptr, m_render_data, m.first);
+                }
             }
         }
-
-        std::ofstream ofp;
 
         glFlush();
         glFinish();
 
+        export_framebuffer_ms->unbind();
+
+        // copy our multisampled framebuffer to the output framebuffer
+        FrameBufferObject::copy(export_framebuffer_ms, export_framebuffer);
+
+        export_framebuffer->bind();
+
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
+        int sWidth = export_framebuffer->get_width();
+        int sHeight = export_framebuffer->get_height();
+        std::vector<char> buffer(4 * sWidth * sHeight);
 
-        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-        int swidth = viewport[2];
-        int sheight = viewport[3];
-        unsigned char sdata[4*swidth*sheight];
-        //unsigned char data[4*viewport[2]*viewport[3]];
+        glReadPixels(0, 0, sWidth, sHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 
-        glReadPixels(0,0,swidth,sheight,GL_BGRA,GL_UNSIGNED_BYTE, sdata);
+        stbi_flip_vertically_on_write(true);
 
-        int n = filename.length();
+        auto split = StringUtil::split_str(filename, ".");
+        std::string extension = split[split.size() - 1];
 
-        // declaring character array
-        char char_array[n + 1];
+        if (extension == "bmp")
+        {
+            stbi_write_bmp(filename.c_str(), sWidth, sHeight, 4, buffer.data());
+        }
+        else if (extension == "png")
+        {
+            stbi_write_png(filename.c_str(), sWidth, sHeight, 4, buffer.data(), 4 * sWidth);
+        }
 
-        // copying the contents of the
-        // string to char array
-        strcpy(char_array, filename.c_str());
+        export_framebuffer->unbind();
 
-
-        BitMap::generateBitmapImage(sdata,sheight,swidth,char_array);
-
-        m_meshFrameBuffer->unbind();
-
+        delete export_framebuffer_ms;
+        delete export_framebuffer;
     }
 
 
@@ -300,8 +309,8 @@ namespace vOS
         ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
         GLubyte* data = m_pixel_buffer->start_read(
-                (int) (m_lastX - screen_pos.x),
-                (int) (viewport[3] - (m_lastY - screen_pos.y)),
+                (int) (m_lastX - screen_pos.x) / 2,
+                (int) (viewport[3] * 2 - (m_lastY - screen_pos.y)) / 2,
                 1,
                 1
         );
@@ -334,12 +343,14 @@ namespace vOS
             for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
                 auto mesh = m.second;
                 m_selection_pass.render_mesh(mesh, m_render_data, m.first);
-                m_selection_hover_pass.render(nullptr, m_render_data, m.first);
             }
         }
         m_selectionFrameBuffer->unbind();
 
         m_meshFrameBuffer->bind();
+        for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
+            m_selection_hover_pass.render(nullptr, m_render_data, m.first);
+        }
         m_meshFrameBuffer->unbind();
     }
 
@@ -353,6 +364,8 @@ namespace vOS
             int from = std::get<0>(mesh->selection_offset());
             int to = std::get<1>(mesh->selection_offset());
 
+            //std::cout << "from: " << from << ", to: " << to << " picked_id: " << picked_id << std::endl;
+
             if (picked_id >= from && picked_id <= to)
             {
 
@@ -363,6 +376,8 @@ namespace vOS
                     // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                     // there is no valid ID (e.g when clicking background)
                     int face_id = mesh->to_faceID(picked_id - from) - 1;
+
+                    //std::cout << "hovering face with id: " << face_id << std::endl;
 
                     m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
 
@@ -414,12 +429,12 @@ namespace vOS
             }
 
         }
-        if(ImGui::IsMouseDoubleClicked(0))
+        if(ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
         {
             m_zoom_point = m_selection_hover_pass.m_zoom_point;
             m_zoom = true;
         }
-        if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+        if(ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
         {
             std::cout << "ESCAPE" << std::endl;
             m_zoom = false;
@@ -461,6 +476,7 @@ namespace vOS
 
         for (const auto& m: Window::instance().get_mesh_list())
         {
+
             renderMesh(m.first);
         }
 
@@ -469,6 +485,9 @@ namespace vOS
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
             renderSelection();
         }
+
+        // copy multisampled framebuffer that we rendered on to the imgui texture for display
+        FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -482,7 +501,7 @@ namespace vOS
         }
         else
         {
-            texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
+            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
         }
 
         // finally, add the framebuffer texture as an image to the imgui window

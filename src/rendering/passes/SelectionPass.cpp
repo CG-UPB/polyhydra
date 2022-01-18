@@ -30,9 +30,18 @@ namespace vOS {
         glDisable(GL_BLEND);
 
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().transform * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
 
-        float cell_size = obj->get_data().cell_size;
+        float cell_size = Window::instance().get_mesh_cell_size(mesh_id);
+        int peel_depth = Window::instance().get_mesh_peel_level(mesh_id);
+        float slice_depth = Window::instance().get_mesh_slice_level(mesh_id);
+        auto bb = obj->get_transformed_bb(transform);
+        auto min = bb.first;
+        auto max = bb.second;
+
+        glm::mat4 view_inv = glm::inverse(data.camera.view);
+        glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
+        auto slice_direction = obj->get_slice_dir(transform, view_dir);
 
         // draw faces
         m_selection_shader->bind();
@@ -43,6 +52,12 @@ namespace vOS {
         m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_shader->set_uniform_float("u_cell_size", cell_size);
+        m_selection_shader->set_uniform_int("u_peel_depth", peel_depth);
+        m_selection_shader->set_uniform_float("u_slice_depth", slice_depth);
+        m_selection_shader->set_uniform_vec3f("u_min", min);
+        m_selection_shader->set_uniform_vec3f("u_max", max);
+        m_selection_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+        m_selection_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
 
         vao->draw();
 
@@ -58,6 +73,12 @@ namespace vOS {
         m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
+        m_selection_cylinder_shader->set_uniform_int("u_peel_depth", peel_depth);
+        m_selection_cylinder_shader->set_uniform_float("u_slice_depth", slice_depth);
+        m_selection_cylinder_shader->set_uniform_vec3f("u_min", min);
+        m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
+        m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+        m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
 
         m_cylinder_vao->draw_instanced(m_num_edges);
 
@@ -66,8 +87,6 @@ namespace vOS {
         // draw spheres for each vertex
         m_selection_sphere_shader->bind();
 
-        //std::cout << "scale: " << glm::length(transform[0]) << std::endl;
-
         m_selection_sphere_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_sphere_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
@@ -75,6 +94,12 @@ namespace vOS {
         m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
         m_selection_sphere_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
         m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
+        m_selection_sphere_shader->set_uniform_int("u_peel_depth", peel_depth);
+        m_selection_sphere_shader->set_uniform_float("u_slice_depth", slice_depth);
+        m_selection_sphere_shader->set_uniform_vec3f("u_min", min);
+        m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
+        m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+        m_selection_sphere_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
 
         m_sphere_vao->draw_instanced(m_num_vertices);
 
@@ -91,9 +116,7 @@ namespace vOS {
         if (mesh != nullptr && mesh->get_vao() != nullptr)
         {
             int offset = std::get<0>(mesh->selection_offset());
-            auto d = obj->get_data();
-            d.selection_offset = offset;
-            obj->set_data((d));
+            obj->get_data().selection_offset = offset;
             m_sphere_vao = mesh->get_sphere_vao();
             m_num_vertices = mesh->get_num_visible_vertices();
             m_cylinder_vao = mesh->get_cylinder_vao();
