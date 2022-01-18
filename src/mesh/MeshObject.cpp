@@ -20,6 +20,7 @@ namespace vOS
     {
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
 
+
         BufferSpecification spec;
         spec.peel_depth = 0;
         spec.slice_depth = 0;
@@ -130,7 +131,6 @@ namespace vOS
             // Delete Shape Element
             int shape_key = 0 * 114748364 + element;
             int shape_id = m_created_shapes[shape_key];
-
             Window::instance().rendering_mutex.unlock();
             Window::instance().remove_shape(shape_id);
             Window::instance().rendering_mutex.lock();
@@ -161,7 +161,7 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
         }
         m_selected_edges.clear();
-        // Delete Face Elements
+        // Delete Cell Elements
         for(int element : m_selected_cells)
         {
             // Delete Shape Element
@@ -173,6 +173,7 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
         }
         m_selected_cells.clear();
+        m_created_shapes.clear();
     }
 
     void MeshObject::unselect_element(int id, int type){
@@ -203,6 +204,8 @@ namespace vOS
         Window::instance().rendering_mutex.unlock();
         Window::instance().remove_shape(shape_id);
         Window::instance().rendering_mutex.lock();
+
+        m_created_shapes.erase(m_created_shapes.find(shape_key));
     }
     bool MeshObject::is_element_selected(int id, int type){
 
@@ -243,8 +246,8 @@ namespace vOS
 
     void MeshObject::update_vertex_buffer()
     {
-        int current_peel_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_peel_level();
-        int current_slice_level = GlobalViewerSettings::getInstance()->m_get_current_mesh_slice_level();
+        int current_peel_level = m_data.m_peel_level;
+        int current_slice_level =  m_data.m_slice_level;
         if (m_should_update)
         {
             BufferSpecification spec;
@@ -258,7 +261,7 @@ namespace vOS
     void MeshObject::calculate_mesh_offset()
     {
         std::vector<float> vertices;
-
+        std::cout <<" Calc offset " << m_mesh->n_vertices() << std::endl;
         for (auto v_it : m_mesh->vertices())
         {
             auto v_pos = m_mesh->vertex(v_it);
@@ -475,6 +478,7 @@ namespace vOS
 
     std::pair<glm::vec3,glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
     {
+
         if (m_data.m_slice_locked)
         {
             return m_transformed_bb;

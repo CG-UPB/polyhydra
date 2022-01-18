@@ -30,7 +30,7 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        m_meshFrameBuffer = new FrameBufferObject(width, height, true);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, false);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
@@ -200,6 +200,7 @@ namespace vOS
             m_zoom_point = obj->get_mesh_offset();
         }
         mesh_data.offset = m_zoom_point;
+
 
         obj->update_vertex_buffer();
 
@@ -456,7 +457,6 @@ namespace vOS
             this->m_take_screenshot(filename);
         }
 
-
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
@@ -476,6 +476,7 @@ namespace vOS
 
         for (const auto& m: Window::instance().get_mesh_list())
         {
+
             renderMesh(m.first);
         }
 
@@ -519,15 +520,18 @@ namespace vOS
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
-        if (Window::instance().has_mesh() &&  Window::instance().get_mesh_obj(0)->m_mesh != nullptr)
+        /*
+        if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
         {
+            auto mesh = Window::instance().get_active_mesh_obj()->m_mesh;
+
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_vertices());
+            ImGui::Text("vertices: %zu", mesh->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_edges());
+            ImGui::Text("edges: %zu",mesh->n_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", Window::instance().get_mesh_obj(0)->m_mesh->n_faces());
-        }
+            ImGui::Text("faces: %zu", mesh->n_faces());
+        }*/
 
         ImGui::End();
         ImGui::PopStyleVar();

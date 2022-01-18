@@ -33,6 +33,11 @@ namespace vOS
         // Create Custom UI Panel Object
         m_custom_ui = new CustomUIPanel();
         m_file_dialog = new FileDialog();
+
+
+        rendering_mutex.lock();
+        setup();
+        rendering_mutex.unlock();
     }
 
     Window::~Window()
@@ -46,7 +51,7 @@ namespace vOS
         m_log_window = LogWindow::getInstance();
     }
 
-    void Window::open()
+    void Window::setup()
     {
         m_window_open = true;
         m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
@@ -57,19 +62,13 @@ namespace vOS
         m_initialized = true;
     }
 
-/*
-    void Window::run(void_callback vc)
-    {
-        set_custom_imgui(vc);
-
-        run();
-    }*/
-
     void Window::run()
     {
-        rendering_mutex.lock();
-        open();
-        rendering_mutex.unlock();
+        // We should not allow calling this method while it is already running
+        if(m_is_in_render_loop)
+            return;
+
+        m_is_in_render_loop = true;
 
         // Render window forever until window is closed by user
         while (m_window_open)
@@ -78,14 +77,17 @@ namespace vOS
             render();
         }
 
-        rendering_mutex.lock();
         close();
-        rendering_mutex.unlock();
+
+        m_is_in_render_loop= false;
     }
 
     void Window::close()
     {
+        // Destroy all meshes
+        remove_all_meshes();
 
+        rendering_mutex.lock();
         // Destroy Imgui Elements
         delete m_file_dialog;
         delete m_mesh_view;
@@ -94,6 +96,11 @@ namespace vOS
 
         if (m_imgui_renderer != nullptr)
             delete m_imgui_renderer;
+        m_window_open = false;
+        rendering_mutex.unlock();
+    }
+
+    void Window::end(){
         m_window_open = false;
     }
 
@@ -363,7 +370,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            mesh_obj->get_data().m_slider_slicer = slice_level;
+            mesh_obj->get_data().m_slice_level = slice_level;
         }
 
         rendering_mutex.unlock();
@@ -375,7 +382,7 @@ namespace vOS
         if (mesh_obj != nullptr)
         {
             auto data = mesh_obj->get_data();
-            return data.m_slider_slicer;
+            return data.m_slice_level;
         }
         return false;
     }
@@ -418,7 +425,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            mesh_obj->get_data().m_slider_peel = peel_level;
+            mesh_obj->get_data().m_peel_level = peel_level;
         }
 
         rendering_mutex.unlock();
@@ -430,7 +437,7 @@ namespace vOS
         if (mesh_obj != nullptr)
         {
             auto data = mesh_obj->get_data();
-            return data.m_slider_peel;
+            return data.m_peel_level;
         }
         return false;
     }
@@ -499,6 +506,16 @@ namespace vOS
         m_temporary_new_custom_ui_function = vc;
         m_new_custom_ui_function_set = true;
         rendering_mutex.unlock();
+    }
+
+    std::vector<int>* Window::get_all_mesh_ids() {
+        std::vector<int>* ids = new std::vector<int>();
+
+        for(auto pair : m_mesh_objects){
+            ids->push_back(pair.first);
+        }
+
+        return ids;
     }
 
     void Window::highlight_vertex(int mesh_id, OpenVolumeMesh::VertexHandle v_h, Color color)
@@ -608,12 +625,33 @@ namespace vOS
 
         // Delete from our Map
         auto iterator = m_mesh_objects.find(index);
+
         m_mesh_objects.erase(iterator);
 
+        delete mesh_obj;
 
         rendering_mutex.unlock();
     }
 
+    void Window::remove_all_meshes(){
+        rendering_mutex.lock();
+
+        std::vector<int> all_ids;
+
+        // Iterate all Meshes to get their IDs
+        for(auto obj : m_mesh_objects){
+            all_ids.push_back(obj.first);
+        }
+
+        // Delete all Meshes by their ID
+        for(auto id : all_ids){
+            rendering_mutex.unlock();
+            remove_mesh(id);
+            rendering_mutex.lock();
+        }
+
+        rendering_mutex.unlock();
+    };
 
     void Window::calculate_selection_offsets()
     {
@@ -627,6 +665,8 @@ namespace vOS
 
     void Window::set_mesh_active(int index)
     {
+        if(index < 0)
+            return;
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
         {
@@ -704,18 +744,13 @@ namespace vOS
             path = m_file_dialog->get_file_path_file_loader();
         }
         return path;
+    }
 
-        /*
-        if (nbr_of_dialog == 1)
-        {
-            if (instance().m_file_dialog->is_ok_snapshot_saver())
-            {
-                path = instance().m_file_dialog->get_file_path_snapshot_saver();
-                instance().m_file_dialog->set_open_snapshot_saver(false);
-            }
-            return instance().m_file_dialog->is_ok_snapshot_saver();
-        }*/
+    void Window::remove_all_shapes(){
+        rendering_mutex.lock();
 
+        ShapePass::remove_all();
+        rendering_mutex.unlock();
     }
 
     void Window::remove_shape(unsigned int id)
@@ -736,7 +771,6 @@ namespace vOS
         // Give the shape a unique ID
         unsigned int shape_id = shape_id_counter++;
         shape->set_id((shape_id));
-
         // Add shape to the ShapePass
         ShapePass::add_shape(shape);
         rendering_mutex.unlock();
