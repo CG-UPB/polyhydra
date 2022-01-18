@@ -65,12 +65,12 @@ namespace vOS
             return;
         }
 
-        m_active_mesh = Window::instance().get_mesh_active();
-        ImGui::InputInt("Mesh in Focus", &m_active_mesh);
-        if (m_active_mesh < 0) m_active_mesh = 0;
-        if (m_active_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
-        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
-        Window::instance().set_mesh_active(m_active_mesh);
+//        m_active_mesh = Window::instance().get_mesh_active();
+//        ImGui::InputInt("Mesh in Focus", &m_active_mesh);
+//        if (m_active_mesh < 0) m_active_mesh = 0;
+//        if (m_active_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
+//        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+//        Window::instance().set_mesh_active(m_active_mesh);
         //GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
 
         if(ImGui::Button("Snapshot"))

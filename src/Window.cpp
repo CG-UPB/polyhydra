@@ -141,8 +141,6 @@ namespace vOS
         // ToolBar
         m_toolbar->show();
 
-        ImGui::ShowDemoWindow();
-
         // MeshLayerView
         m_mesh_layer_view->show();
 
