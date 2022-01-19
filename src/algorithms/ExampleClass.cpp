@@ -57,7 +57,7 @@ void ExampleClass::simple_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
+    file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();
@@ -159,7 +159,7 @@ void ExampleClass::selection_demonstration_ui(){
     // Selection Slider
     int pre_level = selection_level;
     int pre_type = selection_type;
-    ImGui::SliderInt("Level", &selection_level, 0, 100);
+    ImGui::SliderInt("Level", &selection_level, 0, 1000);
     ImGui::SliderInt("Type", &selection_type, 0, 3);
 
     if(pre_level != selection_level || pre_type != selection_type)
