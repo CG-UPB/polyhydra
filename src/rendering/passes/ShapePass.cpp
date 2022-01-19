@@ -77,7 +77,9 @@ namespace vOS
         }
         if(entry != s_shapes.size()){
             // Found the shape
+            auto shape = s_shapes[entry];
             s_shapes.erase(s_shapes.begin()+entry);
+            delete shape;
         }
     }
 
