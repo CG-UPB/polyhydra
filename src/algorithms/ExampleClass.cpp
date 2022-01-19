@@ -24,7 +24,29 @@ void ExampleClass::simple_demonstration_ui(){
         m_phase++;
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::toolbar_demonstration_ui, this));
         Window::instance().remove_all_meshes();
+        Window::instance().remove_all_shapes();
         toolbar_run();
+    }
+
+    if(ImGui::Button("Add Objects")){
+
+        Box* box = new Box();
+        box->set_position(0,0,0);
+        box->set_scale(1,1,1);
+        box->set_base_color(0.5f,0.5f,0);
+        Window::instance().add_shape(box);
+
+        Sphere* sph = new Sphere();
+        sph->set_position(-2,0,0);
+        sph->set_scale(1,1,1);
+        sph->set_base_color(0.5f,0,0.5f);
+        Window::instance().add_shape(sph);
+
+        Cylinder* cy = new Cylinder();
+        cy->set_position(2,0,0);
+        cy->set_scale(1,1,1);
+        cy->set_base_color(0,0.5f,0.5f);
+        Window::instance().add_shape(cy);
     }
     ImGui::End();
 }
@@ -40,6 +62,7 @@ void ExampleClass::simple_run(){
     // VOS Window
     Window& window = Window::instance();
     window.add_mesh(&m_mesh);
+
     // Open Window
     window.run();
 }
@@ -73,6 +96,7 @@ void ExampleClass::toolbar_demonstration_ui(){
         m_phase++;
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::selection_demonstration_ui, this));
         Window::instance().remove_all_meshes();
+        Window::instance().remove_all_shapes();
 
         // Selection Run Setup
 
@@ -135,7 +159,7 @@ void ExampleClass::selection_demonstration_ui(){
     // Selection Slider
     int pre_level = selection_level;
     int pre_type = selection_type;
-    ImGui::SliderInt("Level", &selection_level, 0, 10000);
+    ImGui::SliderInt("Level", &selection_level, 0, 100);
     ImGui::SliderInt("Type", &selection_type, 0, 3);
 
     if(pre_level != selection_level || pre_type != selection_type)

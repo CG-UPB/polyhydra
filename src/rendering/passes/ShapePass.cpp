@@ -78,6 +78,7 @@ namespace vOS
         if(entry != s_shapes.size()){
             // Found the shape
             s_shapes.erase(s_shapes.begin()+entry);
+
         }
     }
 

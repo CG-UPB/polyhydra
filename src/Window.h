@@ -19,8 +19,9 @@
 #include "panels/CustomUIPanel.h"
 #include "panels/LogWindow.h"
 #include "panels/FileDialog.h"
-#include "rendering/shapes/Shape.h"
 #include "rendering/shapes/Box.h"
+#include "rendering/shapes/Cylinder.h"
+#include "rendering/shapes/Sphere.h"
 #include "panels/MeshView.h"
 #include <mutex>
 #include "panels/ToolBar.h"
