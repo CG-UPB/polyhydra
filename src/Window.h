@@ -236,6 +236,8 @@ namespace vOS {
          */
         void set_custom_imgui(void_callback vc);
 
+        void set_vos_initialized(void_callback vc) { m_vos_initialized = vc; };
+
         // Queueries //////////////////////////////////////////////////////////////////////////////////////////////////
         /*
         * Asks whether Vos is ready for an algorithm side change to the linked meshes. Will be false if the user pressed the 'Pause' button,
@@ -319,14 +321,6 @@ namespace vOS {
          * Unselects all elements any Mesh has marked as selected
          */
         void unselect_all_elements();
-        // Called when a number of vertices have been selected
-        vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
-        // Called when a number of edges have been selected
-        edge_selection_callback m_on_edge_selection = default_edge_selection_function;
-        // Called when a number of faces have been selected
-        face_selection_callback m_on_face_selection = default_face_selection_function;
-        // Called when a number of cells have been selected
-        cell_selection_callback m_on_cell_selection = default_cell_selection_function;
 
         //operation_translation_callback m_on_translate_operation = default_translate_operation_function;
         //operation_rendering_callback m_on_rendering_operation = default_rendering_operation_function;
@@ -412,6 +406,17 @@ namespace vOS {
 
         static void default_rendering_operation_function(Rendering_Mode rendering_mode) {};
 
+        // Called when Vos has initialized Imgui and Gl and is ready to render data
+        void_callback m_vos_initialized = default_callback_function;
+
+        // Called when a number of vertices have been selected
+        vertex_selection_callback m_on_vertex_selection = default_vertex_selection_function;
+        // Called when a number of edges have been selected
+        edge_selection_callback m_on_edge_selection = default_edge_selection_function;
+        // Called when a number of faces have been selected
+        face_selection_callback m_on_face_selection = default_face_selection_function;
+        // Called when a number of cells have been selected
+        cell_selection_callback m_on_cell_selection = default_cell_selection_function;
 
 
     };

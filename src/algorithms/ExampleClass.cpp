@@ -6,14 +6,22 @@
 #include "../Window.h"
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include <functional>
+#include <thread>
 
 using namespace vOS;
 
-void ExampleClass::start(){
+void ExampleClass::initialize() {
     // Set Custom UI for phase changing
-    Window::instance().set_custom_imgui(std::bind(&ExampleClass::simple_demonstration_ui, this));
+    Window::instance().set_vos_initialized(std::bind(&ExampleClass::start, this));
 
-    simple_run();
+    Window::instance().run();
+}
+
+void ExampleClass::start()
+{
+    Window::instance().set_custom_imgui(std::bind(&ExampleClass::simple_demonstration_ui, this));
+    std::thread* s_run_thread = new std::thread(&ExampleClass::simple_run, this);
+    s_run_thread->join();
 }
 
 void ExampleClass::simple_demonstration_ui(){
@@ -24,29 +32,7 @@ void ExampleClass::simple_demonstration_ui(){
         m_phase++;
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::toolbar_demonstration_ui, this));
         Window::instance().remove_all_meshes();
-        Window::instance().remove_all_shapes();
         toolbar_run();
-    }
-
-    if(ImGui::Button("Add Objects")){
-
-        Box* box = new Box();
-        box->set_position(0,0,0);
-        box->set_scale(1,1,1);
-        box->set_base_color(0.5f,0.5f,0);
-        Window::instance().add_shape(box);
-
-        Sphere* sph = new Sphere();
-        sph->set_position(-2,0,0);
-        sph->set_scale(1,1,1);
-        sph->set_base_color(0.5f,0,0.5f);
-        Window::instance().add_shape(sph);
-
-        Cylinder* cy = new Cylinder();
-        cy->set_position(2,0,0);
-        cy->set_scale(1,1,1);
-        cy->set_base_color(0,0.5f,0.5f);
-        Window::instance().add_shape(cy);
     }
     ImGui::End();
 }
@@ -57,14 +43,12 @@ void ExampleClass::simple_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh);
+    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();
     window.add_mesh(&m_mesh);
 
-    // Open Window
-    window.run();
 }
 
 void ExampleClass::set_mesh_data()
@@ -96,7 +80,6 @@ void ExampleClass::toolbar_demonstration_ui(){
         m_phase++;
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::selection_demonstration_ui, this));
         Window::instance().remove_all_meshes();
-        Window::instance().remove_all_shapes();
 
         // Selection Run Setup
 
@@ -144,11 +127,15 @@ void ExampleClass::toolbar_run(){
 
 
 void ExampleClass::selection_demonstration_ui(){
+
+    static std::thread* s_run_thread;
     ImGui::Begin("Custom UI");
     // Next Phase
     if (ImGui::Button("Next"))
     {
         m_phase++;
+
+        s_run_thread->join();
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::bounding_demonstration_ui, this));
         Window::instance().remove_all_shapes();
         Window::instance().remove_all_meshes();
@@ -159,12 +146,14 @@ void ExampleClass::selection_demonstration_ui(){
     // Selection Slider
     int pre_level = selection_level;
     int pre_type = selection_type;
-    ImGui::SliderInt("Level", &selection_level, 0, 1000);
+    ImGui::SliderInt("Level", &selection_level, 0, 10000);
     ImGui::SliderInt("Type", &selection_type, 0, 3);
 
-    if(pre_level != selection_level || pre_type != selection_type)
-        selection_run();
-
+    if(pre_level != selection_level || pre_type != selection_type) {
+        if(s_run_thread != nullptr)
+            s_run_thread->join();
+        s_run_thread = new std::thread(&ExampleClass::selection_run, this);
+    }
     ImGui::End();
 }
 

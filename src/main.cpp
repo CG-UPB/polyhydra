@@ -5,7 +5,7 @@
 int main()
 {
     ExampleClass cl;
-    cl.start();
+    cl.initialize();
 
 
 
