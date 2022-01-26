@@ -9,6 +9,7 @@
 #include <math.h>
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include "ImGuiFileDialog.h"
+#include "../filedialog/tinyfiledialogs.h"
 
 typedef std::pair<float, OpenVolumeMesh::VertexHandle> Node;
 
@@ -81,7 +82,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = false;
+        bool linear = true;
 
         if(linear)
         {
@@ -140,6 +141,58 @@ namespace vOS
         if (ImGui::Button("Step"))
         {
             step_button_pressed();
+        }
+
+        if (ImGui::Button("Open File Alternative"))
+        {
+            char const * lWillBeGraphicMode;
+            char lBuffer[1024];
+
+
+            char const * lTheOpenFileName;
+
+            lWillBeGraphicMode = tinyfd_inputBox("tinyfd_query", NULL, NULL);
+
+            strcpy(lBuffer, "tinyfiledialogs\nv");
+            strcat(lBuffer, tinyfd_version);
+            if (lWillBeGraphicMode)
+            {
+                strcat(lBuffer, "\ngraphic mode: ");
+            }
+            else
+            {
+                strcat(lBuffer, "\nconsole mode: ");
+            }
+            strcat(lBuffer, tinyfd_response);
+            //tinyfd_messageBox("hello", lBuffer, "ok", "info", 0);
+
+            char const * lFilterPatterns[1] = { "*.ovm" };
+
+            lTheOpenFileName = tinyfd_openFileDialog(
+                    "let us read the password back",
+                    "",
+                    1,
+                    lFilterPatterns,
+                    NULL,
+                    0);
+
+            if (! lTheOpenFileName)
+            {
+                tinyfd_messageBox(
+                        "Error",
+                        "Save file name is NULL",
+                        "ok",
+                        "error",
+                        1);
+                return ;
+            }
+
+
+            OpenVolumeMesh::IO::FileManager file_manager;
+            file_manager.readFile(lTheOpenFileName, m_mesh);
+            Window::instance().add_mesh(&m_mesh);
+            Window::instance().EndFileDialogue();
+            linear_run();
         }
 
         if (ImGui::Button("Open File"))
