@@ -23,10 +23,10 @@ namespace vOS {
         if (! lTheOpenFileName)
         {
             tinyfd_messageBox(
-                    "Error",
-                    "Save file name is NULL",
+                    "Info",
+                    "No Filename received",
                     "ok",
-                    "error",
+                    "info",
                     1);
             return NULL;
         }
@@ -45,10 +45,10 @@ namespace vOS {
         if (! lTheSaveFileName)
         {
             tinyfd_messageBox(
-                    "Error",
-                    "Save file name is NULL",
+                    "Information",
+                    "No Filename received",
                     "ok",
-                    "error",
+                    "info",
                     1);
             return NULL;
         }
