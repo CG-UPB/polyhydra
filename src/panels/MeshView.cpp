@@ -180,6 +180,30 @@ namespace vOS
         m_lastY = mousePos.y;
     }
 
+    void MeshView::handleKeyboard()
+    {
+        if(ImGui::IsKeyPressed(GLFW_KEY_UP))
+        {
+            float scaleSpeed = 0.1f;
+            m_render_data.camera.world = glm::scale(
+                    m_render_data.camera.world,
+                    glm::vec3(1.0f + 1.0f * scaleSpeed)
+            );
+        }
+        if(ImGui::IsKeyPressed(GLFW_KEY_DOWN))
+        {
+            float scaleSpeed = 0.1f;
+            m_render_data.camera.world = glm::scale(
+                    m_render_data.camera.world,
+                    glm::vec3(1.0f - 1.0f * scaleSpeed)
+            );
+        }
+        if(ImGui::IsKeyPressed(GLFW_KEY_P)) {
+            float scaleSpeed = 0.1f;
+            //m_render_data.camera.world = glm::translate(m_render_data.camera.world, glm::vec3(2.0f,1.0f,1.0f));}
+        }
+    }
+
     void MeshView::renderMesh(int mesh_id)
     {
 
@@ -468,7 +492,7 @@ namespace vOS
         // handle the things related to our mesh rendering canvas
         handleResize();
         handleMouseControl();
-
+        handleKeyboard();
         // Render Meshes
 
         // Now render our mesh scene to the framebuffer texture
@@ -520,9 +544,9 @@ namespace vOS
 
         // show frame time and fps
         ImGui::SetCursorPos(topLeft);
-        ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+        ImGui::TextColored(ImVec4(0,0,0,1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+        ImGui::TextColored(ImVec4(0,0,0,1), "%.1f fps", ImGui::GetIO().Framerate);
 
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)

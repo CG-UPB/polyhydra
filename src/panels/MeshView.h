@@ -68,5 +68,6 @@ namespace vOS
         int m_current_frame = 0;
 
 
+        void handleKeyboard();
     };
 }

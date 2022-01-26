@@ -32,7 +32,7 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.85f, 0.85f, 0.85f, 1), m_visible(true), rendering_mode("mesh_phong")
+        MeshData() : m_color(0.35f, 0.35f, 0.35f, 1), m_visible(true), rendering_mode("mesh_phong")
         {
             m_peel_level = 0;
             m_slice_level =0;
