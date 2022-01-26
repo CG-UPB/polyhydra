@@ -1,0 +1,49 @@
+//
+// Created by projektgruppe on 26.01.22.
+//
+
+#include "NewFileDialog.h"
+namespace vOS {
+
+    NewFileDialog::NewFileDialog() {
+        lWillBeGraphicMode = tinyfd_inputBox("tinyfd_query", NULL, NULL);
+
+        strcpy(lBuffer, "tinyfiledialogs\nv");
+        strcat(lBuffer, tinyfd_version);
+        if (lWillBeGraphicMode)
+        {
+            strcat(lBuffer, "\ngraphic mode: ");
+        }
+        else
+        {
+            strcat(lBuffer, "\nconsole mode: ");
+        }
+        strcat(lBuffer, tinyfd_response);
+    }
+
+    char const *NewFileDialog::openDialog(const char * filedialog) {
+
+        char const * lTheOpenFileName;
+        lTheOpenFileName = tinyfd_openFileDialog(
+                filedialog,
+                "",
+                1,
+                lFilterPatterns,
+                NULL,
+                0);
+
+        if (! lTheOpenFileName)
+        {
+            tinyfd_messageBox(
+                    "Error",
+                    "Save file name is NULL",
+                    "ok",
+                    "error",
+                    1);
+            return NULL;
+        }
+        return lTheOpenFileName;
+    }
+
+
+}
