@@ -153,7 +153,7 @@ namespace vOS
             ImGui::EndTooltip();
         }
 
-        if(ImGui::CollapsingHeader("Mesh Settings"))
+        if(ImGui::CollapsingHeader("Active Mesh Settings"))
         {
             if(ImGui::BeginTable("split1", 1))
             {

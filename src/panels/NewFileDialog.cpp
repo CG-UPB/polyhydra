@@ -6,19 +6,7 @@
 namespace vOS {
 
     NewFileDialog::NewFileDialog() {
-        lWillBeGraphicMode = tinyfd_inputBox("tinyfd_query", NULL, NULL);
 
-        strcpy(lBuffer, "tinyfiledialogs\nv");
-        strcat(lBuffer, tinyfd_version);
-        if (lWillBeGraphicMode)
-        {
-            strcat(lBuffer, "\ngraphic mode: ");
-        }
-        else
-        {
-            strcat(lBuffer, "\nconsole mode: ");
-        }
-        strcat(lBuffer, tinyfd_response);
     }
 
     char const *NewFileDialog::openDialog(const char * filedialog) {
