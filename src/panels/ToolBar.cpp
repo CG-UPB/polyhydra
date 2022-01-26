@@ -7,6 +7,7 @@
 #include <string.h>
 #include "MeshView.h"
 #include "ImGuiFileDialog.h"
+#include "NewFileDialog.h"
 
 #include <iostream>
 #include <fstream>
@@ -72,6 +73,19 @@ namespace vOS
 //        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
 //        Window::instance().set_mesh_active(m_active_mesh);
         //GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
+
+        if(ImGui::Button("Alternative Snapshot"))
+        {
+            NewFileDialog file_dialog;
+
+            char const * filename;
+
+            filename = file_dialog.saveDialog("Open Snapshot File");
+
+            Window::instance().rendering_mutex.unlock();
+            Window::instance().take_screenshot(filename);
+            Window::instance().rendering_mutex.lock();
+        }
 
         if(ImGui::Button("Snapshot"))
         {

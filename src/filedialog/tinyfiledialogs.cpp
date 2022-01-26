@@ -1482,7 +1482,7 @@ wchar_t * tinyfd_saveFileDialogW(
         static wchar_t lBuff[MAX_PATH_OR_CMD];
         wchar_t lDirname[MAX_PATH_OR_CMD];
         wchar_t lDialogString[MAX_PATH_OR_CMD];
-        wchar_t lFilterPatterns[MAX_PATH_OR_CMD] = L"";
+        wchar_t l_OpenfilterPattern[MAX_PATH_OR_CMD] = L"";
         wchar_t * p;
         wchar_t * lRetval;
 		wchar_t const * ldefExt = NULL;
@@ -1511,23 +1511,23 @@ wchar_t * tinyfd_saveFileDialogW(
 
                 if (aSingleFilterDescription && wcslen(aSingleFilterDescription))
                 {
-                        wcscpy(lFilterPatterns, aSingleFilterDescription);
-                        wcscat(lFilterPatterns, L"\n");
+                        wcscpy(l_OpenfilterPattern, aSingleFilterDescription);
+                        wcscat(l_OpenfilterPattern, L"\n");
                 }
-                wcscat(lFilterPatterns, aFilterPatterns[0]);
+                wcscat(l_OpenfilterPattern, aFilterPatterns[0]);
                 for (i = 1; i < aNumOfFilterPatterns; i++)
                 {
-                        wcscat(lFilterPatterns, L";");
-                        wcscat(lFilterPatterns, aFilterPatterns[i]);
+                        wcscat(l_OpenfilterPattern, L";");
+                        wcscat(l_OpenfilterPattern, aFilterPatterns[i]);
                 }
-                wcscat(lFilterPatterns, L"\n");
+                wcscat(l_OpenfilterPattern, L"\n");
                 if (!(aSingleFilterDescription && wcslen(aSingleFilterDescription)))
                 {
-                        wcscpy(lDialogString, lFilterPatterns);
-                        wcscat(lFilterPatterns, lDialogString);
+                        wcscpy(lDialogString, l_OpenfilterPattern);
+                        wcscat(l_OpenfilterPattern, lDialogString);
                 }
-                wcscat(lFilterPatterns, L"All Files\n*.*\n");
-                p = lFilterPatterns;
+                wcscat(l_OpenfilterPattern, L"All Files\n*.*\n");
+                p = l_OpenfilterPattern;
                 while ((p = wcschr(p, L'\n')) != NULL)
                 {
                         *p = L'\0';
@@ -1538,7 +1538,7 @@ wchar_t * tinyfd_saveFileDialogW(
         ofn.lStructSize = sizeof(OPENFILENAMEW);
         ofn.hwndOwner = GetForegroundWindow();
         ofn.hInstance = 0;
-        ofn.lpstrFilter = wcslen(lFilterPatterns) ? lFilterPatterns : NULL;
+        ofn.lpstrFilter = wcslen(l_OpenfilterPattern) ? l_OpenfilterPattern : NULL;
         ofn.lpstrCustomFilter = NULL;
         ofn.nMaxCustFilter = 0;
         ofn.nFilterIndex = 1;
@@ -1584,7 +1584,7 @@ wchar_t * tinyfd_openFileDialogW(
 {
         size_t lLengths[MAX_MULTIPLE_FILES];
         wchar_t lDirname[MAX_PATH_OR_CMD];
-        wchar_t lFilterPatterns[MAX_PATH_OR_CMD] = L"";
+        wchar_t l_OpenfilterPattern[MAX_PATH_OR_CMD] = L"";
         wchar_t lDialogString[MAX_PATH_OR_CMD];
         wchar_t * lPointers[MAX_MULTIPLE_FILES+1];
         wchar_t * p;
@@ -1635,23 +1635,23 @@ wchar_t * tinyfd_openFileDialogW(
         {
                 if (aSingleFilterDescription && wcslen(aSingleFilterDescription))
                 {
-                        wcscpy(lFilterPatterns, aSingleFilterDescription);
-                        wcscat(lFilterPatterns, L"\n");
+                        wcscpy(l_OpenfilterPattern, aSingleFilterDescription);
+                        wcscat(l_OpenfilterPattern, L"\n");
                 }
-                wcscat(lFilterPatterns, aFilterPatterns[0]);
+                wcscat(l_OpenfilterPattern, aFilterPatterns[0]);
                 for (i = 1; i < aNumOfFilterPatterns; i++)
                 {
-                        wcscat(lFilterPatterns, L";");
-                        wcscat(lFilterPatterns, aFilterPatterns[i]);
+                        wcscat(l_OpenfilterPattern, L";");
+                        wcscat(l_OpenfilterPattern, aFilterPatterns[i]);
                 }
-                wcscat(lFilterPatterns, L"\n");
+                wcscat(l_OpenfilterPattern, L"\n");
                 if (!(aSingleFilterDescription && wcslen(aSingleFilterDescription)))
                 {
-                        wcscpy(lDialogString, lFilterPatterns);
-                        wcscat(lFilterPatterns, lDialogString);
+                        wcscpy(lDialogString, l_OpenfilterPattern);
+                        wcscat(l_OpenfilterPattern, lDialogString);
                 }
-                wcscat(lFilterPatterns, L"All Files\n*.*\n");
-                p = lFilterPatterns;
+                wcscat(l_OpenfilterPattern, L"All Files\n*.*\n");
+                p = l_OpenfilterPattern;
                 while ((p = wcschr(p, L'\n')) != NULL)
                 {
                         *p = L'\0';
@@ -1662,7 +1662,7 @@ wchar_t * tinyfd_openFileDialogW(
         ofn.lStructSize = sizeof(OPENFILENAME);
         ofn.hwndOwner = GetForegroundWindow();
         ofn.hInstance = 0;
-        ofn.lpstrFilter = wcslen(lFilterPatterns) ? lFilterPatterns : NULL;
+        ofn.lpstrFilter = wcslen(l_OpenfilterPattern) ? l_OpenfilterPattern : NULL;
         ofn.lpstrCustomFilter = NULL;
         ofn.nMaxCustFilter = 0;
         ofn.nFilterIndex = 1;
@@ -2027,18 +2027,18 @@ static char * saveFileDialogWinGui(
 	wchar_t lTitle[128] = L"";
 	wchar_t lDefaultPathAndFile[MAX_PATH_OR_CMD] = L"";
 	wchar_t lSingleFilterDescription[128] = L"";
-	wchar_t * * lFilterPatterns;
+	wchar_t * * l_OpenfilterPattern;
 	wchar_t * lTmpWChar;
 	char * lTmpChar;
 	int i;
 
-	lFilterPatterns = (wchar_t **)malloc(aNumOfFilterPatterns*sizeof(wchar_t *));
+	l_OpenfilterPattern = (wchar_t **)malloc(aNumOfFilterPatterns*sizeof(wchar_t *));
 	for (i = 0; i < aNumOfFilterPatterns; i++)
 	{
 		if (tinyfd_winUtf8) lTmpWChar = tinyfd_utf8to16(aFilterPatterns[i]);
 		else lTmpWChar = tinyfd_mbcsTo16(aFilterPatterns[i]);
-		lFilterPatterns[i] = (wchar_t *)malloc((wcslen(lTmpWChar) + 1) * sizeof(wchar_t *));
-      if (lFilterPatterns[i]) wcscpy(lFilterPatterns[i], lTmpWChar);
+		l_OpenfilterPattern[i] = (wchar_t *)malloc((wcslen(lTmpWChar) + 1) * sizeof(wchar_t *));
+      if (l_OpenfilterPattern[i]) wcscpy(l_OpenfilterPattern[i], lTmpWChar);
 	}
 
 	if (aTitle)
@@ -2064,14 +2064,14 @@ static char * saveFileDialogWinGui(
 		lTitle,
 		lDefaultPathAndFile,
 		aNumOfFilterPatterns,
-		(wchar_t const**) lFilterPatterns, /*stupid cast for gcc*/
+		(wchar_t const**) l_OpenfilterPattern, /*stupid cast for gcc*/
 		lSingleFilterDescription);
 
 	for (i = 0; i < aNumOfFilterPatterns; i++)
 	{
-		free(lFilterPatterns[i]);
+		free(l_OpenfilterPattern[i]);
 	}
-	free(lFilterPatterns);
+	free(l_OpenfilterPattern);
 
 	if (!lTmpWChar)
 	{
@@ -2099,18 +2099,18 @@ static char * openFileDialogWinGui(
 	wchar_t lTitle[128] = L"";
 	wchar_t lDefaultPathAndFile[MAX_PATH_OR_CMD] = L"";
 	wchar_t lSingleFilterDescription[128] = L"";
-	wchar_t * * lFilterPatterns;
+	wchar_t * * l_OpenfilterPattern;
 	wchar_t * lTmpWChar;
 	char * lTmpChar;
 	int i;
 
-	lFilterPatterns = (wchar_t * *)malloc(aNumOfFilterPatterns*sizeof(wchar_t *));
+	l_OpenfilterPattern = (wchar_t * *)malloc(aNumOfFilterPatterns*sizeof(wchar_t *));
 	for (i = 0; i < aNumOfFilterPatterns; i++)
 	{
 		if (tinyfd_winUtf8) lTmpWChar = tinyfd_utf8to16(aFilterPatterns[i]);
 		else lTmpWChar = tinyfd_mbcsTo16(aFilterPatterns[i]);
-		lFilterPatterns[i] = (wchar_t *)malloc((wcslen(lTmpWChar) + 1)*sizeof(wchar_t *));
-      if (lFilterPatterns[i]) wcscpy(lFilterPatterns[i], lTmpWChar);
+		l_OpenfilterPattern[i] = (wchar_t *)malloc((wcslen(lTmpWChar) + 1)*sizeof(wchar_t *));
+      if (l_OpenfilterPattern[i]) wcscpy(l_OpenfilterPattern[i], lTmpWChar);
 	}
 
 	if (aTitle)
@@ -2136,15 +2136,15 @@ static char * openFileDialogWinGui(
 		lTitle,
 		lDefaultPathAndFile,
 		aNumOfFilterPatterns,
-		(wchar_t const**) lFilterPatterns, /*stupid cast for gcc*/
+		(wchar_t const**) l_OpenfilterPattern, /*stupid cast for gcc*/
 		lSingleFilterDescription,
 		aAllowMultipleSelects);
 
 	for (i = 0; i < aNumOfFilterPatterns; i++)
 	{
-		free(lFilterPatterns[i]);
+		free(l_OpenfilterPattern[i]);
 	}
-	free(lFilterPatterns);
+	free(l_OpenfilterPattern);
 
 	if (!lTmpWChar) return NULL;
 
@@ -2555,7 +2555,7 @@ static char * openFileDialogWinConsole(
         char const * aTitle , /*  NULL or "" */
         char const * aDefaultPathAndFile ) /*  NULL or "" */
 {
-        char lFilterPatterns[MAX_PATH_OR_CMD] = "";
+        char l_OpenfilterPattern[MAX_PATH_OR_CMD] = "";
         char lDialogString[MAX_PATH_OR_CMD] ;
         FILE * lIn;
 
@@ -2578,33 +2578,33 @@ static char * openFileDialogWinConsole(
         if ( aDefaultPathAndFile && strlen(aDefaultPathAndFile) )
         {
                 /* dialog.exe uses unix separators even on windows */
-                strcpy(lFilterPatterns, aDefaultPathAndFile);
-                replaceChr( lFilterPatterns , '\\' , '/' ) ;
+                strcpy(l_OpenfilterPattern, aDefaultPathAndFile);
+                replaceChr( l_OpenfilterPattern , '\\' , '/' ) ;
         }
 
         /* dialog.exe needs at least one separator */
-        if ( ! strchr(lFilterPatterns, '/') )
+        if ( ! strchr(l_OpenfilterPattern, '/') )
         {
                 strcat(lDialogString, "./") ;
         }
-        strcat(lDialogString, lFilterPatterns) ;
+        strcat(lDialogString, l_OpenfilterPattern) ;
         strcat(lDialogString, "\" 0 60 2>");
-        strcpy(lFilterPatterns, getenv("TEMP"));
-        strcat(lFilterPatterns, "\\tinyfd.txt");
-        strcat(lDialogString, lFilterPatterns);
+        strcpy(l_OpenfilterPattern, getenv("TEMP"));
+        strcat(l_OpenfilterPattern, "\\tinyfd.txt");
+        strcat(lDialogString, l_OpenfilterPattern);
 
         /* printf( "lDialogString: %s\n" , lDialogString ) ; */
         system( lDialogString ) ;
 
-        if (!(lIn = fopen(lFilterPatterns, "r")))
+        if (!(lIn = fopen(l_OpenfilterPattern, "r")))
         {
-                remove(lFilterPatterns);
+                remove(l_OpenfilterPattern);
                 return NULL;
         }
         while (fgets(aoBuff, MAX_PATH_OR_CMD, lIn) != NULL)
         {}
         fclose(lIn);
-        remove(lFilterPatterns);
+        remove(l_OpenfilterPattern);
         replaceChr( aoBuff , '/' , '\\' ) ;
         /* printf( "aoBuff: %s\n" , aoBuff ) ; */
         return aoBuff;
@@ -7591,7 +7591,7 @@ unsigned char lRgbColor[3];
 FILE * lIn;
 char lBuffer[1024];
 char lString[1024];
-char const * lFilterPatterns[2] = { "*.txt", "*.text" };
+char const * l_OpenfilterPattern[2] = { "*.txt", "*.text" };
 
 tinyfd_verbose = argc - 1;
 tinyfd_silent = 1;
@@ -7634,7 +7634,7 @@ lTheSaveFileName = tinyfd_saveFileDialog(
         "let us save this password",
         "passwordFile.txt",
         2,
-        lFilterPatterns,
+        l_OpenfilterPattern,
         NULL);
 
 if (!lTheSaveFileName)
@@ -7666,7 +7666,7 @@ lTheOpenFileName = tinyfd_openFileDialog(
         "let us read the password back",
         "",
         2,
-        lFilterPatterns,
+        l_OpenfilterPattern,
         NULL,
         0);
 

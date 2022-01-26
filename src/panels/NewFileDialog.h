@@ -15,11 +15,13 @@ namespace vOS {
         ~NewFileDialog() = default;
 
         char const * openDialog(const char * filedialog);
+        char const * saveDialog(const char * filedialog);
 
     private:
         char const * lWillBeGraphicMode;
         char lBuffer[1024];
-        char const * lFilterPatterns[1] = { "*.ovm" };
+        char const * l_OpenfilterPattern[1] = {"*.ovm" };
+        char const * l_SavefilterPattern[2] = {"*.png", "*.bmp" };
     };
 }
 

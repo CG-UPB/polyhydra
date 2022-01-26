@@ -28,7 +28,7 @@ namespace vOS {
                 filedialog,
                 "",
                 1,
-                lFilterPatterns,
+                l_OpenfilterPattern,
                 NULL,
                 0);
 
@@ -43,6 +43,29 @@ namespace vOS {
             return NULL;
         }
         return lTheOpenFileName;
+    }
+
+    char const *NewFileDialog::saveDialog(const char * filedialog) {
+        char const * lTheSaveFileName;
+        lTheSaveFileName = tinyfd_saveFileDialog(
+                filedialog,
+                "passwordFile.txt",
+                2,
+                l_SavefilterPattern,
+                NULL);
+
+        if (! lTheSaveFileName)
+        {
+            tinyfd_messageBox(
+                    "Error",
+                    "Save file name is NULL",
+                    "ok",
+                    "error",
+                    1);
+            return NULL;
+        }
+
+        return lTheSaveFileName;
     }
 
 

@@ -144,7 +144,7 @@ char * tinyfd_saveFileDialog(
 	char const * aTitle , /* NULL or "" */
 	char const * aDefaultPathAndFile , /* NULL or "" */
 	int aNumOfFilterPatterns , /* 0  (1 in the following example) */
-	char const * const * aFilterPatterns , /* NULL or char const * lFilterPatterns[1]={"*.txt"} */
+	char const * const * aFilterPatterns , /* NULL or char const * l_OpenfilterPattern[1]={"*.txt"} */
 	char const * aSingleFilterDescription ) ; /* NULL or "text files" */
 		/* returns NULL on cancel */
 
@@ -152,7 +152,7 @@ char * tinyfd_openFileDialog(
 	char const * aTitle, /* NULL or "" */
 	char const * aDefaultPathAndFile, /* NULL or "" */
 	int aNumOfFilterPatterns , /* 0 (2 in the following example) */
-	char const * const * aFilterPatterns, /* NULL or char const * lFilterPatterns[2]={"*.png","*.jpg"}; */
+	char const * const * aFilterPatterns, /* NULL or char const * l_OpenfilterPattern[2]={"*.png","*.jpg"}; */
 	char const * aSingleFilterDescription, /* NULL or "image files" */
 	int aAllowMultipleSelects ) ; /* 0 or 1 */
 		/* in case of multiple files, the separator is | */
@@ -204,7 +204,7 @@ wchar_t * tinyfd_saveFileDialogW(
 	wchar_t const * aTitle, /* NULL or L"" */
 	wchar_t const * aDefaultPathAndFile, /* NULL or L"" */
 	int aNumOfFilterPatterns, /* 0 (1 in the following example) */
-	wchar_t const * const * aFilterPatterns, /* NULL or wchar_t const * lFilterPatterns[1]={L"*.txt"} */
+	wchar_t const * const * aFilterPatterns, /* NULL or wchar_t const * l_OpenfilterPattern[1]={L"*.txt"} */
 	wchar_t const * aSingleFilterDescription); /* NULL or L"text files" */
 		/* returns NULL on cancel */
 
@@ -213,7 +213,7 @@ wchar_t * tinyfd_openFileDialogW(
 	wchar_t const * aTitle, /* NULL or L"" */
 	wchar_t const * aDefaultPathAndFile, /* NULL or L"" */
 	int aNumOfFilterPatterns , /* 0 (2 in the following example) */
-	wchar_t const * const * aFilterPatterns, /* NULL or wchar_t const * lFilterPatterns[2]={L"*.png","*.jpg"} */
+	wchar_t const * const * aFilterPatterns, /* NULL or wchar_t const * l_OpenfilterPattern[2]={L"*.png","*.jpg"} */
 	wchar_t const * aSingleFilterDescription, /* NULL or L"image files" */
 	int aAllowMultipleSelects ) ; /* 0 or 1 */
 		/* in case of multiple files, the separator is | */
