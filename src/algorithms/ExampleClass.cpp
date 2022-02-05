@@ -43,7 +43,7 @@ void ExampleClass::simple_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
+    file_manager.readFile("../res/sample_meshes/kitten_el2_hex.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();
@@ -135,7 +135,8 @@ void ExampleClass::selection_demonstration_ui(){
     {
         m_phase++;
 
-        s_run_thread->join();
+        if(s_run_thread != nullptr)
+            s_run_thread->join();
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::bounding_demonstration_ui, this));
         Window::instance().remove_all_shapes();
         Window::instance().remove_all_meshes();
