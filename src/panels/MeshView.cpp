@@ -531,12 +531,11 @@ namespace vOS
 
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
         {
-            std::string hovered_element_name = m_hovered_element_type == 0 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
+            std::string hovered_element_name = m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
                                                                                        (m_hovered_element_type == 2 ? "Edge" : "Cell"));
             hovered_element_name += " : ";
             hovered_element_name += std::to_string(m_hovered_element_id);
 
-            std::cout << hovered_element_name << std::endl;
             ImGui::Text(hovered_element_name.c_str());
         }
 
