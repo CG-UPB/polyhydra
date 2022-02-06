@@ -367,6 +367,8 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
+                m_hovered_element_id = picked_id;
+                m_hovered_element_type = type;
 
                 any_mesh_hovered = true;
 
@@ -524,6 +526,19 @@ namespace vOS
         ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+
+        // Show hovered element type and id
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        {
+            std::string hovered_element_name = m_hovered_element_type == 0 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
+                                                                                       (m_hovered_element_type == 2 ? "Edge" : "Cell"));
+            hovered_element_name += " : ";
+            hovered_element_name += std::to_string(m_hovered_element_id);
+
+            std::cout << hovered_element_name << std::endl;
+            ImGui::Text(hovered_element_name.c_str());
+        }
 
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)

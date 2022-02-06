@@ -35,6 +35,8 @@ namespace vOS
         static const int SELECTION_TYPE_VERTEX = 1;
         static const int SELECTION_TYPE_EDGE = 2;
         static const int SELECTION_TYPE_FACE = 3;
+        int m_hovered_element_id = 0;
+        int m_hovered_element_type = 0;
 
         // used for the arc ball
         bool m_arcBallOn;
