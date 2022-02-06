@@ -170,7 +170,8 @@ namespace vOS
                 // Triangulate Face
 
                 // Get Midpoint of all Vertices
-                OpenVolumeMesh::VectorT<float,3> midpoint;
+                OpenVolumeMesh::VectorT<float,3> midpoint = OpenVolumeMesh::VectorT<float,3>(0,0,0);
+                int c = 0;
                 for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
                 {
                     // Get the corresponding edge vertex
@@ -179,21 +180,9 @@ namespace vOS
                 }
                 midpoint /= vertex_count;
 
-                // Create new Vertex at Midpoint
-                VertexData v_data;
-                v_data.position.x = midpoint[0];
-                v_data.position.y = midpoint[1];
-                v_data.position.z = midpoint[2];
-                v_data.normal.x = 0;
-                v_data.normal.y = 0;
-                v_data.normal.z = 0;
-                // v_data.ovm_handle = v;
-
-                face_data.vertices.push_back(v_data);
-
                 bool first_edge = true;
-                OpenVolumeMesh::VectorT<float,3> previous_position;
-                OpenVolumeMesh::VectorT<float,3> face_normal;
+                OpenVolumeMesh::VectorT<float,3> previous_position= OpenVolumeMesh::VectorT<float,3>(0,0,0);
+                OpenVolumeMesh::VectorT<float,3> face_normal= OpenVolumeMesh::VectorT<float,3>(0,0,0);
                 // Add every other Vertex to the list, and calculate the local normals for each
                 for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
                 {
@@ -223,8 +212,9 @@ namespace vOS
                 }
 
                 // Normalize Face Normal
-                face_normal /= face_normal.length();
+                face_normal /= -face_normal.length();
 
+                std::cout << face_normal << std::endl;
                 // Add Vertex Data
                 for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
                 {
