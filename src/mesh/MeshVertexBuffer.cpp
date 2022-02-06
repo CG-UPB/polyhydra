@@ -180,6 +180,13 @@ namespace vOS
                 }
                 midpoint /= vertex_count;
 
+
+                // Create a new vertex that is our midpoint
+                VertexData mid_data;
+                mid_data.position.x = midpoint[0];
+                mid_data.position.y = midpoint[1];
+                mid_data.position.z = midpoint[2];
+
                 bool first_edge = true;
                 OpenVolumeMesh::VectorT<float,3> previous_position= OpenVolumeMesh::VectorT<float,3>(0,0,0);
                 OpenVolumeMesh::VectorT<float,3> face_normal= OpenVolumeMesh::VectorT<float,3>(0,0,0);
@@ -213,8 +220,12 @@ namespace vOS
 
                 // Normalize Face Normal
                 face_normal /= -face_normal.length();
+                mid_data.normal.x = face_normal[0];
+                mid_data.normal.y = face_normal[1];
+                mid_data.normal.z = face_normal[2];
 
-                std::cout << face_normal << std::endl;
+                face_data.vertices.push_back(mid_data);
+
                 // Add Vertex Data
                 for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
                 {
@@ -232,13 +243,13 @@ namespace vOS
                     face_data.vertices.push_back(v_data);
                 }
 
-                // Add face data as many times as we have vertices - 2
-                for(int i = 0; i < vertex_count - 2; i++){
+                // Add face data as many times as we have vertices - 1
+                for(int i = 0; i < vertex_count; i++){
                     face_data.face_ids.push_back(face_id);
                 }
 
                 add_face_indices(mesh, face_data);
-                m_num_vertices += vertex_count;
+                m_num_vertices += vertex_count + 1;
 
                 faces.push_back(face_data);
             }else
@@ -343,9 +354,7 @@ namespace vOS
                 face.indices.push_back(m_num_vertices + 2);
                 face.indices.push_back(m_num_vertices + 1);
                 break;
-            }
-            case 4:
-            {
+                /*
                 // we have 4 vertices, so we need to create two triangles out of it
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 2);
@@ -354,15 +363,23 @@ namespace vOS
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 3);
                 face.indices.push_back(m_num_vertices + 2);
-                break;
+                break;*/
             }
             default:
             {
-                // in this case, we have undefined behavior, since we don't triangulate any further
-                for (int i = 0; i < face.vertices.size(); i++)
-                {
-                    face.indices.push_back(m_num_vertices + i);
+
+                // Triangulate in such a way, that every triangle uses the midpoint (with id 0) is part of the triangle
+                for(int i = 0; i< face.vertices.size() - 2; i++){
+                    face.indices.push_back(m_num_vertices);
+                    face.indices.push_back(m_num_vertices + i + 2);
+                    face.indices.push_back(m_num_vertices + i + 1);
                 }
+
+                // The Last Triangle Vertex IDs loop back around
+                face.indices.push_back(m_num_vertices);
+                face.indices.push_back(m_num_vertices + 1);
+                face.indices.push_back(m_num_vertices + face.vertices.size() - 1);
+                break;
             }
         }
     }
