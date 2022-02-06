@@ -43,7 +43,7 @@ void ExampleClass::simple_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/kitten_el2_hex.ovm", m_mesh);
+    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();

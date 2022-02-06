@@ -210,7 +210,7 @@ namespace vOS
         auto mesh = get_mesh_obj(mesh_id);
 
         if (mesh != nullptr)
-            mesh->unselect_element(mesh_id, element_type);
+            mesh->unselect_element(element_handle_id, element_type);
 
         rendering_mutex.unlock();
 

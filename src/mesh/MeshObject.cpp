@@ -46,7 +46,7 @@ namespace vOS
     }
 
     void MeshObject::select_element(int id, int type){
-        int shape_key = type * 114748364 + id;
+        int shape_key = type * key_multiplier + id;
 
         // We can't select an element twice
         bool already_selected = is_element_selected(id, type);
@@ -122,7 +122,7 @@ namespace vOS
         for(int element : m_selected_faces)
         {
             // Delete Shape Element
-            int shape_key = 0 * 114748364 + element;
+            int shape_key = 0 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
             Window::instance().rendering_mutex.unlock();
             Window::instance().remove_shape(shape_id);
@@ -134,7 +134,7 @@ namespace vOS
         for(int element : m_selected_vertices)
         {
             // Delete Shape Element
-            int shape_key = 1 * 114748364 + element;
+            int shape_key = 1 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
             Window::instance().rendering_mutex.unlock();
@@ -146,7 +146,7 @@ namespace vOS
         for(int element : m_selected_edges)
         {
             // Delete Shape Element
-            int shape_key = 2 * 114748364 + element;
+            int shape_key = 2 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
             Window::instance().rendering_mutex.unlock();
@@ -158,7 +158,7 @@ namespace vOS
         for(int element : m_selected_cells)
         {
             // Delete Shape Element
-            int shape_key = 3 * 114748364 + element;
+            int shape_key = 3 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
             Window::instance().rendering_mutex.unlock();
@@ -191,8 +191,9 @@ namespace vOS
         }
 
         // Delete Shape Element
-        int shape_key = type * 114748364 + id;
+        int shape_key = type * key_multiplier + id;
         int shape_id = m_created_shapes[shape_key];
+
 
         Window::instance().rendering_mutex.unlock();
         Window::instance().remove_shape(shape_id);
@@ -202,15 +203,11 @@ namespace vOS
     }
     bool MeshObject::is_element_selected(int id, int type){
 
-        id = type * 114748364 + id;
-
-        auto it = m_selected_vertices.find(id);
-
         if(type == 0)
             return m_selected_faces.find(id) != m_selected_faces.end();
-        else if(type == 1)
+        else if(type == 1) {
             return m_selected_vertices.find(id) != m_selected_vertices.end();
-        else if(type == 2)
+        }else if(type == 2)
             return m_selected_edges.find(id) != m_selected_edges.end();
         else
             return m_selected_cells.find(id) != m_selected_cells.end();
