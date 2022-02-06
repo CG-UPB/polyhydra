@@ -3,11 +3,11 @@
 #include "glad/glad.h"
 #include "../../Window.h"
 #include "MeshPass.h"
-#include "../../settings/GlobalViewerSettings.h"
 
 namespace vOS
 {
-
+    MeshPass::MeshPass(MeshView* mesh_view): m_mesh_view(mesh_view)
+    {}
 
     void MeshPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
@@ -77,6 +77,13 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_max", max);
         m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_mesh_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+
+        m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
+        m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
+
+        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", 0, m_mesh_view->m_pre_pass_framebuffer->get_depth_texture_id());
+        m_mesh_shader->set_uniform_sampler2D("u_color0_texture", 1, m_mesh_view->m_pre_pass_framebuffer->get_color_texture0_id());
+        m_mesh_shader->set_uniform_sampler2D("u_color1_texture", 2, m_mesh_view->m_pre_pass_framebuffer->get_color_texture1_id());
 
         vao->draw();
 

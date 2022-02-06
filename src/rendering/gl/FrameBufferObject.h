@@ -17,6 +17,7 @@ namespace vOS
         void unbind();
 
         [[nodiscard]] unsigned int get_texture_id() const;
+        [[nodiscard]] unsigned int get_depth_texture_id() const;
         [[nodiscard]] unsigned int get_id() const;
         [[nodiscard]] int get_width() const;
         [[nodiscard]] int get_height() const;

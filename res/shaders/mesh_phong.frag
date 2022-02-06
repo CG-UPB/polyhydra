@@ -1,6 +1,6 @@
 #version 330 core
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
 
 in vec3 v_pos;
 in vec3 v_normal;
@@ -10,6 +10,22 @@ uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
 uniform vec3 u_objectColor;
+
+uniform int u_viewport_width;
+uniform int u_viewport_height;
+
+uniform sampler2D u_color1_texture;
+uniform sampler2D u_depth_texture;
+uniform sampler2D u_color0_texture;
+
+float near = 0.1;
+float far  = 10.0;
+
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // back to NDC
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
 
 void main()
 {
@@ -40,4 +56,11 @@ void main()
     vec3 result = (ambient + diffuse + specular) * u_objectColor;
 
     FragColor = vec4(result, 1.0);
+
+    // Testing
+//    vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
+////    float depth = LinearizeDepth(texture(u_depth_texture, res).x) / far; // divide by far for demonstration
+////    FragColor = vec4(vec3(depth), 1.0);
+//
+//    FragColor = texture(u_color1_texture, uv);
 }

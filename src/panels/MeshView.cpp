@@ -30,10 +30,13 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
+        m_mesh_pass = new MeshPass(this);
+
         m_meshFrameBuffer = new FrameBufferObject(width, height, true);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
+        m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -43,8 +46,8 @@ namespace vOS
         m_render_data.camera.projection = glm::perspective(
                 glm::radians(60.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                0.001f,
-                100000.0f
+                0.1f,
+                10.0f
         );
 
         m_render_data.camera.view = glm::lookAt(
@@ -66,6 +69,7 @@ namespace vOS
         delete m_meshFrameBuffer;
         delete m_selectionFrameBuffer;
         delete m_pixel_buffer;
+        delete m_mesh_pass;
     }
 
     void MeshView::handleResize()
@@ -80,6 +84,7 @@ namespace vOS
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_pre_pass_framebuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -206,7 +211,7 @@ namespace vOS
 
         // render all passes
         if (obj->get_vao() != nullptr) {
-            m_mesh_pass.render(obj->get_vao(), m_render_data, mesh_id);
+            m_mesh_pass->render(obj->get_vao(), m_render_data, mesh_id);
             m_highlight_pass.render(nullptr, m_render_data, mesh_id);
             m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
@@ -222,6 +227,8 @@ namespace vOS
 
         auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, true);
         auto export_framebuffer = new FrameBufferObject(export_width, export_height);
+
+        render_pre_pass();
 
         export_framebuffer_ms->bind();
 
@@ -249,7 +256,7 @@ namespace vOS
 
                 // render all passes
                 if (mesh->get_vao() != nullptr) {
-                    m_mesh_pass.render(mesh->get_vao(), m_render_data, m.first);
+                    m_mesh_pass->render(mesh->get_vao(), m_render_data, m.first);
                     m_highlight_pass.render(nullptr, m_render_data, m.first);
                     m_shape_pass.render(nullptr, m_render_data, m.first);
                 }
@@ -351,6 +358,25 @@ namespace vOS
             m_selection_hover_pass.render(nullptr, m_render_data, m.first);
         }
         m_meshFrameBuffer->unbind();
+    }
+
+    void MeshView::render_pre_pass()
+    {
+        m_pre_pass_framebuffer->bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+            if(!mesh->get_data().m_visible)
+            {
+                continue;
+            }
+            mesh->update_vertex_buffer();
+            if (mesh->get_vao() != nullptr) {
+                m_pre_pass.render(mesh->get_vao(), m_render_data, m.first);
+            }
+        }
+        m_pre_pass_framebuffer->unbind();
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -471,6 +497,7 @@ namespace vOS
         handleMouseControl();
 
         // Render Meshes
+        render_pre_pass();
 
         // Now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
@@ -481,7 +508,6 @@ namespace vOS
 
         for (const auto& m: Window::instance().get_mesh_list())
         {
-
             renderMesh(m.first);
         }
 

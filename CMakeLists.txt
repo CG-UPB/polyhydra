@@ -54,7 +54,13 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/PixelBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
-        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp src/panels/MeshLayerView.cpp src/panels/MeshLayerView.h src/algorithms/ExampleClass.cpp src/algorithms/ExampleClass.h)
+        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp
+        ${VOLUMESHOS_SRC}/panels/MeshLayerView.cpp
+        ${VOLUMESHOS_SRC}/panels/MeshLayerView.h
+        ${VOLUMESHOS_SRC}/algorithms/ExampleClass.cpp
+        ${VOLUMESHOS_SRC}/algorithms/ExampleClass.h
+        ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

@@ -167,7 +167,22 @@ namespace vOS
                 GL_COLOR_BUFFER_BIT,
                 GL_LINEAR);
 
+        glReadBuffer(GL_DEPTH_ATTACHMENT);
+        glDrawBuffer(GL_DEPTH_ATTACHMENT);
+        glBlitFramebuffer(
+                0, 0,
+                src->get_width(), src->get_height(),
+                0, 0,
+                dest->get_width(), dest->get_height(),
+                GL_DEPTH_BUFFER_BIT,
+                GL_LINEAR);
+
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    }
+
+    unsigned int FrameBufferObject::get_depth_texture_id() const
+    {
+        return m_depth_texture_id;
     }
 }

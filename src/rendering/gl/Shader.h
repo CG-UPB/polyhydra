@@ -43,6 +43,7 @@ namespace vOS
         static Shader* flat_color_shader() { return get("flat_color"); }
         static Shader* quad_circle_shader() { return get("quad_circle"); }
         static Shader* edge_hover_shader() { return get("edge_hover"); }
+        static Shader* pre_mesh_phong_shader() { return get("pre_mesh_phong"); }
 
         /**
          * Binds this shader for opengl. A shader must be bound to draw something or to set the shader uniforms.
@@ -61,6 +62,15 @@ namespace vOS
          * @return the uniform location or -1, if the uniform does not exist in the shader
          */
         int get_uniform(const std::string& name);
+
+        /**
+         * Sets a uniform sampler2D for this shader.
+         *
+         * @param name name of the uniform
+         * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
+         * @param texture_id id of the texture to be bound
+         */
+        void set_uniform_sampler2D(const std::string& name, unsigned int binding, unsigned int texture_id);
 
         /**
          * Sets a uniform mat4 for this shader.
