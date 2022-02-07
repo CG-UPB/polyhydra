@@ -790,6 +790,13 @@ namespace vOS
 
         return shape_id;
     }
+    void Window::camera_set_position(float x, float y, float z)
+    {
+        rendering_mutex.lock();
+
+        rendering_mutex.unlock();
+    }
+
     // Read Methods ///////////////////////////////////////////////////////////////////////////////
 
 

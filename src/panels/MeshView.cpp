@@ -113,6 +113,7 @@ namespace vOS
         return res;
     }
 
+
     void MeshView::handleMouseControl()
     {
         // check where the imgui window is inside the main window, and how big it is
@@ -130,6 +131,24 @@ namespace vOS
         }
 
         bool isDown = Input::mouse_pressed();
+
+        // Move camera in direction of Movement Vector (WASD movement)
+
+        auto movement_vector = glm::vec3 (Input::get_wasd_movement_vector_X(),Input::get_wasd_movement_vector_Y(),Input::get_wasd_movement_vector_Z());
+
+        // Reset Movement speed multiplier whenever we stop moving or when we start moving
+        if((movement_vector[0] == 0 && movement_vector[1] == 0 && movement_vector[2] == 0) || (m_previous_movement_vector[0] == 0 && m_previous_movement_vector[1] == 0 && m_previous_movement_vector[2] == 0))
+            m_movement_speed_multiplier = 1;
+
+        m_previous_movement_vector[0] = movement_vector[0];
+        m_previous_movement_vector[1] = movement_vector[1];
+        m_previous_movement_vector[2] = movement_vector[2];
+
+        float movement_speed = m_movement_speed_multiplier;
+        m_movement_speed_multiplier *= 1.1f; // Gradually speed up movement
+        m_render_data.camera.position += movement_vector * movement_speed;
+
+        std::cout << m_render_data.camera.position[0] << " "  << m_render_data.camera.position[1] << " " << m_render_data.camera.position[2] << " " << std::endl;
 
         // the cursor is inside the mesh viewport, so now we can manipulate the mesh view
         if (mousePos.x > vMin.x && mousePos.x < vMax.x && mousePos.y > vMin.y && mousePos.y < vMax.y)

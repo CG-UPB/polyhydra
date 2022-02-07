@@ -54,6 +54,9 @@ namespace vOS
         FrameBufferObject* m_screen_quad_frameBuffer;
         RenderData m_render_data;
 
+        // camera variables
+        glm::vec3 m_previous_movement_vector;
+        float m_movement_speed_multiplier = 1;
         bool m_zoom;
         glm::vec3 m_zoom_point;
 
