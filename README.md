@@ -30,11 +30,17 @@ Another integrated feature is the toolbar. Various actions are possible in this 
 
 ### Snapshot
 The snapshot feature is a button on the [toolbar](#toolbar), which creates a snapshot of the actual viewport. This opens a file dialog where you can specify a file to save the snapshot to. The file dialog is the native dialog of the operating system used. The supported file formats are '.png' and '.bmp'. The screenshot is created with a transparent background, so that a created image can be used further. If the user wants to make snapshots via code he can call the method *take_screenshot(string path)* from the class Window. A call would look like this:
-> Window::instance()->take_screenshot(<your_filename.png>)
+> Window::instance()->take\_screenshot(<your_filename.png>)
 
 Thus, the user can create automated snapshots
 
 ### Mesh Settings
+The Mesh Settings are settings that affect the individual meshes. They are intended to provide a better view of the meshes and are too complex to be included in the [Mesh List](#mesh-list). On the one hand the active mesh can be translated and scaled. On the other hand the cell size can be changed or cells can be shown/hidden after certain operations. For this there is the slice function that slices through the mesh using a layer. The layer is defined depending on the camera, but can be fixed using the adjacent lock button. The peel slider can be used to slice through the mesh layer by layer. The isolation feature isolates individual cells, while the digging feature can delete individual cells. The respective values of the sliders can also be set via code. An example call for the peel level looks like this:
+
+> Window::instance->set\_peel\_level(int mesh\_id, int level);
+
+Thus, the user can also use values calculated in the code to display the meshes differently. As you cn see, the user has also the possibility to set the peel_level of a non-active mesh, which could be useful at some time
+
 
 ### LogWindow
 The LogWindow uses the singleton pattern, thus all classes interact with the same logger. A statement can be printed onto the logger console by use of the function
