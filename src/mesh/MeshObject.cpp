@@ -305,7 +305,7 @@ namespace vOS
 
         for(auto vertex : m_mesh->vertices())
         {
-            if(m_mesh->is_boundary(vertex))
+            if(m_mesh->has_vertex_bottom_up_incidences() && m_mesh->is_boundary(vertex))
             {
                 vertex_peel_property[vertex] = 0;
                 act_level.push_back(vertex);

@@ -148,7 +148,7 @@ namespace vOS
         m_movement_speed_multiplier *= 1.1f; // Gradually speed up movement
         m_render_data.camera.position += movement_vector * movement_speed;
 
-        std::cout << m_render_data.camera.position[0] << " "  << m_render_data.camera.position[1] << " " << m_render_data.camera.position[2] << " " << std::endl;
+        //std::cout << m_render_data.camera.position[0] << " "  << m_render_data.camera.position[1] << " " << m_render_data.camera.position[2] << " " << std::endl;
 
         // the cursor is inside the mesh viewport, so now we can manipulate the mesh view
         if (mousePos.x > vMin.x && mousePos.x < vMax.x && mousePos.y > vMin.y && mousePos.y < vMax.y)
