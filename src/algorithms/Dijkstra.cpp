@@ -143,7 +143,7 @@ namespace vOS
             step_button_pressed();
         }
 
-        if (ImGui::Button("Open File Alternative"))
+        if (ImGui::Button("Open File"))
         {
             NewFileDialog file_dialog;
 
@@ -159,24 +159,24 @@ namespace vOS
                 linear_run();
             }
         }
-
-        if (ImGui::Button("Open File"))
-        {
-            Window::instance().OpenFileDialogue();
-        }
-
-        if (Window::instance().FileDialogueOpen())
-        {
-            std::string path = Window::instance().GetFileDialoguePath();
-            if (path != "") {
-
-                OpenVolumeMesh::IO::FileManager file_manager;
-                file_manager.readFile(path, m_mesh);
-                Window::instance().add_mesh(&m_mesh);
-                Window::instance().EndFileDialogue();
-                linear_run();
-            }
-        }
+        // deprecated
+//        if (ImGui::Button("Open File"))
+//        {
+//            Window::instance().OpenFileDialogue();
+//        }
+//
+//        if (Window::instance().FileDialogueOpen())
+//        {
+//            std::string path = Window::instance().GetFileDialoguePath();
+//            if (path != "") {
+//
+//                OpenVolumeMesh::IO::FileManager file_manager;
+//                file_manager.readFile(path, m_mesh);
+//                Window::instance().add_mesh(&m_mesh);
+//                Window::instance().EndFileDialogue();
+//                linear_run();
+//            }
+//        }
 
         ImGui::End();
     }

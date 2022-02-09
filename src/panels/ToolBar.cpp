@@ -74,7 +74,7 @@ namespace vOS
 //        Window::instance().set_mesh_active(m_active_mesh);
         //GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
 
-        if(ImGui::Button("Alternative Snapshot"))
+        if(ImGui::Button("Snapshot"))
         {
             NewFileDialog file_dialog;
 
@@ -86,26 +86,31 @@ namespace vOS
             Window::instance().take_screenshot(filename);
             Window::instance().rendering_mutex.lock();
         }
-
-        if(ImGui::Button("Snapshot"))
-        {
-            Window::instance().m_file_dialog->open(".png,.bmp", 1);
-        }
-
-        if(Window::instance().m_file_dialog->file_dialogue_open(1))
-        {
-            std::string path = Window::instance().m_file_dialog->is_ok_snapshot_saver() ? Window::instance().m_file_dialog->get_file_path_snapshot_saver() : "";
-            if (path != "") {
-                Window::instance().rendering_mutex.unlock();
-                Window::instance().take_screenshot(path);
-                Window::instance().rendering_mutex.lock();
-                Window::instance().m_file_dialog->close();
-            }
-
-        }
         ImGui::SameLine();
         HelpMarkerWithQuestionMark("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
                                    "choose a file in which you want to save your image of the actual Mesh");
+
+
+        // deprecated
+//        if(ImGui::Button("Snapshot"))
+//        {
+//            Window::instance().m_file_dialog->open(".png,.bmp", 1);
+//        }
+//
+//        if(Window::instance().m_file_dialog->file_dialogue_open(1))
+//        {
+//            std::string path = Window::instance().m_file_dialog->is_ok_snapshot_saver() ? Window::instance().m_file_dialog->get_file_path_snapshot_saver() : "";
+//            if (path != "") {
+//                Window::instance().rendering_mutex.unlock();
+//                Window::instance().take_screenshot(path);
+//                Window::instance().rendering_mutex.lock();
+//                Window::instance().m_file_dialog->close();
+//            }
+//
+//        }
+//        ImGui::SameLine();
+//        HelpMarkerWithQuestionMark("With this Button you can use the Snapshot-function. It will open a file dialog, where you can "
+//                                   "choose a file in which you want to save your image of the actual Mesh");
 
         if (ImGui::BeginPopup("Selection")) {
 
