@@ -4,6 +4,8 @@
 #include "../../Window.h"
 #include "TransparencyPass.h"
 #include "../../settings/GlobalViewerSettings.h"
+#include "../meshes/CommonMeshes.h"
+
 
 namespace vOS
 {
@@ -16,7 +18,10 @@ namespace vOS
     {
         m_transparency_shader = Shader::get("transparency_WB");
         m_composite_shader = Shader::get("composite");
-        generate_transparency_framebuffer();
+        generate_transparency_framebuffer(m_width, m_height);
+
+        m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f), CommonMeshes::PlaneXY::indices());
+        m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
 
     }
 
@@ -25,11 +30,14 @@ namespace vOS
         clean_up_framebuffer();
         glDeleteTextures(1, &m_accumTexture);
         glDeleteTextures(1, &m_revealTexture);
+        delete m_vao;
 
     }
 
-    void TransparencyPass::generate_transparency_framebuffer()
+    void TransparencyPass::generate_transparency_framebuffer(unsigned int width, unsigned int height)
     {
+        m_width = width;
+        m_height = height;
         glGenFramebuffers(1, &m_transparent_framebuffer);
 
         glGenTextures(1, &m_accumTexture);
@@ -65,6 +73,9 @@ namespace vOS
 
     void TransparencyPass::clean_up_framebuffer()
     {
+        glDeleteFramebuffers(1, &m_transparent_framebuffer);
+        glDeleteTextures(1, &m_accumTexture);
+        glDeleteTextures(1, &m_revealTexture);
 
     }
 
@@ -136,19 +147,37 @@ namespace vOS
         m_mesh_view->m_meshFrameBuffer->bind();
         m_composite_shader->bind();
 
-        m_composite_shader->set_uniform_sampler2D("accumTexture", 0, m_accumTexture);
-        m_composite_shader->set_uniform_sampler2D("revealTexture", 1, m_revealTexture);
+        m_composite_shader->set_uniform_sampler2D("accumTexture", GL_TEXTURE0, m_accumTexture);
+        m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, m_revealTexture);
 
 
+        m_vao->draw();
         m_composite_shader->unbind();
-        m_mesh_view->m_meshFrameBuffer->unbind();
 
+
+        // set render states
         glDisable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
+        glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
         glDisable(GL_BLEND);
 
+        // bind backbuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
     }
 
+    void TransparencyPass::resize_buffers(unsigned int width, unsigned int height)
+    {
+        clean_up_framebuffer();
+        generate_transparency_framebuffer(width, height);
+    }
+
+    void TransparencyPass::clear_framebuffer()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_transparent_framebuffer);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
 }

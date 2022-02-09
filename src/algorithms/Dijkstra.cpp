@@ -285,7 +285,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj(0)->remove_highlights();
+            //window.get_mesh_obj(0)->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)
@@ -393,7 +393,7 @@ namespace vOS
 
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.remove_all_vertex_highlights();
+        //window.remove_all_vertex_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -480,7 +480,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj(0)->remove_highlights();
+            //window.get_mesh_obj(0)->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)

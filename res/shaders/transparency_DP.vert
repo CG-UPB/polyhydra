@@ -16,7 +16,7 @@ uniform mat4 u_View;
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
-uniform vec3 u_objectColor;
+uniform vec4 u_objectColor;
 uniform float u_cell_size;
 
 uniform int u_peel_depth;

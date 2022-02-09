@@ -72,6 +72,7 @@ namespace vOS
         {
             glGetProgramInfoLog(m_shaderID, 512, nullptr, infoLog);
             std::cout << "Error when linking shader program: " << infoLog << std::endl;
+            std::cout << "" << fragmentPath << std::endl;
         }
 
         glDeleteShader(vertexID);

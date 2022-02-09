@@ -40,7 +40,7 @@ void ExampleClass::simple_demonstration_ui(){
 void ExampleClass::simple_run(){
 
     // OVM Setup
-    OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
+    OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
     file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
@@ -84,7 +84,7 @@ void ExampleClass::toolbar_demonstration_ui(){
         // Selection Run Setup
 
         // OVM Setup
-        OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh_1;
+        OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_1;
 
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh_1);
@@ -104,8 +104,8 @@ void ExampleClass::toolbar_demonstration_ui(){
 }
 void ExampleClass::toolbar_run(){
     // OVM Setup
-    OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh_1;
-    OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh_2;
+    OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_1;
+    OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_2;
 
     OpenVolumeMesh::IO::FileManager file_manager;
     file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh_1);
@@ -197,7 +197,7 @@ void ExampleClass::bounding_run() {
     // Bounding Run Setup
 
     // OVM Setup
-    OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
+    OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
     file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);

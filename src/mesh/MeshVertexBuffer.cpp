@@ -7,12 +7,12 @@
 namespace vOS
 {
 
-    MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh, BufferSpecification spec): m_spec(spec)
+    MeshVertexBuffer::MeshVertexBuffer(Mesh *mesh, BufferSpecification spec) : m_spec(spec)
     {
         int peel_depth = spec.peel_depth;
         int slice_depth = spec.slice_depth;
 
-        Mesh* current_mesh = mesh;
+        Mesh *current_mesh = mesh;
         m_original_vertices = get_vertices(*current_mesh);
 
         generate_buffer(*current_mesh);
@@ -49,20 +49,20 @@ namespace vOS
 
     }
 
-    void MeshVertexBuffer::generate_buffer(Mesh& mesh)
+    void MeshVertexBuffer::generate_buffer(Mesh &mesh)
     {
         // first update the normal face attribute for all faces
         OpenVolumeMesh::NormalAttrib normals(mesh);
         normals.update_face_normals();
 
         // add every cell to the vertex buffer
-        for (auto c_it : mesh.cells())
+        for (auto c_it: mesh.cells())
         {
             add_cell(mesh, c_it);
         }
     }
 
-    void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
+    void MeshVertexBuffer::add_cell(Mesh &mesh, Cell cell)
     {
         OpenVolumeMesh::CellPropertyT<int> peel_property = mesh.request_cell_property<int>("PeelDepth");
         OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = mesh.request_vertex_property<int>("PeelDepth");
@@ -73,7 +73,7 @@ namespace vOS
 
         // add every vertex only once for the selection, no need to render them twice
         int num_selection_vertices = 0;
-        for (auto cv_it : mesh.cell_vertices(cell))
+        for (auto cv_it: mesh.cell_vertices(cell))
         {
             auto v_pos = mesh.vertex(cv_it);
             vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
@@ -100,9 +100,9 @@ namespace vOS
         }
 
         // same for the edges, only add them once for the selection
-        for (auto ce_it : mesh.cell_edges(cell))
+        for (auto ce_it: mesh.cell_edges(cell))
         {
-            auto [v0, v1] = mesh.edge_vertices(ce_it);
+            auto[v0, v1] = mesh.edge_vertices(ce_it);
             add_from_to_vertex(mesh, v0, v1);
             m_edge_ids.push_back(ce_it.idx());
 
@@ -114,7 +114,7 @@ namespace vOS
         }
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
-        for (auto chf_it : mesh.cell_halffaces(cell))
+        for (auto chf_it: mesh.cell_halffaces(cell))
         {
             // Polygon Attem
             FaceData face_data;
@@ -129,18 +129,18 @@ namespace vOS
 
             // Count the amount of Vertices this Face has
             int vertex_count = 0;
-            for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+            for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
             {
                 vertex_count++;
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
-            if(vertex_count == 3)
+            if (vertex_count == 3)
             {// get the face normal
                 auto hf_normal = mesh.normal(chf_it);
 
                 // iterate over the halfedges of the halfface
-                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
                 {
                     // get the corresponding edge vertex
                     auto v = mesh.from_vertex_handle(hfhe_it);
@@ -166,14 +166,14 @@ namespace vOS
                 m_num_vertices += 3;
 
                 faces.push_back(face_data);
-            }else if(vertex_count > 3)
+            } else if (vertex_count > 3)
             {
                 // Triangulate Face
 
                 // Get Midpoint of all Vertices
-                OpenVolumeMesh::VectorT<float,3> midpoint = OpenVolumeMesh::VectorT<float,3>(0,0,0);
+                OpenVolumeMesh::VectorT<double, 3> midpoint = OpenVolumeMesh::VectorT<double, 3>(0, 0, 0);
                 int c = 0;
-                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
                 {
                     // Get the corresponding edge vertex
                     auto v = mesh.from_vertex_handle(hfhe_it);
@@ -189,30 +189,32 @@ namespace vOS
                 mid_data.position.z = midpoint[2];
 
                 bool first_edge = true;
-                OpenVolumeMesh::VectorT<float,3> previous_position= OpenVolumeMesh::VectorT<float,3>(0,0,0);
-                OpenVolumeMesh::VectorT<float,3> face_normal= OpenVolumeMesh::VectorT<float,3>(0,0,0);
+                OpenVolumeMesh::VectorT<double, 3> previous_position = OpenVolumeMesh::VectorT<double, 3>(0, 0, 0);
+                OpenVolumeMesh::VectorT<double, 3> face_normal = OpenVolumeMesh::VectorT<double, 3>(0, 0, 0);
                 // Add every other Vertex to the list, and calculate the local normals for each
-                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
                 {
                     // Get the corresponding edge vertex
                     auto v = mesh.from_vertex_handle(hfhe_it);
                     auto v_pos = mesh.vertex(v);
 
 
-                    if(!first_edge){
+                    if (!first_edge)
+                    {
                         // Calculate Normal
                         auto pos_1 = previous_position; // Vertex Position from previous Vertex
                         auto pos_2 = v_pos; // This Vertice's position
                         auto pos_3 = midpoint; // Midpoint Vertex position
 
-                        OpenVolumeMesh::VectorT<float,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
+                        OpenVolumeMesh::VectorT<double, 3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
 
                         // Add to Face Normal
                         face_normal += normal;
 
                         previous_position = v_pos;
 
-                    }else{
+                    } else
+                    {
                         first_edge = false;
                         previous_position = v_pos;
                     }
@@ -228,7 +230,7 @@ namespace vOS
                 face_data.vertices.push_back(mid_data);
 
                 // Add Vertex Data
-                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
                 {
                     auto v = mesh.from_vertex_handle(hfhe_it);
                     auto v_pos = mesh.vertex(v);
@@ -245,7 +247,8 @@ namespace vOS
                 }
 
                 // Add face data as many times as we have vertices - 1
-                for(int i = 0; i < vertex_count; i++){
+                for (int i = 0; i < vertex_count; i++)
+                {
                     face_data.face_ids.push_back(face_id);
                 }
 
@@ -253,7 +256,7 @@ namespace vOS
                 m_num_vertices += vertex_count + 1;
 
                 faces.push_back(face_data);
-            }else
+            } else
             {
                 std::cout << "Face " << face_id << " has less than 3 vertices" << std::endl;
                 continue;
@@ -349,10 +352,10 @@ namespace vOS
         }
 
         // now that we collected the data we need, we can update or buffer arrays
-        for (const FaceData& face : faces)
+        for (const FaceData &face: faces)
         {
             // fill up vertex data
-            for (const VertexData& vertex : face.vertices)
+            for (const VertexData &vertex: face.vertices)
             {
                 // position
                 m_positions.push_back(vertex.position.x);
@@ -369,7 +372,7 @@ namespace vOS
                 m_cell_centers.push_back(cell_center.y);
                 m_cell_centers.push_back(cell_center.z);
 
-                m_peel_depths.push_back((float)peel_depth);
+                m_peel_depths.push_back((float) peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
 
                 m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
@@ -384,7 +387,7 @@ namespace vOS
         }
     }
 
-    void MeshVertexBuffer::add_face_indices(Mesh& mesh, FaceData& face)
+    void MeshVertexBuffer::add_face_indices(Mesh &mesh, FaceData &face) const
     {
         switch (face.vertices.size())
         {
@@ -410,7 +413,8 @@ namespace vOS
             {
 
                 // Triangulate in such a way, that every triangle uses the midpoint (with id 0) is part of the triangle
-                for(int i = 0; i< face.vertices.size() - 2; i++){
+                for (int i = 0; i < face.vertices.size() - 2; i++)
+                {
                     face.indices.push_back(m_num_vertices);
                     face.indices.push_back(m_num_vertices + i + 2);
                     face.indices.push_back(m_num_vertices + i + 1);
@@ -425,7 +429,8 @@ namespace vOS
         }
     }
 
-    void MeshVertexBuffer::add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from, const OpenVolumeMesh::VertexHandle& to)
+    void MeshVertexBuffer::add_from_to_vertex(Mesh &mesh, const OpenVolumeMesh::VertexHandle &from,
+                                              const OpenVolumeMesh::VertexHandle &to)
     {
         auto from_pos = mesh.vertex(from);
         auto to_pos = mesh.vertex(to);
@@ -437,34 +442,31 @@ namespace vOS
         m_to_vertices.push_back(to_pos[2]);
     }
 
-    std::pair<glm::vec3,glm::vec3> MeshVertexBuffer::get_bounding_box(const std::vector<glm::vec3>& vertices)
+    std::pair<glm::vec3, glm::vec3> MeshVertexBuffer::get_bounding_box(const std::vector<glm::vec3> &vertices)
     {
         glm::vec3 min = vertices[0];
         glm::vec3 max = vertices[0];
         for (int i = 1; i < vertices.size(); i++)
         {
-            const glm::vec3& vertex = vertices[i];
+            const glm::vec3 &vertex = vertices[i];
             if (vertex.x < min.x)
             {
                 min.x = vertex.x;
-            }
-            else if (vertex.x > max.x)
+            } else if (vertex.x > max.x)
             {
                 max.x = vertex.x;
             }
             if (vertex.y < min.y)
             {
                 min.y = vertex.y;
-            }
-            else if (vertex.y > max.y)
+            } else if (vertex.y > max.y)
             {
                 max.y = vertex.y;
             }
             if (vertex.z < min.z)
             {
                 min.z = vertex.z;
-            }
-            else if (vertex.z > max.z)
+            } else if (vertex.z > max.z)
             {
                 max.z = vertex.z;
             }
@@ -473,7 +475,7 @@ namespace vOS
         return bb;
     }
 
-    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
+    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3> &vertices)
     {
         auto bb = get_bounding_box(vertices);
         auto min = bb.first;
@@ -481,7 +483,7 @@ namespace vOS
         return min + (max - min) * 0.5f;
     }
 
-    std::vector<float> MeshVertexBuffer::get_vertices(Mesh& mesh)
+    std::vector<float> MeshVertexBuffer::get_vertices(Mesh &mesh)
     {
         std::vector<float> vertices;
         int dim = 3;
@@ -498,7 +500,7 @@ namespace vOS
         return vertices;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_vao()
+    VertexArrayObject *MeshVertexBuffer::get_vao()
     {
         return m_vao;
     }
@@ -530,17 +532,17 @@ namespace vOS
         return 0;
     }
 
-    std::vector<float>& MeshVertexBuffer::get_original_vertices()
+    std::vector<float> &MeshVertexBuffer::get_original_vertices()
     {
         return m_original_vertices;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_cylinder_vao()
+    VertexArrayObject *MeshVertexBuffer::get_cylinder_vao()
     {
         return m_cylinder_vao;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_sphere_vao()
+    VertexArrayObject *MeshVertexBuffer::get_sphere_vao()
     {
         return m_sphere_vao;
     }

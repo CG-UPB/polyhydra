@@ -89,6 +89,7 @@ namespace vOS
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_pre_pass_framebuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_transparency_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -404,6 +405,7 @@ namespace vOS
 
     void MeshView::render_transparency()
     {
+        m_transparency_pass->clear_framebuffer();
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -543,7 +545,13 @@ namespace vOS
         // Now render our mesh scene to the framebuffer texture
         // Start with opaque objects
         m_meshFrameBuffer->bind();
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+
+
+        glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
@@ -553,7 +561,8 @@ namespace vOS
         m_meshFrameBuffer->unbind();
 
         // Render transparent objects
-        //render_transparency();
+
+        render_transparency();
 
 
 
@@ -578,6 +587,9 @@ namespace vOS
         {
             texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
         }
+
+        //texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
+        texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass->m_accumTexture);
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

@@ -35,7 +35,7 @@ namespace vOS {
  * Can be used to highlight specific elements, color specific parts of the mesh and apply other configerations
  * Provides Callback functions which communicate user inputs back to the algorithm
  *
- * TODO: Uses GeomtericPolyhedralMeshV3f exlusively at the moment, waiting for Wrapper Class
+ * TODO: Uses GeomtericPolyhedralMeshV3d exlusively at the moment, waiting for Wrapper Class
  * TODO: Allows a single Mesh Visualization at the moment
  */
     class MeshView;
@@ -78,9 +78,9 @@ namespace vOS {
         void remove_all_vertex_highlights();
         void remove_vertex_highlight(int mesh_id, OpenVolumeMesh::VertexHandle v_h);
 
-        int add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
+        int add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
         void remove_mesh(int index);
-        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index = 0);
+        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, int index = 0);
 
         void set_mesh_active(int index);
         int get_mesh_active();

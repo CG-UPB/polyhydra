@@ -537,8 +537,8 @@ namespace vOS
 
         Highlight highlight(color, v_h);
 
-        if (get_mesh_obj(mesh_id) != nullptr)
-            get_mesh_obj(mesh_id)->add_highlight(highlight);
+//        if (get_mesh_obj(mesh_id) != nullptr)
+//            get_mesh_obj(mesh_id)->add_highlight(highlight);
 
         rendering_mutex.unlock();
     }
@@ -554,14 +554,14 @@ namespace vOS
     {
         rendering_mutex.lock();
 
-        if (get_mesh_obj(mesh_id) != nullptr)
-            get_mesh_obj(mesh_id)->remove_highlight((v_h));
+//        if (get_mesh_obj(mesh_id) != nullptr)
+//            get_mesh_obj(mesh_id)->remove_highlight((v_h));
 
         rendering_mutex.unlock();
     }
 
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh, int index)
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh, int index)
     {
         rendering_mutex.lock();
         auto* mesh_obj = new MeshObject();
@@ -588,7 +588,7 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
+    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
     {
         rendering_mutex.lock();
         int index = m_total_number_of_loaded_meshes++;
@@ -708,13 +708,13 @@ namespace vOS
 
     void Window::remove_all_vertex_highlights()
     {
-        rendering_mutex.lock();
-
-        for (auto it = m_mesh_objects.begin(); it != m_mesh_objects.end(); it++)
-        {
-            it->second->remove_highlights();
-        }
-        rendering_mutex.unlock();
+//        rendering_mutex.lock();
+//
+//        for (auto it = m_mesh_objects.begin(); it != m_mesh_objects.end(); it++)
+//        {
+//            it->second->remove_highlights();
+//        }
+//        rendering_mutex.unlock();
     }
 
 

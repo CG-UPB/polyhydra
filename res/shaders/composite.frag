@@ -2,6 +2,8 @@
 
 layout (location = 0) out vec4 FragColor;
 
+in vec2 v_uv;
+
 uniform sampler2D accumTexture;
 uniform sampler2D revealTexture;
 
@@ -14,14 +16,14 @@ float max_component(vec3 v)
 
 void main()
 {
-    vec2 coord = vec2(gl_FragCoord.xy);
-    float revealage = texture(revealTexture, coord, 0).r;
-//    if (revealage == 1.0)
-//    {
-//        discard;
-//    }
+    vec2 coord = v_uv;
+    float revealage = texture(revealTexture, coord).r;
+    if (revealage == 1.0)
+    {
+        discard;
+    }
 
-    vec4 accum = texture(accumTexture, coord, 0);
+    vec4 accum = texture(accumTexture, coord);
 
     // supress overflow
     if (isinf(max_component(abs(accum.rgb))))
@@ -32,5 +34,4 @@ void main()
     vec3 average_color = accum.rgb / max(accum.a, EPSILON);
 
     FragColor = vec4(average_color, 1.0-revealage);
-    FragColor = vec4(0.5, 0.5, 0.5, 1.0);
 }
