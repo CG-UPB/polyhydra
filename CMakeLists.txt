@@ -53,7 +53,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
         ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
         ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
-        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp src/panels/MeshLayerView.cpp src/panels/MeshLayerView.h src/algorithms/ExampleClass.cpp src/algorithms/ExampleClass.h src/util/Tooltips.h)
+        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp src/panels/MeshLayerView.cpp src/panels/MeshLayerView.h src/algorithms/ExampleClass.cpp src/algorithms/ExampleClass.h src/util/Tooltips.h src/util/ModeEnum.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

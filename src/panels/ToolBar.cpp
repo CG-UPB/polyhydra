@@ -27,13 +27,25 @@ namespace vOS
                 return;
             }
 
-    //        m_active_mesh = Window::instance().get_mesh_active();
-    //        ImGui::InputInt("Mesh in Focus", &m_active_mesh);
-    //        if (m_active_mesh < 0) m_active_mesh = 0;
-    //        if (m_active_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
-    //        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
-    //        Window::instance().set_mesh_active(m_active_mesh);
-            //GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
+            int mesh_mode = GlobalViewerSettings::getInstance()->m_get_current_mesh_mode();
+
+            const char *element_mode_types[] =
+            {
+                    "Wireframe",
+                    "Only Vertices",
+                    "Phong Facenormals",
+                    "Phong Vertexnormals",
+                    "Transparency",
+                    "Rounded",
+                    "Ambient Occlusion",
+                    "Shadows"
+            };
+            ImGui::Text("Manual Mode Selection:");
+            ImGui::Combo("  ", &mesh_mode, element_mode_types,
+                         IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
+            ImGui::SameLine();
+            Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use");
+            GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
 
             // Snapshot Button uses the class Filedialog to save a screenshot
             if (ImGui::Button("Snapshot")) {
@@ -200,7 +212,6 @@ namespace vOS
                         ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
                         ImGui::SameLine();
                         ImGui::Checkbox("Lock", &m_slicer_locked);
-                        //GlobalViewerSettings::getInstance()->m_set_current_mesh_slice_level(m_slider_slicer);
                         Window::instance().rendering_mutex.unlock();
                         Window::instance().set_mesh_slice_level(active_mesh, m_slider_slicer);
                         Window::instance().set_mesh_slice_locked(active_mesh, m_slicer_locked);
@@ -214,7 +225,6 @@ namespace vOS
                             peel_max = Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1;
                         }
                         ImGui::SliderInt(" ", &m_slider_peel, 0, peel_max);
-                        //GlobalViewerSettings::getInstance()->m_set_current_mesh_peel_level(m_slider_peel);
                         Window::instance().rendering_mutex.unlock();
                         Window::instance().set_mesh_peel_level(active_mesh, m_slider_peel);
                         Window::instance().rendering_mutex.lock();
@@ -223,7 +233,6 @@ namespace vOS
                         ImGui::SameLine();
                         Tooltips::HelpMarkerWithQuestionMark("This slider will change the size of each cell");
                         if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f)) {
-                            //GlobalViewerSettings::getInstance()->m_set_current_cell_size(m_cell_size);
                             Window::instance().rendering_mutex.unlock();
                             Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
                             Window::instance().rendering_mutex.lock();

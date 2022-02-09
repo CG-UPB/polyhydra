@@ -231,7 +231,6 @@ namespace vOS
         remove_highlights();
         m_should_update = true;
         calculate_mesh_offset();
-        GlobalViewerSettings::getInstance()->m_new_Mesh();
     }
 
     void MeshObject::update_vertex_buffer()

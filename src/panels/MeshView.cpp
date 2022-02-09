@@ -475,14 +475,6 @@ namespace vOS
 
     void MeshView::show()
     {
-        if(GlobalViewerSettings::getInstance()->m_get_take_snapshot())
-        {
-            GlobalViewerSettings::getInstance()->m_set_take_snapshot(false);
-            // Snapshot erstellen
-            std::string filename = GlobalViewerSettings::getInstance()->m_get_actual_snapshot_filename();
-            this->m_take_screenshot(filename);
-        }
-
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
