@@ -439,9 +439,10 @@ namespace vOS
             m_zoom = false;
         }
 
-        if (!any_mesh_hovered)
+        auto active_mesh = Window::instance().get_active_mesh_obj();
+        if (!any_mesh_hovered && active_mesh != nullptr)
         {
-            m_selection_hover_pass.select(*Window::instance().get_mesh_obj(0), m_render_data, 0, 0, 0);
+            m_selection_hover_pass.select(*active_mesh, m_render_data, 0, 0, 0);
         }
     }
 

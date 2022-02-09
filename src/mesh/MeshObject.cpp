@@ -552,7 +552,7 @@ namespace vOS
 
     MeshObject::~MeshObject()
     {
-
+        delete m_mvb;
     }
 }
 
