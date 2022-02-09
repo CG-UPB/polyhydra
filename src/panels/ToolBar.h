@@ -34,6 +34,10 @@ namespace vOS
 
         bool m_selection_activated = false;
         int m_current_selection_mode;
+        int m_manual_selection_type = 0;
+        int m_previous_manual_selection_type = 0;
+        int m_manual_selection_id = -1;
+        int m_previous_manual_selection_id = -1;
         bool m_color_activated = true;
         float m_color[4] = {1.0f,1.0f,1.0f,1.0f};
         float m_slider_slicer = 0.0f;

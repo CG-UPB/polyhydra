@@ -173,6 +173,8 @@ namespace vOS
 
         void calculate_peel_depth();
 
+        const int key_multiplier = 1000000;
+
         std::vector<float> m_vert_colors;
         std::vector<float> m_face_colors;
         std::unordered_set<int> m_selected_faces;

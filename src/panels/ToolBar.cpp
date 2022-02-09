@@ -113,8 +113,36 @@ namespace vOS
 //                                   "choose a file in which you want to save your image of the actual Mesh");
 
         if (ImGui::BeginPopup("Selection")) {
+        if (ImGui::CollapsingHeader("Selection")) {
 
-            ImGui::Checkbox("Activate Selection",&m_selection_activated);
+            // Selection of single elements by typing in their ID
+            const char* element_selection_types[] =
+                    {
+                            "Face", "Vertex", "Edge", "Cell"
+                    };
+            ImGui::Text("Manual Element Selection:");
+            ImGui::Combo("  ", &m_manual_selection_type, element_selection_types, IM_ARRAYSIZE(element_selection_types), IM_ARRAYSIZE(element_selection_types));
+
+            const char* selected_element_id_label = "ID";
+            ImGui::InputInt(selected_element_id_label, &m_manual_selection_id);
+
+            if(m_manual_selection_id != m_previous_manual_selection_id && m_manual_selection_id >= 0){
+                // Unselect the previous manually selected element
+                if(m_previous_manual_selection_id >= 0) {
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().unselect_element(Window::instance().get_mesh_active(),
+                                                        m_previous_manual_selection_id, m_previous_manual_selection_type);
+                    Window::instance().rendering_mutex.lock();
+                }
+                // Select the new manually selected element
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().select_element(Window::instance().get_mesh_active(), m_manual_selection_id, m_manual_selection_type);
+                Window::instance().rendering_mutex.lock();
+                m_previous_manual_selection_id = m_manual_selection_id;
+                m_previous_manual_selection_type = m_manual_selection_type;
+            }
+
+            ImGui::Checkbox("Activate Click Selection",&m_selection_activated);
             GlobalViewerSettings::getInstance()->m_set_current_selection_activated(m_selection_activated);
             //ImGui::Checkbox("Vertex-Selection", &m_vertex_selection);
             if(m_selection_activated)
@@ -144,10 +172,9 @@ namespace vOS
                 }
                 ImGui::SameLine(); HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
             }
-            ImGui::EndPopup();
         }
-        if (ImGui::Button("Selection"))
-            ImGui::OpenPopup("Selection");
+        //if (ImGui::Button("Selection"))
+        //    ImGui::OpenPopup("Selection");
         if(ImGui::IsItemHovered()  && GImGui->HoveredIdTimer > m_timer_treshold)
         {
             ImGui::BeginTooltip();

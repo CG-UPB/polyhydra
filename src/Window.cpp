@@ -55,6 +55,9 @@ namespace vOS
         initPanels();
 
         m_initialized = true;
+
+        // We initialized Vos, now we can activate the corresponding Callback Function, to let the programmer know
+        m_vos_initialized();
     }
 
     void Window::run()
@@ -64,7 +67,6 @@ namespace vOS
             return;
 
         m_is_in_render_loop = true;
-
         setup();
 
         // Render window forever until window is closed by user
@@ -208,7 +210,7 @@ namespace vOS
         auto mesh = get_mesh_obj(mesh_id);
 
         if (mesh != nullptr)
-            mesh->unselect_element(mesh_id, element_type);
+            mesh->unselect_element(element_handle_id, element_type);
 
         rendering_mutex.unlock();
 
@@ -788,6 +790,13 @@ namespace vOS
 
         return shape_id;
     }
+    void Window::camera_set_position(float x, float y, float z)
+    {
+        rendering_mutex.lock();
+
+        rendering_mutex.unlock();
+    }
+
     // Read Methods ///////////////////////////////////////////////////////////////////////////////
 
 

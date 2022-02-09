@@ -115,6 +115,150 @@ namespace vOS
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
         for (auto chf_it : mesh.cell_halffaces(cell))
         {
+            // Polygon Attem
+            FaceData face_data;
+            auto face_handle = mesh.face_handle(chf_it);
+            int face_id = face_handle.idx();
+
+            // remember if face is boundary, so that we can discard non boundary faces in the shader if needed
+            if (mesh.is_boundary(face_handle))
+            {
+                face_data.is_boundary = true;
+            }
+
+            // Count the amount of Vertices this Face has
+            int vertex_count = 0;
+            for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+            {
+                vertex_count++;
+            }
+
+            // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
+            if(vertex_count == 3)
+            {// get the face normal
+                auto hf_normal = mesh.normal(chf_it);
+
+                // iterate over the halfedges of the halfface
+                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                {
+                    // get the corresponding edge vertex
+                    auto v = mesh.from_vertex_handle(hfhe_it);
+                    auto v_pos = mesh.vertex(v);
+
+                    // get geometry data
+                    VertexData v_data;
+                    v_data.position.x = v_pos[0];
+                    v_data.position.y = v_pos[1];
+                    v_data.position.z = v_pos[2];
+                    v_data.normal.x = -hf_normal[0];
+                    v_data.normal.y = -hf_normal[1];
+                    v_data.normal.z = -hf_normal[2];
+                    v_data.ovm_handle = v;
+
+                    face_data.vertices.push_back(v_data);
+                }
+
+                // Add face data
+                face_data.face_ids.push_back(face_id);
+
+                add_face_indices(mesh, face_data);
+                m_num_vertices += 3;
+
+                faces.push_back(face_data);
+            }else if(vertex_count > 3)
+            {
+                // Triangulate Face
+
+                // Get Midpoint of all Vertices
+                OpenVolumeMesh::VectorT<float,3> midpoint = OpenVolumeMesh::VectorT<float,3>(0,0,0);
+                int c = 0;
+                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                {
+                    // Get the corresponding edge vertex
+                    auto v = mesh.from_vertex_handle(hfhe_it);
+                    midpoint += mesh.vertex(v);
+                }
+                midpoint /= vertex_count;
+
+
+                // Create a new vertex that is our midpoint
+                VertexData mid_data;
+                mid_data.position.x = midpoint[0];
+                mid_data.position.y = midpoint[1];
+                mid_data.position.z = midpoint[2];
+
+                bool first_edge = true;
+                OpenVolumeMesh::VectorT<float,3> previous_position= OpenVolumeMesh::VectorT<float,3>(0,0,0);
+                OpenVolumeMesh::VectorT<float,3> face_normal= OpenVolumeMesh::VectorT<float,3>(0,0,0);
+                // Add every other Vertex to the list, and calculate the local normals for each
+                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                {
+                    // Get the corresponding edge vertex
+                    auto v = mesh.from_vertex_handle(hfhe_it);
+                    auto v_pos = mesh.vertex(v);
+
+
+                    if(!first_edge){
+                        // Calculate Normal
+                        auto pos_1 = previous_position; // Vertex Position from previous Vertex
+                        auto pos_2 = v_pos; // This Vertice's position
+                        auto pos_3 = midpoint; // Midpoint Vertex position
+
+                        OpenVolumeMesh::VectorT<float,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
+
+                        // Add to Face Normal
+                        face_normal += normal;
+
+                        previous_position = v_pos;
+
+                    }else{
+                        first_edge = false;
+                        previous_position = v_pos;
+                    }
+
+                }
+
+                // Normalize Face Normal
+                face_normal /= -face_normal.length();
+                mid_data.normal.x = face_normal[0];
+                mid_data.normal.y = face_normal[1];
+                mid_data.normal.z = face_normal[2];
+
+                face_data.vertices.push_back(mid_data);
+
+                // Add Vertex Data
+                for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
+                {
+                    auto v = mesh.from_vertex_handle(hfhe_it);
+                    auto v_pos = mesh.vertex(v);
+
+                    VertexData v_data;
+                    v_data.position.x = v_pos[0];
+                    v_data.position.y = v_pos[1];
+                    v_data.position.z = v_pos[2];
+                    v_data.normal.x = face_normal[0];
+                    v_data.normal.y = face_normal[1];
+                    v_data.normal.z = face_normal[2];
+                    v_data.ovm_handle = v;
+                    face_data.vertices.push_back(v_data);
+                }
+
+                // Add face data as many times as we have vertices - 1
+                for(int i = 0; i < vertex_count; i++){
+                    face_data.face_ids.push_back(face_id);
+                }
+
+                add_face_indices(mesh, face_data);
+                m_num_vertices += vertex_count + 1;
+
+                faces.push_back(face_data);
+            }else
+            {
+                std::cout << "Face " << face_id << " has less than 3 vertices" << std::endl;
+                continue;
+            }
+
+            /*
             FaceData faceData;
             auto face_handle = mesh.face_handle(chf_it);
             int face_id = face_handle.idx();
@@ -160,6 +304,7 @@ namespace vOS
             m_num_vertices += num_face_vertices;
 
             faces.push_back(faceData);
+             */
         }
 
         // now that we collected the data we need, we can update or buffer arrays
@@ -209,9 +354,7 @@ namespace vOS
                 face.indices.push_back(m_num_vertices + 2);
                 face.indices.push_back(m_num_vertices + 1);
                 break;
-            }
-            case 4:
-            {
+                /*
                 // we have 4 vertices, so we need to create two triangles out of it
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 2);
@@ -220,15 +363,23 @@ namespace vOS
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 3);
                 face.indices.push_back(m_num_vertices + 2);
-                break;
+                break;*/
             }
             default:
             {
-                // in this case, we have undefined behavior, since we don't triangulate any further
-                for (int i = 0; i < face.vertices.size(); i++)
-                {
-                    face.indices.push_back(m_num_vertices + i);
+
+                // Triangulate in such a way, that every triangle uses the midpoint (with id 0) is part of the triangle
+                for(int i = 0; i< face.vertices.size() - 2; i++){
+                    face.indices.push_back(m_num_vertices);
+                    face.indices.push_back(m_num_vertices + i + 2);
+                    face.indices.push_back(m_num_vertices + i + 1);
                 }
+
+                // The Last Triangle Vertex IDs loop back around
+                face.indices.push_back(m_num_vertices);
+                face.indices.push_back(m_num_vertices + 1);
+                face.indices.push_back(m_num_vertices + face.vertices.size() - 1);
+                break;
             }
         }
     }
