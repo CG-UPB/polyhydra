@@ -61,7 +61,10 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.h
         ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass.cpp)
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass.cpp
+        ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
+        ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
+        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp src/panels/MeshLayerView.cpp src/panels/MeshLayerView.h src/algorithms/ExampleClass.cpp src/algorithms/ExampleClass.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

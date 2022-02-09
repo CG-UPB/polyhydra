@@ -53,7 +53,7 @@ namespace vOS
     // show log window and corresponding buttons
     void MeshLayerView::show()
     {
-        if(!ImGui::Begin("Mesh Layer View"))
+        if(!ImGui::Begin("Meshes"))
         {
             ImGui::End();
             return;

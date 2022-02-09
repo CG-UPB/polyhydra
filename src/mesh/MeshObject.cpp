@@ -24,7 +24,7 @@ namespace vOS
 
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp->set_persistent(true);
-        OpenVolumeMesh::VertexPropertyT<OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
+        OpenVolumeMesh::VertexPropertyT <OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
                 "VertexHighlightColor");
         highlightColProp->set_persistent(true);
 
@@ -49,13 +49,12 @@ namespace vOS
 
     }
 
-    void MeshObject::select_element(int id, int type)
-    {
-        int shape_key = type * 114748364 + id;
+    void MeshObject::select_element(int id, int type){
+        int shape_key = type * key_multiplier + id;
 
         // We can't select an element twice
         bool already_selected = is_element_selected(id, type);
-        if (already_selected)
+        if(already_selected)
             return;
 
         if (type == 0)
@@ -133,7 +132,7 @@ namespace vOS
         for (int element: m_selected_faces)
         {
             // Delete Shape Element
-            int shape_key = 0 * 114748364 + element;
+            int shape_key = 0 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
             Window::instance().rendering_mutex.unlock();
             Window::instance().remove_shape(shape_id);
@@ -145,7 +144,7 @@ namespace vOS
         for (int element: m_selected_vertices)
         {
             // Delete Shape Element
-            int shape_key = 1 * 114748364 + element;
+            int shape_key = 1 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
             Window::instance().rendering_mutex.unlock();
@@ -157,7 +156,7 @@ namespace vOS
         for (int element: m_selected_edges)
         {
             // Delete Shape Element
-            int shape_key = 2 * 114748364 + element;
+            int shape_key = 2 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
             Window::instance().rendering_mutex.unlock();
@@ -169,7 +168,7 @@ namespace vOS
         for (int element: m_selected_cells)
         {
             // Delete Shape Element
-            int shape_key = 3 * 114748364 + element;
+            int shape_key = 3 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
             Window::instance().rendering_mutex.unlock();
@@ -207,8 +206,9 @@ namespace vOS
         }
 
         // Delete Shape Element
-        int shape_key = type * 114748364 + id;
+        int shape_key = type * key_multiplier + id;
         int shape_id = m_created_shapes[shape_key];
+
 
         Window::instance().rendering_mutex.unlock();
         Window::instance().remove_shape(shape_id);
@@ -220,15 +220,11 @@ namespace vOS
     bool MeshObject::is_element_selected(int id, int type)
     {
 
-        id = type * 114748364 + id;
-
-        auto it = m_selected_vertices.find(id);
-
-        if (type == 0)
+        if(type == 0)
             return m_selected_faces.find(id) != m_selected_faces.end();
-        else if (type == 1)
+        else if(type == 1) {
             return m_selected_vertices.find(id) != m_selected_vertices.end();
-        else if (type == 2)
+        }else if(type == 2)
             return m_selected_edges.find(id) != m_selected_edges.end();
         else
             return m_selected_cells.find(id) != m_selected_cells.end();
@@ -323,7 +319,7 @@ namespace vOS
 
         for (auto vertex: m_mesh->vertices())
         {
-            if (m_mesh->is_boundary(vertex))
+            if(m_mesh->has_vertex_bottom_up_incidences() && m_mesh->is_boundary(vertex))
             {
                 vertex_peel_property[vertex] = 0;
                 act_level.push_back(vertex);
@@ -335,14 +331,14 @@ namespace vOS
 
         int depth = 0;
 
-        while (!act_level.empty())
+        while(!act_level.empty())
         {
             depth++;
-            for (auto vertex: act_level)
+            for(auto vertex : act_level)
             {
-                for (auto neighbour_cell: m_mesh->vertex_cells(vertex))
+                for (auto neighbour_cell : m_mesh->vertex_cells(vertex))
                 {
-                    for (auto neighbour: m_mesh->cell_vertices(neighbour_cell))
+                    for(auto neighbour : m_mesh->cell_vertices(neighbour_cell))
                     {
                         if (vertex_peel_property[neighbour] == -1)
                         {
@@ -358,12 +354,12 @@ namespace vOS
         }
 
         int max_depth = 0;
-        for (auto cell: m_mesh->cells())
+        for(auto cell : m_mesh->cells())
         {
             int minimum = 100000;
-            for (auto cell_vertex: m_mesh->cell_vertices(cell))
+            for(auto cell_vertex : m_mesh->cell_vertices(cell))
             {
-                if (vertex_peel_property[cell_vertex] < minimum)
+                if(vertex_peel_property[cell_vertex] < minimum)
                 {
                     minimum = vertex_peel_property[cell_vertex];
                 }
@@ -400,14 +396,14 @@ namespace vOS
         remove_highlight(highlight.v_h);
 
         // Add Highlight to Map
-        highlight_map.insert({highlight.v_h, highlight});
+        highlight_map.insert({highlight.v_h,  highlight});
         /*
         //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         if (std::get<5>(tuple) == true)
         {
             // Add
             m_vertex_highlights.push_back(tuple);
-        } else if (std::get_rgb<5>(tuple) == false)
+        } else if (std::get<5>(tuple) == false)
         {
             // Remove
             auto pos = std::find(m_vertex_highlights.begin(), m_vertex_highlights.end(),
@@ -420,20 +416,13 @@ namespace vOS
         */
     }
 
-    /**
-     * Diese Methode macht nichts!!
-     * @param vh
-     */
-    void MeshObject::remove_highlight(OpenVolumeMesh::VertexHandle vh)
-    {
+    void MeshObject::remove_highlight(OpenVolumeMesh::VertexHandle vh) {
 
         auto search = highlight_map.find(vh);
-        if (search != highlight_map.end())
-        {
+        if (search != highlight_map.end()) {
             // Element Exists
             highlight_map.erase(search);
-        } else
-        {
+        }else{
             // Element does not exist
             // ...
         }
@@ -444,27 +433,27 @@ namespace vOS
         //highlight_map.clear();
     }
 
-    std::map<OpenVolumeMesh::VertexHandle, Highlight> &MeshObject::get_highlights()
+    std::map<OpenVolumeMesh::VertexHandle, Highlight>& MeshObject::get_highlights()
     {
         return highlight_map;
     }
 
-    glm::vec3 &MeshObject::get_mesh_offset()
+    glm::vec3& MeshObject::get_mesh_offset()
     {
         return m_mesh_offset_from_center;
     }
 
-    VertexArrayObject *MeshObject::get_vao() const
+    VertexArrayObject* MeshObject::get_vao() const
     {
         return m_mvb->get_vao();
     }
 
-    VertexArrayObject *MeshObject::get_sphere_vao() const
+    VertexArrayObject* MeshObject::get_sphere_vao() const
     {
         return m_mvb->get_sphere_vao();
     }
 
-    VertexArrayObject *MeshObject::get_cylinder_vao() const
+    VertexArrayObject* MeshObject::get_cylinder_vao() const
     {
         return m_mvb->get_cylinder_vao();
     }
@@ -490,7 +479,7 @@ namespace vOS
         m_selection_offset = {start, start + calculate_selection_size()};
     }
 
-    std::pair<glm::vec3, glm::vec3> &MeshObject::get_transformed_bb(const glm::mat4 &transform)
+    std::pair<glm::vec3,glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
     {
 
         if (m_data.m_slice_locked)
@@ -500,7 +489,7 @@ namespace vOS
 
         std::vector<float> vertices;
 
-        for (auto v_it: m_mesh->vertices())
+        for (auto v_it : m_mesh->vertices())
         {
             auto v_pos = m_mesh->vertex(v_it);
             glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);

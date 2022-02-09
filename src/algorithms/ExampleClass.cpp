@@ -6,14 +6,22 @@
 #include "../Window.h"
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include <functional>
+#include <thread>
 
 using namespace vOS;
 
-void ExampleClass::start(){
+void ExampleClass::initialize() {
     // Set Custom UI for phase changing
-    Window::instance().set_custom_imgui(std::bind(&ExampleClass::simple_demonstration_ui, this));
+    Window::instance().set_vos_initialized(std::bind(&ExampleClass::start, this));
 
-    simple_run();
+    Window::instance().run();
+}
+
+void ExampleClass::start()
+{
+    Window::instance().set_custom_imgui(std::bind(&ExampleClass::simple_demonstration_ui, this));
+    std::thread* s_run_thread = new std::thread(&ExampleClass::simple_run, this);
+    s_run_thread->join();
 }
 
 void ExampleClass::simple_demonstration_ui(){
@@ -40,8 +48,7 @@ void ExampleClass::simple_run(){
     // VOS Window
     Window& window = Window::instance();
     window.add_mesh(&m_mesh);
-    // Open Window
-    window.run();
+
 }
 
 void ExampleClass::set_mesh_data()
@@ -120,11 +127,16 @@ void ExampleClass::toolbar_run(){
 
 
 void ExampleClass::selection_demonstration_ui(){
+
+    static std::thread* s_run_thread;
     ImGui::Begin("Custom UI");
     // Next Phase
     if (ImGui::Button("Next"))
     {
         m_phase++;
+
+        if(s_run_thread != nullptr)
+            s_run_thread->join();
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::bounding_demonstration_ui, this));
         Window::instance().remove_all_shapes();
         Window::instance().remove_all_meshes();
@@ -138,9 +150,11 @@ void ExampleClass::selection_demonstration_ui(){
     ImGui::SliderInt("Level", &selection_level, 0, 10000);
     ImGui::SliderInt("Type", &selection_type, 0, 3);
 
-    if(pre_level != selection_level || pre_type != selection_type)
-        selection_run();
-
+    if(pre_level != selection_level || pre_type != selection_type) {
+        if(s_run_thread != nullptr)
+            s_run_thread->join();
+        s_run_thread = new std::thread(&ExampleClass::selection_run, this);
+    }
     ImGui::End();
 }
 

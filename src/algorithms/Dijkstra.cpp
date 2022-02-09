@@ -9,6 +9,7 @@
 #include <math.h>
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include "ImGuiFileDialog.h"
+#include "../panels/NewFileDialog.h"
 
 typedef std::pair<float, OpenVolumeMesh::VertexHandle> Node;
 
@@ -81,7 +82,7 @@ namespace vOS
 
     void Dijkstra::start()
     {
-        bool linear = false;
+        bool linear = true;
 
         if(linear)
         {
@@ -144,21 +145,38 @@ namespace vOS
 
         if (ImGui::Button("Open File"))
         {
-            Window::instance().OpenFileDialogue();
-        }
+            NewFileDialog file_dialog;
 
-        if (Window::instance().FileDialogueOpen())
-        {
-            std::string path = Window::instance().GetFileDialoguePath();
-            if (path != "") {
+            char const * filename;
 
+            filename = file_dialog.openDialog("Open Mesh File");
+
+            if (filename != NULL){
                 OpenVolumeMesh::IO::FileManager file_manager;
-                file_manager.readFile(path, m_mesh);
+                file_manager.readFile(filename, m_mesh);
                 Window::instance().add_mesh(&m_mesh);
                 Window::instance().EndFileDialogue();
                 linear_run();
             }
         }
+        // deprecated
+//        if (ImGui::Button("Open File"))
+//        {
+//            Window::instance().OpenFileDialogue();
+//        }
+//
+//        if (Window::instance().FileDialogueOpen())
+//        {
+//            std::string path = Window::instance().GetFileDialoguePath();
+//            if (path != "") {
+//
+//                OpenVolumeMesh::IO::FileManager file_manager;
+//                file_manager.readFile(path, m_mesh);
+//                Window::instance().add_mesh(&m_mesh);
+//                Window::instance().EndFileDialogue();
+//                linear_run();
+//            }
+//        }
 
         ImGui::End();
     }

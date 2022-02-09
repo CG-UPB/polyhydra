@@ -24,6 +24,8 @@ public:
     void bounding_run();
 
     void start();
+
+    void initialize();
 private:
     int m_phase = 0;
     int hand = 0;

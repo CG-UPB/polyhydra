@@ -122,6 +122,7 @@ namespace vOS
         return res;
     }
 
+
     void MeshView::handleMouseControl()
     {
         // check where the imgui window is inside the main window, and how big it is
@@ -139,6 +140,24 @@ namespace vOS
         }
 
         bool isDown = Input::mouse_pressed();
+
+        // Move camera in direction of Movement Vector (WASD movement)
+
+        auto movement_vector = glm::vec3 (Input::get_wasd_movement_vector_X(),Input::get_wasd_movement_vector_Y(),Input::get_wasd_movement_vector_Z());
+
+        // Reset Movement speed multiplier whenever we stop moving or when we start moving
+        if((movement_vector[0] == 0 && movement_vector[1] == 0 && movement_vector[2] == 0) || (m_previous_movement_vector[0] == 0 && m_previous_movement_vector[1] == 0 && m_previous_movement_vector[2] == 0))
+            m_movement_speed_multiplier = 1;
+
+        m_previous_movement_vector[0] = movement_vector[0];
+        m_previous_movement_vector[1] = movement_vector[1];
+        m_previous_movement_vector[2] = movement_vector[2];
+
+        float movement_speed = m_movement_speed_multiplier;
+        m_movement_speed_multiplier *= 1.1f; // Gradually speed up movement
+        m_render_data.camera.position += movement_vector * movement_speed;
+
+        //std::cout << m_render_data.camera.position[0] << " "  << m_render_data.camera.position[1] << " " << m_render_data.camera.position[2] << " " << std::endl;
 
         // the cursor is inside the mesh viewport, so now we can manipulate the mesh view
         if (mousePos.x > vMin.x && mousePos.x < vMax.x && mousePos.y > vMin.y && mousePos.y < vMax.y)
@@ -414,6 +433,8 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
+                m_hovered_element_id = picked_id;
+                m_hovered_element_type = type;
 
                 any_mesh_hovered = true;
 
@@ -516,7 +537,6 @@ namespace vOS
         // handle the things related to our mesh rendering canvas
         handleResize();
         handleMouseControl();
-
         // Render Meshes
         render_pre_pass();
 
@@ -571,9 +591,21 @@ namespace vOS
 
         // show frame time and fps
         ImGui::SetCursorPos(topLeft);
-        ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+        ImGui::TextColored(ImVec4(0,0,0,1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+        ImGui::TextColored(ImVec4(0,0,0,1), "%.1f fps", ImGui::GetIO().Framerate);
+
+        // Show hovered element type and id
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        {
+            std::string hovered_element_name = m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
+                                                                                       (m_hovered_element_type == 2 ? "Edge" : "Cell"));
+            hovered_element_name += " : ";
+            hovered_element_name += std::to_string(m_hovered_element_id);
+
+            ImGui::Text(hovered_element_name.c_str());
+        }
 
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
