@@ -4,6 +4,7 @@ out vec4 FragColor;
 
 in vec3 v_pos;
 in vec3 v_normal;
+in vec3 v_color;
 flat in int v_visible;
 
 uniform vec3 u_lightPos;

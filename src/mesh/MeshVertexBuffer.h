@@ -89,6 +89,7 @@ namespace vOS
         std::vector<float> m_normals;
         std::vector<float> m_cell_centers;
         std::vector<float> m_is_face_boundary;
+        std::vector<float> m_colors;
         std::vector<float> m_sphere_cell_centers;
         std::vector<float> m_cylinder_cell_centers;
         std::vector<float> m_sphere_peel_depths;

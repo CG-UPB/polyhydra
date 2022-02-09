@@ -184,11 +184,11 @@ namespace vOS
     SelectionHoverPass::HoverMeshData SelectionHoverPass::get_face_mesh_data(MeshObject& mesh, int face_id)
     {
         HoverMeshData res;
-
         // Get Face from OVM
         OpenVolumeMesh::FaceHandle face(face_id);
         if (face.is_valid())
         {
+            OpenVolumeMesh::VectorT<double,3> midpoint = OpenVolumeMesh::VectorT<double,3>(0,0,0);
             // Get all Vertices and remember amount of vertices
             int num_vertices = 0;
             for (auto v_h : mesh.m_mesh->face_vertices(face))
@@ -197,20 +197,59 @@ namespace vOS
                 res.vertices.push_back(vertex[0]);
                 res.vertices.push_back(vertex[1]);
                 res.vertices.push_back(vertex[2]);
+                midpoint += vertex;
                 num_vertices++;
             }
 
+
+            // Add a new Midpoint Vertex, number of vertices exceed 4
+            if(num_vertices > 4){
+                midpoint /= num_vertices;
+
+                res.vertices.push_back(midpoint[0]);
+                res.vertices.push_back(midpoint[1]);
+                res.vertices.push_back(midpoint[2]);
+            }
+
             // Triangulate Face
-
-            res.indices.push_back(0);
-            res.indices.push_back(2);
-            res.indices.push_back(1);
-
-            if (num_vertices == 4)
+            switch (num_vertices)
             {
-                res.indices.push_back(0);
-                res.indices.push_back(3);
-                res.indices.push_back(2);
+                case 3:
+                {
+                    // simplest case, just connect the three vertices to a triangle
+                    res.indices.push_back(num_vertices + 0);
+                    res.indices.push_back(num_vertices + 2);
+                    res.indices.push_back(num_vertices + 1);
+                    break;
+                }
+                case 4:
+                {
+                    // we have 4 vertices, so we need to create two triangles out of it
+                    res.indices.push_back(num_vertices + 0);
+                    res.indices.push_back(num_vertices + 2);
+                    res.indices.push_back(num_vertices + 1);
+
+                    res.indices.push_back(num_vertices + 0);
+                    res.indices.push_back(num_vertices + 3);
+                    res.indices.push_back(num_vertices + 2);
+                    break;
+                }
+                default:
+                {
+
+                    // Triangulate in such a way, that every triangle uses the midpoint (with id 0) is part of the triangle
+                    for(int i = 0; i< num_vertices - 2; i++){
+                        res.indices.push_back(num_vertices + num_vertices - 1);
+                        res.indices.push_back(num_vertices + i + 1);
+                        res.indices.push_back(num_vertices + i + 2);
+                    }
+
+                    // The Last Triangle Vertex IDs loop back around
+                    res.indices.push_back(num_vertices + num_vertices - 1);
+                    res.indices.push_back(num_vertices);
+                    res.indices.push_back(num_vertices + 1);
+                    break;
+                }
             }
 
             // Set other mesh data

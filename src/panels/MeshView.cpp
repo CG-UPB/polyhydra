@@ -552,7 +552,7 @@ namespace vOS
             hovered_element_name += " : ";
             hovered_element_name += std::to_string(m_hovered_element_id);
 
-            ImGui::Text(hovered_element_name.c_str());
+            ImGui::TextColored(ImVec4(0,0,0,1), hovered_element_name.c_str());
         }
 
         /*
