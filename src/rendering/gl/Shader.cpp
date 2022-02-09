@@ -33,7 +33,7 @@ namespace vOS
         if (!success)
         {
             glGetShaderInfoLog(vertexID, 512, nullptr, infoLog);
-            std::cout << "Error when compiling vertex shader: " << infoLog << std::endl;
+            std::cout << "Error while compiling " << vertexPath << " -> " << infoLog << std::endl;
         }
 
         // setup fragment shader
@@ -44,7 +44,7 @@ namespace vOS
         if (!success)
         {
             glGetShaderInfoLog(fragmentID, 512, nullptr, infoLog);
-            std::cout << "Error when compiling fragment shader: " << infoLog << std::endl;
+            std::cout << "Error while compiling " << fragmentPath << " -> " << infoLog << std::endl;
         }
 
         // setup geometry shader, if it exists
@@ -62,7 +62,7 @@ namespace vOS
             if (!success)
             {
                 glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
-                std::cout << "Error when compiling geometry shader: " << infoLog << std::endl;
+                std::cout << "Error while compiling " << geometryPath << " -> " << infoLog << std::endl;
             }
 
             glAttachShader(m_shaderID, geometryID);
