@@ -30,10 +30,10 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        m_meshFrameBuffer = new FrameBufferObject(width, height, true);
-        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
-        m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
+        m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -239,8 +239,8 @@ namespace vOS
         int export_width = (int) ((float) m_viewportPanelWidth * resolution_upscale);
         int export_height = (int) ((float) m_viewportPanelHeight * resolution_upscale);
 
-        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, true);
-        auto export_framebuffer = new FrameBufferObject(export_width, export_height);
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
 
         export_framebuffer_ms->bind();
 
@@ -281,7 +281,7 @@ namespace vOS
         export_framebuffer_ms->unbind();
 
         // copy our multisampled framebuffer to the output framebuffer
-        FrameBufferObject::copy(export_framebuffer_ms, export_framebuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, export_framebuffer_ms, export_framebuffer);
 
         export_framebuffer->bind();
 
@@ -512,7 +512,7 @@ namespace vOS
         }
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -522,11 +522,11 @@ namespace vOS
         ImTextureID texture_id;
         if (SelectionPass::DEBUG_MODE)
         {
-            texture_id = reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id());
+            texture_id = reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
         }
         else
         {
-            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
+            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
         }
 
         // finally, add the framebuffer texture as an image to the imgui window

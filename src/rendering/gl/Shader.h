@@ -30,18 +30,19 @@ namespace vOS
         static Shader* get(const std::string& shader_name);
 
         /**
-         * Convenience shader references.
-         *
-         * @return the specified shader
+         * Utility shaders.
          */
-        static Shader* mesh_normal_shader() { return get("mesh_normal"); }
         static Shader* background_shader() { return get("background"); }
         static Shader* basic_shape_shader() { return get("basic_shape"); }
+        static Shader* quad_circle_shader() { return get("quad_circle"); }
+        static Shader* flat_color_shader() { return get("flat_color"); }
+
+        /**
+         * Selection shaders.
+         */
         static Shader* selection_face() { return get("selection_face"); }
         static Shader* selection_vertex_shader() { return get("selection_vertex"); }
         static Shader* selection_edge_shader() { return get("selection_edge"); }
-        static Shader* flat_color_shader() { return get("flat_color"); }
-        static Shader* quad_circle_shader() { return get("quad_circle"); }
         static Shader* edge_hover_shader() { return get("edge_hover"); }
 
         /**
@@ -120,12 +121,20 @@ namespace vOS
 
     private:
 
+        /**
+         * Creates a new shader object from the given resource paths.
+         *
+         * @param vertexPath vertex resource path
+         * @param fragmentPath fragment resource path
+         * @param geometryPath geometry resource path (may be empty)
+         */
         Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath);
         ~Shader() = default;
 
         // all loaded shaders by name
         static std::unordered_map<std::string, Shader*> s_shaders;
 
+        // opengl program id
         unsigned int m_shaderID;
 
         // we are caching the uniform locations, so we don't need to query them every frame
