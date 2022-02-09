@@ -67,7 +67,5 @@ namespace vOS
         int m_frame_limit = 4;
         int m_current_frame = 0;
 
-
-        void handleKeyboard();
     };
 }
