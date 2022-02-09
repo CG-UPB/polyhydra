@@ -148,7 +148,7 @@ namespace vOS
 
                 // if vertex lays on surface: determine normal by adjacent faces on surface
                 int boundary_level = 0;
-                bool phong = false;
+                bool phong = true;
                 if (phong && peel_property[cell] == boundary_level && vertex_peel_property[v] == boundary_level)
                 {
                     OpenVolumeMesh::VectorT<float, 3> normal = {0.0, 0.0, 0.0};

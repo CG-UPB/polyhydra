@@ -35,6 +35,10 @@ namespace vOS
         set_mesh(mesh);
     }
 
+    /**
+     *
+     * @param file_path
+     */
     void MeshObject::load_from_file(std::string file_path)
     {
         OpenVolumeMesh::IO::FileManager file_manager;
@@ -416,6 +420,10 @@ namespace vOS
         */
     }
 
+    /**
+     * Diese Methode macht nichts!!
+     * @param vh
+     */
     void MeshObject::remove_highlight(OpenVolumeMesh::VertexHandle vh)
     {
 

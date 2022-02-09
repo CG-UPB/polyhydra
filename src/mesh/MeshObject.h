@@ -23,6 +23,7 @@ namespace vOS
 
         [[nodiscard]] glm::vec3 get_rgb() const
         { return {r, g, b}; }
+
         [[nodiscard]] glm::vec4 get_rgba() const
         { return {r, g, b, a}; }
 
@@ -34,10 +35,10 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.85f, 0.85f, 0.85f, 0.7), m_visible(true), rendering_mode("mesh_phong")
+        MeshData() : m_color(0.85f, 0.85f, 0.85f, 1.0), m_visible(true), rendering_mode("mesh_phong")
         {
             m_peel_level = 0;
-            m_slice_level =0;
+            m_slice_level = 0;
             m_cell_size = 1;
         }
 
@@ -78,23 +79,23 @@ namespace vOS
 
         MeshObject();
 
-        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh);
+        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
 
         ~MeshObject();
 
-        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* m_mesh;
+        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *m_mesh;
 
         // Selection Functionality
-        std::unordered_set<int>& get_all_selected_faces()
+        std::unordered_set<int> &get_all_selected_faces()
         { return m_selected_faces; }
 
-        std::unordered_set<int>& get_all_selected_vertices()
+        std::unordered_set<int> &get_all_selected_vertices()
         { return m_selected_vertices; }
 
-        std::unordered_set<int>& get_all_selected_edges()
+        std::unordered_set<int> &get_all_selected_edges()
         { return m_selected_edges; }
 
-        std::unordered_set<int>& get_all_selected_cells()
+        std::unordered_set<int> &get_all_selected_cells()
         { return m_selected_cells; }
 
         void select_element(int id, int type);
@@ -105,7 +106,7 @@ namespace vOS
 
         bool is_element_selected(int id, int type);
 
-        MeshData& get_data()
+        MeshData &get_data()
         { return m_data; }
 
         void set_data(MeshData data)
@@ -113,9 +114,9 @@ namespace vOS
 
         void load_from_file(std::string file_path);
 
-        void write_to_file(const std::string& file_path) const;
+        void write_to_file(const std::string &file_path) const;
 
-        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh);
+        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
 
         void add_highlight(Highlight tuple);
 
@@ -131,26 +132,26 @@ namespace vOS
 
         int to_faceID(int value);
 
-        std::tuple<int, int>& selection_offset()
+        std::tuple<int, int> &selection_offset()
         { return m_selection_offset; };
 
         void set_selection_offset(int start);
 
-        std::map<OpenVolumeMesh::VertexHandle, Highlight>& get_highlights();
+        std::map<OpenVolumeMesh::VertexHandle, Highlight> &get_highlights();
 
-        glm::vec3& get_mesh_offset();
+        glm::vec3 &get_mesh_offset();
 
-        [[nodiscard]] VertexArrayObject* get_vao() const;
+        [[nodiscard]] VertexArrayObject *get_vao() const;
 
-        glm::vec3& get_min()
+        glm::vec3 &get_min()
         { return m_min; };
 
-        glm::vec3& get_max()
+        glm::vec3 &get_max()
         { return m_max; };
 
-        std::pair<glm::vec3, glm::vec3>& get_transformed_bb(const glm::mat4& transform);
+        std::pair<glm::vec3, glm::vec3> &get_transformed_bb(const glm::mat4 &transform);
 
-        glm::vec3& get_slice_dir(const glm::mat4& transform, const glm::vec3& view_dir);
+        glm::vec3 &get_slice_dir(const glm::mat4 &transform, const glm::vec3 &view_dir);
 
         int get_max_peel_depth() const;
 
@@ -160,11 +161,11 @@ namespace vOS
          *
          * @return the instanced sphere vao for this mesh
          */
-        [[nodiscard]] VertexArrayObject* get_sphere_vao() const;
+        [[nodiscard]] VertexArrayObject *get_sphere_vao() const;
 
         [[nodiscard]] int get_num_visible_vertices() const;
 
-        [[nodiscard]] VertexArrayObject* get_cylinder_vao() const;
+        [[nodiscard]] VertexArrayObject *get_cylinder_vao() const;
 
         [[nodiscard]] int get_num_visible_edges() const;
 
@@ -188,7 +189,7 @@ namespace vOS
         std::tuple<int, int> m_selection_offset;
         glm::vec3 m_mesh_offset_from_center;
 
-        MeshVertexBuffer* m_mvb = nullptr;
+        MeshVertexBuffer *m_mvb = nullptr;
 
         MeshData m_data;
 

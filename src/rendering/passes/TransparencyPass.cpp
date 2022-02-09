@@ -125,6 +125,10 @@ namespace vOS
         m_transparency_shader->unbind();
 
 
+    }
+
+    void TransparencyPass::renderComposition()
+    {
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -132,26 +136,10 @@ namespace vOS
         m_mesh_view->m_meshFrameBuffer->bind();
         m_composite_shader->bind();
 
-        m_composite_shader->set_uniform_mat4f("u_Transform", transform);
-        m_composite_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
-        m_composite_shader->set_uniform_mat4f("u_View", data.camera.view);
-        m_composite_shader->set_uniform_vec3f("u_lightPos", data.light.position);
-        m_composite_shader->set_uniform_vec3f("u_camPos", data.camera.position);
-        m_composite_shader->set_uniform_vec3f("u_lightColor", data.light.color);
-        m_composite_shader->set_uniform_float("u_cell_size", cell_size);
-        m_composite_shader->set_uniform_vec4f("u_objectColor", obj->get_data().m_color.get_rgba());
-        m_composite_shader->set_uniform_int("u_peel_depth", peel_depth);
-        m_composite_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_composite_shader->set_uniform_vec3f("u_min", min);
-        m_composite_shader->set_uniform_vec3f("u_max", max);
-        m_composite_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_composite_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-
         m_composite_shader->set_uniform_sampler2D("accumTexture", 0, m_accumTexture);
         m_composite_shader->set_uniform_sampler2D("revealTexture", 1, m_revealTexture);
 
 
-        vao->draw();
         m_composite_shader->unbind();
         m_mesh_view->m_meshFrameBuffer->unbind();
 
@@ -160,7 +148,6 @@ namespace vOS
         glDisable(GL_BLEND);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     }
 
 

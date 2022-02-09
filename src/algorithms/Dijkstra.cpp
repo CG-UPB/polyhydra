@@ -372,7 +372,7 @@ namespace vOS
 
         window.EndFileDialogue();
 
-        Window::instance().add_mesh(&m_mesh);
+
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
         window.remove_all_vertex_highlights();
@@ -394,6 +394,7 @@ namespace vOS
         // Wait for Vos to initialize
         window.is_ready();
 
+        Window::instance().add_mesh(&m_mesh);
         auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
         box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
         box_start->set_base_color(0.2f, 0.2f, 1.0f);

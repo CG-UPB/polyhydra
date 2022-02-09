@@ -14,6 +14,7 @@ namespace vOS
         ~TransparencyPass();
 
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void renderComposition();
 
     private:
 

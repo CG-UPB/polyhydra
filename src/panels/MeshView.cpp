@@ -397,6 +397,7 @@ namespace vOS
                 m_transparency_pass->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
+        m_transparency_pass->renderComposition();
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -532,7 +533,7 @@ namespace vOS
         m_meshFrameBuffer->unbind();
 
         // Render transparent objects
-        render_transparency();
+        //render_transparency();
 
 
 
