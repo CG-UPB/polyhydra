@@ -406,7 +406,7 @@ namespace vOS
                         for (size_t i = 0; i < m_nbr_meshes; i++)
                         {
                             const char* label = ("Mesh " + std::to_string(i)).c_str();
-                            ImGui::Selectable(label,&m_selected_mesh[i]);
+                            ImGui::Selectable(label,&m_hovered_mesh[i]);
                         }
                         ImGui::EndPopup();
                     }

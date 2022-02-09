@@ -25,7 +25,7 @@ namespace vOS
         void m_set_current_lighting_type(int lighting_type){m_lighting_type = lighting_type;};
         void m_set_current_new_active_mesh(bool new_active){m_new_active_mesh = new_active;};
         void m_set_current_active_mesh(int active_mesh){m_active_mesh = active_mesh;};
-        //void m_set_current_selected_mesh(bool sel[]){m_selected_mesh = sel;};
+        //void m_set_current_selected_mesh(bool sel[]){m_hovered_mesh = sel;};
         void m_set_current_nbr_meshes(int nbr_meshes){m_nbr_meshes = nbr_meshes;};
 
         void m_set_test(std::vector<bool> sel){m_sel = sel;};
@@ -43,7 +43,7 @@ namespace vOS
         int m_get_current_rendering_mode(){return m_rendering_mode;};
         bool m_get_current_new_active_mesh(){return m_new_active_mesh;}
         int m_get_current_active_mesh(){return m_active_mesh;};
-        //bool* m_get_current_selected_mesh(){return m_selected_mesh;};
+        //bool* m_get_current_selected_mesh(){return m_hovered_mesh;};
         int m_get_current_nbr_meeshes(){return m_nbr_meshes;};
 
         std::vector<bool> get_test(){return m_sel;};

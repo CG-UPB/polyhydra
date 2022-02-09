@@ -8,11 +8,10 @@ namespace vOS
 {
 
     BackgroundPass::BackgroundPass():
-//        m_top_color(glm::vec4(0.8,0.8,0.8,1.0)),
-//        m_bottom_color(glm::vec4(0.9, 0.9, 0.9, 1.0))
         m_top_color(glm::vec4(1.0,1.0,1.0,1.0)),
-        m_bottom_color(glm::vec4(1.0, 1.0, 1.0, 1.0))
+        m_bottom_color(glm::vec4(0.7, 0.7, 0.7, 1.0))
     {
+        // Create plane mesh
         m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f), CommonMeshes::PlaneXY::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
         m_background_shader = Shader::background_shader();
@@ -25,7 +24,9 @@ namespace vOS
 
     void BackgroundPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
-        // rendering a simple gradient for now, may be changed to something more fancy
+        // Parameters are ignored, as they are not necessary
+
+        // Rendering a simple gradient
         glDisable(GL_BLEND);
         glDepthMask(GL_FALSE);
         m_background_shader->bind();

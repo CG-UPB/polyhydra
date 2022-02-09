@@ -11,7 +11,7 @@ namespace vOS
 
     void MeshPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
-        // Get Mesh
+        // Get MeshObject
         MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
         if(obj == nullptr)
             return;
@@ -25,6 +25,7 @@ namespace vOS
             render_in_wireframe_mode = true;
         }
 
+        // Gl Setup
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
@@ -32,6 +33,7 @@ namespace vOS
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
 
+        // Additonal Setup necessary if in wireframe mode
         if (render_in_wireframe_mode)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -44,12 +46,16 @@ namespace vOS
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
+        // Get shader
         auto m_mesh_shader = Shader::get(rendering_mode);
 
         m_mesh_shader->bind();
 
+        // Transform
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+
+        // Cell operations
         float cell_size = obj->get_data().m_cell_size;
         int peel_depth = obj->get_data().m_peel_level;
         float slice_depth = obj->get_data().m_slice_level;
@@ -58,11 +64,12 @@ namespace vOS
         auto min = bb.first;
         auto max = bb.second;
 
+        // View Operations
         glm::mat4 view_inv = glm::inverse(data.camera.view);
         glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
         auto slice_direction = obj->get_slice_dir(transform, view_dir);
 
-        // set all of our uniforms
+        // Shader uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
         m_mesh_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
         m_mesh_shader->set_uniform_mat4f("u_View", data.camera.view);
@@ -82,6 +89,7 @@ namespace vOS
 
         m_mesh_shader->unbind();
 
+        // Revert to polygon mode, so that other Shader Passes are not wrongly rendered
         if (render_in_wireframe_mode)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

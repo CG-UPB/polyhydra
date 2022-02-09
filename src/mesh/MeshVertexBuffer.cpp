@@ -199,15 +199,25 @@ namespace vOS
 
 
                     if(!first_edge){
-                        // Calculate Normal
+                        // Set three Triangle Points
                         auto pos_1 = previous_position; // Vertex Position from previous Vertex
                         auto pos_2 = v_pos; // This Vertice's position
                         auto pos_3 = midpoint; // Midpoint Vertex position
 
+                        // Calculate Area of Triangle
+                        auto b_a = pos_2 - pos_1;
+                        auto c_a = pos_3 - pos_1;
+
+                        auto cross = b_a.cross(c_a);
+
+                        float area = cross.length() /2;
+
+                        std::cout << area << std::endl;
+                        // Calculate Normal of Triangle
                         OpenVolumeMesh::VectorT<float,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
 
-                        // Add to Face Normal
-                        face_normal += normal;
+                        // Add to Face Normal and multiply by triangle area
+                        face_normal += normal * area;
 
                         previous_position = v_pos;
 
