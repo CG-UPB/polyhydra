@@ -58,7 +58,7 @@ namespace vOS
             ImGui::End();
             return;
         }
-        int active_mesh = Window::instance().get_mesh_active();
+        int active_mesh = Window::instance().get_mesh_focus();
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             std::string str = "Mesh " + std::to_string(m.first);
@@ -69,7 +69,7 @@ namespace vOS
             {
                 LogWindow::getInstance()->addLog("New Focus Mesh");
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_focus_mesh(m.first);
+                Window::instance().set_mesh_focus(m.first);
                 Window::instance().rendering_mutex.lock();
             }
 
@@ -153,7 +153,7 @@ namespace vOS
             }
         }
         Window::instance().rendering_mutex.unlock();
-        Window::instance().set_mesh_active(active_mesh);
+        Window::instance().set_mesh_focus(active_mesh);
         Window::instance().rendering_mutex.lock();
 
         ImGui::End();

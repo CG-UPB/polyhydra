@@ -64,12 +64,12 @@ namespace vOS
             return;
         }
 
-//        m_active_mesh = Window::instance().get_mesh_active();
-//        ImGui::InputInt("Mesh in Focus", &m_active_mesh);
-//        if (m_active_mesh < 0) m_active_mesh = 0;
-//        if (m_active_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
-//        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
-//        Window::instance().set_mesh_active(m_active_mesh);
+//        m_focused_mesh = Window::instance().get_mesh_focus();
+//        ImGui::InputInt("Mesh in Focus", &m_focused_mesh);
+//        if (m_focused_mesh < 0) m_focused_mesh = 0;
+//        if (m_focused_mesh >= GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes()) m_focused_mesh = GlobalViewerSettings::getInstance()->m_get_current_nbr_meeshes() - 1;
+//        GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_focused_mesh);
+//        Window::instance().set_mesh_focus(m_focused_mesh);
         //GlobalViewerSettings::getInstance()->m_set_current_new_active_mesh(true);
 
         if (ImGui::Button("Snapshot")) {
@@ -129,14 +129,14 @@ namespace vOS
                     // Unselect the previous manually selected element
                     if (m_previous_manual_selection_id >= 0) {
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().unselect_element(Window::instance().get_mesh_active(),
+                        Window::instance().unselect_element(Window::instance().get_mesh_focus(),
                                                             m_previous_manual_selection_id,
                                                             m_previous_manual_selection_type);
                         Window::instance().rendering_mutex.lock();
                     }
                     // Select the new manually selected element
                     Window::instance().rendering_mutex.unlock();
-                    Window::instance().select_element(Window::instance().get_mesh_active(), m_manual_selection_id,
+                    Window::instance().select_element(Window::instance().get_mesh_focus(), m_manual_selection_id,
                                                       m_manual_selection_type);
                     Window::instance().rendering_mutex.lock();
                     m_previous_manual_selection_id = m_manual_selection_id;
@@ -187,7 +187,7 @@ namespace vOS
             if (ImGui::CollapsingHeader("Active Mesh Settings")) {
                 if (ImGui::BeginTable("split1", 1)) {
                     ImGui::TableNextColumn();
-                    int active_mesh = Window::instance().get_mesh_active();
+                    int active_mesh = Window::instance().get_mesh_focus();
 
                     // Mesh transformations, such as position and scale
                     if (active_mesh >= 0) {
@@ -491,30 +491,30 @@ namespace vOS
                             char* char_type = new char[str.length()];
                             meshList[i] = strcpy(char_type, str.c_str());
                         }
-                        //m_active_mesh = GlobalViewerSettings::getInstance()->m_get_current_active_mesh();
-                        m_active_mesh = Window::instance().get_mesh_active();
-                        ImGui::Combo("   ", &m_active_mesh, meshList, IM_ARRAYSIZE(meshList), IM_ARRAYSIZE(meshList));
-                        //GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_active_mesh);
+                        //m_focused_mesh = GlobalViewerSettings::getInstance()->m_get_current_active_mesh();
+                        m_focused_mesh = Window::instance().get_mesh_focus();
+                        ImGui::Combo("   ", &m_focused_mesh, meshList, IM_ARRAYSIZE(meshList), IM_ARRAYSIZE(meshList));
+                        //GlobalViewerSettings::getInstance()->m_set_current_active_mesh(m_focused_mesh);
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().set_mesh_active(m_active_mesh);
+                        Window::instance().set_mesh_focus(m_focused_mesh);
                         Window::instance().rendering_mutex.lock();
 
-                        bool visible = Window::instance().get_mesh_visibility(m_active_mesh);
+                        bool visible = Window::instance().get_mesh_visibility(m_focused_mesh);
                         ImGui::Checkbox("Visible", &visible);
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().set_mesh_visibility(m_active_mesh, visible);
+                        Window::instance().set_mesh_visibility(m_focused_mesh, visible);
                         Window::instance().rendering_mutex.lock();
 
-                        Color color = Window::instance().get_mesh_color(m_active_mesh);
+                        Color color = Window::instance().get_mesh_color(m_focused_mesh);
                         m_color[0] = color.get().r;
                         m_color[1] = color.get().g;
                         m_color[2] = color.get().b;
                         ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().set_mesh_color(m_active_mesh, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
+                        Window::instance().set_mesh_color(m_focused_mesh, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
                         Window::instance().rendering_mutex.lock();
 
-                        std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m_active_mesh);
+                        std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m_focused_mesh);
                         int current_rendering_mode_int = 0;
                         if (current_rendering_mode == "mesh_wireframe")
                             current_rendering_mode_int = 1;
@@ -530,7 +530,7 @@ namespace vOS
                         ImGui::Combo("  ", &current_rendering_mode_int, rendering_mode_internal_names,
                                      IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().set_mesh_rendering_mode(m_active_mesh,rendering_mode_internal_names[current_rendering_mode_int]);
+                        Window::instance().set_mesh_rendering_mode(m_focused_mesh,rendering_mode_internal_names[current_rendering_mode_int]);
                         Window::instance().rendering_mutex.lock();
                     }
                     if(ImGui::Button("Close"))

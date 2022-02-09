@@ -247,14 +247,14 @@ namespace vOS
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto active_mesh = Window::instance().get_active_mesh_obj();
+        auto active_mesh = Window::instance().get_focused_mesh_object();
         if (active_mesh != nullptr)
         {
             if(!m_zoom)
             {
-                m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
+                m_zoom_point = Window::instance().get_focused_mesh_object()->get_mesh_offset();
             }
-            Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
+            Window::instance().get_focused_mesh_object()->get_data().offset = m_zoom_point;
 
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
             {
@@ -460,7 +460,7 @@ namespace vOS
             m_zoom = false;
         }
 
-        auto active_mesh = Window::instance().get_active_mesh_obj();
+        auto active_mesh = Window::instance().get_focused_mesh_object();
         if (!any_mesh_hovered && active_mesh != nullptr)
         {
             m_selection_hover_pass.select(*active_mesh, m_render_data, 0, 0, 0);
@@ -560,7 +560,7 @@ namespace vOS
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
         {
-            auto mesh = Window::instance().get_active_mesh_obj()->m_mesh;
+            auto mesh = Window::instance().get_focused_mesh_object()->m_mesh;
 
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
             ImGui::Text("vertices: %zu", mesh->n_vertices());

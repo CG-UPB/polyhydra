@@ -14,7 +14,7 @@ void ExampleClass::initialize() {
     // Set Custom UI for phase changing
     Window::instance().set_vos_initialized(std::bind(&ExampleClass::start, this));
 
-    Window::instance().run();
+    Window::instance().open();
 }
 
 void ExampleClass::start()
@@ -43,7 +43,7 @@ void ExampleClass::simple_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3f m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
+    file_manager.readFile("../res/sample_meshes/broken_bullet_MC.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();

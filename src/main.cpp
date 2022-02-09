@@ -4,13 +4,13 @@
 
 int main()
 {
-//    ExampleClass cl;
-//    cl.start();
+      ExampleClass cl;
+     cl.initialize();
 
 
 
-    vOS::Dijkstra dijkstra;
-    dijkstra.start();
+    //vOS::Dijkstra dijkstra;
+    //dijkstra.start();
 
     return 0;
 }
