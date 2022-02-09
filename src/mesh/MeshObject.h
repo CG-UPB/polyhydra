@@ -21,8 +21,10 @@ namespace vOS
         Color(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a)
         {}
 
-        [[nodiscard]] glm::vec3 get() const
+        [[nodiscard]] glm::vec3 get_rgb() const
         { return {r, g, b}; }
+        [[nodiscard]] glm::vec4 get_rgba() const
+        { return {r, g, b, a}; }
 
         float r;
         float g;
@@ -32,7 +34,7 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.85f, 0.85f, 0.85f, 1), m_visible(true), rendering_mode("mesh_phong")
+        MeshData() : m_color(0.85f, 0.85f, 0.85f, 0.7), m_visible(true), rendering_mode("mesh_phong")
         {
             m_peel_level = 0;
             m_slice_level =0;

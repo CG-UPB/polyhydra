@@ -32,7 +32,7 @@ namespace vOS
         unsigned int fbo;
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
+        GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
         glDrawBuffers(1, buffers);
         return fbo;
     }
@@ -44,7 +44,7 @@ namespace vOS
         if (m_multisample)
         {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, GL_RGBA8, m_width, m_height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA8, m_width, m_height, GL_TRUE);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
         }
@@ -62,6 +62,21 @@ namespace vOS
         return tex[0];
     }
 
+    unsigned int FrameBufferObject::create_color_attachment(unsigned int attachment)
+    {
+        unsigned int tex[1];
+        glGenTextures(1, tex);
+        glBindTexture(GL_TEXTURE_2D, tex[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex[0], 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return tex[0];
+    }
+
     unsigned int FrameBufferObject::create_depth_texture_attachment()
     {
         unsigned int tex[1];
@@ -69,13 +84,13 @@ namespace vOS
         if (m_multisample)
         {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
         }
         else
         {
             glBindTexture(GL_TEXTURE_2D, tex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex[0], 0);
@@ -112,7 +127,8 @@ namespace vOS
         m_height = height;
         m_frameBufferID = create_framebuffer();
         m_textureID = create_texture_attachment();
-        m_depth_texture_id = create_depth_texture_attachment();
+        m_peel_textureID = create_color_attachment(GL_COLOR_ATTACHMENT1);
+        m_depth_textureID = create_depth_texture_attachment();
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
             fprintf(stderr, "Error: %u\n", glCheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -136,6 +152,16 @@ namespace vOS
     unsigned int FrameBufferObject::get_texture_id() const
     {
         return m_textureID;
+    }
+
+    unsigned int FrameBufferObject::get_peel_texture_id() const
+    {
+        return m_peel_textureID;
+    }
+
+    unsigned int FrameBufferObject::get_depth_texture_id() const
+    {
+        return m_depth_textureID;
     }
 
     unsigned int FrameBufferObject::get_id() const
@@ -166,6 +192,15 @@ namespace vOS
                 dest->get_width(), dest->get_height(),
                 GL_COLOR_BUFFER_BIT,
                 GL_LINEAR);
+        glReadBuffer(GL_DEPTH_ATTACHMENT);
+        glDrawBuffer(GL_DEPTH_ATTACHMENT);
+        glBlitFramebuffer(
+                0, 0,
+                src->get_width(), src->get_height(),
+                0, 0,
+                dest->get_width(), dest->get_height(),
+                GL_DEPTH_BUFFER_BIT,
+                GL_NEAREST);
 
         glReadBuffer(GL_DEPTH_ATTACHMENT);
         glDrawBuffer(GL_DEPTH_ATTACHMENT);
@@ -179,10 +214,5 @@ namespace vOS
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    }
-
-    unsigned int FrameBufferObject::get_depth_texture_id() const
-    {
-        return m_depth_texture_id;
     }
 }

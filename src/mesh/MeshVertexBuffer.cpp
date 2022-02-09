@@ -65,6 +65,7 @@ namespace vOS
     void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
     {
         OpenVolumeMesh::CellPropertyT<int> peel_property = mesh.request_cell_property<int>("PeelDepth");
+        OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = mesh.request_vertex_property<int>("PeelDepth");
 
 
         std::vector<FaceData> faces;
@@ -83,10 +84,10 @@ namespace vOS
             num_selection_vertices++;
         }
 
-        // get the center, so we can add it as a vertex attribute
+        // get_rgb the center, so we can add it as a vertex attribute
         glm::vec3 cell_center = get_center(vertices);
 
-        // get peel depth of the cell
+        // get_rgb peel depth of the cell
         int peel_depth = peel_property[cell];
 
         for (int i = 0; i < num_selection_vertices; i++)
@@ -125,17 +126,17 @@ namespace vOS
                 faceData.is_boundary = true;
             }
 
-            // get the face normal
+            // get_rgb the face normal
             auto hf_normal = mesh.normal(chf_it);
 
             // iterate over the halfedges of the halfface
             for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
             {
-                // get the corresponding edge vertex
+                // get_rgb the corresponding edge vertex
                 auto v = mesh.from_vertex_handle(hfhe_it);
                 auto v_pos = mesh.vertex(v);
 
-                // get geometry data
+                // get_rgb geometry data
                 VertexData v_data;
                 v_data.position.x = v_pos[0];
                 v_data.position.y = v_pos[1];
@@ -145,6 +146,46 @@ namespace vOS
                 v_data.normal.z = -hf_normal[2];
                 v_data.ovm_handle = v;
 
+                // if vertex lays on surface: determine normal by adjacent faces on surface
+                int boundary_level = 0;
+                bool phong = false;
+                if (phong && peel_property[cell] == boundary_level && vertex_peel_property[v] == boundary_level)
+                {
+                    OpenVolumeMesh::VectorT<float, 3> normal = {0.0, 0.0, 0.0};
+                    int count = 0;
+
+                    for(auto vhf : mesh.vertex_halffaces(v))
+                    {
+
+                        auto vohf = mesh.opposite_halfface_handle(vhf);
+                        auto fc = mesh.incident_cell(vhf);
+                        auto ofc = mesh.incident_cell(vohf);
+
+                        if (ofc.is_valid() && fc.is_valid() && peel_property[ofc] < peel_property[fc])
+                        {
+                            normal = normal + (-mesh.normal(vhf));
+                            count++;
+                        }
+                        else if(!ofc.is_valid())
+                        {
+                            normal = normal + (-mesh.normal(vhf));
+                            count++;
+                        }
+                        else if (!fc.is_valid())
+                        {
+                            normal = normal + (-mesh.normal(vohf));
+                            count++;
+                        }
+                    }
+                    if ( count > 0)
+                    {
+                        normal = normal / count;
+                        v_data.normal.x = normal[0] ;
+                        v_data.normal.y = normal[1];
+                        v_data.normal.z = normal[2];
+                    }
+
+                }
                 faceData.vertices.push_back(v_data);
             }
 

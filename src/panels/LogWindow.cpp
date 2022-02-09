@@ -129,7 +129,7 @@ namespace vOS
                 const char* line_start = buf + lineOffsets[line_no];
                 const char* line_end = (line_no + 1 < lineOffsets.Size) ? (buf + lineOffsets[line_no + 1] - 1) : buf_end;
                 if (filter.PassFilter(line_start, line_end))
-                    // option to get colorful text -> not really working yet
+                    // option to get_rgb colorful text -> not really working yet
                     //ImGui::TextColored(colors.at(line_no),line_start,line_end);
                     // option may be used to print white text
                     ImGui::TextUnformatted(line_start, line_end);
@@ -147,9 +147,9 @@ namespace vOS
                 {
                     const char* line_start = buf + lineOffsets[line_no];
                     const char* line_end = (line_no + 1 < lineOffsets.Size) ? (buf + lineOffsets[line_no + 1] - 1) : buf_end;
-                    // option to get colorful text -> not really working yet
+                    // option to get_rgb colorful text -> not really working yet
                     //ImGui::TextColored(colors.at(colLine++),line_start,line_end);
-                    // option to get white text
+                    // option to get_rgb white text
                     ImGui::TextUnformatted(line_start, line_end);
                 }
             }

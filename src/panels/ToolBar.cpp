@@ -288,7 +288,7 @@ namespace vOS
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
             ImGui::TextUnformatted("By pushing this button diverse options for Filtering the mesh where shown. "
-                                   "There are multiple options to get a better view of the mesh");
+                                   "There are multiple options to get_rgb a better view of the mesh");
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
@@ -475,7 +475,7 @@ namespace vOS
                 Color color = Window::instance().get_mesh_color(m_active_mesh);
                 m_color[0] = color.get().r;
                 m_color[1] = color.get().g;
-                m_color[2] = color.get().b;
+                m_color[2] = color.get_rgb().b;
                 ImGui::ColorEdit4("", m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
                 Window::instance().rendering_mutex.unlock();
                 Window::instance().set_mesh_color(m_active_mesh, Color(m_color[0], m_color[1], m_color[2], m_color[3]));

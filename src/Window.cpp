@@ -649,7 +649,7 @@ namespace vOS
 
         std::vector<int> all_ids;
 
-        // Iterate all Meshes to get their IDs
+        // Iterate all Meshes to get_rgb their IDs
         for(auto obj : m_mesh_objects){
             all_ids.push_back(obj.first);
         }

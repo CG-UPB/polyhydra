@@ -6,6 +6,7 @@
 
 namespace vOS
 {
+
     MeshPass::MeshPass(MeshView* mesh_view): m_mesh_view(mesh_view)
     {}
 
@@ -42,6 +43,7 @@ namespace vOS
         else
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glEnable(GL_BLEND);
         }
 
         auto m_mesh_shader = Shader::get(rendering_mode);
@@ -70,7 +72,7 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_mesh_shader->set_uniform_float("u_cell_size", cell_size);
-        m_mesh_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get());
+        m_mesh_shader->set_uniform_vec4f("u_objectColor", obj->get_data().m_color.get_rgba());
         m_mesh_shader->set_uniform_int("u_peel_depth", peel_depth);
         m_mesh_shader->set_uniform_float("u_slice_depth", slice_depth);
         m_mesh_shader->set_uniform_vec3f("u_min", min);
@@ -93,6 +95,7 @@ namespace vOS
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
+
     }
 
 }

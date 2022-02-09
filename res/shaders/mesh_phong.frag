@@ -9,7 +9,7 @@ flat in int v_visible;
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
-uniform vec3 u_objectColor;
+uniform vec4 u_objectColor;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
@@ -29,11 +29,13 @@ float LinearizeDepth(float depth)
 
 void main()
 {
-
-    if (v_visible == 0)
+    // if face is not visible or transparent: Discard fragment
+    // Transparency gets handled in another pass
+    if (v_visible == 0 || u_objectColor.a != 1.0)
     {
         discard;
     }
+
     //ambient
     float ambientStrength = 0.3;
     vec3 ambient = ambientStrength * u_lightColor;
@@ -53,14 +55,14 @@ void main()
     float spec = pow(max(0.0, dot(v, r)), 8);
     vec3 specular = specularStrength * spec * u_lightColor;
 
-    vec3 result = (ambient + diffuse + specular) * u_objectColor;
+    vec3 result = (ambient + diffuse + specular) * u_objectColor.xyz;
 
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, u_objectColor.a);
 
     // Testing
-//    vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
-////    float depth = LinearizeDepth(texture(u_depth_texture, res).x) / far; // divide by far for demonstration
-////    FragColor = vec4(vec3(depth), 1.0);
-//
-//    FragColor = texture(u_color1_texture, uv);
+    //    vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
+    ////    float depth = LinearizeDepth(texture(u_depth_texture, res).x) / far; // divide by far for demonstration
+    ////    FragColor = vec4(vec3(depth), 1.0);
+    //
+    //    FragColor = texture(u_color1_texture, uv);
 }

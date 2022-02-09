@@ -60,7 +60,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.h
         ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp)
+        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

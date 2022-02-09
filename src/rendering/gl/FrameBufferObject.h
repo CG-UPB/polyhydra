@@ -17,6 +17,7 @@ namespace vOS
         void unbind();
 
         [[nodiscard]] unsigned int get_texture_id() const;
+        [[nodiscard]] unsigned int get_peel_texture_id() const;
         [[nodiscard]] unsigned int get_depth_texture_id() const;
         [[nodiscard]] unsigned int get_id() const;
         [[nodiscard]] int get_width() const;
@@ -31,7 +32,7 @@ namespace vOS
         void clean_up();
         unsigned int create_framebuffer();
         unsigned int create_texture_attachment();
-
+        unsigned int create_color_attachment(unsigned int attachment);
         unsigned int create_depth_texture_attachment();
         int m_width;
         int m_height;
@@ -39,7 +40,8 @@ namespace vOS
 
         unsigned int m_frameBufferID;
         unsigned int m_textureID;
-        unsigned int m_depth_texture_id;
+        unsigned int m_peel_textureID;
+        unsigned int m_depth_textureID;
         int m_previousFrameBufferID;
         int m_previousViewPort[4];
     };

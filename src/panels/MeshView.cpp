@@ -30,13 +30,16 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-        m_mesh_pass = new MeshPass(this);
 
-        m_meshFrameBuffer = new FrameBufferObject(width, height, true);
+
+        m_meshFrameBuffer = new FrameBufferObject(width, height, false);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
         m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
+
+        m_mesh_pass = new MeshPass(this);
+        m_transparency_pass = new TransparencyPass(this, width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -70,6 +73,7 @@ namespace vOS
         delete m_selectionFrameBuffer;
         delete m_pixel_buffer;
         delete m_mesh_pass;
+        delete m_transparency_pass;
     }
 
     void MeshView::handleResize()
@@ -225,10 +229,10 @@ namespace vOS
         int export_width = (int) ((float) m_viewportPanelWidth * resolution_upscale);
         int export_height = (int) ((float) m_viewportPanelHeight * resolution_upscale);
 
-        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, true);
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, false);
         auto export_framebuffer = new FrameBufferObject(export_width, export_height);
 
-        render_pre_pass();
+        //render_pre_pass();
 
         export_framebuffer_ms->bind();
 
@@ -379,6 +383,22 @@ namespace vOS
         m_pre_pass_framebuffer->unbind();
     }
 
+    void MeshView::render_transparency()
+    {
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+            if(!mesh->get_data().m_visible)
+            {
+                continue;
+            }
+            mesh->update_vertex_buffer();
+            if (mesh->get_vao() != nullptr) {
+                m_transparency_pass->render(mesh->get_vao(), m_render_data, m.first);
+            }
+        }
+    }
+
     void MeshView::querySelection(int type, int picked_id)
     {
         // evaluate which in which mesh the color was selected
@@ -500,18 +520,21 @@ namespace vOS
         render_pre_pass();
 
         // Now render our mesh scene to the framebuffer texture
+        // Start with opaque objects
         m_meshFrameBuffer->bind();
-
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data, 0);
-
         for (const auto& m: Window::instance().get_mesh_list())
         {
             renderMesh(m.first);
         }
-
         m_meshFrameBuffer->unbind();
+
+        // Render transparent objects
+        render_transparency();
+
+
 
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
             renderSelection();
