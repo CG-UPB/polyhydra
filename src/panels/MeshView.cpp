@@ -554,7 +554,7 @@ namespace vOS
             hovered_element_name += " : ";
             hovered_element_name += std::to_string(m_hovered_element_id);
 
-            ImGui::Text(hovered_element_name.c_str());
+            ImGui::Text("%s", hovered_element_name.c_str());
         }
 
         /*

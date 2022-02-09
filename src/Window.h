@@ -18,7 +18,6 @@
 #include "mesh/MeshObject.h"
 #include "panels/CustomUIPanel.h"
 #include "panels/LogWindow.h"
-#include "panels/FileDialog.h"
 #include "rendering/shapes/Box.h"
 #include "rendering/shapes/Cylinder.h"
 #include "rendering/shapes/Sphere.h"
@@ -291,13 +290,25 @@ namespace vOS {
 
         void take_screenshot(std::string filename);
 
-        void OpenFileDialogue();
+        /**
+         *
+         * This method creates a file dialog, which returns the path of an ovm-file, after the user has chosen some. If
+         * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
+         *
+         * @param filedialog - the title of the window prompt
+         * @return char const * filename, or NULL
+         */
+        char const * openFileDialog(const char * filedialog);
 
-        std::string GetFileDialoguePath();
-        bool FileDialogueOpen();
-
-        void EndFileDialogue();
-
+        /**
+         *
+         * This method creates a file dialog, which returns the path of an png- or bmp-file, after the user has chosen some. If
+         * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
+         *
+         * @param filedialog - the title of the window prompt
+         * @return char const * filename, or NULL
+         */
+        char const * saveFileDialog(const char * filedialog);
 
         /*
          * Selects a given element (Face, Vertex, Edge) from given mesh
@@ -332,7 +343,6 @@ namespace vOS {
         void_callback m_on_general_update = default_callback_function;
 
         // Panels
-        FileDialog* m_file_dialog;
 
         // Mutex and thread safety
         /// Set to guard GL when reading from and rendering our mesh
@@ -371,8 +381,8 @@ namespace vOS {
         MeshView* m_mesh_view;
         CustomUIPanel* m_custom_ui;
         LogWindow* m_log_window;
-        ToolBar* m_toolbar = ToolBar::getInstance();
-        MeshLayerView* m_mesh_layer_view = MeshLayerView::getInstance();
+        ToolBar* m_toolbar;
+        MeshLayerView* m_mesh_layer_view;
 
         ImguiRenderer *m_imgui_renderer;
 
