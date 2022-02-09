@@ -145,6 +145,16 @@ namespace vOS
         glUniform3f(get_uniform(name), value.x, value.y, value.z);
     }
 
+    void Shader::set_uniform_vec3f_array(const std::string& name, const std::vector<glm::vec3>& values)
+    {
+        for (size_t i = 0; i < values.size(); i++)
+        {
+            // we have to set every array index manually, so uniform_name[0] = value[0], uniform_name[1] = value[1], etc.
+            auto array_index = name + "[" + std::to_string(i) + "]";
+            set_uniform_vec3f(array_index, values[i]);
+        }
+    }
+
     void Shader::set_uniform_vec4f(const std::string& name, const glm::vec4& value)
     {
         glUniform4f(get_uniform(name), value.x, value.y, value.z, value.w);

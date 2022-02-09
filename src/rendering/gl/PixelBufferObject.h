@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace vOS
 {
     class PixelBufferObject
@@ -9,7 +11,7 @@ namespace vOS
         explicit PixelBufferObject(unsigned int num_buffers, unsigned int width, unsigned int height);
         ~PixelBufferObject();
 
-        GLubyte* start_read(int x, int y, int width, int height);
+        uint8_t* start_read(int x, int y, int width, int height);
         void finish_read();
 
     private:

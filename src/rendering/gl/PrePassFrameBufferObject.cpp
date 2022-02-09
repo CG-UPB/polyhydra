@@ -53,8 +53,8 @@ namespace vOS {
         m_height = height;
         m_frameBufferID = create_framebuffer();
         m_depth_texture = create_depth_texture();
-        m_color_texture0 = create_color_attachment(GL_COLOR_ATTACHMENT0);
-        m_color_texture1 = create_color_attachment(GL_COLOR_ATTACHMENT1);
+        m_normal_texture = create_color_attachment(GL_COLOR_ATTACHMENT0);
+        m_position_texture = create_color_attachment(GL_COLOR_ATTACHMENT1);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
             fprintf(stderr, "Error: %u\n", glCheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -105,13 +105,13 @@ namespace vOS {
         return tex[0];
     }
 
-    unsigned int PrePassFrameBufferObject::get_color_texture0_id() const
+    unsigned int PrePassFrameBufferObject::get_normal_texture_id() const
     {
-        return m_color_texture0;
+        return m_normal_texture;
     }
 
-    unsigned int PrePassFrameBufferObject::get_color_texture1_id() const
+    unsigned int PrePassFrameBufferObject::get_position_texture_id() const
     {
-        return m_color_texture1;
+        return m_position_texture;
     }
 }

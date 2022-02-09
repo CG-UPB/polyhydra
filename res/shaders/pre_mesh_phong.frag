@@ -1,8 +1,10 @@
 #version 330 core
 
-layout (location = 0) out vec4 color0;
-layout (location = 1) out vec4 color1;
+layout (location = 0) out vec4 normal;
+layout (location = 1) out vec4 position;
 
+in vec3 v_pos;
+in vec3 v_normal;
 flat in int v_visible;
 
 void main()
@@ -12,6 +14,6 @@ void main()
         discard;
     }
 
-    color0 = vec4(1.0, 0.5, 0.0, 1.0);
-    color1 = vec4(0.0, 0.5, 1.0, 1.0);
+    normal = vec4(v_normal, 1.0);
+    position = vec4(v_pos, 1.0);
 }

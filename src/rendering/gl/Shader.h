@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <filesystem>
 #include "glm/mat4x4.hpp"
 
@@ -119,6 +120,14 @@ namespace vOS
          * @param value value the uniform is set to
          */
         void set_uniform_vec3f(const std::string& name, const glm::vec3& value);
+
+        /**
+         * Sets a uniform vec3 array for this shader.
+         *
+         * @param name name of the uniform
+         * @param values value the uniform is set to
+         */
+        void set_uniform_vec3f_array(const std::string& name, const std::vector<glm::vec3>& values);
 
         /**
          * Sets a uniform vec4 for this shader.

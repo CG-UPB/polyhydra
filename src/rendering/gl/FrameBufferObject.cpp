@@ -125,6 +125,7 @@ namespace vOS
     {
         glDeleteFramebuffers(1, &m_frameBufferID);
         glDeleteTextures(1, &m_textureID);
+        glDeleteTextures(1, &m_depth_texture_id);
     }
 
     void FrameBufferObject::resize(int width, int height)

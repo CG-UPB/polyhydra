@@ -31,8 +31,8 @@ namespace vOS
         void clean_up();
         unsigned int create_framebuffer();
         unsigned int create_texture_attachment();
-
         unsigned int create_depth_texture_attachment();
+
         int m_width;
         int m_height;
         bool m_multisample;

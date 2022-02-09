@@ -4,6 +4,7 @@
 #include "../rendering/gl/PrePassFrameBufferObject.h"
 #include "../ImguiRenderer.h"
 #include "../rendering/passes/MeshPass.h"
+#include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
 #include "../rendering/passes/SelectionPass.h"
@@ -15,6 +16,7 @@
 namespace vOS
 {
     class MeshPass;
+    class SSAOPass;
 
     class MeshView: public WindowPanel
     {
@@ -33,6 +35,7 @@ namespace vOS
         void renderSelection();
         void querySelection(int type, int picked_id);
         void render_pre_pass();
+        void render_ssao_pass();
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
 
@@ -64,6 +67,7 @@ namespace vOS
         BackgroundPass m_background_pass;
         PrePass m_pre_pass;
         MeshPass* m_mesh_pass = nullptr;
+        SSAOPass* m_ssao_pass = nullptr;
         HighlightPass m_highlight_pass;
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
@@ -74,5 +78,6 @@ namespace vOS
         int m_current_frame = 0;
 
         friend class MeshPass;
+        friend class SSAOPass;
     };
 }

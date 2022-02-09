@@ -31,11 +31,12 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_mesh_pass = new MeshPass(this);
+        m_ssao_pass = new SSAOPass(this, width, height);
 
         m_meshFrameBuffer = new FrameBufferObject(width, height, true);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
-        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
+        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
@@ -47,7 +48,7 @@ namespace vOS
                 glm::radians(60.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                 0.1f,
-                10.0f
+                1000.0f
         );
 
         m_render_data.camera.view = glm::lookAt(
@@ -67,9 +68,12 @@ namespace vOS
     MeshView::~MeshView()
     {
         delete m_meshFrameBuffer;
+        delete m_screen_quad_frameBuffer;
+        delete m_pre_pass_framebuffer;
         delete m_selectionFrameBuffer;
         delete m_pixel_buffer;
         delete m_mesh_pass;
+        delete m_ssao_pass;
     }
 
     void MeshView::handleResize()
@@ -84,6 +88,7 @@ namespace vOS
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_pre_pass_framebuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
@@ -91,8 +96,8 @@ namespace vOS
             m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    0.001f,
-                    100000.0f
+                    0.1f,
+                    1000.0f
             );
         }
     }
@@ -229,6 +234,7 @@ namespace vOS
         auto export_framebuffer = new FrameBufferObject(export_width, export_height);
 
         render_pre_pass();
+        render_ssao_pass();
 
         export_framebuffer_ms->bind();
 
@@ -379,6 +385,11 @@ namespace vOS
         m_pre_pass_framebuffer->unbind();
     }
 
+    void MeshView::render_ssao_pass()
+    {
+        m_ssao_pass->render(nullptr, m_render_data, -1);
+    }
+
     void MeshView::querySelection(int type, int picked_id)
     {
         // evaluate which in which mesh the color was selected
@@ -498,6 +509,7 @@ namespace vOS
 
         // Render Meshes
         render_pre_pass();
+        render_ssao_pass();
 
         // Now render our mesh scene to the framebuffer texture
         m_meshFrameBuffer->bind();
@@ -534,6 +546,8 @@ namespace vOS
         {
             texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
         }
+
+        texture_id = reinterpret_cast<ImTextureID>(m_ssao_pass->get_ssao_texture());
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

@@ -14,8 +14,8 @@ namespace vOS {
         void resize(int width, int height);
 
         [[nodiscard]] unsigned int get_depth_texture_id() const;
-        [[nodiscard]] unsigned int get_color_texture0_id() const;
-        [[nodiscard]] unsigned int get_color_texture1_id() const;
+        [[nodiscard]] unsigned int get_normal_texture_id() const;
+        [[nodiscard]] unsigned int get_position_texture_id() const;
 
     private:
 
@@ -32,8 +32,8 @@ namespace vOS {
 
         unsigned int m_frameBufferID;
         unsigned int m_depth_texture;
-        unsigned int m_color_texture0;
-        unsigned int m_color_texture1;
+        unsigned int m_normal_texture;
+        unsigned int m_position_texture;
 
         int m_previousFrameBufferID;
         int m_previousViewPort[4];

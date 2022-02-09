@@ -14,9 +14,9 @@ uniform vec3 u_objectColor;
 uniform int u_viewport_width;
 uniform int u_viewport_height;
 
-uniform sampler2D u_color1_texture;
 uniform sampler2D u_depth_texture;
-uniform sampler2D u_color0_texture;
+uniform sampler2D u_ssao_texture;
+uniform sampler2D u_color1_texture;
 
 float near = 0.1;
 float far  = 10.0;
@@ -34,9 +34,13 @@ void main()
     {
         discard;
     }
+
+    vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
+
     //ambient
     float ambientStrength = 0.3;
-    vec3 ambient = ambientStrength * u_lightColor;
+    float ao_factor = texture(u_ssao_texture, uv).r;
+    vec3 ambient = ambientStrength * u_lightColor * ao_factor;
 
     // Phong Shading
 

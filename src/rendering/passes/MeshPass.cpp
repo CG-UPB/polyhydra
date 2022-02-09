@@ -81,9 +81,10 @@ namespace vOS
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
 
-        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", 0, m_mesh_view->m_pre_pass_framebuffer->get_depth_texture_id());
-        m_mesh_shader->set_uniform_sampler2D("u_color0_texture", 1, m_mesh_view->m_pre_pass_framebuffer->get_color_texture0_id());
-        m_mesh_shader->set_uniform_sampler2D("u_color1_texture", 2, m_mesh_view->m_pre_pass_framebuffer->get_color_texture1_id());
+        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0, m_mesh_view->m_pre_pass_framebuffer->get_depth_texture_id());
+        m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_ssao_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_color1_texture", GL_TEXTURE2,
+                                             m_mesh_view->m_pre_pass_framebuffer->get_position_texture_id());
 
         vao->draw();
 

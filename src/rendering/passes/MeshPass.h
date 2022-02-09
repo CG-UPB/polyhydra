@@ -5,7 +5,6 @@
 
 namespace vOS
 {
-
     class MeshView;
 
     class MeshPass : public RenderPass
