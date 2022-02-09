@@ -295,9 +295,9 @@ namespace vOS
                 m_cell_centers.push_back(cell_center.z);
 
                 // Color
-                m_colors.push_back(0);
-                m_colors.push_back(1);
-                m_colors.push_back(0);
+                m_colors.push_back(vertex.normal.x);
+                m_colors.push_back(vertex.normal.y);
+                m_colors.push_back(vertex.normal.z);
 
                 m_peel_depths.push_back((float)peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;

@@ -20,6 +20,7 @@ namespace vOS
         OpenVolumeMesh::VertexHandle ovm_handle;
         glm::vec3 position{};
         glm::vec3 normal{};
+        glm::vec3 color{};
     };
 
     struct FaceData
