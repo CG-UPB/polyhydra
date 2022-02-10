@@ -9,6 +9,9 @@ namespace vOS
     bool Input::m_ignore_keyboard_commands;
     bool Input::m_accept_inputs;
     bool Input::m_ignore_mouse_commands;
+    float Input::m_movement_vector_x;
+    float Input::m_movement_vector_y;
+    float Input::m_movement_vector_z;
     double Input::m_currentMouseX;
     double Input::m_currentMouseY;
     bool Input::m_mouse_pressed;
@@ -71,23 +74,46 @@ namespace vOS
         // Rebind if an entry in our rebind map is found
         int rebind = m_keybinds.find(key) != m_keybinds.end() ? m_keybinds[key] : key;
 
+        float x = 0;
+        float y = 0;
+        float z = 0;
+
+        // Camera Movement
+        // Occupied Letters: W, A, S, D, SPACE, LEFT_SHIFT
+        if(rebind == GLFW_KEY_D)
+            x = 1;
+        else if(rebind == GLFW_KEY_A)
+            x = -1;
+        if(rebind == GLFW_KEY_SPACE)
+            y = 1;
+        else if(rebind == GLFW_KEY_LEFT_SHIFT)
+            y = -1;
+        if(rebind == GLFW_KEY_W)
+            z = 1;
+        else if(rebind == GLFW_KEY_S)
+            z = -1;
+
+        m_movement_vector_x = x;
+        m_movement_vector_y = y;
+        m_movement_vector_z = z;
+
         // Do Action Depending on Input Key
         // Rendering Mode Switches
-        // Occupied Letters: Q, W, E, R
-        if(rebind == GLFW_KEY_Q)
+        // Occupied Letters: I, O, P, L
+        if(rebind == GLFW_KEY_I)
+        {
             Window::instance().set_mesh_rendering_mode("mesh_phong");
-        else if(rebind == GLFW_KEY_W)
+        }else if(rebind == GLFW_KEY_O)
+        {
             Window::instance().set_mesh_rendering_mode("mesh_wireframe");
-        else if(rebind == GLFW_KEY_E)
+        }
+        else if(rebind == GLFW_KEY_P){
             Window::instance().set_mesh_rendering_mode("mesh_flat");
-        else if(rebind == GLFW_KEY_R)
+        }
+        else if(rebind == GLFW_KEY_L){
             Window::instance().set_mesh_rendering_mode("mesh_normal");
+        }
 
-        // Mesh Views
-        if(rebind == GLFW_KEY_S)
-            Window::instance().set_mesh_active(0);
-        if(rebind == GLFW_KEY_F)
-            Window::instance().set_mesh_active(1);
     }
 
     void Input::glw_callback_mouse_button(GLFWwindow *window, int button, int action, int mods){
@@ -124,6 +150,10 @@ namespace vOS
      double Input::get_mouse_X(){return m_currentMouseX;}
 
      double Input::get_mouse_Y(){return m_currentMouseY;}
+
+    float Input::get_wasd_movement_vector_X() { return m_movement_vector_x;}
+    float Input::get_wasd_movement_vector_Y() { return m_movement_vector_y;}
+    float Input::get_wasd_movement_vector_Z() { return m_movement_vector_z;}
 
      double Input::get_scroll_offset_X(){return m_currentScrollOffsetX;}
 

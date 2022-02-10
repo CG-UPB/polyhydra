@@ -32,7 +32,7 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.85f, 0.85f, 0.85f, 1), m_visible(true), rendering_mode("mesh_phong")
+        MeshData() : m_color(0.35f, 0.35f, 0.35f, 1), m_visible(true), rendering_mode("mesh_phong")
         {
             m_peel_level = 0;
             m_slice_level =0;
@@ -172,6 +172,8 @@ namespace vOS
         [[nodiscard]] int calculate_selection_size() const;
 
         void calculate_peel_depth();
+
+        const int key_multiplier = 1000000;
 
         std::vector<float> m_vert_colors;
         std::vector<float> m_face_colors;

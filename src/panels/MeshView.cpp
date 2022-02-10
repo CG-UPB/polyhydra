@@ -33,9 +33,9 @@ namespace vOS
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
 
-        m_meshFrameBuffer = new FrameBufferObject(width, height, true);
-        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
-        m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
+        m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
         m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
 
@@ -123,6 +123,7 @@ namespace vOS
         return res;
     }
 
+
     void MeshView::handleMouseControl()
     {
         // check where the imgui window is inside the main window, and how big it is
@@ -140,6 +141,24 @@ namespace vOS
         }
 
         bool isDown = Input::mouse_pressed();
+
+        // Move camera in direction of Movement Vector (WASD movement)
+
+        auto movement_vector = glm::vec3 (Input::get_wasd_movement_vector_X(),Input::get_wasd_movement_vector_Y(),Input::get_wasd_movement_vector_Z());
+
+        // Reset Movement speed multiplier whenever we stop moving or when we start moving
+        if((movement_vector[0] == 0 && movement_vector[1] == 0 && movement_vector[2] == 0) || (m_previous_movement_vector[0] == 0 && m_previous_movement_vector[1] == 0 && m_previous_movement_vector[2] == 0))
+            m_movement_speed_multiplier = 1;
+
+        m_previous_movement_vector[0] = movement_vector[0];
+        m_previous_movement_vector[1] = movement_vector[1];
+        m_previous_movement_vector[2] = movement_vector[2];
+
+        float movement_speed = m_movement_speed_multiplier;
+        m_movement_speed_multiplier *= 1.1f; // Gradually speed up movement
+        m_render_data.camera.position += movement_vector * movement_speed;
+
+        //std::cout << m_render_data.camera.position[0] << " "  << m_render_data.camera.position[1] << " " << m_render_data.camera.position[2] << " " << std::endl;
 
         // the cursor is inside the mesh viewport, so now we can manipulate the mesh view
         if (mousePos.x > vMin.x && mousePos.x < vMax.x && mousePos.y > vMin.y && mousePos.y < vMax.y)
@@ -230,8 +249,8 @@ namespace vOS
         int export_width = (int) ((float) m_viewportPanelWidth * resolution_upscale);
         int export_height = (int) ((float) m_viewportPanelHeight * resolution_upscale);
 
-        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, true);
-        auto export_framebuffer = new FrameBufferObject(export_width, export_height);
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
 
         render_pre_pass();
         render_ssao_pass();
@@ -275,7 +294,7 @@ namespace vOS
         export_framebuffer_ms->unbind();
 
         // copy our multisampled framebuffer to the output framebuffer
-        FrameBufferObject::copy(export_framebuffer_ms, export_framebuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, export_framebuffer_ms, export_framebuffer);
 
         export_framebuffer->bind();
 
@@ -404,6 +423,8 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
+                m_hovered_element_id = picked_id;
+                m_hovered_element_type = type;
 
                 any_mesh_hovered = true;
 
@@ -506,7 +527,6 @@ namespace vOS
         // handle the things related to our mesh rendering canvas
         handleResize();
         handleMouseControl();
-
         // Render Meshes
         render_pre_pass();
         render_ssao_pass();
@@ -530,7 +550,7 @@ namespace vOS
         }
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -540,11 +560,11 @@ namespace vOS
         ImTextureID texture_id;
         if (SelectionPass::DEBUG_MODE)
         {
-            texture_id = reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id());
+            texture_id = reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
         }
         else
         {
-            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
+            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
         }
 
         texture_id = reinterpret_cast<ImTextureID>(m_ssao_pass->get_ssao_texture());
@@ -561,9 +581,21 @@ namespace vOS
 
         // show frame time and fps
         ImGui::SetCursorPos(topLeft);
-        ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+        ImGui::TextColored(ImVec4(0,0,0,1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+        ImGui::TextColored(ImVec4(0,0,0,1), "%.1f fps", ImGui::GetIO().Framerate);
+
+        // Show hovered element type and id
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        {
+            std::string hovered_element_name = m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
+                                                                                       (m_hovered_element_type == 2 ? "Edge" : "Cell"));
+            hovered_element_name += " : ";
+            hovered_element_name += std::to_string(m_hovered_element_id);
+
+            ImGui::Text(hovered_element_name.c_str());
+        }
 
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)

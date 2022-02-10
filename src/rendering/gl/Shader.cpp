@@ -14,13 +14,16 @@ namespace vOS
 
     Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath)
     {
+        // load vertex and fragment shader contents
         std::string vertexSource = FileManager::load_as_string(vertexPath, true);
         std::string fragmentSource = FileManager::load_as_string(fragmentPath, true);
 
+        // create a new shader program
         m_shaderID = glCreateProgram();
         unsigned int vertexID = glCreateShader(GL_VERTEX_SHADER);
         unsigned int fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
 
+        // setup vertex shader
         const GLchar* vertBuf = vertexSource.c_str();
         glShaderSource(vertexID, 1, &vertBuf, nullptr);
         glCompileShader(vertexID);
@@ -30,9 +33,10 @@ namespace vOS
         if (!success)
         {
             glGetShaderInfoLog(vertexID, 512, nullptr, infoLog);
-            std::cout << "Error when compiling vertex shader: " << infoLog << std::endl;
+            std::cout << "Error while compiling " << vertexPath << " -> " << infoLog << std::endl;
         }
 
+        // setup fragment shader
         const GLchar* fragBuf = fragmentSource.c_str();
         glShaderSource(fragmentID, 1, &fragBuf, nullptr);
         glCompileShader(fragmentID);
@@ -40,9 +44,10 @@ namespace vOS
         if (!success)
         {
             glGetShaderInfoLog(fragmentID, 512, nullptr, infoLog);
-            std::cout << "Error when compiling fragment shader: " << infoLog << std::endl;
+            std::cout << "Error while compiling " << fragmentPath << " -> " << infoLog << std::endl;
         }
 
+        // setup geometry shader, if it exists
         unsigned int geometryID = -1;
         if (!geometryPath.empty())
         {
@@ -57,12 +62,13 @@ namespace vOS
             if (!success)
             {
                 glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
-                std::cout << "Error when compiling geometry shader: " << infoLog << std::endl;
+                std::cout << "Error while compiling " << geometryPath << " -> " << infoLog << std::endl;
             }
 
             glAttachShader(m_shaderID, geometryID);
         }
 
+        // link shaders to our program
         glAttachShader(m_shaderID, vertexID);
         glAttachShader(m_shaderID, fragmentID);
         glLinkProgram(m_shaderID);
@@ -74,6 +80,7 @@ namespace vOS
             std::cout << "Error when linking shader program: " << infoLog << std::endl;
         }
 
+        // once linked, the shaders can be deleted
         glDeleteShader(vertexID);
         glDeleteShader(fragmentID);
 
@@ -95,6 +102,7 @@ namespace vOS
 
     int Shader::get_uniform(const std::string& name)
     {
+        // get the location of the named uniform, and cache it
         auto location = m_locations.find(name);
         if (location == m_locations.end())
         {
@@ -165,18 +173,14 @@ namespace vOS
         auto shader = s_shaders.find(shader_name);
         if (shader == s_shaders.end())
         {
-            // Load Shaders again
-            load_all();
-
-            shader = s_shaders.find(shader_name);
-            if (shader == s_shaders.end())
-                throw std::invalid_argument("Could not find shader: " + shader_name);
+            throw std::invalid_argument("Could not find shader: " + shader_name);
         }
         return s_shaders[shader_name];
     }
 
     void Shader::load_all()
     {
+        // stores all associated paths for a given shader
         struct ShaderSourcePath
         {
             std::filesystem::path vertex;
@@ -184,12 +188,20 @@ namespace vOS
             std::filesystem::path fragment;
         };
 
+        // cache all shader paths by name
         std::unordered_map<std::string, ShaderSourcePath> shader_source_paths;
 
         std::string separator(&std::filesystem::path::preferred_separator);
         std::filesystem::path shader_path = "shaders";
         for (auto& file: std::filesystem::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
         {
+            // we only care about shader files
+            if (file.is_directory())
+            {
+                continue;
+            }
+
+            // get file name and extension
             auto path_split = StringUtil::split_str(file.path().string(), separator);
             auto name_with_extension = StringUtil::split_str(path_split[path_split.size() - 1], ".");
             std::string& name_without_extension = name_with_extension[0];
@@ -200,6 +212,7 @@ namespace vOS
                 continue;
             }
 
+            // add it to the shader's source paths, or create the source path container if not already exists
             auto it = shader_source_paths.find(name_without_extension);
             if (it == shader_source_paths.end())
             {
@@ -207,6 +220,7 @@ namespace vOS
             }
             auto& shader_source_path = shader_source_paths[name_without_extension];
 
+            // set the source based on the extension
             std::filesystem::path* source;
             if (extension == "vert")
             { source = &shader_source_path.vertex; }
@@ -220,6 +234,7 @@ namespace vOS
             *source = file.path();
         }
 
+        // we have collected all shader paths, so load them all
         for (auto& shader_source_path : shader_source_paths)
         {
             s_shaders[shader_source_path.first] = new Shader(

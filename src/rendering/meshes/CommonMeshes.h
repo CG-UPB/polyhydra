@@ -7,10 +7,24 @@
 
 namespace vOS
 {
+    /**
+     * Mainly used for VertexArrayObjects, this struct generates common mesh shapes such as planes, cubes and spheres.
+     */
     struct CommonMeshes
     {
+        /**
+         * A plane in xy direction (wall front)
+         */
         struct PlaneXY
         {
+            /**
+             * Generates plane vertices based on size and offset.
+             *
+             * @param size_x size in x direction
+             * @param size_y size in y direction
+             * @param offset_z offset in z direction
+             * @return vector of vertex coordinates
+             */
             inline static std::vector<float> vertices(float size_x = 1.0f, float size_y = 1.0f, float offset_z = 0.0f)
             {
                 float half_size_x = size_x * 0.5f;
@@ -23,6 +37,12 @@ namespace vOS
                 };
             }
 
+            /**
+             * Generates the indices for the plane with an offset.
+             *
+             * @param offset index offset
+             * @return vector of indices
+             */
             inline static std::vector<unsigned int> indices(unsigned int offset = 0)
             {
                 return std::vector<unsigned int>{
@@ -31,6 +51,11 @@ namespace vOS
                 };
             }
 
+            /**
+             * Generates the uv texture coordinates for the plane.
+             *
+             * @return vector of uvs
+             */
             inline static std::vector<float> uvs()
             {
                 return std::vector<float>{
@@ -41,6 +66,12 @@ namespace vOS
                 };
             }
 
+            /**
+             * Generates the vertex normals for the plane.
+             *
+             * @param dir normal direction
+             * @return vector of normals
+             */
             inline static std::vector<float> normals(float dir = 1.0f)
             {
                 return std::vector<float>{
@@ -52,8 +83,19 @@ namespace vOS
             }
         };
 
+        /**
+         * A plane in xz direction (floor)
+         */
         struct PlaneXZ
         {
+            /**
+             * Generates plane vertices based on size and offset.
+             *
+             * @param size_x size in x direction
+             * @param size_z size in z direction
+             * @param offset_y offset in y direction
+             * @return vector of vertex coordinates
+             */
             inline static std::vector<float> vertices(float size_x = 1.0f, float size_z = 1.0f, float offset_y = 0.0f)
             {
                 float half_size_x = size_x * 0.5f;
@@ -66,16 +108,33 @@ namespace vOS
                 };
             }
 
+            /**
+             * Generates the indices for the plane with an offset.
+             *
+             * @param offset index offset
+             * @return vector of indices
+             */
             inline static std::vector<unsigned int> indices(unsigned int offset = 0)
             {
                 return PlaneXY::indices(offset);
             }
 
+            /**
+             * Generates the uv texture coordinates for the plane.
+             *
+             * @return vector of uvs
+             */
             inline static std::vector<float> uvs()
             {
                 return PlaneXY::uvs();
             }
 
+            /**
+             * Generates the vertex normals for the plane.
+             *
+             * @param dir normal direction
+             * @return vector of normals
+             */
             inline static std::vector<float> normals(float dir = 1.0f)
             {
                 return std::vector<float>{
@@ -87,8 +146,19 @@ namespace vOS
             }
         };
 
+        /**
+         * A plane in yz direction (wall side)
+         */
         struct PlaneYZ
         {
+            /**
+             * Generates plane vertices based on size and offset.
+             *
+             * @param size_y size in y direction
+             * @param size_z size in z direction
+             * @param offset_x offset in x direction
+             * @return vector of vertex coordinates
+             */
             inline static std::vector<float> vertices(float size_y = 1.0f, float size_z = 1.0f, float offset_x = 0.0f)
             {
                 float half_size_y = size_y * 0.5f;
@@ -101,16 +171,33 @@ namespace vOS
                 };
             }
 
+            /**
+             * Generates the indices for the plane with an offset.
+             *
+             * @param offset index offset
+             * @return vector of indices
+             */
             inline static std::vector<unsigned int> indices(unsigned int offset = 0)
             {
                 return PlaneXY::indices(offset);
             }
 
+            /**
+             * Generates the uv texture coordinates for the plane.
+             *
+             * @return vector of uvs
+             */
             inline static std::vector<float> uvs()
             {
                 return PlaneXY::uvs();
             }
 
+            /**
+             * Generates the vertex normals for the plane.
+             *
+             * @param dir normal direction
+             * @return vector of normals
+             */
             inline static std::vector<float> normals(float dir = -1.0f)
             {
                 return std::vector<float>{
@@ -122,8 +209,19 @@ namespace vOS
             }
         };
 
+        /**
+         * A box mesh.
+         */
         struct Box
         {
+            /**
+             * Generates a list of vertices for the box.
+             *
+             * @param size_x size in x direction
+             * @param size_y size in y direction
+             * @param size_z size in z direction
+             * @return vector of vertex coordinates
+             */
             inline static std::vector<float> vertices(float size_x = 1.0f, float size_y = 1.0f, float size_z = 1.0f)
             {
                 std::vector<float> res;
@@ -145,6 +243,11 @@ namespace vOS
                 return res;
             }
 
+            /**
+             * Generates the indices for the box.
+             *
+             * @return vector of indices
+             */
             inline static std::vector<unsigned int> indices()
             {
                 std::vector<unsigned int> res;
@@ -163,6 +266,11 @@ namespace vOS
                 return res;
             }
 
+            /**
+             * Generates the normals for the box.
+             *
+             * @return vector of normals
+             */
             inline static std::vector<float> normals()
             {
                 std::vector<float> res;
@@ -182,12 +290,19 @@ namespace vOS
             }
         };
 
+        /**
+         * A sphere mesh.
+         */
         struct Sphere
         {
 
         private:
 
-            // this mesh won't change, so only generate it once to save performance
+            /**
+             * This mesh won't change, so only generate it once to save performance.
+             *
+             * @return a sphere with the default recursion level
+             */
             static IcoSphereMesh& default_sphere()
             {
                 static IcoSphereMesh s_default_sphere = IcoSphereMesh(2);
@@ -195,6 +310,7 @@ namespace vOS
             }
 
         public:
+
 
             static IcoSphereMesh& selection_sphere()
             {

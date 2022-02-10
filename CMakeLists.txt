@@ -54,6 +54,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/PixelBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
+        ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
+        ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
         ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.h

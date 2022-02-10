@@ -87,23 +87,25 @@ namespace vOS
         { gl_type = GL_UNSIGNED_INT; }
         else
         { throw std::invalid_argument("Invalid data type for gl buffer"); }
-
         m_buffers.push_back(-1);
 
         glBindVertexArray(m_vao);
-
         glGenBuffers(1, &m_buffers[m_buffers.size() - 1]);
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[m_buffers.size() - 1]);
         glBufferData(GL_ARRAY_BUFFER, (int) data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
-
-        glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
+        if (gl_type == GL_FLOAT)
+        {
+            glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
+        }
+        else
+        {
+            glVertexAttribIPointer(location, element_count, gl_type, element_count * sizeof(T), nullptr);
+        }
         glEnableVertexAttribArray(location);
-
         if (per_instance)
         {
             glVertexAttribDivisor(location, 1);
         }
-
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -127,6 +129,4 @@ namespace vOS
     template void VertexArrayObject::update_attribute<float>(const std::vector<float>& data, int location);
     template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location);
     template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location);
-
-
 }

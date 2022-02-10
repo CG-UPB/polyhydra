@@ -27,6 +27,10 @@ namespace vOS {
 
         static double get_scroll_offset_Y();
 
+        static float get_wasd_movement_vector_X();
+        static float get_wasd_movement_vector_Y();
+        static float get_wasd_movement_vector_Z();
+
         // reset the current scroll offset for the next frame
         static void reset_offset();
     private:
@@ -37,6 +41,9 @@ namespace vOS {
         static double m_currentMouseX;
         static double m_currentMouseY;
 
+        static float m_movement_vector_x;
+        static float m_movement_vector_y;
+        static float m_movement_vector_z;
         static bool m_mouse_pressed;
 
         static double m_currentScrollOffsetX;

@@ -4,12 +4,26 @@
 #include "FrameBufferObject.h"
 
 #include <iostream>
+#include <utility>
 
 namespace vOS
 {
+    // rgba and depth attachments
+    const std::vector<FrameBufferAttachment> FrameBufferObject::RGBA_AND_DEPTH = {
+            { GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_CLAMP_TO_EDGE, false },
+            { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT, GL_LINEAR, -1, false },
+    };
+
+    // rgba and depth attachments with multisampling
+    const std::vector<FrameBufferAttachment> FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE = {
+            { GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, GL_COLOR_ATTACHMENT0, -1, -1, true },
+            { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT, -1, -1, true },
+    };
+
     int FrameBufferObject::s_num_samples = -1;
 
-    FrameBufferObject::FrameBufferObject(int width, int height, bool multisample): m_multisample(multisample)
+    FrameBufferObject::FrameBufferObject(int width, int height, std::vector<FrameBufferAttachment> attachments):
+    m_attachments(std::move(attachments))
     {
         if (s_num_samples < 0)
         {
@@ -29,103 +43,63 @@ namespace vOS
 
     unsigned int FrameBufferObject::create_framebuffer()
     {
+        // specify all attachments as draw buffers
+        std::vector<GLenum> draw_buffers;
+        for (auto& attachment : m_attachments)
+        {
+            draw_buffers.push_back(attachment.attachment);
+        }
         unsigned int fbo;
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
-        glDrawBuffers(1, buffers);
+        glDrawBuffers((int) draw_buffers.size(), draw_buffers.data());
         return fbo;
-    }
-
-    unsigned int FrameBufferObject::create_texture_attachment()
-    {
-        unsigned int tex[1];
-        glGenTextures(1, tex);
-        if (m_multisample)
-        {
-            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, GL_RGBA8, m_width, m_height, GL_TRUE);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
-            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, tex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex[0], 0);
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        return tex[0];
-    }
-
-    unsigned int FrameBufferObject::create_depth_texture_attachment()
-    {
-        unsigned int tex[1];
-        glGenTextures(1, tex);
-        if (m_multisample)
-        {
-            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, GL_DEPTH_COMPONENT, m_width, m_height, GL_TRUE);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, tex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex[0], 0);
-        }
-        return tex[0];
     }
 
     void FrameBufferObject::bind()
     {
-        glGetIntegerv(GL_VIEWPORT, m_previousViewPort);
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_previousFrameBufferID);
-        if (m_multisample)
-        {
-            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferID);
+        glGetIntegerv(GL_VIEWPORT, m_previous_viewport);
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_previous_frameBuffer_id);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_id);
         glViewport(0, 0, m_width, m_height);
     }
 
     void FrameBufferObject::unbind()
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, m_previousFrameBufferID);
-        glViewport(m_previousViewPort[0], m_previousViewPort[1], m_previousViewPort[2], m_previousViewPort[3]);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_previous_frameBuffer_id);
+        glViewport(m_previous_viewport[0], m_previous_viewport[1], m_previous_viewport[2], m_previous_viewport[3]);
     }
 
     void FrameBufferObject::init(int width, int height)
     {
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_previousFrameBufferID);
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_previous_frameBuffer_id);
         m_width = width;
         m_height = height;
-        m_frameBufferID = create_framebuffer();
-        m_textureID = create_texture_attachment();
-        m_depth_texture_id = create_depth_texture_attachment();
+        m_framebuffer_id = create_framebuffer();
+        // create textures from attachments
+        for (auto& attachment : m_attachments)
+        {
+            unsigned int texture = create_attachment(attachment);
+            m_texture_ids.push_back(texture);
+            m_attachment_textures[attachment.attachment] = texture;
+        }
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
             fprintf(stderr, "Error: %u\n", glCheckFramebufferStatus(GL_FRAMEBUFFER));
             return;
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, m_previous_frameBuffer_id);
     }
 
     void FrameBufferObject::clean_up()
     {
-        glDeleteFramebuffers(1, &m_frameBufferID);
-        glDeleteTextures(1, &m_textureID);
-        glDeleteTextures(1, &m_depth_texture_id);
+        glDeleteFramebuffers(1, &m_framebuffer_id);
+        glDeleteTextures((int) m_texture_ids.size(), m_texture_ids.data());
+        m_attachment_textures.clear();
+        m_texture_ids.clear();
     }
 
     void FrameBufferObject::resize(int width, int height)
@@ -134,14 +108,19 @@ namespace vOS
         init(width, height);
     }
 
-    unsigned int FrameBufferObject::get_texture_id() const
+    unsigned int FrameBufferObject::get_texture(int attachment)
     {
-        return m_textureID;
+        auto texture = m_attachment_textures.find(attachment);
+        if (texture == m_attachment_textures.end())
+        {
+            throw std::invalid_argument("Could not find attachment: " + std::to_string(attachment));
+        }
+        return m_attachment_textures[attachment];
     }
 
     unsigned int FrameBufferObject::get_id() const
     {
-        return m_frameBufferID;
+        return m_framebuffer_id;
     }
 
     int FrameBufferObject::get_width() const
@@ -154,36 +133,52 @@ namespace vOS
         return m_height;
     }
 
-    void FrameBufferObject::copy(const FrameBufferObject* src, const FrameBufferObject* dest)
+    void FrameBufferObject::copy(int attachment, int mask, const FrameBufferObject* src, const FrameBufferObject* dest)
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, src->get_id());
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->get_id());
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glReadBuffer(attachment);
+        glDrawBuffer(attachment);
         glBlitFramebuffer(
                 0, 0,
                 src->get_width(), src->get_height(),
                 0, 0,
                 dest->get_width(), dest->get_height(),
-                GL_COLOR_BUFFER_BIT,
-                GL_LINEAR);
-
-        glReadBuffer(GL_DEPTH_ATTACHMENT);
-        glDrawBuffer(GL_DEPTH_ATTACHMENT);
-        glBlitFramebuffer(
-                0, 0,
-                src->get_width(), src->get_height(),
-                0, 0,
-                dest->get_width(), dest->get_height(),
-                GL_DEPTH_BUFFER_BIT,
-                GL_LINEAR);
-
+                mask,
+                GL_LINEAR
+        );
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 
-    unsigned int FrameBufferObject::get_depth_texture_id() const
+    unsigned int FrameBufferObject::create_attachment(const FrameBufferAttachment& attachment) const
     {
-        return m_depth_texture_id;
+        unsigned int tex[1];
+        glGenTextures(1, tex);
+        if (attachment.multisample)
+        {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, attachment.internal_format, m_width, m_height, GL_TRUE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, tex[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, attachment.internal_format, m_width, m_height, 0, attachment.format, attachment.type, nullptr);
+            if (attachment.texture_filter != -1)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, attachment.texture_filter);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, attachment.texture_filter);
+            }
+            if (attachment.texture_wrap != -1)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, attachment.texture_wrap);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, attachment.texture_wrap);
+            }
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D, tex[0], 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+        return tex[0];
     }
 }
