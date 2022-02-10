@@ -58,4 +58,24 @@ namespace vOS
 
         pre_phong_shader->unbind();
     }
+
+    PrePass::PrePass(int width, int height)
+    {
+        m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
+    }
+
+    PrePass::~PrePass()
+    {
+        delete m_pre_pass_framebuffer;
+    }
+
+    void PrePass::resize_buffers(int width, int height)
+    {
+        m_pre_pass_framebuffer->resize(width, height);
+    }
+
+    PrePassFrameBufferObject* PrePass::get_framebuffer() const
+    {
+        return m_pre_pass_framebuffer;
+    }
 }

@@ -39,6 +39,7 @@ namespace vOS
     ImguiRenderer::~ImguiRenderer()
     {
         Shader::delete_all();
+        VertexArrayObject::clean_up();
 
         // Cleanup
         ImGui_ImplOpenGL3_Shutdown();

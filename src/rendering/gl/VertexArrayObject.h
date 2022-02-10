@@ -10,6 +10,16 @@ namespace vOS
     public:
 
         /**
+         * Renders a full screen quad.
+         */
+        static void draw_screen_quad();
+
+        /**
+         * Clean up resources.
+         */
+        static void clean_up();
+
+        /**
          * Creates a new VertexArrayObject from vertices and indices.
          *
          * @param vertices vector of vertices, aligned like so [x0, y0, z0, x1, y1, z1, ...]
@@ -65,6 +75,8 @@ namespace vOS
         void update_attribute(const std::vector<T>& data, int location);
 
     private:
+
+        static VertexArrayObject* s_screen_quad;
 
         // number of vertex indices
         int m_numIndices;

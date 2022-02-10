@@ -6,7 +6,7 @@
 namespace vOS
 {
     /**
-     * Attachment definition.
+     * Attachment definition. Use this to configure the texture you want to attach to the framebuffer.
      */
     struct FrameBufferAttachment
     {
@@ -16,6 +16,8 @@ namespace vOS
         int attachment          = -1;
         int texture_filter      = -1;
         int texture_wrap        = -1;
+        int texture_comp_func   = -1;
+        int texture_comp_mode   = -1;
         bool multisample        = false;
     };
 
@@ -126,6 +128,13 @@ namespace vOS
          * @return the attachment texture id
          */
         [[nodiscard]] unsigned int create_attachment(const FrameBufferAttachment& attachment) const;
+
+        /**
+         * Checks if necessary values of a given attachment are set.
+         *
+         * @param attachment attachment to be checked
+         */
+        void check_attachment_valid(const FrameBufferAttachment& attachment) const;
 
         // maximum number of supported msaa samples
         static int s_num_samples;

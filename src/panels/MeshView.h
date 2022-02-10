@@ -58,7 +58,6 @@ namespace vOS
         FrameBufferObject* m_meshFrameBuffer = nullptr;
         FrameBufferObject* m_selectionFrameBuffer = nullptr;
         FrameBufferObject* m_screen_quad_frameBuffer = nullptr;
-        PrePassFrameBufferObject* m_pre_pass_framebuffer = nullptr;
         PixelBufferObject* m_pixel_buffer = nullptr;
         RenderData m_render_data;
 
@@ -70,7 +69,7 @@ namespace vOS
 
         // render passes
         BackgroundPass m_background_pass;
-        PrePass m_pre_pass;
+        PrePass* m_pre_pass = nullptr;
         MeshPass* m_mesh_pass = nullptr;
         SSAOPass* m_ssao_pass = nullptr;
         HighlightPass m_highlight_pass;
