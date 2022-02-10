@@ -245,7 +245,7 @@ namespace vOS
         }
 
         // manually load the pre pass shader, since only the fragment shader is different from the phong shader
-        std::filesystem::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path;
+        std::filesystem::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
         s_shaders["pre_mesh_phong"] = new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 pre_mesh_phong_path / "pre_mesh_phong.frag",

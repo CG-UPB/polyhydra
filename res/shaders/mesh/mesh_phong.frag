@@ -40,7 +40,7 @@ void main()
     //ambient
     float ambientStrength = 0.3;
     float ao_factor = texture(u_ssao_texture, uv).r;
-    vec3 ambient = ambientStrength * u_lightColor * ao_factor;
+    vec3 ambient = ambientStrength * u_lightColor;
 
     // Phong Shading
 

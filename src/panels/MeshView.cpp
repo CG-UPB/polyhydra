@@ -567,7 +567,7 @@ namespace vOS
             texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
         }
 
-        texture_id = reinterpret_cast<ImTextureID>(m_ssao_pass->get_ssao_texture());
+        //texture_id = reinterpret_cast<ImTextureID>(m_ssao_pass->get_ssao_texture());
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
