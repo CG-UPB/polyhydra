@@ -76,7 +76,11 @@ namespace vOS
         std::vector<GLenum> draw_buffers;
         for (auto& attachment: m_attachments)
         {
-            draw_buffers.push_back(attachment.attachment);
+            int atm = attachment.attachment;
+            if (atm >= GL_COLOR_ATTACHMENT0 && atm <= GL_COLOR_ATTACHMENT31)
+            {
+                draw_buffers.push_back(attachment.attachment);
+            }
         }
         unsigned int fbo;
         glGenFramebuffers(1, &fbo);
@@ -215,7 +219,7 @@ namespace vOS
             }
             if (attachment.texture_comp_mode != -1)
             {
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, attachment.texture_comp_mode);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, attachment.texture_comp_mode);
             }
             glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D, tex[0], 0);
             glBindTexture(GL_TEXTURE_2D, 0);

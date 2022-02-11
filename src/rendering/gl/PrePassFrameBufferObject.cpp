@@ -20,21 +20,19 @@ namespace vOS
                     },
                     // normal
                     FrameBufferAttachment{
-                            .internal_format    = GL_RGBA,
+                            .internal_format    = GL_RGBA16F,
                             .format             = GL_RGBA,
-                            .type               = GL_UNSIGNED_BYTE,
+                            .type               = GL_FLOAT,
                             .attachment         = GL_COLOR_ATTACHMENT0,
-                            .texture_filter     = GL_NEAREST,
-                            .texture_wrap       = GL_CLAMP_TO_EDGE
+                            .texture_filter     = GL_NEAREST
                     },
                     // position
                     FrameBufferAttachment{
-                            .internal_format    = GL_RGBA,
+                            .internal_format    = GL_RGBA16F,
                             .format             = GL_RGBA,
-                            .type               = GL_UNSIGNED_BYTE,
+                            .type               = GL_FLOAT,
                             .attachment         = GL_COLOR_ATTACHMENT1,
-                            .texture_filter     = GL_NEAREST,
-                            .texture_wrap       = GL_CLAMP_TO_EDGE
+                            .texture_filter     = GL_NEAREST
                     }
             })
     {}

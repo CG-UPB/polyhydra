@@ -123,6 +123,13 @@ namespace vOS
         this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
     }
 
+    void Shader::set_uniform_sampler2DMS(const std::string& name, unsigned int binding, unsigned int texture_id)
+    {
+        glActiveTexture(binding);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_id);
+        this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
+    }
+
     void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& value)
     {
         glUniformMatrix4fv(get_uniform(name), 1, GL_FALSE, &value[0][0]);

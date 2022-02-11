@@ -75,6 +75,15 @@ namespace vOS
         void set_uniform_sampler2D(const std::string& name, unsigned int binding, unsigned int texture_id);
 
         /**
+         * Sets a uniform sampler2DMS for this shader.
+         *
+         * @param name name of the uniform
+         * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
+         * @param texture_id id of the texture to be bound
+         */
+        void set_uniform_sampler2DMS(const std::string& name, unsigned int binding, unsigned int texture_id);
+
+        /**
          * Sets a uniform mat4 for this shader.
          *
          * @param name name of the uniform

@@ -246,11 +246,21 @@ namespace vOS
         // export x times the original resolution -> we should make this configurable when taking a screenshot
         float resolution_upscale = 2.0f;
 
+        int prev_width = m_viewportPanelWidth;
+        int prev_height = m_viewportPanelHeight;
+
         int export_width = (int) ((float) m_viewportPanelWidth * resolution_upscale);
         int export_height = (int) ((float) m_viewportPanelHeight * resolution_upscale);
 
+        // we need to do this since some passes need the current width and height for rendering
+        m_viewportPanelWidth = export_width;
+        m_viewportPanelHeight = export_height;
+
         auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         auto export_framebuffer = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
+
+        m_pre_pass->resize_buffers(export_width, export_height);
+        m_ssao_pass->resize_buffers(export_width, export_height);
 
         render_pre_pass();
         render_ssao_pass();
@@ -292,6 +302,12 @@ namespace vOS
         glFinish();
 
         export_framebuffer_ms->unbind();
+
+        // restore the old width and height
+        m_viewportPanelWidth = prev_width;
+        m_viewportPanelHeight = prev_height;
+        m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+        m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
 
         // copy our multisampled framebuffer to the output framebuffer
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, export_framebuffer_ms, export_framebuffer);
@@ -388,6 +404,7 @@ namespace vOS
     void MeshView::render_pre_pass()
     {
         m_pre_pass->get_framebuffer()->bind();
+        glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -567,7 +584,7 @@ namespace vOS
             texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
         }
 
-        //texture_id = reinterpret_cast<ImTextureID>(m_ssao_pass->get_ssao_texture());
+        //texture_id = reinterpret_cast<ImTextureID>(m_ssao_pass->get_blur_texture());
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

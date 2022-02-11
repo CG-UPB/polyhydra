@@ -12,8 +12,6 @@ namespace vOS
     {
     public:
 
-        static const int NUM_SAMPLES = 64;
-
         SSAOPass(MeshView* mesh_view, int initial_width, int initial_height);
         ~SSAOPass();
 
@@ -29,19 +27,26 @@ namespace vOS
         void generate_sample_kernel(std::uniform_real_distribution<float>& random_floats, std::default_random_engine& generator);
         void generate_noise_texture(std::uniform_real_distribution<float>& random_floats, std::default_random_engine& generator);
 
+        // configuration
+        static const int s_max_samples  = 64;
+
+        float m_sample_radius           = 0.5;
+        float m_screen_radius           = 1.0;
+        float m_z_bias                  = 0.025;
+        float m_blur_z_threshold        = 0.025;
+        int m_num_samples               = 64;
+        int m_strength                  = 1;
+        int m_noise_size                = 4;
+
+        // we keep a reference to access the pre-pass framebuffer
+        MeshView* m_mesh_view;
+
+        // rendering
+        std::vector<glm::vec3> m_sample_kernel;
         FrameBufferObject* m_ssao_framebuffer;
         FrameBufferObject* m_blur_framebuffer;
-        unsigned int m_noise_texture;
-
-        float m_uniform_radius = 0.5;
-        float m_uniform_bias = 0.025;
-        int m_uniform_strength = 1;
-        int m_uniform_samples = 64;
-
-        std::vector<glm::vec3> m_sample_kernel;
-
-        MeshView* m_mesh_view;
         Shader* m_ssao_shader;
         Shader* m_ssao_blur_shader;
+        unsigned int m_noise_texture;
     };
 }

@@ -16,6 +16,7 @@ namespace vOS
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
         glEnable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

@@ -78,14 +78,12 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_mesh_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
 
-        m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
-        m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
+        m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
+        m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
 
         m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,
                                              m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
-        m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_ssao_texture());
-        m_mesh_shader->set_uniform_sampler2D("u_color1_texture", GL_TEXTURE2,
-                                             m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
 
         vao->draw();
 
