@@ -84,6 +84,7 @@ namespace vOS
         m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,
                                              m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
         m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_position", GL_TEXTURE2,m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
 
         vao->draw();
 

@@ -16,17 +16,18 @@ void main()
     if (u_phong)
     {
         //ambient
-        float ambientStrength = 0.3;
+        float ambientStrength = 0.8;
         vec3 ambient = ambientStrength * u_light_color;
 
         //diffuse
-        vec3 n = normalize(v_normal);
+        float diffuseStrength = 1.0;
+        vec3 n = -normalize(v_normal);
         vec3 l = normalize(u_light_pos - v_pos);
         float diff = max(0.0, dot(l, n));
-        vec3 diffuse = diff * u_light_color;
+        vec3 diffuse = diffuseStrength * diff * u_light_color;
 
         //specular
-        float specularStrength = 0.5;
+        float specularStrength = 0.1;
         vec3 v = normalize(u_cam_pos - v_pos);
         vec3 r = reflect(-l, n);
         float spec = pow(max(0.0, dot(v,r)), 8);

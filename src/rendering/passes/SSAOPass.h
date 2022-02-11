@@ -30,10 +30,9 @@ namespace vOS
         // configuration
         static const int s_max_samples  = 64;
 
+        bool m_ssao_active              = true;
         float m_sample_radius           = 0.5;
-        float m_screen_radius           = 1.0;
-        float m_z_bias                  = 0.025;
-        float m_blur_z_threshold        = 0.025;
+        float m_z_bias                  = 0.01;
         int m_num_samples               = 64;
         int m_strength                  = 1;
         int m_noise_size                = 4;

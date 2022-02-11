@@ -221,6 +221,10 @@ namespace vOS
             {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, attachment.texture_comp_mode);
             }
+            if (attachment.generate_mipmap)
+            {
+                glGenerateMipmap(GL_TEXTURE_2D);
+            }
             glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D, tex[0], 0);
             glBindTexture(GL_TEXTURE_2D, 0);
         }

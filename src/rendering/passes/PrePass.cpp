@@ -62,6 +62,7 @@ namespace vOS
 
     PrePass::PrePass(int width, int height)
     {
+        m_clear_position_shader = Shader::get("pre_far");
         m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
     }
 
@@ -78,5 +79,15 @@ namespace vOS
     PrePassFrameBufferObject* PrePass::get_framebuffer() const
     {
         return m_pre_pass_framebuffer;
+    }
+
+    void PrePass::clear_position_buffer()
+    {
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        m_clear_position_shader->bind();
+        VertexArrayObject::draw_screen_quad();
+        m_clear_position_shader->unbind();
     }
 }

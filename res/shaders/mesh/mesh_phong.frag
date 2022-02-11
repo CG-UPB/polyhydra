@@ -35,13 +35,13 @@ void main()
     // Phong Shading
 
     //diffuse
-    float diffuseStrength = 0.5;
+    float diffuseStrength = 1.0;
     vec3 n = -normalize(v_normal);
     //vec3 l = normalize(u_lightPos - v_pos);
     // constant light direction looks way better than a single point of light
     vec3 l = normalize(vec3(0.0, -1.0, -1.0));
     float diff = max(0.0, dot(l, n));
-    vec3 diffuse = diff * u_lightColor;
+    vec3 diffuse = diffuseStrength * diff * u_lightColor;
 
     //specular
     float specularStrength = 0.2;

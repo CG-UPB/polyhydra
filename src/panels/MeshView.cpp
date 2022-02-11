@@ -406,6 +406,7 @@ namespace vOS
         m_pre_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_pre_pass->clear_position_buffer();
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -418,6 +419,9 @@ namespace vOS
                 m_pre_pass->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
+        glBindTexture(GL_TEXTURE_2D, m_pre_pass->get_framebuffer()->get_position_texture());
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
         m_pre_pass->get_framebuffer()->unbind();
     }
 

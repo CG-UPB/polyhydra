@@ -32,7 +32,7 @@ namespace vOS
                             .format             = GL_RGBA,
                             .type               = GL_FLOAT,
                             .attachment         = GL_COLOR_ATTACHMENT1,
-                            .texture_filter     = GL_NEAREST
+                            .generate_mipmap    = true
                     }
             })
     {}

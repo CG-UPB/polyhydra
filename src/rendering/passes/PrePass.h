@@ -15,6 +15,7 @@ namespace vOS
         ~PrePass();
 
         void resize_buffers(int width, int height);
+        void clear_position_buffer();
 
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
 
@@ -22,6 +23,7 @@ namespace vOS
 
     private:
 
+        Shader* m_clear_position_shader = nullptr;
         PrePassFrameBufferObject* m_pre_pass_framebuffer = nullptr;
     };
 }
