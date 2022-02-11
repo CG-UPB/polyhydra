@@ -16,7 +16,7 @@ uniform mat4 u_View;
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
-uniform vec4 u_objectColor;
+uniform vec3 u_object_color;
 uniform float u_cell_size;
 
 uniform int u_peel_depth;
@@ -29,7 +29,9 @@ uniform bool u_slice_locked;
 
 void main()
 {
-
+    ////////////////////////////////////////////////////////
+    // Slicing and Peeling
+    ////////////////////////////////////////////////////////
     v_Visible = 1;
 
     vec3 min = vec3(u_Transform * vec4(u_min, 1.0));

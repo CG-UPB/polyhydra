@@ -7,6 +7,7 @@ uniform vec4 u_object_color;
 
 void main()
 {
+
     if(u_object_color.a == 1.0)
     {
         discard;
@@ -17,7 +18,7 @@ void main()
     float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e08 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
 
     accum = vec4(color.rgb * color.a, color.a) * weight;
-
+    //FragColor = vec4(0.0,1.0,0.0,1.0);
     reveal = color.a;
 
 }

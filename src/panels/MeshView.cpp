@@ -50,7 +50,7 @@ namespace vOS
                 glm::radians(60.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                 0.1f,
-                10.0f
+                1000.0f
         );
 
         m_render_data.camera.view = glm::lookAt(
@@ -96,8 +96,8 @@ namespace vOS
             m_render_data.camera.projection = glm::perspective(
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    0.001f,
-                    100000.0f
+                    0.1f,
+                    1000.0f
             );
         }
     }
@@ -400,25 +400,47 @@ namespace vOS
                 m_pre_pass.render(mesh->get_vao(), m_render_data, m.first);
             }
         }
+
         m_pre_pass_framebuffer->unbind();
     }
 
     void MeshView::render_transparency()
     {
+        //glClear(GL_COLOR_BUFFER_BIT);
         m_transparency_pass->clear_framebuffer();
+        m_transparency_pass->generate_transparency_framebuffer(m_viewportPanelWidth, m_viewportPanelHeight);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass->m_transparent_framebuffer);
+        //glClear(GL_COLOR_BUFFER_BIT);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-            if(!mesh->get_data().m_visible)
+
+            MeshData& mesh_data = mesh->get_data();
+
+            if(mesh == nullptr || !mesh_data.m_visible)
             {
-                continue;
+                return;
             }
+
+            if(!m_zoom)
+            {
+                m_zoom_point = mesh->get_mesh_offset();
+            }
+            mesh_data.offset = m_zoom_point;
+
             mesh->update_vertex_buffer();
             if (mesh->get_vao() != nullptr) {
                 m_transparency_pass->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
-        m_transparency_pass->renderComposition();
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+
+        glDepthFunc(GL_ALWAYS);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        m_meshFrameBuffer->bind();
+        m_transparency_pass->render_composition();
+        m_meshFrameBuffer->unbind();
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -544,14 +566,14 @@ namespace vOS
 
         // Now render our mesh scene to the framebuffer texture
         // Start with opaque objects
-        m_meshFrameBuffer->bind();
+
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
         glDisable(GL_BLEND);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-
-        glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+        m_meshFrameBuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
@@ -561,14 +583,21 @@ namespace vOS
         m_meshFrameBuffer->unbind();
 
         // Render transparent objects
-
         render_transparency();
-
 
 
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
             renderSelection();
         }
+
+        // set render states
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
+        glDisable(GL_BLEND);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);
@@ -588,8 +617,8 @@ namespace vOS
             texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
         }
 
-        //texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
-        texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass->m_accumTexture);
+        texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
+        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass->m_accumTexture);
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

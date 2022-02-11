@@ -17,13 +17,13 @@ float max_component(vec3 v)
 void main()
 {
     vec2 coord = v_uv;
-    float revealage = texture(revealTexture, coord).r;
+    float revealage = texelFetch(revealTexture, ivec2(gl_FragCoord.xy), 0).r;
     if (revealage == 1.0)
     {
         discard;
     }
 
-    vec4 accum = texture(accumTexture, coord);
+    vec4 accum = texelFetch(accumTexture, ivec2(gl_FragCoord.xy), 0);
 
     // supress overflow
     if (isinf(max_component(abs(accum.rgb))))
@@ -34,4 +34,5 @@ void main()
     vec3 average_color = accum.rgb / max(accum.a, EPSILON);
 
     FragColor = vec4(average_color, 1.0-revealage);
+    //FragColor = vec4(1.0, 0.1, 0.1, 1.0);
 }

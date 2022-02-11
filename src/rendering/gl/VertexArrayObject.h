@@ -64,6 +64,8 @@ namespace vOS
         template<typename T>
         void update_attribute(const std::vector<T>& data, int location);
 
+        unsigned int get_vao() const{return m_vao;};
+
     private:
 
         // number of vertex indices
