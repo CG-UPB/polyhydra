@@ -419,6 +419,8 @@ namespace vOS
                 m_pre_pass->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
+        // we generate a mipmap for the position, this is used for ssao
+        // this needs to happen every frame, since the fragment position values always change
         glBindTexture(GL_TEXTURE_2D, m_pre_pass->get_framebuffer()->get_position_texture());
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -615,7 +617,8 @@ namespace vOS
             hovered_element_name += " : ";
             hovered_element_name += std::to_string(m_hovered_element_id);
 
-            ImGui::Text(hovered_element_name.c_str());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::TextColored(ImVec4(0,0,0,1), "%s", hovered_element_name.c_str());
         }
 
         /*

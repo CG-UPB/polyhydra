@@ -5,7 +5,7 @@ in vec2             v_uv;
 // customization, tweak these values to your liking
 uniform int         u_samples;
 uniform float       u_radius;
-uniform int         u_strength;
+uniform float       u_strength;
 uniform float       u_bias;
 uniform int         u_noise_size;
 
@@ -67,8 +67,11 @@ void main()
         // sample different mip level based on the screen space distance of the two fragments.
         // this prevents cache misses and also improves sample quality, since the further the sample is from the
         // fragment, the less we care about the exact sample depth. A coarser approximation is sufficient here.
-        float sample_dist = 1.0 + smoothstep(0.0, 1.0, length(offset.xy - v_uv) + 0.2);
-        float level = floor(pow(sample_dist, 6.0));
+        float sample_dist = smoothstep(0.0, 1.0, length(offset.xy - v_uv) + 0.2);
+
+        // the exponent changes the aggressivenes of the mip-mapping
+        // the higher the exponent, the earlier we sample from lower mips, the less cache misses we have
+        float level = floor(pow(1.0 + sample_dist, 6.0));
 
         // now get the depth value of our sample
         vec3 sample_xyz = get_position(offset.xy, level);

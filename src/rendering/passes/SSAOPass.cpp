@@ -2,11 +2,38 @@
 #include "glad/glad.h"
 #include "../meshes/CommonMeshes.h"
 #include "SSAOPass.h"
+#include <random>
 
 namespace vOS
 {
-    SSAOPass::SSAOPass(MeshView* mesh_view, int initial_width, int initial_height) : m_mesh_view(mesh_view)
+    // best image quality, but also most demanding on the gpu
+    const SSAOOptions SSAOPass::QUALITY = {
+            .num_samples    = 64,
+            .sample_radius  = 0.5,
+            .strength       = 1.5,
+            .z_bias         = 0.01
+    };
+
+    // balance between image quality and performance
+    const SSAOOptions SSAOPass::BALANCED = {
+            .num_samples    = 32,
+            .sample_radius  = 0.5,
+            .strength       = 1.5,
+            .z_bias         = 0.015
+    };
+
+    // lowest image quality, but least performance impact
+    const SSAOOptions SSAOPass::PERFORMANCE = {
+            .num_samples    = 16,
+            .sample_radius  = 0.5,
+            .strength       = 1.5,
+            .z_bias         = 0.02
+    };
+
+    SSAOPass::SSAOPass(MeshView* mesh_view, int initial_width, int initial_height) :
+            m_mesh_view(mesh_view), m_options(SSAOPass::QUALITY)
     {
+        // we only need one channel for the occlusion factor
         std::vector<FrameBufferAttachment> ssao_attachments = {
                 FrameBufferAttachment{
                         .internal_format    = GL_RED,
@@ -16,6 +43,7 @@ namespace vOS
                         .texture_filter     = GL_NEAREST
                 }
         };
+        // for the blur factor, we only need one channel as well
         std::vector<FrameBufferAttachment> blur_attachments = {
                 FrameBufferAttachment{
                         .internal_format    = GL_RED,
@@ -25,16 +53,16 @@ namespace vOS
                         .texture_filter     = GL_NEAREST
                 }
         };
+
+        // create frame buffers and load the shaders we need
         m_ssao_framebuffer = new FrameBufferObject(initial_width, initial_height, ssao_attachments);
         m_blur_framebuffer = new FrameBufferObject(initial_width, initial_height, blur_attachments);
         m_ssao_shader = Shader::get("ssao");
         m_ssao_blur_shader = Shader::get("ssao_blur");
 
-        std::uniform_real_distribution<float> random_floats(0.0, 1.0);
-        std::default_random_engine generator;
-
-        generate_sample_kernel(random_floats, generator);
-        generate_noise_texture(random_floats, generator);
+        // now generate the data we need to render
+        generate_sample_kernel();
+        generate_noise_texture();
     }
 
     SSAOPass::~SSAOPass()
@@ -44,48 +72,50 @@ namespace vOS
         glDeleteTextures(1, &m_noise_texture);
     }
 
-    void SSAOPass::generate_sample_kernel(std::uniform_real_distribution<float>& random_floats,
-                                          std::default_random_engine& generator)
+    float SSAOPass::get_random_float(float min, float max) const
+    {
+        static std::uniform_real_distribution<float> random_floats(0.0, 1.0);
+        static std::default_random_engine generator;
+        return min + random_floats(generator) * (max - min);
+    }
+
+    void SSAOPass::generate_sample_kernel()
     {
         while (m_sample_kernel.size() < SSAOPass::s_max_samples)
         {
             // generate random point within range (x: [-1, 1], y: [-1, 1], z: [0, 1])
             glm::vec3 sample(
-                    random_floats(generator) * 2.0 - 1.0,
-                    random_floats(generator) * 2.0 - 1.0,
-                    random_floats(generator)
+                    get_random_float(-1.0, 1.0),
+                    get_random_float(-1.0, 1.0),
+                    get_random_float(0.0, 1.0)
             );
-
             // check if sample is outside the sphere and discard it
             float sample_radius = glm::length(sample);
             if (sample_radius > 1.0)
             {
                 continue;
             }
-
             // normalize point, now it lies on a unit sphere
             sample = glm::normalize(sample);
             // assign random distance from sphere center
-            sample *= random_floats(generator);
-
+            sample *= get_random_float(0.0, 1.0);
             // more samples distributed at the center of the sphere
             float scale = (float) m_sample_kernel.size() / SSAOPass::s_max_samples;
             scale = 0.1f + scale * scale * 0.9f;
             sample *= scale;
-
             m_sample_kernel.push_back(sample);
         }
     }
 
-    void SSAOPass::generate_noise_texture(std::uniform_real_distribution<float>& random_floats,
-                                          std::default_random_engine& generator)
+    void SSAOPass::generate_noise_texture()
     {
+        // generate xy noise between -1 and 1
         std::vector<glm::vec3> noise_data;
-        for (size_t i = 0; i < m_noise_size * m_noise_size; i++)
+        for (size_t i = 0; i < s_noise_size * s_noise_size; i++)
         {
             glm::vec3 noise(
-                    random_floats(generator) * 2.0 - 1.0,
-                    random_floats(generator) * 2.0 - 1.0,
+                    get_random_float(-1.0, 1.0),
+                    get_random_float(-1.0, 1.0),
                     0.0
             );
             noise_data.push_back(noise);
@@ -93,63 +123,118 @@ namespace vOS
         // generate opengl texture from noise data
         glGenTextures(1, &m_noise_texture);
         glBindTexture(GL_TEXTURE_2D, m_noise_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_noise_size, m_noise_size, 0, GL_RGB, GL_FLOAT, &noise_data[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, s_noise_size, s_noise_size, 0, GL_RGB, GL_FLOAT, &noise_data[0]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // set mode to repeat, since we have a very small texture that we want to repeat across the screen
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
 
+    void SSAOPass::render_options(SSAOOptions* options)
+    {
+        // display options
+        static const char* dropdown_presets[] = {
+                "Off", "Quality", "Balanced", "Performance", "Custom"
+        };
+        // index of a particular option
+        static const int OFF = 0;
+        static const int QUALITY = 1;
+        static const int BALANCED = 2;
+        static const int PERFORMANCE = 3;
+        static const int CUSTOM = 4;
+
+        if (ImGui::Begin("SSAO Options"))
+        {
+            ImVec2& padding = ImGui::GetStyle().FramePadding;
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            if (ImGui::Combo(
+                    "Preset",
+                    &m_selected_preset,
+                    dropdown_presets,
+                    5,
+                    6))
+            {
+                switch (m_selected_preset)
+                {
+                    case OFF:
+                        m_options.active = false;
+                        break;
+                    case QUALITY:
+                        load_options(SSAOPass::QUALITY);
+                        break;
+                    case BALANCED:
+                        load_options(SSAOPass::BALANCED);
+                        break;
+                    case PERFORMANCE:
+                        load_options(SSAOPass::PERFORMANCE);
+                        break;
+                }
+            }
+            // custom options when users want to tweak the values themselves
+            if (m_selected_preset == CUSTOM)
+            {
+                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+                ImGui::SliderInt("num samples", &options->num_samples, 1, SSAOPass::s_max_samples);
+                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+                ImGui::SliderFloat("sample radius", &options->sample_radius, 0.0f, 3.0f);
+                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+                ImGui::SliderFloat("strength", &options->strength, 0.0, 10.0);
+                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+                ImGui::SliderFloat("z bias", &options->z_bias, 0.0f, 0.1f);
+            }
+        }
+        ImGui::End();
+    }
+
     void SSAOPass::render(VertexArrayObject* vao, const RenderData& render_data, int mesh_id)
     {
-        if (ImGui::Begin("AO Options"))
+        // TODO: Move options rendering to a more appropriate place
+        render_options(&m_options);
+        if (m_options.active)
         {
-            ImGui::Checkbox("Active", &m_ssao_active);
-            ImGui::SliderInt("num samples", &m_num_samples, 0, SSAOPass::s_max_samples);
-            ImGui::SliderFloat("sample radius", &m_sample_radius, 0.0f, 3.0f);
-            ImGui::SliderInt("strength", &m_strength, 1, 10);
-            ImGui::SliderFloat("z bias", &m_z_bias, 0.0f, 0.1f);
-            ImGui::End();
-        }
-
-        if (m_ssao_active)
-        {
-            auto pre_pass_framebuffer = m_mesh_view->m_pre_pass->get_framebuffer();
-
+            auto pre_pass = m_mesh_view->m_pre_pass->get_framebuffer();
             // main ssao pass
             m_ssao_framebuffer->bind();
             glClear(GL_COLOR_BUFFER_BIT);
             m_ssao_shader->bind();
-            m_ssao_shader->set_uniform_float("u_radius", m_sample_radius);
-            m_ssao_shader->set_uniform_int("u_strength", m_strength);
-            m_ssao_shader->set_uniform_float("u_bias", m_z_bias);
-            m_ssao_shader->set_uniform_int("u_samples", m_num_samples);
-            m_ssao_shader->set_uniform_int("u_noise_size", m_noise_size);
+            // options
+            m_ssao_shader->set_uniform_int("u_samples", m_options.num_samples);
+            m_ssao_shader->set_uniform_float("u_radius", m_options.sample_radius);
+            m_ssao_shader->set_uniform_float("u_strength", m_options.strength);
+            m_ssao_shader->set_uniform_float("u_bias", m_options.z_bias);
+            // ssao related
             m_ssao_shader->set_uniform_vec3f_array("u_sample_kernel", m_sample_kernel);
-            m_ssao_shader->set_uniform_mat4f("u_projection", render_data.camera.projection);
-            m_ssao_shader->set_uniform_mat4f("u_view", render_data.camera.view);
+            m_ssao_shader->set_uniform_sampler2D("u_position", GL_TEXTURE0, pre_pass->get_position_texture());
+            m_ssao_shader->set_uniform_sampler2D("u_normal", GL_TEXTURE1, pre_pass->get_normal_texture());
+            m_ssao_shader->set_uniform_sampler2D("u_noise", GL_TEXTURE2, m_noise_texture);
+            m_ssao_shader->set_uniform_int("u_noise_size", s_noise_size);
+            // general
             m_ssao_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
             m_ssao_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
-            m_ssao_shader->set_uniform_sampler2D("u_position", GL_TEXTURE0, pre_pass_framebuffer->get_position_texture());
-            m_ssao_shader->set_uniform_sampler2D("u_normal", GL_TEXTURE1, pre_pass_framebuffer->get_normal_texture());
-            m_ssao_shader->set_uniform_sampler2D("u_noise", GL_TEXTURE2, m_noise_texture);
+            m_ssao_shader->set_uniform_mat4f("u_projection", render_data.camera.projection);
+            m_ssao_shader->set_uniform_mat4f("u_view", render_data.camera.view);
             VertexArrayObject::draw_screen_quad();
             m_ssao_shader->unbind();
             m_ssao_framebuffer->unbind();
-
             // blur pass
             m_blur_framebuffer->bind();
             glClear(GL_COLOR_BUFFER_BIT);
             m_ssao_blur_shader->bind();
+            // general
+            m_ssao_blur_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
+            m_ssao_blur_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+            // blur related
             m_ssao_blur_shader->set_uniform_sampler2D("u_ssao_input", GL_TEXTURE0, get_ssao_texture());
-            m_ssao_blur_shader->set_uniform_sampler2D("u_position", GL_TEXTURE1, pre_pass_framebuffer->get_position_texture());
-            m_ssao_blur_shader->set_uniform_int("u_noise_size", m_noise_size);
+            m_ssao_blur_shader->set_uniform_sampler2D("u_position", GL_TEXTURE1, pre_pass->get_position_texture());
+            m_ssao_blur_shader->set_uniform_int("u_noise_size", s_noise_size);
             VertexArrayObject::draw_screen_quad();
             m_ssao_blur_shader->unbind();
             m_blur_framebuffer->unbind();
         }
         else
         {
+            // here we just set the occlusion factor to 1, so it does not change the lighting calculation
             m_blur_framebuffer->bind();
             glClearColor(1.0, 1.0, 1.0, 1.0);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -161,6 +246,16 @@ namespace vOS
     {
         m_ssao_framebuffer->resize(width, height);
         m_blur_framebuffer->resize(width, height);
+    }
+
+    void SSAOPass::load_options(const SSAOOptions& options)
+    {
+        m_options = options;
+    }
+
+    const SSAOOptions& SSAOPass::get_options() const
+    {
+        return m_options;
     }
 
     unsigned int SSAOPass::get_ssao_texture() const
