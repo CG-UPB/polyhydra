@@ -1,5 +1,7 @@
 #version 330 core
 
+const float far = 1000.0;
+
 in vec2             v_uv;
 
 // customization, tweak these values to your liking
@@ -31,11 +33,19 @@ vec3 get_position(vec2 uv, float mip_level)
 
 void main()
 {
-    // since our noise texture is small, we need to tile it to the screen
-    vec2 noise_scale = vec2(float(u_viewport_width), float(u_viewport_height)) / u_noise_size;
+    vec3 position = get_position(v_uv, 0.0);
+    // this fragment is not an object, so no need to occlude it to save performance
+    if (position.z == -far)
+    {
+        o_occlusion = 1.0;
+        return;
+    }
 
     // sample textures to get the fragments view space position, normal and a random vector to rotate our kernel
-    vec3 frag_pos = vec4(u_view * vec4(get_position(v_uv, 0.0), 1.0)).xyz;
+    vec3 frag_pos = vec4(u_view * vec4(position, 1.0)).xyz;
+
+    // since our noise texture is small, we need to tile it to the screen
+    vec2 noise_scale = vec2(float(u_viewport_width), float(u_viewport_height)) / u_noise_size;
     vec3 random_vec = texture(u_noise, v_uv * noise_scale).xyz;
     vec3 normal = texture(u_normal, v_uv).xyz;
 
