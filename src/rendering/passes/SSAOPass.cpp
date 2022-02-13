@@ -76,11 +76,17 @@ namespace vOS
     {
         static std::uniform_real_distribution<float> random_floats(0.0, 1.0);
         static std::default_random_engine generator;
-        return min + random_floats(generator) * (max - min);
+        return lerp(min, max, random_floats(generator));
+    }
+
+    float SSAOPass::lerp(float a, float b, float factor) const
+    {
+        return a + factor * (b - a);
     }
 
     void SSAOPass::generate_sample_kernel()
     {
+        m_sample_kernel.clear();
         while (m_sample_kernel.size() < SSAOPass::s_max_samples)
         {
             // generate random point within range (x: [-1, 1], y: [-1, 1], z: [0, 1])
@@ -101,7 +107,7 @@ namespace vOS
             sample *= get_random_float(0.0, 1.0);
             // more samples distributed at the center of the sphere
             float scale = (float) m_sample_kernel.size() / SSAOPass::s_max_samples;
-            scale = 0.1f + scale * scale * 0.9f;
+            scale = lerp(0.1, 1.0, std::pow(scale, 2.0f));
             sample *= scale;
             m_sample_kernel.push_back(sample);
         }
@@ -134,7 +140,7 @@ namespace vOS
     void SSAOPass::render_options(SSAOOptions* options)
     {
         // display options
-        static const char* dropdown_presets[] = {
+        static const char* dropdown_presets[5] = {
                 "Off", "Quality", "Balanced", "Performance", "Custom"
         };
         // index of a particular option
@@ -152,8 +158,8 @@ namespace vOS
                     "Preset",
                     &m_selected_preset,
                     dropdown_presets,
-                    5,
-                    6))
+                    IM_ARRAYSIZE(dropdown_presets),
+                    IM_ARRAYSIZE(dropdown_presets)))
             {
                 switch (m_selected_preset)
                 {

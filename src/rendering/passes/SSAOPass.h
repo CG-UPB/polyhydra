@@ -105,6 +105,16 @@ namespace vOS
         [[nodiscard]] float get_random_float(float min, float max) const;
 
         /**
+         * Linearly interpolates between two values based on a factor.
+         *
+         * @param a min value
+         * @param b max value
+         * @param factor interpolation factor between 0 and 1
+         * @return interpolated value
+         */
+        [[nodiscard]] float lerp(float a, float b, float factor) const;
+
+        /**
          * Generates a random sample kernel used to sample the screen depth.
          */
         void generate_sample_kernel();
