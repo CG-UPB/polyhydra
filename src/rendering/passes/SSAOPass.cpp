@@ -164,7 +164,7 @@ namespace vOS
                 switch (m_selected_preset)
                 {
                     case OFF:
-                        m_options.active = false;
+                        options->active = false;
                         break;
                     case QUALITY:
                         load_options(SSAOPass::QUALITY);
@@ -180,6 +180,7 @@ namespace vOS
             // custom options when users want to tweak the values themselves
             if (m_selected_preset == CUSTOM)
             {
+                options->active = true;
                 ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
                 ImGui::SliderInt("num samples", &options->num_samples, 1, SSAOPass::s_max_samples);
                 ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});

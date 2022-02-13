@@ -42,7 +42,7 @@ namespace vOS
         [[nodiscard]] glm::mat4 get_transform() const
         {
             glm::mat4 pos = glm::translate(position);
-            glm::mat4 scl = glm::scale(scale);
+            glm::mat4 scl = glm::scale(scale * scale_normalization);
             return pos * scl;
         }
 
@@ -59,6 +59,7 @@ namespace vOS
         glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
         int selection_offset = 0;
+        float scale_normalization = 1.0f;
     };
 
     struct Highlight

@@ -292,7 +292,10 @@ namespace vOS
         }
         m_min = min;
         m_max = max;
-        m_mesh_offset_from_center = min + (max - min) * 0.5f;
+        glm::vec3 diameter = max - min;
+        m_mesh_offset_from_center = min + diameter * 0.5f;
+        // all meshes should have the same screen size, regardless of their actual size
+        m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
     }
 
     void MeshObject::calculate_peel_depth()
