@@ -1,11 +1,10 @@
 #version 330 core
 
-const float far = 1000.0;
-
 in vec2 v_uv;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
+uniform float u_far;
 
 uniform sampler2D u_ssao_input;
 uniform sampler2D u_position;
@@ -18,7 +17,7 @@ void main()
     vec3 position = textureLod(u_position, v_uv, 0.0).xyz;
     float depth = position.z;
     // there is no object here, so no need to blur
-    if (depth == -far)
+    if (depth == -u_far)
     {
         o_ao_factor = 1.0;
         return;

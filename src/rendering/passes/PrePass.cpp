@@ -81,12 +81,13 @@ namespace vOS
         return m_pre_pass_framebuffer;
     }
 
-    void PrePass::clear_position_buffer()
+    void PrePass::clear_position_buffer(const RenderData& data)
     {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         m_clear_position_shader->bind();
+        m_clear_position_shader->set_uniform_float("u_far", data.camera.far);
         VertexArrayObject::draw_screen_quad();
         m_clear_position_shader->unbind();
     }

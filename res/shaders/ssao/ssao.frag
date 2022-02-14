@@ -1,7 +1,5 @@
 #version 330 core
 
-const float far = 1000.0;
-
 in vec2             v_uv;
 
 // customization, tweak these values to your liking
@@ -17,6 +15,7 @@ uniform int         u_viewport_width;
 uniform int         u_viewport_height;
 uniform mat4        u_projection;
 uniform mat4        u_view;
+uniform float       u_far;
 
 // world space position, normal and noise textures
 uniform sampler2D   u_position;
@@ -35,7 +34,7 @@ void main()
 {
     vec3 position = get_position(v_uv, 0.0);
     // this fragment is not an object, so no need to occlude it to save performance
-    if (position.z == -far)
+    if (position.z == -u_far)
     {
         o_occlusion = 1.0;
         return;

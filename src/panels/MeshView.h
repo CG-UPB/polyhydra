@@ -36,6 +36,7 @@ namespace vOS
         void querySelection(int type, int picked_id);
         void render_pre_pass();
         void render_ssao_pass();
+        void render_debug_menu();
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
 
@@ -60,6 +61,9 @@ namespace vOS
         FrameBufferObject* m_screen_quad_frameBuffer = nullptr;
         PixelBufferObject* m_pixel_buffer = nullptr;
         RenderData m_render_data;
+
+        // selected texture for rendering (mostly for debugging)
+        unsigned int m_viewport_texture;
 
         // camera variables
         glm::vec3 m_previous_movement_vector;

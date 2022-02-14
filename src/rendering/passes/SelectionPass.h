@@ -9,15 +9,18 @@ namespace vOS
     {
     public:
 
-        static const bool DEBUG_MODE = false;
-
         SelectionPass();
-        ~SelectionPass() = default;
 
+        ~SelectionPass() = default;
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+
         void render_mesh(MeshObject* mesh, RenderData& data, int mesh_id);
+        void set_debug_mode(bool mode);
+        [[nodiscard]] bool is_debug_mode() const;
 
     private:
+
+        bool m_debug = false;
 
         Shader* m_selection_shader;
         Shader* m_selection_sphere_shader;

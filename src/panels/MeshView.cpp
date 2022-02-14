@@ -39,16 +39,18 @@ namespace vOS
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
 
+        m_viewport_texture = m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
 
         // set up the initial camera position, direction and orientation of the mesh
         m_render_data.camera.world = glm::mat4(1.0f);
         m_render_data.camera.projection = glm::perspective(
-                glm::radians(60.0f),
+                glm::radians(m_render_data.camera.fov_deg),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                0.1f,
-                1000.0f
+                m_render_data.camera.near,
+                m_render_data.camera.far
         );
 
         m_render_data.camera.view = glm::lookAt(
@@ -94,10 +96,10 @@ namespace vOS
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             m_render_data.camera.projection = glm::perspective(
-                    glm::radians(50.0f),
+                    glm::radians(m_render_data.camera.fov_deg),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    0.1f,
-                    1000.0f
+                    m_render_data.camera.near,
+                    m_render_data.camera.far
             );
         }
     }
@@ -368,7 +370,7 @@ namespace vOS
             // evaluate ID out of color
             int type = data[0] & 3;
             int id;
-            if (SelectionPass::DEBUG_MODE)
+            if (m_selection_pass.is_debug_mode())
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
             }
@@ -406,7 +408,7 @@ namespace vOS
         m_pre_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_pre_pass->clear_position_buffer();
+        m_pre_pass->clear_position_buffer(m_render_data);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -535,6 +537,8 @@ namespace vOS
 
     void MeshView::show()
     {
+        render_debug_menu();
+
         if(GlobalViewerSettings::getInstance()->m_get_take_snapshot())
         {
             GlobalViewerSettings::getInstance()->m_set_take_snapshot(false);
@@ -580,21 +584,9 @@ namespace vOS
         topLeft.x += padding.x;
         topLeft.y += padding.y;
 
-        ImTextureID texture_id;
-        if (SelectionPass::DEBUG_MODE)
-        {
-            texture_id = reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
-        }
-        else
-        {
-            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0));
-        }
-
-        //texture_id = reinterpret_cast<ImTextureID>(m_ssao_pass->get_blur_texture());
-
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                texture_id,
+                reinterpret_cast<ImTextureID>(m_viewport_texture),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
@@ -636,5 +628,36 @@ namespace vOS
 
         ImGui::End();
         ImGui::PopStyleVar();
+    }
+
+    void MeshView::render_debug_menu()
+    {
+        if (ImGui::Begin("Debug"))
+        {
+            unsigned int final_image    = m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            unsigned int selection      = m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            unsigned int ssao_pre       = m_ssao_pass->get_ssao_texture();
+            unsigned int ssao_blur      = m_ssao_pass->get_blur_texture();
+            ImGui::Text("Viewport");
+            if (ImGui::RadioButton("Final Image", m_viewport_texture == final_image))
+            {
+                m_viewport_texture = final_image;
+            }
+            if (ImGui::RadioButton("Selection", m_viewport_texture == selection))
+            {
+                m_viewport_texture = selection;
+                GlobalViewerSettings::getInstance()->m_set_current_selection_activated(true);
+            }
+            if (ImGui::RadioButton("SSAO Pre", m_viewport_texture == ssao_pre))
+            {
+                m_viewport_texture = ssao_pre;
+            }
+            if (ImGui::RadioButton("SSAO Blur", m_viewport_texture == ssao_blur))
+            {
+                m_viewport_texture = ssao_blur;
+            }
+            m_selection_pass.set_debug_mode(m_viewport_texture == selection);
+        }
+        ImGui::End();
     }
 }

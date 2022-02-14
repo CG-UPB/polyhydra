@@ -86,7 +86,7 @@ namespace vOS
 //        ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 5, main_viewport->WorkPos.y + main_viewport->WorkSize.y * 0.7), ImGuiCond_Once);
 //        ImGui::SetNextWindowSize(ImVec2(500, main_viewport->WorkSize.y - size_y), ImGuiCond_Once);
 
-        if (!ImGui::Begin("Log-ImguiRenderer"))
+        if (!ImGui::Begin("Log"))
         {
             ImGui::End();
             return;

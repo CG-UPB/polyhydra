@@ -150,12 +150,14 @@ namespace vOS
         static const int PERFORMANCE = 3;
         static const int CUSTOM = 4;
 
-        if (ImGui::Begin("SSAO Options"))
+        if (ImGui::Begin("Graphics"))
         {
             ImVec2& padding = ImGui::GetStyle().FramePadding;
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y * 2.0f});
+            ImGui::Text("Ambient Occlusion");
             ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
             if (ImGui::Combo(
-                    "Preset",
+                    "##Preset",
                     &m_selected_preset,
                     dropdown_presets,
                     IM_ARRAYSIZE(dropdown_presets),
@@ -182,13 +184,13 @@ namespace vOS
             {
                 options->active = true;
                 ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-                ImGui::SliderInt("num samples", &options->num_samples, 1, SSAOPass::s_max_samples);
+                ImGui::SliderInt("Samples", &options->num_samples, 1, SSAOPass::s_max_samples);
                 ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-                ImGui::SliderFloat("sample radius", &options->sample_radius, 0.0f, 3.0f);
+                ImGui::SliderFloat("Radius", &options->sample_radius, 0.0f, 3.0f);
                 ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-                ImGui::SliderFloat("strength", &options->strength, 0.0, 10.0);
+                ImGui::SliderFloat("Strength", &options->strength, 0.0, 10.0);
                 ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-                ImGui::SliderFloat("z bias", &options->z_bias, 0.0f, 0.1f);
+                ImGui::SliderFloat("Bias", &options->z_bias, 0.0f, 0.1f);
             }
         }
         ImGui::End();
@@ -221,6 +223,7 @@ namespace vOS
             m_ssao_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
             m_ssao_shader->set_uniform_mat4f("u_projection", render_data.camera.projection);
             m_ssao_shader->set_uniform_mat4f("u_view", render_data.camera.view);
+            m_ssao_shader->set_uniform_float("u_far", render_data.camera.far);
             VertexArrayObject::draw_screen_quad();
             m_ssao_shader->unbind();
             m_ssao_framebuffer->unbind();
@@ -231,6 +234,7 @@ namespace vOS
             // general
             m_ssao_blur_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
             m_ssao_blur_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+            m_ssao_blur_shader->set_uniform_float("u_far", render_data.camera.far);
             // blur related
             m_ssao_blur_shader->set_uniform_sampler2D("u_ssao_input", GL_TEXTURE0, get_ssao_texture());
             m_ssao_blur_shader->set_uniform_sampler2D("u_position", GL_TEXTURE1, pre_pass->get_position_texture());
