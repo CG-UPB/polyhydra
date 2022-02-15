@@ -30,8 +30,8 @@ namespace vOS
 
         void clean_up_framebuffer();
 
-        glm::vec4 m_zeros = glm::vec4(0.0f);
-        glm::vec4 m_ones =glm::vec4(1.0f);
+        glm::vec4 m_zeros = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        glm::vec4 m_ones =glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 
 
         MeshView* m_mesh_view = nullptr;

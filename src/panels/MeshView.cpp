@@ -50,7 +50,7 @@ namespace vOS
                 glm::radians(60.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                 0.1f,
-                1000.0f
+                100.0f
         );
 
         m_render_data.camera.view = glm::lookAt(
@@ -97,7 +97,7 @@ namespace vOS
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                     0.1f,
-                    1000.0f
+                    100.0f
             );
         }
     }
@@ -398,6 +398,7 @@ namespace vOS
             mesh->update_vertex_buffer();
             if (mesh->get_vao() != nullptr) {
                 m_pre_pass.render(mesh->get_vao(), m_render_data, m.first);
+                continue;
             }
         }
 
@@ -406,20 +407,15 @@ namespace vOS
 
     void MeshView::render_transparency()
     {
-        //glClear(GL_COLOR_BUFFER_BIT);
-        m_transparency_pass->clear_framebuffer();
-        m_transparency_pass->generate_transparency_framebuffer(m_viewportPanelWidth, m_viewportPanelHeight);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass->m_transparent_framebuffer);
-        //glClear(GL_COLOR_BUFFER_BIT);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
 
             MeshData& mesh_data = mesh->get_data();
 
-            if(mesh == nullptr || !mesh_data.m_visible)
+            if(!mesh->get_data().m_visible)
             {
-                return;
+                continue;
             }
 
             if(!m_zoom)
@@ -429,15 +425,29 @@ namespace vOS
             mesh_data.offset = m_zoom_point;
 
             mesh->update_vertex_buffer();
+
+            glClear(GL_COLOR_BUFFER_BIT);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass->m_transparent_framebuffer);
+            m_transparency_pass->clear_framebuffer();
+
+            glDepthMask(GL_FALSE);
+            glEnable(GL_BLEND);
+            glBlendFunci(0, GL_ONE, GL_ONE);
+            glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+            //glBlendFunci(2, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+            glBlendEquation(GL_FUNC_ADD);
+
             if (mesh->get_vao() != nullptr) {
                 m_transparency_pass->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         m_meshFrameBuffer->bind();
         m_transparency_pass->render_composition();
         m_meshFrameBuffer->unbind();
@@ -571,10 +581,10 @@ namespace vOS
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
         glDisable(GL_BLEND);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         m_meshFrameBuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_background_pass.render(nullptr, m_render_data, 0);
         m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
         {
@@ -597,7 +607,7 @@ namespace vOS
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);

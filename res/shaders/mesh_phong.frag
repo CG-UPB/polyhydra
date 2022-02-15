@@ -19,7 +19,7 @@ uniform sampler2D u_depth_texture;
 uniform sampler2D u_color0_texture;
 
 float near = 0.1;
-float far  = 10.0;
+float far  = 100.0;
 
 float LinearizeDepth(float depth)
 {

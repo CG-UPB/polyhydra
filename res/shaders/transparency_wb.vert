@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 layout (location = 0) in vec3 a_Pos;
 layout (location = 1) in vec3 a_Normal;
@@ -50,7 +50,7 @@ void main()
     vec3 center =  vec3(u_Transform * vec4(a_Center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peel_depth < u_peel_depth || angle > 0)
+    if (a_peel_depth != u_peel_depth || angle > 0)
     {
         v_Visible = 0;
     }
