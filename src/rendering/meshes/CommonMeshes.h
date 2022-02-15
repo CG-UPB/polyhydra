@@ -311,23 +311,43 @@ namespace vOS
 
         public:
 
-
+            /**
+             * This is the sphere that gets drawn for each vertex during the selection pass, it has the lowest
+             * recursion level to save performance.
+             *
+             * @return a low resolution sphere
+             */
             static IcoSphereMesh& selection_sphere()
             {
                 static IcoSphereMesh s_selection_sphere = IcoSphereMesh(0);
                 return s_selection_sphere;
             }
 
+            /**
+             * Generates a list of vertices for the sphere.
+             *
+             * @return vector of vertex coordinates
+             */
             static const std::vector<float>& vertices()
             {
                 return default_sphere().vertices();
             }
 
+            /**
+             * Generates a list of indices for the sphere.
+             *
+             * @return vector of indices
+             */
             static const std::vector<unsigned int>& indices()
             {
                 return default_sphere().indices();
             }
 
+            /**
+             * Generates a list of normals for the sphere.
+             *
+             * @return list of normals
+             */
             static const std::vector<float>& normals()
             {
                 return default_sphere().normals();
@@ -339,6 +359,11 @@ namespace vOS
 
         private:
 
+            /**
+             * This mesh won't change, so only generate it once to save performance.
+             *
+             * @return a cylinder with average resolution
+             */
             static ClosedCylinderMesh& default_cylinder()
             {
                 static ClosedCylinderMesh s_default_cylinder = ClosedCylinderMesh(20, 0.5f, 1.0f);
@@ -347,22 +372,43 @@ namespace vOS
 
         public:
 
+            /**
+             * This cylinder gets drawn for each edge in the selection pass, so it has a relatively low resolution
+             * to save performance.
+             *
+             * @return a low resolution cylinder
+             */
             static CylinderMesh& edge_cylinder()
             {
                 static CylinderMesh s_edge_cylinder = CylinderMesh(5, 0.5f, 1.0f);
                 return s_edge_cylinder;
             }
 
+            /**
+             * Generates a list of vertices for this cylinder.
+             *
+             * @return list of vertices
+             */
             static const std::vector<float>& vertices()
             {
                 return default_cylinder().vertices();
             }
 
+            /**
+             * Generates a list of indices for this cylinder.
+             *
+             * @return list of indices
+             */
             static const std::vector<unsigned int>& indices()
             {
                 return default_cylinder().indices();
             }
 
+            /**
+             * Generates a list of normals for this cylinder.
+             *
+             * @return list of normals
+             */
             static const std::vector<float>& normals()
             {
                 return default_cylinder().normals();

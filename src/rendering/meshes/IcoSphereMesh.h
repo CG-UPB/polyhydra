@@ -13,13 +13,39 @@ namespace vOS
 
     public:
 
+        /**
+         * Generates a sphere mesh with a given recursion level. A higher level means are higher vertex count.
+         *
+         * @param recursion_level recursion level
+         */
         explicit IcoSphereMesh(int recursion_level);
+
+        /**
+         * Returns a list of vertices of this sphere.
+         *
+         * @return list of vertices
+         */
         const std::vector<float>& vertices();
+
+        /**
+         * Returns a list of indices for this sphere.
+         *
+         * @return list of indices
+         */
         const std::vector<unsigned int>& indices();
+
+        /**
+         * Returns a list of normals for this sphere
+         *
+         * @return list of normals
+         */
         const std::vector<float>& normals();
 
     private:
 
+        /**
+         * Face indices.
+         */
         struct Face
         {
             unsigned int v0;
@@ -27,9 +53,26 @@ namespace vOS
             unsigned int v2;
         };
 
+        /**
+         * Returns the mid vertex of two given vertices.
+         *
+         * @param v0 first vertex
+         * @param v1 second vertex
+         * @return
+         */
         unsigned int get_mid_point(unsigned int v0, unsigned int v1);
+
+        /**
+         * Adds a vertex to this sphere.
+         *
+         * @param x x value
+         * @param y y value
+         * @param z z value
+         * @return index of the added vertex
+         */
         unsigned int add_vertex(float x, float y, float z);
 
+        // sphere data
         unsigned int m_index;
         std::vector<float> m_vertices;
         std::vector<unsigned int> m_indices;
