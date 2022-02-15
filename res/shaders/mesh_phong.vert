@@ -5,11 +5,11 @@ layout (location = 1) in vec3 a_Normal;
 layout (location = 2) in vec3 a_Center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_isBoundary;
-layout (location = 5) in vec3 a_Color;
+layout (location = 5) in vec4 a_Color;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
-out vec3 v_Color;
+out vec4 v_Color;
 flat out int v_Visible;
 
 uniform mat4 u_Transform;

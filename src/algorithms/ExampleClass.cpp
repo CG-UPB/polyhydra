@@ -19,7 +19,7 @@ void ExampleClass::initialize() {
 
 void ExampleClass::start()
 {
-    Window::instance().set_custom_imgui(std::bind(&ExampleClass::simple_demonstration_ui, this));
+    Window::instance().set_custom_imgui(std::bind(&ExampleClass::selection_demonstration_ui, this));
     std::thread* s_run_thread = new std::thread(&ExampleClass::simple_run, this);
     s_run_thread->join();
 }

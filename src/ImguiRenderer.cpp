@@ -137,10 +137,12 @@ namespace vOS
 
     void ImguiRenderer::initImGuiStyle()
     {
+        // Font
         std::filesystem::path fontPath = FileManager::get_resource_path() / "fonts" / "Roboto-Regular.ttf";
         ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 18.0f);
         ImGuiStyle& style = ImGui::GetStyle();
 
+        // Rounding
         style.FrameRounding = 4.0f;
         style.GrabRounding = 2.0f;
         style.WindowRounding = 6.0f;
@@ -153,6 +155,7 @@ namespace vOS
         style.TabBorderSize = 1.0f;
         style.GrabMinSize = 20.0f;
 
+        // Colors
         ImVec4* colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
         colors[ImGuiCol_TextDisabled]           = ImVec4(0.33f, 0.44f, 0.53f, 1.00f);

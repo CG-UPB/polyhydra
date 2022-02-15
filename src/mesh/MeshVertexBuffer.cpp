@@ -22,7 +22,7 @@ namespace vOS
         m_vao->add_attribute(m_cell_centers, 2, 3);
         m_vao->add_attribute(m_peel_depths, 3, 1);
         m_vao->add_attribute(m_is_face_boundary, 4, 1);
-        m_vao->add_attribute(m_colors, 5, 3);
+        m_vao->add_attribute(m_colors, 5, 4);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -116,7 +116,6 @@ namespace vOS
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
         for (auto chf_it : mesh.cell_halffaces(cell))
         {
-            // Polygon Attem
             FaceData face_data;
             auto face_handle = mesh.face_handle(chf_it);
             int face_id = face_handle.idx();
@@ -266,11 +265,14 @@ namespace vOS
                 m_num_vertices += vertex_count + 1;
 
                 faces.push_back(face_data);
+
             }else
             {
                 std::cout << "Face " << face_id << " has less than 3 vertices" << std::endl;
                 continue;
             }
+            if(m_ovm_to_gl_face_indizes.find(face_id) == m_ovm_to_gl_face_indizes.end())
+                m_ovm_to_gl_face_indizes.emplace(face_id, m_face_amount++);
         }
 
         // now that we collected the data we need, we can update our buffer arrays
@@ -295,9 +297,11 @@ namespace vOS
                 m_cell_centers.push_back(cell_center.z);
 
                 // Color
-                m_colors.push_back(vertex.normal.x);
-                m_colors.push_back(vertex.normal.y);
-                m_colors.push_back(vertex.normal.z);
+                m_colors.push_back(1);
+                m_colors.push_back(1);
+                m_colors.push_back(1);
+                m_colors.push_back(0);
+
 
                 m_peel_depths.push_back((float)peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
@@ -355,6 +359,18 @@ namespace vOS
                 break;
             }
         }
+    }
+
+    void MeshVertexBuffer::set_face_color(int ovm_id, float r, float g, float b, float a)
+    {
+        int array_id = m_ovm_to_gl_face_indizes[ovm_id] * 4;
+
+        m_colors[array_id] = r;
+        m_colors[array_id + 1] = g;
+        m_colors[array_id + 2] = b;
+        m_colors[array_id + 3] = a;
+
+        m_update_vao = true;
     }
 
     void MeshVertexBuffer::add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from, const OpenVolumeMesh::VertexHandle& to)
@@ -432,6 +448,11 @@ namespace vOS
 
     VertexArrayObject* MeshVertexBuffer::get_vao()
     {
+        if(m_update_vao)
+        {
+            m_vao->add_attribute(m_colors, 5, 4);
+            m_update_vao = false;
+        }
         return m_vao;
     }
 

@@ -3,6 +3,7 @@
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
+#include <map>
 
 namespace vOS
 {
@@ -48,6 +49,8 @@ namespace vOS
 
         VertexArrayObject* get_vao();
 
+        void set_face_color(int ovm_id, float r, float g, float b, float a);
+
         VertexArrayObject* get_sphere_vao();
 
         VertexArrayObject* get_cylinder_vao();
@@ -73,6 +76,13 @@ namespace vOS
         std::vector<float> get_vertices(Mesh& mesh);
 
         BufferSpecification m_spec;
+
+        /**
+         * Set to true, if some update has been made to the vao buffers (like face color)
+         * To reduce overhead we do not update the vao immediatly, but only before it has been requested by some other class
+         */
+        bool m_update_vao = false;
+        int m_face_amount = 0;
 
         std::vector<float> m_original_vertices;
 
@@ -101,6 +111,11 @@ namespace vOS
         std::vector<float> m_from_vertices;
         std::vector<float> m_to_vertices;
         std::vector<float> m_selection_vertices;
+
+        /**
+         * Maps OVM Ids to face buffer locations
+         */
+        std::map<int,int> m_ovm_to_gl_face_indizes;
 
         int m_num_vertices = 0;
     };
