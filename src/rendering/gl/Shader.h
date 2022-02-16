@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <filesystem>
 #include "glm/mat4x4.hpp"
 
@@ -44,6 +45,7 @@ namespace vOS
         static Shader* selection_vertex_shader() { return get("selection_vertex"); }
         static Shader* selection_edge_shader() { return get("selection_edge"); }
         static Shader* edge_hover_shader() { return get("edge_hover"); }
+        static Shader* pre_mesh_phong_shader() { return get("pre_mesh_phong"); }
 
         /**
          * Binds this shader for opengl. A shader must be bound to draw something or to set the shader uniforms.
@@ -62,6 +64,24 @@ namespace vOS
          * @return the uniform location or -1, if the uniform does not exist in the shader
          */
         int get_uniform(const std::string& name);
+
+        /**
+         * Sets a uniform sampler2D for this shader.
+         *
+         * @param name name of the uniform
+         * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
+         * @param texture_id id of the texture to be bound
+         */
+        void set_uniform_sampler2D(const std::string& name, unsigned int binding, unsigned int texture_id);
+
+        /**
+         * Sets a uniform sampler2DMS for this shader.
+         *
+         * @param name name of the uniform
+         * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
+         * @param texture_id id of the texture to be bound
+         */
+        void set_uniform_sampler2DMS(const std::string& name, unsigned int binding, unsigned int texture_id);
 
         /**
          * Sets a uniform mat4 for this shader.
@@ -110,6 +130,14 @@ namespace vOS
          * @param value value the uniform is set to
          */
         void set_uniform_vec3f(const std::string& name, const glm::vec3& value);
+
+        /**
+         * Sets a uniform vec3 array for this shader.
+         *
+         * @param name name of the uniform
+         * @param values value the uniform is set to
+         */
+        void set_uniform_vec3f_array(const std::string& name, const std::vector<glm::vec3>& values);
 
         /**
          * Sets a uniform vec4 for this shader.

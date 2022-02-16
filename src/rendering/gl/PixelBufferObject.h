@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace vOS
 {
 
@@ -29,7 +31,7 @@ namespace vOS
          * @param height read height
          * @return color values as bytes
          */
-        GLubyte* start_read(int x, int y, int width, int height);
+        uint8_t* start_read(int x, int y, int width, int height);
 
         /**
          * Finished the reading operation and prepares buffers for the next read.

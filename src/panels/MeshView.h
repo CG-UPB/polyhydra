@@ -1,17 +1,22 @@
 #pragma once
 
 #include "../rendering/gl/PixelBufferObject.h"
+#include "../rendering/gl/PrePassFrameBufferObject.h"
 #include "../ImguiRenderer.h"
 #include "../rendering/passes/MeshPass.h"
+#include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
+#include "../rendering/passes/PrePass.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 
 namespace vOS
 {
+    class MeshPass;
+    class SSAOPass;
 
     class MeshView: public WindowPanel
     {
@@ -29,8 +34,19 @@ namespace vOS
         void renderMesh(int mesh_id);
         void renderSelection();
         void querySelection(int type, int picked_id);
+        void render_pre_pass();
+        void render_ssao_pass();
+        void render_debug_menu();
+        [[nodiscard]] unsigned int get_selected_texture();
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
+
+        // these are just to differentiate between the different textures, we cannot directly use the texture ids
+        // since they can change when resizing the framebuffer
+        static const int FINAL_IMAGE   = 0;
+        static const int SELECTION     = 1;
+        static const int SSAO_PRE      = 2;
+        static const int SSAO_BLUR     = 3;
 
         static const int SELECTION_TYPE_VERTEX = 1;
         static const int SELECTION_TYPE_EDGE = 2;
@@ -48,11 +64,14 @@ namespace vOS
         int m_viewportPanelHeight;
 
         // opengl rendering
-        FrameBufferObject* m_meshFrameBuffer;
-        FrameBufferObject* m_selectionFrameBuffer;
-        PixelBufferObject* m_pixel_buffer;
-        FrameBufferObject* m_screen_quad_frameBuffer;
+        FrameBufferObject* m_meshFrameBuffer = nullptr;
+        FrameBufferObject* m_selectionFrameBuffer = nullptr;
+        FrameBufferObject* m_screen_quad_frameBuffer = nullptr;
+        PixelBufferObject* m_pixel_buffer = nullptr;
         RenderData m_render_data;
+
+        // selected texture for rendering (mostly for debugging)
+        int m_viewport_texture = FINAL_IMAGE;
 
         // camera variables
         glm::vec3 m_previous_movement_vector;
@@ -62,7 +81,9 @@ namespace vOS
 
         // render passes
         BackgroundPass m_background_pass;
-        MeshPass m_mesh_pass;
+        PrePass* m_pre_pass = nullptr;
+        MeshPass* m_mesh_pass = nullptr;
+        SSAOPass* m_ssao_pass = nullptr;
         HighlightPass m_highlight_pass;
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
@@ -72,5 +93,7 @@ namespace vOS
         int m_frame_limit = 4;
         int m_current_frame = 0;
 
+        friend class MeshPass;
+        friend class SSAOPass;
     };
 }

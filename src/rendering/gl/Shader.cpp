@@ -116,6 +116,20 @@ namespace vOS
         return m_locations[name];
     }
 
+    void Shader::set_uniform_sampler2D(const std::string& name, unsigned int binding, unsigned int texture_id)
+    {
+        glActiveTexture(binding);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+        this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
+    }
+
+    void Shader::set_uniform_sampler2DMS(const std::string& name, unsigned int binding, unsigned int texture_id)
+    {
+        glActiveTexture(binding);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_id);
+        this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
+    }
+
     void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& value)
     {
         glUniformMatrix4fv(get_uniform(name), 1, GL_FALSE, &value[0][0]);
@@ -144,6 +158,16 @@ namespace vOS
     void Shader::set_uniform_vec3f(const std::string& name, const glm::vec3& value)
     {
         glUniform3f(get_uniform(name), value.x, value.y, value.z);
+    }
+
+    void Shader::set_uniform_vec3f_array(const std::string& name, const std::vector<glm::vec3>& values)
+    {
+        for (size_t i = 0; i < values.size(); i++)
+        {
+            // we have to set every array index manually, so uniform_name[0] = value[0], uniform_name[1] = value[1], etc.
+            auto array_index = name + "[" + std::to_string(i) + "]";
+            set_uniform_vec3f(array_index, values[i]);
+        }
     }
 
     void Shader::set_uniform_vec4f(const std::string& name, const glm::vec4& value)
@@ -187,8 +211,13 @@ namespace vOS
             // get file name and extension
             auto path_split = StringUtil::split_str(file.path().string(), separator);
             auto name_with_extension = StringUtil::split_str(path_split[path_split.size() - 1], ".");
-            std::string name_without_extension = name_with_extension[0];
-            std::string extension = name_with_extension[1];
+            std::string& name_without_extension = name_with_extension[0];
+            std::string& extension = name_with_extension[1];
+
+            // we only have a fragment shader for this, we will load that manually later
+            if (name_without_extension == "pre_mesh_phong") {
+                continue;
+            }
 
             // add it to the shader's source paths, or create the source path container if not already exists
             auto it = shader_source_paths.find(name_without_extension);
@@ -221,6 +250,14 @@ namespace vOS
                     shader_source_path.second.geometry
             );
         }
+
+        // manually load the pre pass shader, since only the fragment shader is different from the phong shader
+        std::filesystem::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
+        s_shaders["pre_mesh_phong"] = new Shader(
+                pre_mesh_phong_path / "mesh_phong.vert",
+                pre_mesh_phong_path / "pre_mesh_phong.frag",
+                pre_mesh_phong_path / "mesh_phong.geom"
+        );
     }
 
     void Shader::delete_all()

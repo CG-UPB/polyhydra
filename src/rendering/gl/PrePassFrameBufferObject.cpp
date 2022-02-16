@@ -1,0 +1,54 @@
+
+#include "glad/glad.h"
+#include "PrePassFrameBufferObject.h"
+
+namespace vOS
+{
+
+    PrePassFrameBufferObject::PrePassFrameBufferObject(int width, int height) :
+            FrameBufferObject(width, height, {
+                    // depth
+                    FrameBufferAttachment{
+                            .internal_format    = GL_DEPTH_COMPONENT,
+                            .format             = GL_DEPTH_COMPONENT,
+                            .type               = GL_FLOAT,
+                            .attachment         = GL_DEPTH_ATTACHMENT,
+                            .texture_filter     = GL_NEAREST,
+                            .texture_wrap       = GL_CLAMP_TO_EDGE,
+                            .texture_comp_func  = GL_LEQUAL,
+                            .texture_comp_mode  = GL_NONE
+                    },
+                    // normal
+                    FrameBufferAttachment{
+                            .internal_format    = GL_RGBA16F,
+                            .format             = GL_RGBA,
+                            .type               = GL_FLOAT,
+                            .attachment         = GL_COLOR_ATTACHMENT0,
+                            .texture_filter     = GL_NEAREST
+                    },
+                    // position
+                    FrameBufferAttachment{
+                            .internal_format    = GL_RGBA16F,
+                            .format             = GL_RGBA,
+                            .type               = GL_FLOAT,
+                            .attachment         = GL_COLOR_ATTACHMENT1,
+                            .generate_mipmap    = true
+                    }
+            })
+    {}
+
+    unsigned int PrePassFrameBufferObject::get_depth_texture()
+    {
+        return get_texture(GL_DEPTH_ATTACHMENT);
+    }
+
+    unsigned int PrePassFrameBufferObject::get_normal_texture()
+    {
+        return get_texture(GL_COLOR_ATTACHMENT0);
+    }
+
+    unsigned int PrePassFrameBufferObject::get_position_texture()
+    {
+        return get_texture(GL_COLOR_ATTACHMENT1);
+    }
+}

@@ -562,8 +562,8 @@ namespace vOS
     {
         rendering_mutex.lock();
         auto* mesh_obj = new MeshObject();
-        mesh_obj->set_mesh(mesh);
         mesh_obj->set_data(MeshData());
+        mesh_obj->set_mesh(mesh);
         std::cout << "Adding mesh with id " << index << std::endl;
 
         // check if index of mesh already exist: yes -> replace it, no -> just insert it
@@ -592,8 +592,8 @@ namespace vOS
 
         // Create Mesh Object
         auto* mesh_obj = new MeshObject();
-        mesh_obj->set_mesh(mesh);
         mesh_obj->set_data(MeshData());
+        mesh_obj->set_mesh(mesh);
 
         // Add mesh to our map
         m_mesh_objects.emplace(index, mesh_obj);

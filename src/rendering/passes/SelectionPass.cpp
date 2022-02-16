@@ -59,7 +59,7 @@ namespace vOS {
         m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
-        m_selection_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
+        m_selection_shader->set_uniform_bool("u_debug_mode", m_debug);
         m_selection_shader->set_uniform_bool("u_faces_selectable", faces_selectable);
         m_selection_shader->set_uniform_float("u_cell_size", cell_size);
         m_selection_shader->set_uniform_int("u_peel_depth", peel_depth);
@@ -85,7 +85,7 @@ namespace vOS {
             m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
             m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
             m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
-            m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
+            m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
             m_selection_cylinder_shader->set_uniform_int("u_peel_depth", peel_depth);
             m_selection_cylinder_shader->set_uniform_float("u_slice_depth", slice_depth);
@@ -112,7 +112,7 @@ namespace vOS {
             m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
             m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
             m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
-            m_selection_sphere_shader->set_uniform_bool("u_debug_mode", DEBUG_MODE);
+            m_selection_sphere_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
             m_selection_sphere_shader->set_uniform_int("u_peel_depth", peel_depth);
             m_selection_sphere_shader->set_uniform_float("u_slice_depth", slice_depth);
@@ -144,5 +144,15 @@ namespace vOS {
             m_num_edges = mesh->get_num_visible_edges();
             render(mesh->get_vao(), data, mesh_id);
         }
+    }
+
+    void SelectionPass::set_debug_mode(bool mode)
+    {
+        m_debug = mode;
+    }
+
+    bool SelectionPass::is_debug_mode() const
+    {
+        return m_debug;
     }
 }

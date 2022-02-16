@@ -43,6 +43,9 @@ namespace vOS
         void initImGui();
         void initImGuiStyle();
 
+        void load_dark_mode();
+        void load_light_mode();
+
         int m_width;
         int m_height;
         std::string m_title;

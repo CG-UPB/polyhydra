@@ -49,8 +49,8 @@ namespace vOS
     void LogWindow::addLog(std::string fmt, int level) {
         addLog(fmt.c_str(), level);
     }
-
-
+    // following methods are similar to https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp [SECTION] Example App: Debug Log 
+    // sends messages to the log console
     void LogWindow::addLog(const char* fmt, int level_int)
     {
         int old_size = Buf.size();
@@ -81,7 +81,7 @@ namespace vOS
 
     void LogWindow::show()
     {
-        if (!ImGui::Begin("Log-ImguiRenderer"))
+        if (!ImGui::Begin("Log"))
         {
             ImGui::End();
             return;
