@@ -7,6 +7,9 @@
 
 namespace vOS
 {
+    /**
+     * Render Data includes World Information such as the Camera and Lighting
+     */
     struct RenderData
     {
         struct Camera {
@@ -26,6 +29,12 @@ namespace vOS
 
     class RenderPass
     {
+        /**
+         * Renders the VAO using render data and mesh data as parameters
+         * @param vao
+         * @param render_data
+         * @param mesh_id
+         */
         virtual void render(VertexArrayObject* vao, const RenderData& render_data, int mesh_id) = 0;
     };
 }

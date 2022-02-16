@@ -236,7 +236,6 @@ namespace vOS
         // render all passes
         if (obj->get_vao() != nullptr) {
             m_mesh_pass->render(obj->get_vao(), m_render_data, mesh_id);
-            m_highlight_pass.render(nullptr, m_render_data, mesh_id);
             m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
@@ -270,14 +269,14 @@ namespace vOS
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto active_mesh = Window::instance().get_active_mesh_obj();
+        auto active_mesh = Window::instance().get_focused_mesh_object();
         if (active_mesh != nullptr)
         {
             if(!m_zoom)
             {
-                m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
+                m_zoom_point = Window::instance().get_focused_mesh_object()->get_mesh_offset();
             }
-            Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
+            Window::instance().get_focused_mesh_object()->get_data().offset = m_zoom_point;
 
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
             {
@@ -292,7 +291,6 @@ namespace vOS
                 // render all passes
                 if (mesh->get_vao() != nullptr) {
                     m_mesh_pass->render(mesh->get_vao(), m_render_data, m.first);
-                    m_highlight_pass.render(nullptr, m_render_data, m.first);
                     m_shape_pass.render(nullptr, m_render_data, m.first);
                 }
             }
@@ -459,7 +457,7 @@ namespace vOS
                     {
                         int face_id = mesh->to_faceID(picked_id - from) - 1;
 
-                        m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
+                        m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
                         OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face,0);
@@ -506,7 +504,7 @@ namespace vOS
 
                         //std::cout << "hovering face with id: " << face_id << std::endl;
 
-                        m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
+                    m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
                         if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -525,7 +523,7 @@ namespace vOS
                 {
                     int vertex_id = mesh->to_vertexID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, vertex_id);
+                    m_selection_hover_pass.hover( m_render_data, m.first, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -541,7 +539,7 @@ namespace vOS
                 {
                     int edge_id = mesh->to_edgeID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, edge_id);
+                    m_selection_hover_pass.hover(m_render_data, m.first, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -569,10 +567,10 @@ namespace vOS
             m_zoom = false;
         }
 
-        auto active_mesh = Window::instance().get_active_mesh_obj();
+        auto active_mesh = Window::instance().get_focused_mesh_object();
         if (!any_mesh_hovered && active_mesh != nullptr)
         {
-            m_selection_hover_pass.select(*active_mesh, m_render_data, 0, 0, 0);
+            m_selection_hover_pass.hover( m_render_data, 0, 0, 0);
         }
     }
 
@@ -655,7 +653,7 @@ namespace vOS
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
         {
-            auto mesh = Window::instance().get_active_mesh_obj()->m_mesh;
+            auto mesh = Window::instance().get_focused_mesh_object()->m_mesh;
 
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
             ImGui::Text("vertices: %zu", mesh->n_vertices());

@@ -138,10 +138,12 @@ namespace vOS
 
     void ImguiRenderer::initImGuiStyle()
     {
+        // Font
         std::filesystem::path fontPath = FileManager::get_resource_path() / "fonts" / "Roboto-Regular.ttf";
         ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 18.0f);
         ImGuiStyle& style = ImGui::GetStyle();
 
+        // Rounding
         style.FrameRounding = 4.0f;
         style.GrabRounding = 4.0f;
         style.WindowRounding = 6.0f;

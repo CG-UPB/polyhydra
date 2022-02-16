@@ -5,7 +5,6 @@
 #include "../ImguiRenderer.h"
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
-#include "../rendering/passes/HighlightPass.h"
 #include "../rendering/passes/BackgroundPass.h"
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
@@ -84,7 +83,6 @@ namespace vOS
         PrePass* m_pre_pass = nullptr;
         MeshPass* m_mesh_pass = nullptr;
         SSAOPass* m_ssao_pass = nullptr;
-        HighlightPass m_highlight_pass;
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
         SelectionHoverPass m_selection_hover_pass;

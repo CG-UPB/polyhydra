@@ -3,6 +3,7 @@
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
+#include <map>
 
 namespace vOS
 {
@@ -20,6 +21,7 @@ namespace vOS
         OpenVolumeMesh::VertexHandle ovm_handle;
         glm::vec3 position{};
         glm::vec3 normal{};
+        glm::vec3 color{};
     };
 
     struct FaceData
@@ -52,6 +54,8 @@ namespace vOS
 
         VertexArrayObject* get_vao();
 
+        void set_face_color(int ovm_id, float r, float g, float b, float a);
+
         VertexArrayObject* get_sphere_vao();
 
         VertexArrayObject* get_cylinder_vao();
@@ -80,6 +84,14 @@ namespace vOS
 
         BufferSpecification m_spec;
 
+        /**
+         * Set to true, if some update has been made to the vao buffers (like face color)
+         * To reduce overhead we do not update the vao immediatly, but only before it has been requested by some other class
+         */
+        bool m_update_vao = false;
+        int m_face_amount = 0;
+        int m_cell_start_face_index = 0;
+
         std::vector<float> m_original_vertices;
 
         VertexArrayObject* m_vao = nullptr;
@@ -96,6 +108,7 @@ namespace vOS
         std::vector<float> m_normals;
         std::vector<float> m_cell_centers;
         std::vector<float> m_is_face_boundary;
+        std::vector<float> m_colors;
         std::vector<float> m_sphere_cell_centers;
         std::vector<float> m_cylinder_cell_centers;
         std::vector<float> m_sphere_peel_depths;
@@ -111,8 +124,13 @@ namespace vOS
         std::vector<float> m_to_vertices;
         std::vector<float> m_selection_vertices;
 
-
-        int m_face_amount = 0;
+        /**
+         * Maps OVM Ids to face buffer locations
+         */
+        std::map<int,int> m_ovm_to_gl_face_indizes;
+        std::vector<int> m_face_offset_array;
+        std::vector<int> m_face_vertex_count;
+        int m_total_vertex_count = 0;
 
         std::map<int, int> m_start_of_cell_vertices;
 

@@ -89,13 +89,13 @@ namespace vOS
             // Run Dijkstra linearly
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
             Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
-            Window::instance().run();
+            Window::instance().open();
         }else{
             // Run Dijkstra parallel
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_parallel, this));
             std::cout << " Parallel approach " << std::endl;
             Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
-            std::thread* vos_thread = new std::thread(&Window::run, &Window::instance());
+            std::thread* vos_thread = new std::thread(&Window::open, &Window::instance());
 
             parallel_run();
 
@@ -198,7 +198,6 @@ namespace vOS
 
         //window.remove_mesh(hand_mesh);
 
-        window.remove_all_vertex_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -239,7 +238,6 @@ namespace vOS
                 auto vertexHandle = queue.top().second;
                 queue.pop();
 
-                window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -284,8 +282,6 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj(0)->remove_highlights();
-
             bool first = true;
             for (int i = 0; i < res.size(); i++)
             {
@@ -313,7 +309,7 @@ namespace vOS
             LogWindow::getInstance()->addLog("Continue");
 
         }
-        if (window.is_running())
+        if (!window.is_closed())
         {
             LogWindow::getInstance()->addLog("Reset Variables");
             m_reset = false;
@@ -379,7 +375,6 @@ namespace vOS
         Window::instance().add_mesh(&m_mesh);
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
-        window.remove_all_vertex_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -419,8 +414,6 @@ namespace vOS
                 m_step = false;
                 auto vertexHandle = queue.top().second;
                 queue.pop();
-
-                window.remove_vertex_highlight(0,OpenVolumeMesh::VertexHandle(prev[vertexHandle.idx()]));
 
                 // voh iterator
                 for (auto edgeHandle: m_mesh.vertex_edges(vertexHandle))
@@ -465,7 +458,6 @@ namespace vOS
                 res.push_back(temp);
             }
 
-            window.get_mesh_obj(0)->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)
@@ -494,7 +486,7 @@ namespace vOS
             LogWindow::getInstance()->addLog("Continue");
 
         }
-        while (window.is_running()){}
+        while (!window.is_closed()){}
         std::cout << "End Dijkstra" << std::endl;
     }
     void Dijkstra::step()

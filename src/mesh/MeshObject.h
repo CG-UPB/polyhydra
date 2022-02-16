@@ -62,15 +62,6 @@ namespace vOS
         float scale_normalization = 1.0f;
     };
 
-    struct Highlight
-    {
-        Highlight(Color c, OpenVolumeMesh::VertexHandle vh) : color(c), v_h(vh)
-        {}
-
-        Color color;
-        OpenVolumeMesh::VertexHandle v_h;
-    };
-
     class MeshObject
     {
     public:
@@ -96,6 +87,8 @@ namespace vOS
         std::unordered_set<int>& get_all_selected_cells()
         { return m_selected_cells; }
 
+        MeshVertexBuffer* get_mesh_vertex_buffer(){return m_mvb;}
+
         void select_element(int id, int type);
 
         void unselect_element(int id, int type);
@@ -116,12 +109,6 @@ namespace vOS
 
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh);
 
-        void add_highlight(Highlight tuple);
-
-        void remove_highlight(OpenVolumeMesh::VertexHandle vh);
-
-        void remove_highlights();
-
         void update_vertex_buffer();
 
         int to_vertexID(int value);
@@ -134,8 +121,6 @@ namespace vOS
         { return m_selection_offset; };
 
         void set_selection_offset(int start);
-
-        std::map<OpenVolumeMesh::VertexHandle, Highlight>& get_highlights();
 
         glm::vec3& get_mesh_offset();
 
@@ -186,7 +171,6 @@ namespace vOS
         std::unordered_set<int> m_selected_cells;
         std::map<int, int> m_created_shapes;
 
-        std::map<OpenVolumeMesh::VertexHandle, Highlight> highlight_map;
 
         std::tuple<int, int> m_selection_offset;
         glm::vec3 m_mesh_offset_from_center;

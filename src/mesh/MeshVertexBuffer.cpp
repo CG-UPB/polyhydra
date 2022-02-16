@@ -23,6 +23,7 @@ namespace vOS
         m_vao->add_attribute(m_peel_depths, 3, 1);
         m_vao->add_attribute(m_is_face_boundary, 4, 1);
         m_vao->add_attribute(m_is_digged, 5, 1);
+        m_vao->add_attribute(m_colors, 6, 4);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -131,7 +132,6 @@ namespace vOS
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
         for (auto chf_it : mesh.cell_halffaces(cell))
         {
-            // Polygon Attem
             FaceData face_data;
             auto face_handle = mesh.face_handle(chf_it);
             int face_id = face_handle.idx();
@@ -150,7 +150,7 @@ namespace vOS
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
-            if(vertex_count == 3)
+            if(vertex_count == 3 || vertex_count == 4)
             {// get the face normal
                 auto hf_normal = mesh.normal(chf_it);
 
@@ -177,11 +177,15 @@ namespace vOS
                 // Add face data
                 face_data.face_ids.push_back(face_id);
 
+                if(vertex_count == 4){
+                    face_data.face_ids.push_back(face_id);
+                }
+
                 add_face_indices(mesh, face_data);
-                m_num_vertices += 3;
+                m_num_vertices += vertex_count;
 
                 faces.push_back(face_data);
-            }else if(vertex_count > 3)
+            }else if(vertex_count > 4)
             {
                 // Triangulate Face
 
@@ -215,15 +219,24 @@ namespace vOS
 
 
                     if(!first_edge){
-                        // Calculate Normal
+                        // Set three Triangle Points
                         auto pos_1 = previous_position; // Vertex Position from previous Vertex
                         auto pos_2 = v_pos; // This Vertice's position
                         auto pos_3 = midpoint; // Midpoint Vertex position
 
+                        // Calculate Area of Triangle
+                        auto b_a = pos_2 - pos_1;
+                        auto c_a = pos_3 - pos_1;
+
+                        auto cross = b_a.cross(c_a);
+
+                        float area = cross.length() /2;
+
+                        // Calculate Normal of Triangle
                         OpenVolumeMesh::VectorT<float,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
 
-                        // Add to Face Normal
-                        face_normal += normal;
+                        // Add to Face Normal and multiply by triangle area
+                        face_normal += normal * area;
 
                         previous_position = v_pos;
 
@@ -268,61 +281,25 @@ namespace vOS
                 m_num_vertices += vertex_count + 1;
 
                 faces.push_back(face_data);
+
             }else
             {
                 std::cout << "Face " << face_id << " has less than 3 vertices" << std::endl;
                 continue;
             }
+            if(m_ovm_to_gl_face_indizes.find(face_id) == m_ovm_to_gl_face_indizes.end())
+                m_ovm_to_gl_face_indizes.emplace(face_id, m_face_amount++);
+
             if(m_start_of_cell_vertices.find(face_id) == m_start_of_cell_vertices.end())
-                m_start_of_cell_vertices.emplace(face_id, m_face_amount++);
+                m_start_of_cell_vertices.emplace(face_id, m_cell_start_face_index++);
 
-            /*
-            FaceData faceData;
-            auto face_handle = mesh.face_handle(chf_it);
-            int face_id = face_handle.idx();
+            // Add this Face to the Face Offset Array
+            m_face_offset_array.push_back(m_total_vertex_count);
+            m_total_vertex_count += vertex_count;
 
-            // remember if face is boundary, so that we can discard non boundary faces in the shader if needed
-            if (mesh.is_boundary(face_handle))
-            {
-                faceData.is_boundary = true;
-            }
 
-            // get the face normal
-            auto hf_normal = mesh.normal(chf_it);
-
-            // iterate over the halfedges of the halfface
-            for (auto hfhe_it : mesh.halfface_halfedges(chf_it))
-            {
-                // get the corresponding edge vertex
-                auto v = mesh.from_vertex_handle(hfhe_it);
-                auto v_pos = mesh.vertex(v);
-
-                // get geometry data
-                VertexData v_data;
-                v_data.position.x = v_pos[0];
-                v_data.position.y = v_pos[1];
-                v_data.position.z = v_pos[2];
-                v_data.normal.x = -hf_normal[0];
-                v_data.normal.y = -hf_normal[1];
-                v_data.normal.z = -hf_normal[2];
-                v_data.ovm_handle = v;
-
-                faceData.vertices.push_back(v_data);
-            }
-
-            // if we have a face with 4 face vertices, it gets split into 2 triangles, so we need to put the id twice
-            faceData.face_ids.push_back(face_id);
-            int num_face_vertices = (int) faceData.vertices.size();
-            if (num_face_vertices == 4)
-            {
-                faceData.face_ids.push_back(face_id);
-            }
-
-            add_face_indices(mesh, faceData);
-            m_num_vertices += num_face_vertices;
-
-            faces.push_back(faceData);
-             */
+            // Remember Vertex amount of face
+            m_face_vertex_count.push_back(vertex_count);
         }
 
         // now that we collected the data we need, we can update or buffer arrays
@@ -348,6 +325,13 @@ namespace vOS
                 m_cell_centers.push_back(cell_center.x);
                 m_cell_centers.push_back(cell_center.y);
                 m_cell_centers.push_back(cell_center.z);
+
+                // Color
+                m_colors.push_back(1);
+                m_colors.push_back(1);
+                m_colors.push_back(1);
+                m_colors.push_back(0);
+
 
                 m_peel_depths.push_back((float)peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
@@ -379,7 +363,9 @@ namespace vOS
                 face.indices.push_back(m_num_vertices + 2);
                 face.indices.push_back(m_num_vertices + 1);
                 break;
-                /*
+            }
+            case 4:
+            {
                 // we have 4 vertices, so we need to create two triangles out of it
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 2);
@@ -388,7 +374,7 @@ namespace vOS
                 face.indices.push_back(m_num_vertices + 0);
                 face.indices.push_back(m_num_vertices + 3);
                 face.indices.push_back(m_num_vertices + 2);
-                break;*/
+                break;
             }
             default:
             {
@@ -407,6 +393,26 @@ namespace vOS
                 break;
             }
         }
+    }
+
+    void MeshVertexBuffer::set_face_color(int ovm_id, float r, float g, float b, float a)
+    {
+        // Out of Bounce Check
+        if(ovm_id < 0 || ovm_id > m_ovm_to_gl_face_indizes.size())
+            return;
+
+        int buffer_index = m_ovm_to_gl_face_indizes[ovm_id];
+        int vertex_count = m_face_vertex_count[buffer_index];
+        int offset_index = m_face_offset_array[m_ovm_to_gl_face_indizes[ovm_id]];
+        int color_array_index = offset_index * 4;
+
+        for(int i = 0; i< vertex_count; i++) {
+            m_colors[color_array_index + (i*4)] = r;
+            m_colors[color_array_index + (i*4) + 1] = g;
+            m_colors[color_array_index + (i*4) + 2] = b;
+            m_colors[color_array_index + (i*4) + 3] = a;
+        }
+        m_update_vao = true;
     }
 
     void MeshVertexBuffer::add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from, const OpenVolumeMesh::VertexHandle& to)
@@ -484,6 +490,11 @@ namespace vOS
 
     VertexArrayObject* MeshVertexBuffer::get_vao()
     {
+        if(m_update_vao)
+        {
+            m_vao->update_attribute(m_colors, 6);
+            m_update_vao = false;
+        }
         return m_vao;
     }
 

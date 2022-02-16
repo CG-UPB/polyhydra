@@ -6,9 +6,11 @@ layout (location = 2) in vec3 a_Center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_isBoundary;
 layout (location = 5) in float a_isDigged;
+layout (location = 6) in vec4 a_Color;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
+out vec4 v_Color;
 flat out int v_Visible;
 
 uniform mat4 u_Transform;
@@ -65,4 +67,5 @@ void main()
     vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
+    v_Color = a_Color;
 }

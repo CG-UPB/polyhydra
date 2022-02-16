@@ -86,14 +86,14 @@ namespace vOS
                    // Unselect the previous manually selected element
                    if (m_previous_manual_selection_id >= 0) {
                        Window::instance().rendering_mutex.unlock();
-                       Window::instance().unselect_element(Window::instance().get_mesh_active(),
+                       Window::instance().unselect_element(Window::instance().get_mesh_focus(),
                                                            m_previous_manual_selection_id,
                                                            m_previous_manual_selection_type);
                        Window::instance().rendering_mutex.lock();
                    }
                    // Select the new manually selected element
                    Window::instance().rendering_mutex.unlock();
-                   Window::instance().select_element(Window::instance().get_mesh_active(), m_manual_selection_id,
+                   Window::instance().select_element(Window::instance().get_mesh_focus(), m_manual_selection_id,
                                                      m_manual_selection_type);
                    Window::instance().rendering_mutex.lock();
                    m_previous_manual_selection_id = m_manual_selection_id;
@@ -139,7 +139,7 @@ namespace vOS
            Tooltips::ToolTipByHovering("By pushing this button diverse options for Selection of elements where shown. "
                                        "You can decide which one you want to use");
 
-            int active_mesh = Window::instance().get_mesh_active();
+            int active_mesh = Window::instance().get_mesh_focus();
 
             // If there is at least one mesh, the Active Mesh Settings (Slicing, Peeling, etc.) are available
             if (active_mesh != -1) {
@@ -297,8 +297,6 @@ namespace vOS
                 Tooltips::ToolTipByHovering("By pushing this button diverse options for Filtering the mesh where shown. "
                                             "There are multiple options to get a better view of the mesh");
             }
-
-
             ImGui::End();
         }
 

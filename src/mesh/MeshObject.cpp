@@ -48,7 +48,6 @@ namespace vOS
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
 
-        remove_highlights();
         m_should_update = true;
 
     }
@@ -68,6 +67,9 @@ namespace vOS
 
             OpenVolumeMesh::FaceHandle face(id);
 
+            m_mvb->set_face_color(face.idx(), 1,0,0, 1);
+
+            /*
             auto pick_pos = m_mesh->barycenter(face);
             auto* shape = new Cylinder();
             shape->set_scale(0.02f, 0.02f, 0.02f);
@@ -80,6 +82,7 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
 
             m_created_shapes.insert({shape_key, shape_id});
+             */
         }else if(type == 1) {
             m_selected_vertices.insert(id);
 
@@ -155,12 +158,7 @@ namespace vOS
         // Delete Face Elements
         for(int element : m_selected_faces)
         {
-            // Delete Shape Element
-            int shape_key = 0 * key_multiplier + element;
-            int shape_id = m_created_shapes[shape_key];
-            Window::instance().rendering_mutex.unlock();
-            Window::instance().remove_shape(shape_id);
-            Window::instance().rendering_mutex.lock();
+            m_mvb->set_face_color(element, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
         }
         m_selected_faces.clear();
 
@@ -211,8 +209,8 @@ namespace vOS
 
         if(type == 0) {
 
-            auto entry = m_selected_faces.find(id);
-            m_selected_faces.erase(entry);
+            m_mvb->set_face_color(id, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
+            return;
         }else if(type == 1) {
             auto entry = m_selected_vertices.find(id);
             m_selected_vertices.erase(entry);
@@ -262,7 +260,6 @@ namespace vOS
         peel_property->set_persistent(true);
         calculate_peel_depth();
 
-        remove_highlights();
         m_should_update = true;
         calculate_mesh_offset();
     }
@@ -410,55 +407,6 @@ namespace vOS
     int MeshObject::to_faceID(int value)
     {
         return m_mvb->to_faceID(value);
-    }
-
-
-    void MeshObject::add_highlight(Highlight highlight)
-    {
-        // Remove Highlight if it already exists
-        remove_highlight(highlight.v_h);
-
-        // Add Highlight to Map
-        highlight_map.insert({highlight.v_h,  highlight});
-        /*
-        //OpenVolumeMesh::VertexPropertyT<bool>  highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
-        if (std::get<5>(tuple) == true)
-        {
-            // Add
-            m_vertex_highlights.push_back(tuple);
-        } else if (std::get<5>(tuple) == false)
-        {
-            // Remove
-            auto pos = std::find(m_vertex_highlights.begin(), m_vertex_highlights.end(),
-                                 tuple);
-            if (pos != m_vertex_highlights.end())
-            {
-                m_vertex_highlights.erase(pos);
-            }
-        }
-        */
-    }
-
-    void MeshObject::remove_highlight(OpenVolumeMesh::VertexHandle vh) {
-
-        auto search = highlight_map.find(vh);
-        if (search != highlight_map.end()) {
-            // Element Exists
-            highlight_map.erase(search);
-        }else{
-            // Element does not exist
-            // ...
-        }
-    }
-
-    void MeshObject::remove_highlights()
-    {
-        //highlight_map.clear();
-    }
-
-    std::map<OpenVolumeMesh::VertexHandle, Highlight>& MeshObject::get_highlights()
-    {
-        return highlight_map;
     }
 
     glm::vec3& MeshObject::get_mesh_offset()
