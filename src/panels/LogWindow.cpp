@@ -11,7 +11,6 @@ namespace vOS
 
     LogWindow* LogWindow::instance = 0;
 
-    // Singleton
     LogWindow* LogWindow::getInstance()
     {
         if (instance == 0)
@@ -23,14 +22,15 @@ namespace vOS
 
     }
 
-    // Konstruktor
+
     LogWindow::LogWindow()
     {
+        // autoscroll is default activated
         autoScroll = true;
         clear();
     }
 
-    // Destruktor
+
     LogWindow::~LogWindow()
     {
         //delete instance;
@@ -38,6 +38,7 @@ namespace vOS
 
     void LogWindow::clear()
     {
+        //clear all
         Buf.clear();
         lineOffsets.clear();
         lineOffsets.push_back(0);
@@ -48,10 +49,9 @@ namespace vOS
     void LogWindow::addLog(std::string fmt, int level) {
         addLog(fmt.c_str(), level);
     }
-    // following methods are similar to https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp [SECTION] Example App: Debug Log 
-    // sends messages to the log console
+
+
     void LogWindow::addLog(const char* fmt, int level_int)
-    // TODO: Add new Line, if a Log-Message is too big for the Screen
     {
         int old_size = Buf.size();
         if (level_int == 0){
@@ -78,14 +78,9 @@ namespace vOS
                 lineOffsets.push_back(old_size + 1);
     }
 
-    // show log window and corresponding buttons
+
     void LogWindow::show()
     {
-//        const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-//        int size_y = main_viewport->WorkSize.y * 0.7;
-//        ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 5, main_viewport->WorkPos.y + main_viewport->WorkSize.y * 0.7), ImGuiCond_Once);
-//        ImGui::SetNextWindowSize(ImVec2(500, main_viewport->WorkSize.y - size_y), ImGuiCond_Once);
-
         if (!ImGui::Begin("Log-ImguiRenderer"))
         {
             ImGui::End();

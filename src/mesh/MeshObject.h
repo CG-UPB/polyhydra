@@ -160,6 +160,8 @@ namespace vOS
          */
         [[nodiscard]] VertexArrayObject* get_sphere_vao() const;
 
+        [[nodiscard]] MeshVertexBuffer* get_mvb() const;
+
         [[nodiscard]] int get_num_visible_vertices() const;
 
         [[nodiscard]] VertexArrayObject* get_cylinder_vao() const;

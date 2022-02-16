@@ -7,6 +7,7 @@
 namespace vOS {
 
     void CustomUIPanel::show() {
+        // if costum_callback_function(default) is empty nothing happens
         m_custom_callback_function();
     }
 }

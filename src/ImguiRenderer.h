@@ -12,9 +12,15 @@ namespace vOS
     // Forward Declaration
     class Window;
 
+    /**
+     * class WindowPanel which is used to initialise and show all of our panels
+     */
     class WindowPanel
     {
     public:
+        /**
+         * show-method which is called in every time step. Each of the inherited classes has to implement the show method
+         */
         virtual void show() = 0;
         virtual ~WindowPanel() = default;
     };

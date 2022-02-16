@@ -386,6 +386,7 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
+
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
@@ -393,23 +394,71 @@ namespace vOS
 
                 if (type == SELECTION_TYPE_FACE)
                 {
-                    // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
-                    // there is no valid ID (e.g when clicking background)
-                    int face_id = mesh->to_faceID(picked_id - from) - 1;
 
-                    //std::cout << "hovering face with id: " << face_id << std::endl;
-
-                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
-
-                    OpenVolumeMesh::FaceHandle face(face_id);
-                    if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL || GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
                     {
-                        // Select element via Window class, to activate Callback function
-                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
-                        Window::instance().rendering_mutex.unlock();
-                        Window::instance().select_element(m.first, face_id, type);
-                        Window::instance().rendering_mutex.lock();
+                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+
+                        m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
+
+                        OpenVolumeMesh::FaceHandle face(face_id);
+                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face,0);
+
+                        OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
+
+                        if(cell_handle.idx() == -1){
+                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
+
+                            cell_handle = mesh->m_mesh->incident_cell(hf1);
+
+                            //std::cout << "Zelle 2: " << cell_handle.idx();
+                        }
+
+                        if (GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
+                        {
+                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            {
+                                OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>("DiggingProperty");
+                                diggingProp[cell_handle] = false;
+
+                                auto mvb = mesh->get_mvb();
+                                mvb->update_digging_buffer(cell_handle.idx(),0.0f);
+                            }
+                        }else
+                        {
+                            // cell_handle beinhaltet cell
+                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            {
+                                // Select element via Window class, to activate Callback function
+                                // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                                Window::instance().rendering_mutex.unlock();
+                                Window::instance().select_element(m.first, cell_handle.idx(), 6);
+                                Window::instance().rendering_mutex.lock();
+                            }
+                        }
+
+
+                    }else {
+
+                        // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
+                        // there is no valid ID (e.g when clicking background)
+                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+
+                        //std::cout << "hovering face with id: " << face_id << std::endl;
+
+                        m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
+
+                        OpenVolumeMesh::FaceHandle face(face_id);
+                        if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        {
+                            // Select element via Window class, to activate Callback function
+                            // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                            Window::instance().rendering_mutex.unlock();
+                            Window::instance().select_element(m.first, face_id, type);
+                            Window::instance().rendering_mutex.lock();
+                        }
                     }
+
 
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
@@ -475,14 +524,6 @@ namespace vOS
 
     void MeshView::show()
     {
-        if(GlobalViewerSettings::getInstance()->m_get_take_snapshot())
-        {
-            GlobalViewerSettings::getInstance()->m_set_take_snapshot(false);
-            // Snapshot erstellen
-            std::string filename = GlobalViewerSettings::getInstance()->m_get_actual_snapshot_filename();
-            this->m_take_screenshot(filename);
-        }
-
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
@@ -554,7 +595,7 @@ namespace vOS
             hovered_element_name += " : ";
             hovered_element_name += std::to_string(m_hovered_element_id);
 
-            ImGui::Text(hovered_element_name.c_str());
+            ImGui::Text("%s", hovered_element_name.c_str());
         }
 
         /*
