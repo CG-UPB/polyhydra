@@ -465,8 +465,9 @@ namespace vOS
                         OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face,0);
 
                         OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
+                        OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>("DiggingProperty");
 
-                        if(cell_handle.idx() == -1){
+                        if(cell_handle.idx() == -1 || !diggingProp[cell_handle]){
                             OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
 
                             cell_handle = mesh->m_mesh->incident_cell(hf1);
@@ -478,7 +479,6 @@ namespace vOS
                         {
                             if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                             {
-                                OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>("DiggingProperty");
                                 diggingProp[cell_handle] = false;
 
                                 auto mvb = mesh->get_mvb();

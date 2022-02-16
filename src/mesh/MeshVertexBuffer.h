@@ -114,9 +114,14 @@ namespace vOS
 
         int m_face_amount = 0;
 
-        std::map<int,int> m_start_of_cell_vertices;
+        std::map<int, int> m_start_of_cell_vertices;
 
-        std::map<int,int> m_size_of_cell_vertices;
+        std::map<int, int> m_size_of_cell_vertices;
+        std::map<int, int> m_selection_sphere_digging_indices;
+        std::map<int, int> m_selection_cylinder_digging_indices;
+        std::map<int, int> m_selection_sphere_digging_numbers;
+        std::map<int, int> m_selection_cylinder_digging_numbers;
+
 
 
         int m_num_vertices = 0;

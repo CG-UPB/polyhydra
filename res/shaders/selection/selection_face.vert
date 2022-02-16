@@ -4,6 +4,8 @@ layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peelDepth;
+layout (location = 4) in float a_isBoundary;
+layout (location = 5) in float a_is_digged;
 
 uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
@@ -42,7 +44,7 @@ void main()
     vec3 center =  vec3(u_mesh_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peelDepth < u_peel_depth || angle > 0)
+    if (a_peelDepth < u_peel_depth || angle > 0 || a_is_digged == 0.0)
     {
         v_visible = 0;
     }

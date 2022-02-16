@@ -89,12 +89,15 @@ namespace vOS
             num_selection_vertices++;
         }
 
+        m_selection_sphere_digging_numbers[cell.idx()] = num_selection_vertices;
+
         // get the center, so we can add it as a vertex attribute
         glm::vec3 cell_center = get_center(vertices);
 
         // get peel depth of the cell
         int peel_depth = peel_property[cell];
 
+        m_selection_sphere_digging_indices[cell.idx()] = (int) m_sphere_is_digged.size();
         for (int i = 0; i < num_selection_vertices; i++)
         {
             m_sphere_cell_centers.push_back(cell_center.x);
@@ -103,10 +106,12 @@ namespace vOS
 
             m_sphere_peel_depths.push_back((float) peel_depth);
 
-            m_sphere_is_digged.push_back(isDigged);
+            m_sphere_is_digged.push_back(1.0f);
         }
 
         // same for the edges, only add them once for the selection
+        m_selection_cylinder_digging_indices[cell.idx()] = (int) m_cylinder_is_digged.size();
+        int num_selection_edges = 0;
         for (auto ce_it : mesh.cell_edges(cell))
         {
             auto [v0, v1] = mesh.edge_vertices(ce_it);
@@ -118,8 +123,10 @@ namespace vOS
             m_cylinder_cell_centers.push_back(cell_center.z);
 
             m_cylinder_peel_depths.push_back((float) peel_depth);
-            m_cylinder_is_digged.push_back(isDigged);
+            m_cylinder_is_digged.push_back(1.0f);
+            num_selection_edges++;
         }
+        m_selection_cylinder_digging_numbers[cell.idx()] = num_selection_edges;
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
         for (auto chf_it : mesh.cell_halffaces(cell))
@@ -542,7 +549,22 @@ namespace vOS
             m_is_digged[start+i] = newValue;
         }
 
-        m_vao->update_attribute(m_is_digged,5);
+        int sphere_index = m_selection_sphere_digging_indices[id];
+        int nbr_spheres = m_selection_sphere_digging_numbers[id];
+        for (size_t i = 0; i < nbr_spheres; i++)
+        {
+            m_sphere_is_digged[sphere_index + i] = newValue;
+        }
 
+        int cylinder_index = m_selection_cylinder_digging_indices[id];
+        int nbr_cylinders = m_selection_cylinder_digging_numbers[id];
+        for (size_t i = 0; i < nbr_cylinders; i++)
+        {
+            m_cylinder_is_digged[cylinder_index + i] = newValue;
+        }
+
+        m_vao->update_attribute(m_is_digged,5);
+        m_sphere_vao->update_attribute(m_sphere_is_digged, 5);
+        m_cylinder_vao->update_attribute(m_cylinder_is_digged, 5);
     }
 }
