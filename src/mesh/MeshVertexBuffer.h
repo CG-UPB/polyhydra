@@ -128,6 +128,9 @@ namespace vOS
          * Maps OVM Ids to face buffer locations
          */
         std::map<int,int> m_ovm_to_gl_face_indizes;
+        std::vector<int> m_face_offset_array;
+        std::vector<int> m_face_vertex_count;
+        int m_total_vertex_count = 0;
 
         std::map<int,int> m_start_of_cell_vertices;
 

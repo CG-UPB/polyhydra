@@ -285,6 +285,14 @@ namespace vOS
 
             if(m_start_of_cell_vertices.find(face_id) == m_start_of_cell_vertices.end())
                 m_start_of_cell_vertices.emplace(face_id, m_cell_start_face_index++);
+
+            // Add this Face to the Face Offset Array
+            m_face_offset_array.push_back(m_total_vertex_count);
+            m_total_vertex_count += vertex_count;
+
+
+            // Remember Vertex amount of face
+            m_face_vertex_count.push_back(vertex_count);
         }
 
         // now that we collected the data we need, we can update or buffer arrays
@@ -382,13 +390,21 @@ namespace vOS
 
     void MeshVertexBuffer::set_face_color(int ovm_id, float r, float g, float b, float a)
     {
-        int array_id = m_ovm_to_gl_face_indizes[ovm_id] * 4;
+        // Out of Bounce Check
+        if(ovm_id < 0 || ovm_id > m_ovm_to_gl_face_indizes.size())
+            return;
 
-        m_colors[array_id] = r;
-        m_colors[array_id + 1] = g;
-        m_colors[array_id + 2] = b;
-        m_colors[array_id + 3] = a;
+        int buffer_index = m_ovm_to_gl_face_indizes[ovm_id];
+        int vertex_count = m_face_vertex_count[buffer_index];
+        int offset_index = m_face_offset_array[m_ovm_to_gl_face_indizes[ovm_id]];
+        int color_array_index = offset_index * 4;
 
+        for(int i = 0; i< vertex_count; i++) {
+            m_colors[color_array_index + (i*4)] = r;
+            m_colors[color_array_index + (i*4) + 1] = g;
+            m_colors[color_array_index + (i*4) + 2] = b;
+            m_colors[color_array_index + (i*4) + 3] = a;
+        }
         m_update_vao = true;
     }
 

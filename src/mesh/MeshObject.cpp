@@ -68,6 +68,7 @@ namespace vOS
             OpenVolumeMesh::FaceHandle face(id);
 
             m_mvb->set_face_color(face.idx(), 1,0,0, 1);
+
             /*
             auto pick_pos = m_mesh->barycenter(face);
             auto* shape = new Cylinder();
