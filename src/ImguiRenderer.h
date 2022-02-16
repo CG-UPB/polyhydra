@@ -24,12 +24,15 @@ namespace vOS
     {
 
     public:
+
         ImguiRenderer(int width, int height, std::string title);
         ~ImguiRenderer();
-        void show_dock_space();
+
         bool window_closed();
+        void show_dock_space();
         void pre_render_step();
         void post_render_step();
+
         GLFWwindow* get_window(){return m_window;}
     private:
 
@@ -39,8 +42,10 @@ namespace vOS
 
         int m_width;
         int m_height;
+
         std::string m_title;
         std::string m_glslVersion;
+
         GLFWwindow* m_window;
     };
 }

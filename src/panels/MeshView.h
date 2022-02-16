@@ -35,7 +35,7 @@ namespace vOS
         void renderSelection();
         void querySelection(int type, int picked_id);
         void render_pre_pass();
-        void render_transparency();
+        void render_transparency_wb();
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
 

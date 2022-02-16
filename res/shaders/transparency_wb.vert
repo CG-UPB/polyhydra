@@ -16,10 +16,10 @@ uniform mat4 u_View;
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
-uniform vec3 u_object_color;
+uniform vec4 u_object_color;
 uniform float u_cell_size;
 
-uniform int u_peel_depth;
+uniform float u_peel_depth;
 uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;
@@ -50,7 +50,7 @@ void main()
     vec3 center =  vec3(u_Transform * vec4(a_Center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peel_depth != u_peel_depth || angle > 0)
+    if (a_peel_depth < u_peel_depth || angle > 0)
     {
         v_Visible = 0;
     }

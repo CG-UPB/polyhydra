@@ -405,7 +405,7 @@ namespace vOS
         m_pre_pass_framebuffer->unbind();
     }
 
-    void MeshView::render_transparency()
+    void MeshView::render_transparency_wb()
     {
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -585,7 +585,6 @@ namespace vOS
         m_meshFrameBuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data, 0);
-        m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
         {
             renderMesh(m.first);
@@ -593,7 +592,7 @@ namespace vOS
         m_meshFrameBuffer->unbind();
 
         // Render transparent objects
-        render_transparency();
+        render_transparency_wb();
 
 
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
@@ -606,8 +605,8 @@ namespace vOS
         glDisable(GL_BLEND);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);
@@ -628,7 +627,7 @@ namespace vOS
         }
 
         texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
-        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_accumTexture);
+        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_accum_texture);
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

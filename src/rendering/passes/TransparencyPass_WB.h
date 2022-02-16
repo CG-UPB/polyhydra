@@ -18,8 +18,10 @@ namespace vOS
         void resize_buffers(unsigned int width, unsigned int height);
         void clear_framebuffer() const;
 
-        GLuint m_revealTexture;
-        GLuint m_accumTexture;
+        GLuint m_reveal_texture;
+        GLuint m_accum_texture;
+        GLuint m_depth_texture;
+
         unsigned int m_transparent_framebuffer;
         unsigned int m_width;
         unsigned int m_height;

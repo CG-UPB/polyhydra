@@ -57,7 +57,7 @@ void main()
 
     vec3 result = (ambient + diffuse + specular) * u_objectColor.xyz;
 
-    FragColor = vec4(result, u_objectColor.a);
+    FragColor = vec4(result, 1.0);
 
     // Testing
     //    vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
