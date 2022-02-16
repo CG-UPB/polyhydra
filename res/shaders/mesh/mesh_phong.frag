@@ -2,6 +2,7 @@
 
 in vec3 v_pos;
 in vec3 v_normal;
+in vec4 v_color;
 flat in int v_visible;
 
 uniform vec3 u_lightPos;
@@ -34,6 +35,8 @@ void main()
 
     // Phong Shading
 
+    vec3 used_color = mix(u_objectColor, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
+
     //diffuse
     float diffuseStrength = 1.0;
     vec3 n = -normalize(v_normal);
@@ -51,7 +54,7 @@ void main()
     vec3 specular = specularStrength * spec * u_lightColor;
 
     float norm = ambientStrength + diffuseStrength + specularStrength;
-    vec3 result = (ambient + diffuse + specular) / norm * u_objectColor;
+    vec3 result = (ambient + diffuse + specular) / norm * used_color;
 
     FragColor = vec4(result, 1.0);
 }

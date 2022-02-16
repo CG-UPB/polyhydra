@@ -552,10 +552,10 @@ namespace vOS
         rendering_mutex.lock();
         // Create MeshObject
         auto* mesh_obj = new MeshObject();
-        // Set its Mesh
-        mesh_obj->set_mesh(mesh);
         // Set its Data
         mesh_obj->set_data(MeshData());
+        // Set its Mesh
+        mesh_obj->set_mesh(mesh);
 
         // Check if index of mesh already exist: yes -> replace it, no -> just insert it
         auto search = m_mesh_objects.find(index);
@@ -593,8 +593,8 @@ namespace vOS
 
         // Create MeshObject
         auto* mesh_obj = new MeshObject();
-        mesh_obj->set_mesh(mesh);
         mesh_obj->set_data(MeshData());
+        mesh_obj->set_mesh(mesh);
 
         // Add mesh to our map
         m_mesh_objects.emplace(index, mesh_obj);
