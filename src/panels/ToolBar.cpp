@@ -130,6 +130,10 @@ namespace vOS
                    }
                    ImGui::SameLine();
                    Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
+                   if (ImGui::RadioButton("Cell-Selection", m_current_selection_mode == CELL)) {
+                       m_current_selection_mode = CELL;
+                       GlobalViewerSettings::getInstance()->m_set_current_selection_mode(CELL);
+                   }
                }
            }
            Tooltips::ToolTipByHovering("By pushing this button diverse options for Selection of elements where shown. "
@@ -237,6 +241,28 @@ namespace vOS
                             Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
                             Window::instance().rendering_mutex.lock();
                         }
+
+                        static int clicked_digging = 0;
+                        if(ImGui::Button("Activate Digging"))
+                        {
+                            if (!m_digging_activated) {
+                                m_digging_activated = true;
+                                GlobalViewerSettings::getInstance()->m_set_current_digging_active(m_digging_activated);
+                                clicked_digging++;
+                            }
+                        }
+                        if (clicked_digging & 1) {
+                            ImGui::SameLine();
+                            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Digging is Active");
+                            if (ImGui::Button("Reset Digging")) {
+                                if (m_digging_activated) {
+                                    m_digging_activated = false;
+                                    GlobalViewerSettings::getInstance()->m_set_current_digging_active(m_digging_activated);
+                                    clicked_digging++;
+                                }
+                            }
+                        }
+
                         // Therefore, a picker has to work
                         ImGui::Text("Start Isolation:");
                         ImGui::SameLine();

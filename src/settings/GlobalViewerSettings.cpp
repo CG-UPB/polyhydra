@@ -24,7 +24,9 @@ namespace vOS
 
     GlobalViewerSettings::GlobalViewerSettings() {
         //m_sel.push_back(false);
-    };
+    }
+
+
 
 
 }

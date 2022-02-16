@@ -13,7 +13,8 @@ namespace vOS
     enum Selection{
         Vertex = 1,
         Edge = 2,
-        Face = 3
+        Face = 3,
+        CELL = 6
     };
 
     /**
@@ -52,6 +53,7 @@ namespace vOS
         float m_slider_slicer = 0.0f;
         bool m_slicer_locked = false;
         int m_slider_peel = 0;
+        bool m_digging_activated = false;
         bool m_isolation_started = false;
         int m_separation_type = 2;
         int m_lighting_type = 3;
