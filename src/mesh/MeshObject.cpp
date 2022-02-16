@@ -22,6 +22,14 @@ namespace vOS
 
         m_should_update = false;
 
+        OpenVolumeMesh::CellPropertyT<bool> diggingProp = m_mesh->request_cell_property<bool>("DiggingProperty");
+        diggingProp->set_persistent(true);
+
+        for(auto cell : m_mesh->cells())
+        {
+            diggingProp[cell] = true;
+        }
+
         OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
         highlightProp->set_persistent(true);
         OpenVolumeMesh::VertexPropertyT <OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
@@ -113,8 +121,34 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
 
             m_created_shapes.insert({shape_key, shape_id});
-        }else {
+        }else if(type == 6){
+
             m_selected_cells.insert(id);
+
+            OpenVolumeMesh::CellHandle cell(id);
+
+            //std::cout << cell.idx() << std::endl;
+            bool first = true;
+
+            std::vector<glm::vec3> vertices;
+            for (auto cv_it : m_mesh->cell_vertices(cell))
+            {
+                auto v_pos = m_mesh->vertex(cv_it);
+                vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
+            }
+
+            MeshVertexBuffer * bufa = new MeshVertexBuffer();
+            glm::vec3 pick_pos = bufa->get_center(vertices);
+
+            auto* shape = new Sphere();
+            shape->set_scale(0.82f, 0.82f, 0.82f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(0.0f, 1.0f, 0.0f);
+
+            // There a guaranteed Mutex Guard around this method
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
 
         }
     }
@@ -227,7 +261,6 @@ namespace vOS
 
         m_should_update = true;
         calculate_mesh_offset();
-        GlobalViewerSettings::getInstance()->m_new_Mesh();
     }
 
     void MeshObject::update_vertex_buffer()
@@ -497,6 +530,10 @@ namespace vOS
     MeshObject::~MeshObject()
     {
         delete m_mvb;
+    }
+
+    MeshVertexBuffer *MeshObject::get_mvb() const {
+        return m_mvb;
     }
 }
 

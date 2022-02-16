@@ -22,7 +22,8 @@ namespace vOS
         m_vao->add_attribute(m_cell_centers, 2, 3);
         m_vao->add_attribute(m_peel_depths, 3, 1);
         m_vao->add_attribute(m_is_face_boundary, 4, 1);
-        m_vao->add_attribute(m_colors, 5, 4);
+        m_vao->add_attribute(m_is_digged, 5, 1);
+        m_vao->add_attribute(m_colors, 6, 4);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -31,6 +32,7 @@ namespace vOS
         m_sphere_vao->add_attribute(m_selection_vertices, 2, 3, true);
         m_sphere_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
         m_sphere_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
+        m_sphere_vao->add_attribute(m_sphere_is_digged, 5, 1, true);
 
         m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                CommonMeshes::Cylinder::edge_cylinder().indices());
@@ -39,6 +41,7 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_to_vertices, 2, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_peel_depths, 4, 1, true);
+        m_cylinder_vao->add_attribute(m_cylinder_is_digged, 5, 1, true);
 
     }
 
@@ -66,6 +69,9 @@ namespace vOS
     void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
     {
         OpenVolumeMesh::CellPropertyT<int> peel_property = mesh.request_cell_property<int>("PeelDepth");
+        OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh.request_cell_property<bool>("DiggingProperty");
+
+        bool isDigged = diggingProp[cell];
 
 
         std::vector<FaceData> faces;
@@ -97,6 +103,8 @@ namespace vOS
             m_sphere_cell_centers.push_back(cell_center.z);
 
             m_sphere_peel_depths.push_back((float) peel_depth);
+
+            m_sphere_is_digged.push_back(isDigged);
         }
 
         // same for the edges, only add them once for the selection
@@ -111,6 +119,7 @@ namespace vOS
             m_cylinder_cell_centers.push_back(cell_center.z);
 
             m_cylinder_peel_depths.push_back((float) peel_depth);
+            m_cylinder_is_digged.push_back(isDigged);
         }
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
@@ -273,9 +282,15 @@ namespace vOS
             }
             if(m_ovm_to_gl_face_indizes.find(face_id) == m_ovm_to_gl_face_indizes.end())
                 m_ovm_to_gl_face_indizes.emplace(face_id, m_face_amount++);
+
+            if(m_start_of_cell_vertices.find(face_id) == m_start_of_cell_vertices.end())
+                m_start_of_cell_vertices.emplace(face_id, m_cell_start_face_index++);
         }
 
-        // now that we collected the data we need, we can update our buffer arrays
+        // now that we collected the data we need, we can update or buffer arrays
+        int nbr_vertices_of_cell = 0;
+
+        m_start_of_cell_vertices[cell.idx()] = m_is_digged.size();
         for (const FaceData& face : faces)
         {
             // fill up vertex data
@@ -306,6 +321,8 @@ namespace vOS
                 m_peel_depths.push_back((float)peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
 
+                m_is_digged.push_back(1.0f);
+                nbr_vertices_of_cell++;
                 m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
             }
 
@@ -316,6 +333,8 @@ namespace vOS
             // since those triangles share the same face
             m_face_ids.insert(m_face_ids.end(), face.face_ids.begin(), face.face_ids.end());
         }
+        m_size_of_cell_vertices[cell.idx()] = nbr_vertices_of_cell;
+
     }
 
     void MeshVertexBuffer::add_face_indices(Mesh& mesh, FaceData& face)
@@ -450,7 +469,7 @@ namespace vOS
     {
         if(m_update_vao)
         {
-            m_vao->add_attribute(m_colors, 5, 4);
+            m_vao->update_attribute(m_colors, 6);
             m_update_vao = false;
         }
         return m_vao;
@@ -506,5 +525,19 @@ namespace vOS
     int MeshVertexBuffer::get_num_selection_edges() const
     {
         return (int) m_edge_ids.size();
+    }
+
+    void MeshVertexBuffer::update_digging_buffer(int id, float newValue)
+    {
+        int nbr_vertices = m_size_of_cell_vertices[id];
+        int start = m_start_of_cell_vertices[id];
+
+        for (size_t i = 0; i < nbr_vertices;i++)
+        {
+            m_is_digged[start+i] = newValue;
+        }
+
+        m_vao->update_attribute(m_is_digged,5);
+
     }
 }

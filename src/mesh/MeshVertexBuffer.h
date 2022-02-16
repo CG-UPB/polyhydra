@@ -35,6 +35,9 @@ namespace vOS
     class MeshVertexBuffer
     {
     public:
+
+        MeshVertexBuffer(){};
+
         explicit MeshVertexBuffer(Mesh* mesh, BufferSpecification spec);
 
         ~MeshVertexBuffer();
@@ -46,6 +49,8 @@ namespace vOS
         int to_faceID(int value);
 
         std::vector<float>& get_original_vertices();
+
+        glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
 
         VertexArrayObject* get_vao();
 
@@ -59,6 +64,8 @@ namespace vOS
 
         [[nodiscard]] int get_num_selection_edges() const;
 
+        void update_digging_buffer(int id, float newValue);
+
     private:
 
         void generate_buffer(Mesh& mesh);
@@ -69,7 +76,7 @@ namespace vOS
 
         void add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from, const OpenVolumeMesh::VertexHandle& to);
 
-        glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
+
 
         std::pair<glm::vec3,glm::vec3> get_bounding_box(const std::vector<glm::vec3>& vertices);
 
@@ -83,6 +90,7 @@ namespace vOS
          */
         bool m_update_vao = false;
         int m_face_amount = 0;
+        int m_cell_start_face_index = 0;
 
         std::vector<float> m_original_vertices;
 
@@ -107,6 +115,10 @@ namespace vOS
         std::vector<float> m_cylinder_peel_depths;
         std::vector<float> m_peel_depths;
 
+        std::vector<float> m_sphere_is_digged;
+        std::vector<float> m_cylinder_is_digged;
+        std::vector<float> m_is_digged;
+
         std::vector<unsigned int> m_indices;
         std::vector<float> m_from_vertices;
         std::vector<float> m_to_vertices;
@@ -116,6 +128,11 @@ namespace vOS
          * Maps OVM Ids to face buffer locations
          */
         std::map<int,int> m_ovm_to_gl_face_indizes;
+
+        std::map<int,int> m_start_of_cell_vertices;
+
+        std::map<int,int> m_size_of_cell_vertices;
+
 
         int m_num_vertices = 0;
     };

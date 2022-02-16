@@ -15,6 +15,7 @@
 #include "ImguiRenderer.h"
 #include "panels/CustomUIPanel.h"
 #include "rendering/passes/ShapePass.h"
+#include "panels/NewFileDialog.h"
 
 namespace vOS
 {
@@ -45,9 +46,10 @@ namespace vOS
     void Window::initPanels()
     {
         // Initializes Panels
-        m_file_dialog = new FileDialog();
         m_mesh_view = new MeshView(720, 480);
         m_log_window = LogWindow::getInstance();
+        m_mesh_layer_view = new MeshLayerView();
+        m_toolbar = new ToolBar();
     }
 
     void Window::setup()
@@ -95,7 +97,6 @@ namespace vOS
 
         rendering_mutex.lock();
         // Destroy Imgui Elements
-        delete m_file_dialog;
         delete m_mesh_view;
         delete m_custom_ui;
 
@@ -140,9 +141,6 @@ namespace vOS
 
         rendering_mutex.lock();
         // Draw all of our panels and renderers
-
-        // File Dialog
-        m_file_dialog->show();
 
         // Mesh View
         m_mesh_view->show();
@@ -719,40 +717,18 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    bool Window::FileDialogueOpen()
+    char const * openFileDialog(const char * filedialog)
     {
-        return m_file_dialog->file_dialogue_open(0);
+        NewFileDialog file_dialog;
+
+        return file_dialog.openDialog(filedialog);
     }
 
-    void Window::OpenFileDialogue()
+    char const * saveFileDialog(const char * filedialog)
     {
+        NewFileDialog file_dialog;
 
-        rendering_mutex.lock();
-        m_file_dialog->open(".ovm", 0);
-        rendering_mutex.unlock();
-    }
-
-    void Window::EndFileDialogue()
-    {
-        // Close only if it is open already
-        if (FileDialogueOpen())
-        {
-            rendering_mutex.lock();
-            m_file_dialog->close();
-            rendering_mutex.unlock();
-
-        }
-    }
-
-    std::string Window::GetFileDialoguePath()
-    {
-        // Get Path from Imgui
-        std::string path = "";
-        if (m_file_dialog->is_ok_file_loader())
-        {
-            path = m_file_dialog->get_file_path_file_loader();
-        }
-        return path;
+        return file_dialog.saveDialog(filedialog);
     }
 
     void Window::remove_all_shapes(){

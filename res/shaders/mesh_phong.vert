@@ -5,7 +5,8 @@ layout (location = 1) in vec3 a_Normal;
 layout (location = 2) in vec3 a_Center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_isBoundary;
-layout (location = 5) in vec4 a_Color;
+layout (location = 5) in float a_isDigged;
+layout (location = 6) in vec4 a_Color;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -35,6 +36,11 @@ void main()
     // Slicing and Peeling
     ////////////////////////////////////////////////////////
     v_Visible = 1;
+
+    if (a_isDigged == 0.0)
+    {
+        v_Visible = 0;
+    }
 
     vec3 min = vec3(u_Transform * vec4(u_min, 1.0));
     vec3 max = vec3(u_Transform * vec4(u_max, 1.0));

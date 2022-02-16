@@ -29,7 +29,6 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/FrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/VertexArrayObject.cpp
         ${VOLUMESHOS_SRC}/Window.cpp
-        ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
         ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp
         ${VOLUMESHOS_SRC}/mesh/MeshObject.cpp
@@ -40,10 +39,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
         ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp
-        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp
         ${VOLUMESHOS_SRC}/panels/ToolBar.cpp
         ${VOLUMESHOS_SRC}/settings/GlobalViewerSettings.cpp
-        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionPass.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/IcoSphereMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.cpp
@@ -55,7 +52,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
         ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
         ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
-        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp src/panels/MeshLayerView.cpp src/panels/MeshLayerView.h src/algorithms/ExampleClass.cpp src/algorithms/ExampleClass.h)
+        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp src/panels/MeshLayerView.cpp src/panels/MeshLayerView.h src/algorithms/ExampleClass.cpp src/algorithms/ExampleClass.h src/util/Tooltips.h src/util/ModeEnum.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

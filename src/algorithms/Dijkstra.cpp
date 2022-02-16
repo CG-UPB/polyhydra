@@ -155,7 +155,6 @@ namespace vOS
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(filename, m_mesh);
                 Window::instance().add_mesh(&m_mesh);
-                Window::instance().EndFileDialogue();
                 linear_run();
             }
         }
@@ -355,16 +354,6 @@ namespace vOS
             step_button_pressed();
         }
 
-
-        if (ImGui::Button("Open File"))
-        {
-            Window::instance().OpenFileDialogue();
-        }
-
-
-        if (!Window::instance().FileDialogueOpen())
-            Window::instance().EndFileDialogue();
-
         ImGui::End();
     }
 
@@ -376,15 +365,12 @@ namespace vOS
         Window& window = Window::instance();
 
         std::cout << "Start waiting " << std::endl;
-        // Read file
-        while(window.GetFileDialoguePath() == ""){}
+
 
         std::cout << "Continue " << std::endl;
 
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(window.GetFileDialoguePath(), m_mesh);
 
-        window.EndFileDialogue();
 
         Window::instance().add_mesh(&m_mesh);
 

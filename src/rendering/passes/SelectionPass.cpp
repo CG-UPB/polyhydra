@@ -55,7 +55,8 @@ namespace vOS {
 
         // Faces should not be selectable in Vertex or Edge Selection mode
         bool faces_selectable = false;
-        if(selection_mode == 0 || selection_mode == 3)
+
+        if(selection_mode == 0 || selection_mode == 3 || selection_mode == 6)
         {
             faces_selectable = true;
         }

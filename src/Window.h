@@ -17,7 +17,6 @@
 #include "mesh/MeshObject.h"
 #include "panels/CustomUIPanel.h"
 #include "panels/LogWindow.h"
-#include "panels/FileDialog.h"
 #include "rendering/shapes/Box.h"
 #include "rendering/shapes/Cylinder.h"
 #include "rendering/shapes/Sphere.h"
@@ -345,15 +344,25 @@ namespace vOS {
          */
         void take_screenshot(std::string filepath);
 
-        // Opens Imgui File Dialogue
-        void OpenFileDialogue();
-        // Asks for a filepath from Imgui File Dialogue
-        std::string GetFileDialoguePath();
-        // True if File Dialogue is open
-        bool FileDialogueOpen();
-        // Closes Imgui File Dialogue
-        void EndFileDialogue();
+        /**
+         *
+         * This method creates a file dialog, which returns the path of an ovm-file, after the user has chosen some. If
+         * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
+         *
+         * @param filedialog - the title of the window prompt
+         * @return char const * filename, or NULL
+         */
+        char const * openFileDialog(const char * filedialog);
 
+        /**
+         *
+         * This method creates a file dialog, which returns the path of an png- or bmp-file, after the user has chosen some. If
+         * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
+         *
+         * @param filedialog - the title of the window prompt
+         * @return char const * filename, or NULL
+         */
+        char const * saveFileDialog(const char * filedialog);
 
         /**
          * Selects a given element (Face, Vertex, Edge) from given mesh
@@ -384,9 +393,6 @@ namespace vOS {
 
         // Generally Called when the User does anything to the Mesh (debug)
         void_callback m_on_general_update = default_callback_function;
-
-        // Panels
-        FileDialog* m_file_dialog;
 
         // Mutex and thread safety
         /// Set to guard GL when reading from and rendering our mesh
@@ -435,9 +441,9 @@ namespace vOS {
         // Responsible for Logging inside Vos
         LogWindow* m_log_window;
         // UI for Viewer Tools
-        ToolBar* m_toolbar = ToolBar::getInstance();
+        ToolBar* m_toolbar;
         // UI for Meshes
-        MeshLayerView* m_mesh_layer_view = MeshLayerView::getInstance();
+        MeshLayerView* m_mesh_layer_view;
         // Responsible for Imgui Communication
         ImguiRenderer *m_imgui_renderer;
 
