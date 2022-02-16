@@ -138,6 +138,16 @@ namespace vOS
         glBindVertexArray(0);
     }
 
+    template<typename T>
+    void VertexArrayObject::update_attribute(const std::vector<T>& data, int location, int offset, int size)
+    {
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[location - 1]);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, (int) size * sizeof(T), &data[offset]);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
     // these are necessary for the linker to find the templated function types, otherwise we would need to implement
     // the template function in the header file, which would cause some problems
     template void VertexArrayObject::add_attribute<float>(const std::vector<float>& data, int location, int element_count, bool per_instance = false);
@@ -147,4 +157,8 @@ namespace vOS
     template void VertexArrayObject::update_attribute<float>(const std::vector<float>& data, int location);
     template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location);
     template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location);
+
+    template void VertexArrayObject::update_attribute<float>(const std::vector<float>& data, int location, int offset, int size);
+    template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location, int offset, int size);
+    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location, int offset, int size);
 }

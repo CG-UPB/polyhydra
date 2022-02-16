@@ -74,6 +74,18 @@ namespace vOS
         template<typename T>
         void update_attribute(const std::vector<T>& data, int location);
 
+        /**
+         * Use this method to if you only want to update a small portion of the buffer.
+         *
+         * @tparam T type of the buffer data
+         * @param data new buffer data (the whole vector, not some part of it)
+         * @param location location of the attribute to be updated
+         * @param offset start position of the new data in the buffer
+         * @param size number of buffer entries to be updated
+         */
+        template<typename T>
+        void update_attribute(const std::vector<T>& data, int location, int offset, int size);
+
     private:
 
         static VertexArrayObject* s_screen_quad;
