@@ -29,12 +29,6 @@ void main()
 
     float revealage = texelFetch(revealTexture, ivec2(gl_FragCoord.xy), 0).r;
 
-    if (is_approximately_equal(revealage, 1.0f))
-    {
-        discard;
-    }
-
-
 
     // supress overflow
     if (isinf(max_component(abs(accum.rgb))))
@@ -47,5 +41,10 @@ void main()
     // dst' = (accum.rgb / accum.a) * (1 - revealage) + dst
     FragColor = vec4(average_color, 1.0f - revealage);
     //FragColor.rgb = pow(FragColor.rgb, vec3(1.0/2.2));
+
+    if (is_approximately_equal(revealage, 1.0f))
+    {
+        FragColor = accum;
+    }
 
 }

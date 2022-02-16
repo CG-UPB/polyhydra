@@ -407,6 +407,18 @@ namespace vOS
 
     void MeshView::render_transparency_wb()
     {
+
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass_wb->m_transparent_framebuffer);
+        m_transparency_pass_wb->clear_framebuffer();
+
+        glDepthMask(GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendFunci(0, GL_ONE, GL_ONE);
+        glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+        //glBlendFunci(2, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+        glBlendEquation(GL_FUNC_ADD);
+
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -425,17 +437,6 @@ namespace vOS
             mesh_data.offset = m_zoom_point;
 
             mesh->update_vertex_buffer();
-
-            glClear(GL_COLOR_BUFFER_BIT);
-            glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass_wb->m_transparent_framebuffer);
-            m_transparency_pass_wb->clear_framebuffer();
-
-            glDepthMask(GL_FALSE);
-            glEnable(GL_BLEND);
-            glBlendFunci(0, GL_ONE, GL_ONE);
-            glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-            //glBlendFunci(2, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-            glBlendEquation(GL_FUNC_ADD);
 
             if (mesh->get_vao() != nullptr) {
                 m_transparency_pass_wb->render(mesh->get_vao(), m_render_data, m.first);
@@ -627,7 +628,7 @@ namespace vOS
         }
 
         texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
-        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_accum_texture);
+        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_reveal_texture);
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

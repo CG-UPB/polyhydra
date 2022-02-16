@@ -1,7 +1,7 @@
 #version 400 core
 
 layout (location = 0) out vec4 accum;
-layout (location = 1) out float reveal;
+layout (location = 1) out vec4 reveal;
 layout (location = 2) out vec3 modulate;
 
 flat in int v_visible;
@@ -40,6 +40,6 @@ void main()
 
 
     accum = vec4(color.rgb * color.a, color.a) * weight;
-    reveal = color.a;
+    reveal = vec4(color.a, 0.0, 0.0, 1.0);
 
 }

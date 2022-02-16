@@ -54,7 +54,7 @@ namespace vOS
 
         glGenTextures(1, &m_reveal_texture);
         glBindTexture(GL_TEXTURE_2D, m_reveal_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, (int)m_width, (int)m_height, 0, GL_RED, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, (int)m_width, (int)m_height, 0, GL_RGB, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
