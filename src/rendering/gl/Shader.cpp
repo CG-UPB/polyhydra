@@ -187,7 +187,10 @@ namespace vOS
             std::string& extension = name_with_extension[1];
 
             // we only have a fragment shader for this, we will load that manually later
-            if (name_without_extension == "pre_mesh_phong" || name_without_extension == "transparency_wb") {
+            if (name_without_extension == "pre_mesh_phong"
+                || name_without_extension == "transparency_wb"
+                || name_without_extension == "transparency_dp")
+            {
                 continue;
             }
 
@@ -230,6 +233,11 @@ namespace vOS
         s_shaders["transparency_wb"] = new Shader(
                 pre_mesh_phong_path / "transparency_wb.vert",
                 pre_mesh_phong_path / "transparency_wb.frag",
+                pre_mesh_phong_path / "mesh_phong.geom"
+        );
+        s_shaders["transparency_dp"] = new Shader(
+                pre_mesh_phong_path / "transparency_dp.vert",
+                pre_mesh_phong_path / "transparency_dp.frag",
                 pre_mesh_phong_path / "mesh_phong.geom"
         );
     }

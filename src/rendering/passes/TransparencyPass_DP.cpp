@@ -2,7 +2,7 @@
 #include <iostream>
 #include "glad/glad.h"
 #include "../../Window.h"
-#include "TransparencyPass.h"
+#include "TransparencyPass_DP.h"
 #include "../../settings/GlobalViewerSettings.h"
 #include "../meshes/CommonMeshes.h"
 
@@ -11,22 +11,16 @@ namespace vOS
 {
     class MeshView;
 
-    TransparencyPass::TransparencyPass(MeshView *mesh_view, unsigned int width, unsigned int height):
+    TransparencyPass_DP::TransparencyPass_DP(MeshView *mesh_view, unsigned int width, unsigned int height):
     m_mesh_view(mesh_view),
     m_width(width),
     m_height(height)
     {
-        m_transparency_shader = Shader::get("transparency_wb");
-        m_composite_shader = Shader::get("composite");
-
-        m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f), CommonMeshes::PlaneXY::indices());
-        m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
-
-        generate_transparency_framebuffer(m_width, m_height);
+        m_transparency_shader = Shader::get("transparency_dp");
 
     }
 
-    TransparencyPass::~TransparencyPass()
+    TransparencyPass_DP::~TransparencyPass_DP()
     {
         clean_up_framebuffer();
         glDeleteTextures(1, &m_accumTexture);
@@ -35,7 +29,7 @@ namespace vOS
 
     }
 
-    void TransparencyPass::generate_transparency_framebuffer(unsigned int width, unsigned int height)
+    void TransparencyPass_DP::generate_transparency_framebuffer(unsigned int width, unsigned int height)
     {
         m_width = width;
         m_height = height;
@@ -77,18 +71,11 @@ namespace vOS
         {
             std::cout << "ERROR::FRAMEBUFFER:: Transparent Framebuffer is not complete! " << glCheckFramebufferStatus(GL_FRAMEBUFFER)<< std::endl;
         }
-        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT)
-        {
-            std::cout << "ERROR::FRAMEBUFFER:: INCOMPLETE ATTATCHMENT!" << std::endl;
-        }
-
-        glClearBufferfv(GL_COLOR, 0, &m_zeros[0]);
-        glClearBufferfv(GL_COLOR, 1, &m_ones[0]);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     }
 
-    void TransparencyPass::clean_up_framebuffer()
+    void TransparencyPass_DP::clean_up_framebuffer()
     {
         glDeleteFramebuffers(1, &m_transparent_framebuffer);
         glDeleteTextures(1, &m_accumTexture);
@@ -97,12 +84,17 @@ namespace vOS
     }
 
 
-    void TransparencyPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
         // Get Mesh
         MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
         if(obj == nullptr)
             return;
+
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFuncSeparate(GL_DST_ALPHA, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_transparent_framebuffer);
         m_transparency_shader->bind();
@@ -146,39 +138,12 @@ namespace vOS
 
     }
 
-    void TransparencyPass::render_composition()
-    {
-
-
-        //glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
-
-        m_composite_shader->bind();
-
-//        m_composite_shader->set_uniform_sampler2D("accumTexture", GL_TEXTURE0, m_accumTexture);
-//        m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, m_revealTexture);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_accumTexture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_revealTexture);
-
-        m_vao->draw();
-        m_composite_shader->unbind();
-
-    }
-
-    void TransparencyPass::resize_buffers(unsigned int width, unsigned int height)
+    void TransparencyPass_DP::resize_buffers(unsigned int width, unsigned int height)
     {
         clean_up_framebuffer();
         generate_transparency_framebuffer(width, height);
 
     }
 
-    void TransparencyPass::clear_framebuffer() const
-    {
-        glClearBufferfv(GL_COLOR, 0, &m_zeros[0]);
-        glClearBufferfv(GL_COLOR, 1, &m_ones[0]);
-
-    }
 
 }

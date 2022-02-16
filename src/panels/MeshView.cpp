@@ -39,7 +39,7 @@ namespace vOS
         m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
 
         m_mesh_pass = new MeshPass(this);
-        m_transparency_pass = new TransparencyPass(this, width, height);
+        m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -73,7 +73,7 @@ namespace vOS
         delete m_selectionFrameBuffer;
         delete m_pixel_buffer;
         delete m_mesh_pass;
-        delete m_transparency_pass;
+        delete m_transparency_pass_wb;
     }
 
     void MeshView::handleResize()
@@ -89,7 +89,7 @@ namespace vOS
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_pre_pass_framebuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_transparency_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -427,8 +427,8 @@ namespace vOS
             mesh->update_vertex_buffer();
 
             glClear(GL_COLOR_BUFFER_BIT);
-            glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass->m_transparent_framebuffer);
-            m_transparency_pass->clear_framebuffer();
+            glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass_wb->m_transparent_framebuffer);
+            m_transparency_pass_wb->clear_framebuffer();
 
             glDepthMask(GL_FALSE);
             glEnable(GL_BLEND);
@@ -438,7 +438,7 @@ namespace vOS
             glBlendEquation(GL_FUNC_ADD);
 
             if (mesh->get_vao() != nullptr) {
-                m_transparency_pass->render(mesh->get_vao(), m_render_data, m.first);
+                m_transparency_pass_wb->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -449,7 +449,7 @@ namespace vOS
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         m_meshFrameBuffer->bind();
-        m_transparency_pass->render_composition();
+        m_transparency_pass_wb->render_composition();
         m_meshFrameBuffer->unbind();
     }
 
@@ -628,7 +628,7 @@ namespace vOS
         }
 
         texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
-        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass->m_accumTexture);
+        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_accumTexture);
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

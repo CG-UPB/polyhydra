@@ -9,13 +9,13 @@
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
-#include "../rendering/passes/TransparencyPass.h"
+#include "../rendering/passes/TransparencyPass_WB.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 
 namespace vOS
 {
-    class TransparencyPass;
+    class TransparencyPass_WB;
     class MeshPass;
 
     class MeshView: public WindowPanel
@@ -76,13 +76,13 @@ namespace vOS
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
         SelectionHoverPass m_selection_hover_pass;
-        TransparencyPass* m_transparency_pass = nullptr;
+        TransparencyPass_WB* m_transparency_pass_wb = nullptr;
 
         // render selection every 4th frame
         int m_frame_limit = 4;
         int m_current_frame = 0;
 
         friend class MeshPass;
-        friend class TransparencyPass;
+        friend class TransparencyPass_WB;
     };
 }

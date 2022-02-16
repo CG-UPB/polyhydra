@@ -21,25 +21,25 @@ float LinearizeDepth(float depth)
 
 void main()
 {
-    vec4 color = u_object_color;
 
-    if(color.a == 1.0 || v_visible == 0)
+    if(u_object_color.a == 1.0 || v_visible == 0)
     {
         discard;
     }
+    vec4 color = u_object_color;
 
 
-    float depth = gl_FragCoord.z;
+    //modulate = color.a ();
     //float depth = LinearizeDepth(gl_FragCoord.z) / far;
-
+    float depth = gl_FragCoord.z;
 
     // choose weight function
     //float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - depth * 0.5, 3.0), 1e-2, 3e3);
     //float weight = max(min(1.0, max(max(color.r, color.g), color.b) * color.a)), color.a) * clamp(0.03 / (1e-5 + pow(depth / 200, 4.0), 1e-2, 3e3);
     float weight = color.a  * clamp(0.3 / (1e-5 + pow(depth /200, 4.0)), 1e-2, 3e3);
 
-
     accum = vec4(color.rgb * color.a, color.a) * weight;
+    //FragColor = vec4(0.0,1.0,0.0,1.0);
     reveal = color.a;
 
 }

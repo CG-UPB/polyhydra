@@ -7,32 +7,30 @@ namespace vOS
 {
     class MeshView;
 
-    class TransparencyPass : public RenderPass
+    class TransparencyPass_DP : public RenderPass
     {
     public:
-        explicit TransparencyPass(MeshView *mesh_view, unsigned int width, unsigned int height);
-        ~TransparencyPass();
+        explicit TransparencyPass_DP(MeshView *mesh_view, unsigned int width, unsigned int height);
+        ~TransparencyPass_DP();
 
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
         void render_composition();
         void resize_buffers(unsigned int width, unsigned int height);
-        void clear_framebuffer() const;
+        //void clear_framebuffer() const;
 
         GLuint m_revealTexture;
         GLuint m_accumTexture;
+
         unsigned int m_transparent_framebuffer;
         unsigned int m_width;
         unsigned int m_height;
+
         void generate_transparency_framebuffer(unsigned int width, unsigned int height);
 
     private:
 
 
         void clean_up_framebuffer();
-
-        glm::vec4 m_zeros = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-        glm::vec4 m_ones =glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-
 
         MeshView* m_mesh_view = nullptr;
 
