@@ -694,6 +694,7 @@ namespace vOS
         glDisable(GL_BLEND);
 
         m_meshFrameBuffer->bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
@@ -701,6 +702,8 @@ namespace vOS
             renderMesh(m.first);
         }
         m_meshFrameBuffer->unbind();
+
+        FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // Render transparent objects
         render_transparency_wb();

@@ -23,6 +23,8 @@ uniform float u_ordering_strenth;
 uniform float u_t_min;
 uniform float u_t_max;
 
+uniform sampler2D u_depth;
+
 float near = 0.1f;
 float far = 100.0f;
 
@@ -34,6 +36,12 @@ float LinearizeDepth(float depth)
 
 void main()
 {
+    float previous_depth = texelFetch(u_depth, ivec2(gl_FragCoord.xy), 0).r;
+    if (gl_FragCoord.z > previous_depth)
+    {
+        discard;
+    }
+
     vec4 color = u_object_color;
 
     if(color.a == 1.0 || v_visible == 0)
@@ -69,9 +77,9 @@ void main()
     color.a = pow(color.a, 2.0);
 
     // choose weight function
-    float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - depth * 0.5, 3.0), 1e-2, 3e3);
+    //float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - depth * 0.5, 3.0), 1e-2, 3e3);
     //float weight = max(min(1.0, max(max(color.r, color.g), color.b) * color.a)), color.a) * clamp(0.03 / (1e-5 + pow(depth / 200, 4.0), 1e-2, 3e3);
-    //float weight = pow(color.a, u_pow) * clamp(u_range / (1e-5 + pow(depth * 0.8, u_ordering_strenth)), u_t_min, u_t_max);
+    float weight = pow(color.a, u_pow) * clamp(u_range / (1e-5 + pow(depth * 0.8, u_ordering_strenth)), u_t_min, u_t_max);
     //float weight = pow(color.a + 0.01, 4.0) + max(1e-2, min(3.0 * 1e3, 100.0 / (1e-5 + pow(abs(depth) / 10.0, 3.0) + pow(abs(depth) / 200.0, 6.0))));
 
     accum = vec4(color.rgb * color.a, color.a) * weight;

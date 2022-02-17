@@ -178,7 +178,7 @@ namespace vOS
                 0, 0,
                 dest->get_width(), dest->get_height(),
                 mask,
-                GL_LINEAR
+                ((mask & GL_DEPTH_BUFFER_BIT) == GL_DEPTH_BUFFER_BIT) ? GL_NEAREST : GL_LINEAR
         );
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);

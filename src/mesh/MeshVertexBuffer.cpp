@@ -150,7 +150,7 @@ namespace vOS
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
-            if(vertex_count == 3 || vertex_count == 4)
+            if(vertex_count == 3)
             {// get the face normal
                 auto hf_normal = mesh.normal(chf_it);
 
@@ -184,7 +184,7 @@ namespace vOS
                 m_num_vertices += vertex_count;
 
                 faces.push_back(face_data);
-            }else if(vertex_count > 4)
+            }else if(vertex_count > 3)
             {
                 // Triangulate Face
 
