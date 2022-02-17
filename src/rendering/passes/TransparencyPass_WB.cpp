@@ -124,6 +124,7 @@ namespace vOS
         m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
 
         m_transparency_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE0, m_depth_texture);
+        m_transparency_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1, m_mesh_view->m_ssao_pass->get_blur_texture());
 
         vao->draw();
         m_transparency_shader->unbind();
