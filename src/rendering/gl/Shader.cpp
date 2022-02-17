@@ -231,7 +231,7 @@ namespace vOS
                 pre_mesh_phong_path / "mesh_phong.geom"
         );
         s_shaders["transparency_wb"] = new Shader(
-                pre_mesh_phong_path / "transparency_wb.vert",
+                pre_mesh_phong_path / "mesh_phong.vert",
                 pre_mesh_phong_path / "transparency_wb.frag",
                 pre_mesh_phong_path / "mesh_phong.geom"
         );

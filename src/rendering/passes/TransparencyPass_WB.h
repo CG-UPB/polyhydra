@@ -33,7 +33,7 @@ namespace vOS
         void clean_up_framebuffer();
 
         glm::vec4 m_zeros = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-        glm::vec4 m_ones =glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+        glm::vec4 m_ones =glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 
         MeshView* m_mesh_view = nullptr;
@@ -43,8 +43,13 @@ namespace vOS
 
         VertexArrayObject* m_vao;
 
-
-
+        float m_alpha_pow = 1.0f;
+        float m_pow = 1.0f;
+        float m_range = 0.3f;
+        float m_depth_range = 200.0f;
+        float m_ordering_strength = 4.0f;
+        float m_min = 0.01f;
+        float m_max = 3000.0f;
 
     };
 }

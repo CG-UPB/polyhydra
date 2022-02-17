@@ -246,8 +246,11 @@ namespace vOS
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
         m_mesh->assign(mesh);
 
-        // request peel property
-        OpenVolumeMesh::CellPropertyT<int> peel_property = m_mesh->request_cell_property<int>("PeelDepth");
+        OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
+        cell_peel_property->set_persistent(true);
+        OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
+        vertex_peel_property->set_persistent(true);
+
         // calculates the depth of vertices and cells (saved in peel_property for cells)
         calculate_peel_depth();
 

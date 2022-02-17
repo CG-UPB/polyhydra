@@ -50,7 +50,7 @@ namespace vOS
                 glm::radians(60.0f),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                 0.1f,
-                100.0f
+                500.0f
         );
 
         m_render_data.camera.view = glm::lookAt(
@@ -97,7 +97,7 @@ namespace vOS
                     glm::radians(50.0f),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                     0.1f,
-                    100.0f
+                    500.0f
             );
         }
     }
@@ -418,6 +418,7 @@ namespace vOS
         glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
         //glBlendFunci(2, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
         glBlendEquation(GL_FUNC_ADD);
+        //glDisable(GL_CULL_FACE);
 
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -430,11 +431,11 @@ namespace vOS
                 continue;
             }
 
-            if(!m_zoom)
-            {
-                m_zoom_point = mesh->get_mesh_offset();
-            }
-            mesh_data.offset = m_zoom_point;
+//            if(!m_zoom)
+//            {
+//                m_zoom_point = mesh->get_mesh_offset();
+//            }
+//            mesh_data.offset = m_zoom_point;
 
             mesh->update_vertex_buffer();
 

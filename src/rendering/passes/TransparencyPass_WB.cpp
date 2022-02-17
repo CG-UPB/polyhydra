@@ -43,23 +43,23 @@ namespace vOS
 
         glGenTextures(1, &m_accum_texture);
         glBindTexture(GL_TEXTURE_2D, m_accum_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, (int)m_width, (int)m_height, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, (int)m_width, (int)m_height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+        //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glGenTextures(1, &m_reveal_texture);
         glBindTexture(GL_TEXTURE_2D, m_reveal_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, (int)m_width, (int)m_height, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, (int)m_width, (int)m_height, 0, GL_RED, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+        //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_transparent_framebuffer);
@@ -94,13 +94,25 @@ namespace vOS
         glDeleteFramebuffers(1, &m_transparent_framebuffer);
         glDeleteTextures(1, &m_accum_texture);
         glDeleteTextures(1, &m_reveal_texture);
-        glDeleteTextures(1, &m_depth_texture);
+        //glDeleteTextures(1, &m_depth_texture);
 
     }
 
 
     void TransparencyPass_WB::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
+        if (ImGui::Begin("Transparency"))
+        {
+            ImGui::SliderFloat("Alpha Pow", &m_alpha_pow, 1.0f, 10.0f);
+            ImGui::SliderFloat("Pow", &m_pow, 1.0f, 10.0f);
+            ImGui::SliderFloat("Range", &m_range, 0.0f, 10.0f);
+            ImGui::SliderFloat("Depth Range", &m_depth_range, 1.0f, 1000.0f);
+            ImGui::SliderFloat("Ordering Strength", &m_ordering_strength, 0.0f, 20.0f);
+            ImGui::SliderFloat("Min", &m_min, 0.0f, 1.0f);
+            ImGui::SliderFloat("Max", &m_max, 1.0f, 1000.0f);
+        }
+        ImGui::End();
+
         // Get Mesh
         MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
         if(obj == nullptr)
@@ -112,7 +124,7 @@ namespace vOS
         glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
         float cell_size = obj->get_data().m_cell_size;
-        float peel_depth = (float)obj->get_data().m_peel_level;
+        int peel_depth = obj->get_data().m_peel_level;
         float slice_depth = obj->get_data().m_slice_level;
 
         auto bb = obj->get_transformed_bb(transform);
@@ -132,19 +144,26 @@ namespace vOS
         m_transparency_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
         m_transparency_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
-        m_transparency_shader->set_uniform_float("u_peel_depth", peel_depth);
+        m_transparency_shader->set_uniform_int("u_peel_depth", peel_depth);
         m_transparency_shader->set_uniform_float("u_slice_depth", slice_depth);
         m_transparency_shader->set_uniform_vec3f("u_min", min);
         m_transparency_shader->set_uniform_vec3f("u_max", max);
         m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_transparency_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        m_transparency_shader->set_uniform_float("u_pow", m_pow);
+        m_transparency_shader->set_uniform_float("u_alpha_pow", m_alpha_pow);
+        m_transparency_shader->set_uniform_float("u_range", m_range);
+        m_transparency_shader->set_uniform_float("u_depth_range", m_depth_range);
+        m_transparency_shader->set_uniform_float("u_ordering_strength", m_ordering_strength);
+        m_transparency_shader->set_uniform_float("u_t_min", m_min);
+        m_transparency_shader->set_uniform_float("u_t_max", m_max);
 
         m_transparency_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
         m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
 
         vao->draw();
         m_transparency_shader->unbind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     }
 
@@ -156,13 +175,13 @@ namespace vOS
 
         m_composite_shader->bind();
 
-//        m_composite_shader->set_uniform_sampler2D("accumTexture", GL_TEXTURE0, m_accum_texture);
-//        m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, m_reveal_texture);
+        m_composite_shader->set_uniform_sampler2D("accumTexture", GL_TEXTURE0, m_accum_texture);
+        m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, m_reveal_texture);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_accum_texture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_reveal_texture);
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, m_accum_texture);
+//        glActiveTexture(GL_TEXTURE1);
+//        glBindTexture(GL_TEXTURE_2D, m_reveal_texture);
 
         m_vao->draw();
         m_composite_shader->unbind();
