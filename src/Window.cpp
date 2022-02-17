@@ -9,6 +9,7 @@
 #include "input/Input.h"
 #include <utility>
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
+#include "iostream"
 
 #include "panels/LogWindow.h"
 #include "panels/MeshView.h"
@@ -291,7 +292,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         if (mesh_obj != nullptr)
         {
-            mesh_obj->get_data().rendering_mode = std::move(mode);
+            mesh_obj->get_data().m_rendering_mode = std::move(mode);
         }
 
         rendering_mutex.unlock();
@@ -304,7 +305,7 @@ namespace vOS
         if (mesh_obj != nullptr)
         {
             auto data = mesh_obj->get_data();
-            return data.rendering_mode;
+            return data.m_rendering_mode;
         }
         return "";
     }
@@ -494,6 +495,115 @@ namespace vOS
         return false;
     }
 
+
+    void Window::set_mesh_specular_exponent(int mesh_id, float exp)
+    {
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Change MeshObject Data
+        if (mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().m_specular_exponent = exp;
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    float Window::get_mesh_specular_exponent(int mesh_id)
+    {
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if (mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_specular_exponent;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_specular_strength(int mesh_id, float strength)
+    {
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Change MeshObject Data
+        if (mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().m_specular_strength = strength;
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    float Window::get_mesh_specular_strength(int mesh_id)
+    {
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if (mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_specular_strength;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_ambient_strength(int mesh_id, float strength)
+    {
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Change MeshObject Data
+        if (mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().m_ambient_strength = strength;
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    float Window::get_mesh_ambient_strength(int mesh_id)
+    {
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if (mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_ambient_strength;
+        }
+        return false;
+    }
+
+    void Window::set_mesh_diffuse_strength(int mesh_id, float strength)
+    {
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Change MeshObject Data
+        if (mesh_obj != nullptr)
+        {
+            mesh_obj->get_data().m_diffuse_strength = strength;
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    float Window::get_mesh_diffuse_strength(int mesh_id)
+    {
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        if (mesh_obj != nullptr)
+        {
+            auto data = mesh_obj->get_data();
+            return data.m_diffuse_strength;
+        }
+        return false;
+    }
+
     void Window::set_mesh_position(int mesh_id, float x, float y, float z)
     {
         rendering_mutex.lock();
@@ -503,7 +613,7 @@ namespace vOS
         // Change MeshObject Data
         if (mesh_obj != nullptr)
         {
-            mesh_obj->get_data().position = glm::vec3(x, y, z);
+            mesh_obj->get_data().m_position = glm::vec3(x, y, z);
         }
 
         rendering_mutex.unlock();
@@ -518,7 +628,7 @@ namespace vOS
         // Change MeshObject Data
         if (mesh_obj != nullptr)
         {
-            mesh_obj->get_data().scale = glm::vec3(scale, scale, scale);
+            mesh_obj->get_data().m_scale = glm::vec3(scale, scale, scale);
         }
 
         rendering_mutex.unlock();
@@ -552,6 +662,7 @@ namespace vOS
         rendering_mutex.lock();
         // Create MeshObject
         auto* mesh_obj = new MeshObject();
+        mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
         // Set its Data
         mesh_obj->set_data(MeshData());
         // Set its Mesh
@@ -593,6 +704,7 @@ namespace vOS
 
         // Create MeshObject
         auto* mesh_obj = new MeshObject();
+        mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
         mesh_obj->set_data(MeshData());
         mesh_obj->set_mesh(mesh);
 
@@ -766,6 +878,108 @@ namespace vOS
     {
         rendering_mutex.lock();
         // TODO
+        rendering_mutex.unlock();
+    }
+
+    void Window::save_mesh_data(int mesh_id, std::string json_file_path)
+    {
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Save MeshObject Data
+        if (mesh_obj != nullptr)
+        {
+            try {
+
+
+                // Create Json Object from MeshData
+                nlohmann::json j = mesh_obj->get_data().to_json();
+
+                // Stream it into file
+                std::ofstream o(json_file_path);
+                o << j << std::endl;
+
+                // Close stream
+                o.close();
+            }catch(std::exception e){
+                std::cout << " Error saving " << json_file_path << std::endl;
+            }
+
+        }
+
+        rendering_mutex.unlock();
+    }
+
+    void Window::save_mesh_data(int mesh_id)
+    {
+        std::string filename = "";
+
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Get MeshObject name
+        if (mesh_obj != nullptr)
+        {
+            filename = mesh_obj->get_mesh_name();
+        }else{
+            rendering_mutex.unlock();
+            return;
+        }
+        rendering_mutex.unlock();
+
+        save_mesh_data(mesh_id, filename);
+
+    }
+
+    void Window::load_mesh_data(int mesh_id)
+    {
+        std::string filename = "";
+
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Get MeshObject name
+        if (mesh_obj != nullptr)
+        {
+            filename = mesh_obj->get_mesh_name();
+        }else{
+            rendering_mutex.unlock();
+            return;
+        }
+        rendering_mutex.unlock();
+
+        load_mesh_data(mesh_id, filename);
+
+    }
+
+    void Window::load_mesh_data(int mesh_id, std::string json_file_path)
+    {
+        rendering_mutex.lock();
+
+        // Get MeshObject
+        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        // Save MeshObject Data
+        if (mesh_obj != nullptr)
+        {
+            try{
+                // Stream from file to JSON
+                std::ifstream i(json_file_path);
+                nlohmann::json j;
+                i >> j;
+
+                // Read and set Json Data
+                mesh_obj->get_data().load_from_json(j);
+
+                // Close stream
+                i.close();
+            }catch(std::exception e){
+                std::cout << " Error loading " << json_file_path << std::endl;
+            }
+        }
+
         rendering_mutex.unlock();
     }
 

@@ -32,7 +32,7 @@ namespace vOS {
         glDisable(GL_BLEND);
 
         // Transform Data
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
 
         // Cell Data
@@ -68,7 +68,7 @@ namespace vOS {
         m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
+        m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
         m_selection_shader->set_uniform_bool("u_debug_mode", m_debug);
         m_selection_shader->set_uniform_bool("u_faces_selectable", faces_selectable);
         m_selection_shader->set_uniform_float("u_cell_size", cell_size);
@@ -95,7 +95,7 @@ namespace vOS {
             m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", transform);
             m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
             m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
-            m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
+            m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
             m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
             m_selection_cylinder_shader->set_uniform_int("u_peel_depth", peel_depth);
@@ -123,7 +123,7 @@ namespace vOS {
             m_selection_sphere_shader->set_uniform_mat4f("u_projection", data.camera.projection);
             m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
             m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
-            m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().selection_offset);
+            m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
             m_selection_sphere_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
             m_selection_sphere_shader->set_uniform_int("u_peel_depth", peel_depth);
@@ -150,7 +150,7 @@ namespace vOS {
         {
             // Set Variables from Mesh Data
             int offset = std::get<0>(mesh->selection_offset());
-            obj->get_data().selection_offset = offset;
+            obj->get_data().m_selection_offset = offset;
             m_sphere_vao = mesh->get_sphere_vao();
             m_num_vertices = mesh->get_num_visible_vertices();
             m_cylinder_vao = mesh->get_cylinder_vao();

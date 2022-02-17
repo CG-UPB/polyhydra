@@ -20,12 +20,12 @@ namespace vOS
     public:
         ~CustomUIPanel(){};
         /**
-         *  This method is used to draw the CustomUI in every loop. Therefore it only calls the costum_callback funtion
+         *  This method is used to draw the CustomUI in every loop. Therefore it only calls the custom_callback function
          */
         void show() override;
 
         /**
-         * this method can assign a callback function to the Costum-UI. The callback-function has to work with Imgui,
+         * this method can assign a callback function to the Custom-UI. The callback-function has to work with Imgui,
          * else there will appear big errors
          *
          * @param vc the callback-function for the UI

@@ -18,7 +18,7 @@ namespace vOS
 
 
         // Activate Wireframe mode if desired
-        std::string rendering_mode = obj->get_data().rendering_mode;
+        std::string rendering_mode = obj->get_data().m_rendering_mode;
         bool render_in_wireframe_mode = false;
         if(rendering_mode == "mesh_wireframe") {
             rendering_mode = "mesh_phong";
@@ -52,7 +52,7 @@ namespace vOS
         m_mesh_shader->bind();
 
         // Transform
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
 
         // Cell operations
@@ -84,6 +84,10 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_max", max);
         m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_mesh_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        m_mesh_shader->set_uniform_float("u_spec_strength", obj->get_data().m_specular_strength);
+        m_mesh_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
+        m_mesh_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
+        m_mesh_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
 
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);

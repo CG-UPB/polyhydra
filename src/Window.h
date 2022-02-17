@@ -173,7 +173,7 @@ namespace vOS {
         void set_mesh_visibility(int mesh_id,bool visible);
 
         /**
-         * Applies visibility to the actually focused mesh.
+         * Applies visibility to the currently focused mesh.
          * A mesh that is not visible, will not be rendered in the Meshview class
          */
         void set_mesh_visibility(bool visible);
@@ -199,7 +199,7 @@ namespace vOS {
         void set_cell_size(int mesh_id, float size);
 
         /**
-         * Applies slice level to the actually focused mesh.
+         * Applies slice level to the currently focused mesh.
          */
         void set_mesh_slice_level(float slice_level);
 
@@ -231,7 +231,7 @@ namespace vOS {
         void set_mesh_scale(int mesh_id, float scale);
 
         /**
-         * Applies peel level to the actually focused mesh.
+         * Applies peel level to the currently focused mesh.
          */
         void set_mesh_peel_level(int peel_level);
 
@@ -246,7 +246,7 @@ namespace vOS {
         void set_mesh_cell_size(int mesh_id,float cell_size);
 
         /**
-         * Applies cell size to the actually focused mesh.
+         * Applies cell size to the currently focused mesh.
          */
         void set_mesh_cell_size(float cell_size);
 
@@ -255,6 +255,77 @@ namespace vOS {
          */
         float get_mesh_cell_size(int mesh_id);
 
+        /**
+         * Sets specular exponent value for given mesh phong shader
+         */
+        void set_mesh_specular_exponent(int mesh_id, float spec);
+
+        /**
+         *
+         * @param mesh_id
+         * @return specular exponent of given mesh phong shader
+         */
+        float get_mesh_specular_exponent(int mesh_id);
+
+        /**
+         * Sets specular strength value for given mesh phong shader
+         */
+        void set_mesh_specular_strength(int mesh_id, float strength);
+
+        /**
+         *
+         * @param mesh_id
+         * @return specular strength  of given mesh phong shader
+         */
+        float get_mesh_specular_strength(int mesh_id);
+        /**
+         * Sets ambient strength value for given mesh phong shader
+         */
+        void set_mesh_ambient_strength(int mesh_id, float strength);
+
+        /**
+         *
+         * @param mesh_id
+         * @return ambient strength  of given mesh phong shader
+         */
+        float get_mesh_ambient_strength(int mesh_id);
+        /**
+         * Sets diffuse strength value for given mesh phong shader
+         */
+        void set_mesh_diffuse_strength(int mesh_id, float strength);
+
+        /**
+         *
+         * @param mesh_id
+         * @return diffuse strength of given mesh phong shader
+         */
+        float get_mesh_diffuse_strength(int mesh_id);
+
+        /**
+         * Reads Json file from given path and sets it as the MeshData for given Mesh
+         * @param mesh_id
+         * @param json_file_path
+         */
+        void load_mesh_data(int mesh_id, std::string json_file_path);
+
+        /**
+         * Loads Json File of the same name as the given mesh from internal persistent data folder
+         * @param mesh_id
+         */
+        void load_mesh_data(int mesh_id);
+
+        /**
+         * Saves current MeshData of given Mesh as a Json Object to the given path
+         * @param mesh_id
+         * @param json_file_path
+         */
+        void save_mesh_data(int mesh_id, std::string json_file_path);
+
+        /**
+         * Saves current meshData of given Mesh in internal persistent data folder
+         * @param mesh_id
+         */
+        void save_mesh_data(int mesh_id);
         /**
          * Indizes of all loaded Meshes
          */

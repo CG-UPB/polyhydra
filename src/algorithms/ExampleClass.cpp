@@ -49,6 +49,7 @@ void ExampleClass::simple_run(){
     Window& window = Window::instance();
     window.add_mesh(&m_mesh);
 
+    window.load_mesh_data(0);
 }
 
 void ExampleClass::set_mesh_data()
@@ -130,6 +131,36 @@ void ExampleClass::selection_demonstration_ui(){
 
     static std::thread* s_run_thread;
     ImGui::Begin("Custom UI");
+
+    if(ImGui::Button("Save Mesh Data"))
+    {
+        Window::instance().save_mesh_data(0);
+    }
+
+    static float spec_strength;
+    if (ImGui::SliderFloat("Spec Strength", &spec_strength, 0.0f, 10.0f, "%.2f"))
+    {
+        Window::instance().set_mesh_specular_strength(0, spec_strength);
+    }
+
+    static float spec_exp;
+    if (ImGui::SliderFloat("Spec Exponent", &spec_exp, 0.0f, 10.0f, "%.2f"))
+    {
+        Window::instance().set_mesh_specular_exponent(0, spec_exp);
+    }
+
+    static float ambient_strength;
+    if (ImGui::SliderFloat("Ambient Strength", &ambient_strength, 0.0f, 10.0f, "%.2f"))
+    {
+        Window::instance().set_mesh_ambient_strength(0, ambient_strength);
+    }
+
+    static float diffuse_strength;
+    if (ImGui::SliderFloat("Diffuse Strength", &diffuse_strength, 0.01f, 10.0f, "%.2f"))
+    {
+        Window::instance().set_mesh_diffuse_strength(0, diffuse_strength);
+    }
+
     // Next Phase
     if (ImGui::Button("Next"))
     {

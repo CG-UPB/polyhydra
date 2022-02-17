@@ -64,7 +64,12 @@ set(volumeshOS_SOURCES
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh ImGuiFileDialog stb)
+#json
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(ext/json-develop)
+
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json ImGuiFileDialog stb)
 
 # copy our resources to the build dir
 if(MSVC)

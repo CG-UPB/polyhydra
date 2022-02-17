@@ -149,8 +149,8 @@ namespace vOS
                         // Mesh transformations, such as position and scale
                         if (active_mesh >= 0) {
                             auto mesh = Window::instance().get_mesh_obj(active_mesh);
-                            auto pos = mesh->get_data().position;
-                            auto scl = mesh->get_data().scale;
+                            auto pos = mesh->get_data().m_position;
+                            auto scl = mesh->get_data().m_scale;
                             m_mesh_position[0] = pos.x;
                             m_mesh_position[1] = pos.y;
                             m_mesh_position[2] = pos.z;

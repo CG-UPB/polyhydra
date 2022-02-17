@@ -228,7 +228,7 @@ namespace vOS
         {
             m_zoom_point = obj->get_mesh_offset();
         }
-        mesh_data.offset = m_zoom_point;
+        mesh_data.m_offset = m_zoom_point;
 
 
         obj->update_vertex_buffer();
@@ -276,7 +276,7 @@ namespace vOS
             {
                 m_zoom_point = Window::instance().get_focused_mesh_object()->get_mesh_offset();
             }
-            Window::instance().get_focused_mesh_object()->get_data().offset = m_zoom_point;
+            Window::instance().get_focused_mesh_object()->get_data().m_offset = m_zoom_point;
 
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
             {

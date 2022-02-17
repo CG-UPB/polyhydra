@@ -38,9 +38,11 @@ namespace vOS
 
     }
 
-    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh) : MeshObject()
+    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh, std::string name) : MeshObject()
     {
         set_mesh(mesh);
+
+        mesh_name = name;
     }
 
     void MeshObject::load_from_file(std::string file_path)
