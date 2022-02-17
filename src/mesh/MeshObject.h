@@ -131,7 +131,7 @@ namespace vOS
         bool m_slice_locked = false;
         float m_slice_level;
         float m_cell_size;
-        int selection_offset = 0;
+        int m_selection_offset = 0;
         float scale_normalization = 1.0f;
 
         std::string rendering_mode;
@@ -251,8 +251,6 @@ namespace vOS
         std::tuple<int, int> &selection_offset()
         { return m_selection_offset; };
 
-        void set_selection_offset(int start);
-
         glm::vec3& get_mesh_offset();
 
         [[nodiscard]] VertexArrayObject* get_vao() const;
@@ -280,8 +278,6 @@ namespace vOS
 
         MeshData &get_data()
         { return m_data; }
-
-        [[nodiscard]] VertexArrayObject *get_vao() const;
 
 
 

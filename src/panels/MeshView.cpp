@@ -33,13 +33,14 @@ namespace vOS
         m_pre_pass = new PrePass(width, height);
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
-        m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
-        m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
 
         m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
+
+        m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
+        m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -437,11 +438,8 @@ namespace vOS
 
     void MeshView::render_transparency_wb()
     {
-
-        glClear(GL_COLOR_BUFFER_BIT);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_transparency_pass_wb->m_transparent_framebuffer);
+        m_transparency_pass_wb->bind_transparent_buffer();
         m_transparency_pass_wb->clear_framebuffer();
-
         glDepthMask(GL_FALSE);
         glEnable(GL_BLEND);
         glBlendFunci(0, GL_ONE, GL_ONE);
@@ -473,8 +471,7 @@ namespace vOS
                 m_transparency_pass_wb->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+        m_transparency_pass_wb->unbind_transparent_buffer();
 
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
@@ -483,7 +480,6 @@ namespace vOS
         m_meshFrameBuffer->bind();
         m_transparency_pass_wb->render_composition();
         m_meshFrameBuffer->unbind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void MeshView::render_transparency_dp()

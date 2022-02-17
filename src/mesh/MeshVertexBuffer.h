@@ -70,7 +70,7 @@ namespace vOS
 
         std::vector<float> &get_original_vertices();
 
-        glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
+        static glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
 
         VertexArrayObject *get_vao();
 
@@ -98,14 +98,9 @@ namespace vOS
         void add_from_to_vertex(Mesh &mesh, const OpenVolumeMesh::VertexHandle &from,
                                 const OpenVolumeMesh::VertexHandle &to);
 
-        static glm::vec3 get_center(const std::vector<glm::vec3> &vertices);
-
         static std::pair<glm::vec3, glm::vec3> get_bounding_box(const std::vector<glm::vec3> &vertices);
 
         static std::vector<float> get_vertices(Mesh &mesh);
-
-
-        int m_num_vertices = 0;
 
         BufferSpecification m_spec;
 

@@ -291,9 +291,6 @@ namespace vOS
         calculate_mesh_offset();
 
         m_should_update = true;
-
-        // tell global settings that new mesh got created
-        GlobalViewerSettings::getInstance()->m_new_Mesh();
     }
 
     void MeshObject::update_vertex_buffer()
@@ -430,7 +427,6 @@ namespace vOS
             }
             // update peel_depth of cell
             cell_peel_property[cell] = minimum;
-            std::cout << minimum << std::endl;
             // update maximum depth found
             if (minimum > max_depth)
             {

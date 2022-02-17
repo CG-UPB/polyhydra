@@ -8,7 +8,7 @@ flat in int v_visible;
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
-uniform vec3 u_objectColor;
+uniform vec4 u_objectColor;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
@@ -21,7 +21,9 @@ out vec4 FragColor;
 void main()
 {
 
-    if (v_visible == 0)
+    // if face is not visible or transparent: Discard fragment
+    // Transparency gets handled in another pass
+    if (v_visible == 0 || u_objectColor.a != 1.0)
     {
         discard;
     }
@@ -35,7 +37,7 @@ void main()
 
     // Phong Shading
 
-    vec3 used_color = mix(u_objectColor, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
+    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
 
     //diffuse
     float diffuseStrength = 1.0;

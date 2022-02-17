@@ -93,7 +93,7 @@ namespace vOS
         glBindFramebuffer(GL_FRAMEBUFFER, m_transparent_framebuffer);
         m_transparency_shader->bind();
 
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
         float cell_size = obj->get_data().m_cell_size;
         int peel_depth = obj->get_data().m_peel_level;
@@ -133,7 +133,7 @@ namespace vOS
 
         // min_depth_texture
         glActiveTexture(GL_TEXTURE1);
-        unsigned int opaque_texture = m_mesh_view->m_meshFrameBuffer->get_texture_id();
+        unsigned int opaque_texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
         glBindTexture(GL_TEXTURE_2D, opaque_texture);
 
 
@@ -155,7 +155,7 @@ namespace vOS
 
         // opaque_texture
         glActiveTexture(GL_TEXTURE2);
-        unsigned int opaque_texture = m_mesh_view->m_meshFrameBuffer->get_texture_id();
+        unsigned int opaque_texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
         glBindTexture(GL_TEXTURE_2D, opaque_texture);
 
         m_vao->draw();

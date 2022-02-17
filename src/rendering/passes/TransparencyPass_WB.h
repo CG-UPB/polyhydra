@@ -10,22 +10,24 @@ namespace vOS
     class TransparencyPass_WB : public RenderPass
     {
     public:
-        explicit TransparencyPass_WB(MeshView *mesh_view, unsigned int width, unsigned int height);
+        explicit TransparencyPass_WB(MeshView *mesh_view, int width, int height);
         ~TransparencyPass_WB();
 
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
         void render_composition();
-        void resize_buffers(unsigned int width, unsigned int height);
+        void resize_buffers(int width, int height);
         void clear_framebuffer() const;
 
         GLuint m_reveal_texture;
         GLuint m_accum_texture;
         GLuint m_depth_texture;
 
-        unsigned int m_transparent_framebuffer;
-        unsigned int m_width;
-        unsigned int m_height;
-        void generate_transparency_framebuffer(unsigned int width, unsigned int height);
+        void generate_transparency_framebuffer(int width, int height);
+        void bind_transparent_buffer();
+        void unbind_transparent_buffer();
+
+        unsigned int get_accum_texture();
+        unsigned int get_reveal_texture();
 
     private:
 
@@ -41,7 +43,7 @@ namespace vOS
         Shader* m_transparency_shader = nullptr;
         Shader* m_composite_shader = nullptr;
 
-        VertexArrayObject* m_vao;
+        FrameBufferObject* m_transparent_framebuffer = nullptr;
 
         float m_alpha_pow = 1.0f;
         float m_pow = 1.0f;

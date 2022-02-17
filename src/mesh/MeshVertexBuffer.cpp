@@ -169,7 +169,6 @@ namespace vOS
                     v_data.normal.x = -hf_normal[0];
                     v_data.normal.y = -hf_normal[1];
                     v_data.normal.z = -hf_normal[2];
-                    v_data.ovm_handle = v;
 
                     face_data.vertices.push_back(v_data);
                 }
@@ -233,7 +232,7 @@ namespace vOS
                         float area = cross.length() /2;
 
                         // Calculate Normal of Triangle
-                        OpenVolumeMesh::VectorT<float,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
+                        OpenVolumeMesh::VectorT<double,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
 
                         // Add to Face Normal and multiply by triangle area
                         face_normal += normal * area;
@@ -268,7 +267,6 @@ namespace vOS
                     v_data.normal.x = face_normal[0];
                     v_data.normal.y = face_normal[1];
                     v_data.normal.z = face_normal[2];
-                    v_data.ovm_handle = v;
                     face_data.vertices.push_back(v_data);
                 }
 
@@ -352,7 +350,7 @@ namespace vOS
 
     }
 
-    void MeshVertexBuffer::add_face_indices(Mesh& mesh, FaceData& face)
+    void MeshVertexBuffer::add_face_indices(Mesh& mesh, FaceData& face) const
     {
         switch (face.vertices.size())
         {
