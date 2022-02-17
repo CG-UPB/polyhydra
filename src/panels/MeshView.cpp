@@ -672,7 +672,7 @@ namespace vOS
 
         //texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
         //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_reveal_texture);
-        texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_dp->m_front_texture);
+        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_dp->m_front_texture);
 
 
         // finally, add the framebuffer texture as an image to the imgui window
