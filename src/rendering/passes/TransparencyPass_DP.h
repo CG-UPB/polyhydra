@@ -18,9 +18,7 @@ namespace vOS
         void resize_buffers(unsigned int width, unsigned int height);
         //void clear_framebuffer() const;
 
-        GLuint m_min_depth_texture;
         GLuint m_front_texture;
-        GLuint m_back_texture;
         GLuint m_depth_texture;
 
         unsigned int m_transparent_framebuffer;

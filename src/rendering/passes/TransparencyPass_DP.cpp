@@ -36,17 +36,7 @@ namespace vOS
         m_height = height;
         glGenFramebuffers(1, &m_transparent_framebuffer);
 
-        glGenTextures(1, &_min_depth_texture);
-        glBindTexture(GL_TEXTURE_2D, m_min_depth_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, (int)m_width, (int)m_height, 0, GL_RED, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glGenTextures(1, m_front_texture);
+        glGenTextures(1, &m_front_texture);
         glBindTexture(GL_TEXTURE_2D, m_front_texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, (int)m_width, (int)m_height, 0, GL_RGB, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -57,34 +47,19 @@ namespace vOS
         glBindTexture(GL_TEXTURE_2D, 0);
 
 
-        glGenTextures(1, m_back_texture);
-        glBindTexture(GL_TEXTURE_2D, m_back_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, (int)m_width, (int)m_height, 0, GL_RGB, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-
+        glGenTextures(1, &m_depth_texture);
         glBindTexture(GL_TEXTURE_2D, m_depth_texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        unsigned int max_texture = m_mesh_view->m_pre_pass_framebuffer->get_texture_id();
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_texture, 0);
 
 
-
         glBindFramebuffer(GL_FRAMEBUFFER, m_transparent_framebuffer);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_min_depth_texture, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_front_texture, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_back_texture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_front_texture, 0);
 
-
-        const GLenum transparentDrawBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT1};
-        glDrawBuffers(2, transparentDrawBuffers);
+        const GLenum transparentDrawBuffers[] = {GL_COLOR_ATTACHMENT0};
+        glDrawBuffers(1, transparentDrawBuffers);
 
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
@@ -97,10 +72,7 @@ namespace vOS
     void TransparencyPass_DP::clean_up_framebuffer()
     {
         glDeleteFramebuffers(1, &m_transparent_framebuffer);
-        glDeleteTextures(1, &m_min_depth_texture);
-        glDeleteTextures(1, &m_max_depth_texture);
         glDeleteTextures(1, &m_front_texture);
-        glDeleteTextures(1, &m_back_texture);
         glDeleteTextures(1, &m_depth_texture);
 
     }
@@ -115,8 +87,7 @@ namespace vOS
 
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
-        glBlendFuncSeparatei(2 ,GL_DST_ALPHA, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-        glBlendFunci(3 ,GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFuncSeparatei(0 ,GL_DST_ALPHA, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_transparent_framebuffer);
@@ -156,16 +127,11 @@ namespace vOS
         m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
 
 
-        glActiveTexture(GL_TEXTURE0);
-        // old_min_texture
+        // min_depth_texture
+        glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, m_depth_texture);
 
-        // max_texture
-        glActiveTexture(GL_TEXTURE1);
-        unsigned int max_texture = m_mesh_view->m_meshFrameBuffer->get_depth_texture_id();
-        glBindTexture(GL_TEXTURE_2D, max_texture);
-
-        // opaque_texture
+        // min_depth_texture
         glActiveTexture(GL_TEXTURE1);
         unsigned int opaque_texture = m_mesh_view->m_meshFrameBuffer->get_texture_id();
         glBindTexture(GL_TEXTURE_2D, opaque_texture);
@@ -177,7 +143,7 @@ namespace vOS
 
     }
 
-    void TransparencyPass_DP::void render_composition()
+    void TransparencyPass_DP::render_composition()
     {
 
         m_composite_shader->bind();
@@ -186,10 +152,6 @@ namespace vOS
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_front_texture);
 
-        // max_texture
-        glActiveTexture(GL_TEXTURE1);
-        unsigned int max_texture = m_mesh_view->m_meshFrameBuffer->get_depth_texture_id();
-        glBindTexture(GL_TEXTURE_2D, m_back_texture);
 
         // opaque_texture
         glActiveTexture(GL_TEXTURE2);
@@ -201,7 +163,6 @@ namespace vOS
 
 
     }
-
 
 
     void TransparencyPass_DP::resize_buffers(unsigned int width, unsigned int height)

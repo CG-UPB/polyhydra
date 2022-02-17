@@ -40,6 +40,7 @@ namespace vOS
 
         m_mesh_pass = new MeshPass(this);
         m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
+        m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -90,6 +91,7 @@ namespace vOS
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_pre_pass_framebuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -453,6 +455,45 @@ namespace vOS
         m_meshFrameBuffer->bind();
         m_transparency_pass_wb->render_composition();
         m_meshFrameBuffer->unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void MeshView::render_transparency_dp()
+    {
+        int num_passes = 8;
+        unsigned int framebuffer = m_transparency_pass_dp->m_transparent_framebuffer;
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        for( int i = 0; i < num_passes; i++)
+        {
+
+            // first render all meshes
+            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            {
+                auto mesh = m.second;
+                MeshData& mesh_data = mesh->get_data();
+                if(!mesh->get_data().m_visible)
+                {
+                    continue;
+                }
+                if(!m_zoom)
+                {
+                    m_zoom_point = mesh->get_mesh_offset();
+                }
+                mesh_data.offset = m_zoom_point;
+
+                mesh->update_vertex_buffer();
+
+                if (mesh->get_vao() != nullptr) {
+                    m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first);
+                }
+            }
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // then composite the transparent and opaque result
+        m_meshFrameBuffer->bind();
+        m_transparency_pass_dp->render_composition();
+        m_meshFrameBuffer->unbind();
+
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -595,6 +636,7 @@ namespace vOS
 
         // Render transparent objects
         render_transparency_wb();
+        //render_transparency_dp();
 
 
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
@@ -628,8 +670,10 @@ namespace vOS
             texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
         }
 
-        texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
+        //texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
         //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_reveal_texture);
+        texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_dp->m_front_texture);
+
 
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(

@@ -23,9 +23,9 @@ float max_component(vec3 v)
 
 void main()
 {
-    vec2 coord = v_uv;
+    ivec2 coords = ivec2(gl_FragCoord.xy);
 
-    float revealage = texelFetch(revealTexture, ivec2(gl_FragCoord.xy), 0).r;
+    float revealage = texelFetch(revealTexture, coords, 0).r;
 
     if (is_approximately_equal(revealage, 1.0f))
     {
@@ -33,7 +33,7 @@ void main()
         discard;
     }
 
-    vec4 accum = texelFetch(accumTexture, ivec2(gl_FragCoord.xy), 0);
+    vec4 accum = texelFetch(accumTexture, coords, 0);
 
     // supress overflow
     if (isinf(max_component(abs(accum.rgb))))

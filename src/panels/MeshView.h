@@ -10,12 +10,14 @@
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
 #include "../rendering/passes/TransparencyPass_WB.h"
+#include "../rendering/passes/TransparencyPass_DP.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 
 namespace vOS
 {
     class TransparencyPass_WB;
+    class TransparencyPass_DP;
     class MeshPass;
 
     class MeshView: public WindowPanel
@@ -36,6 +38,7 @@ namespace vOS
         void querySelection(int type, int picked_id);
         void render_pre_pass();
         void render_transparency_wb();
+        void render_transparency_dp();
 
         [[nodiscard]] glm::vec3 get_arc_ball_vector(float x, float y) const;
 
@@ -77,6 +80,7 @@ namespace vOS
         SelectionPass m_selection_pass;
         SelectionHoverPass m_selection_hover_pass;
         TransparencyPass_WB* m_transparency_pass_wb = nullptr;
+        TransparencyPass_DP* m_transparency_pass_dp = nullptr;
 
         // render selection every 4th frame
         int m_frame_limit = 4;
@@ -84,5 +88,6 @@ namespace vOS
 
         friend class MeshPass;
         friend class TransparencyPass_WB;
+        friend class TransparencyPass_DP;
     };
 }

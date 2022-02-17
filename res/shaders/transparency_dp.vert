@@ -1,45 +1,62 @@
 #version 400 core
 
-layout (location = 0) out vec4 accum;
-layout (location = 1) out float reveal;
-layout (location = 2) out vec3 modulate;
+layout (location = 0) in vec3 a_Pos;
+layout (location = 1) in vec3 a_Normal;
+layout (location = 2) in vec3 a_Center;
+layout (location = 3) in float a_peel_depth;
+layout (location = 4) in float a_isBoundary;
 
-flat in int v_visible;
+out vec3 v_Pos;
+out vec3 v_Normal;
+flat out int v_Visible;
 
+uniform mat4 u_Transform;
+uniform mat4 u_Projection;
+uniform mat4 u_View;
+uniform vec3 u_lightPos;
+uniform vec3 u_camPos;
+uniform vec3 u_lightColor;
 uniform vec4 u_object_color;
-uniform int u_viewport_width;
-uniform int u_viewport_height;
+uniform float u_cell_size;
 
-float near = 0.1f;
-float far = 100.0f;
+uniform float u_peel_depth;
+uniform float u_slice_depth;
+uniform vec3 u_min;
+uniform vec3 u_max;
+uniform vec3 u_slice_direction;
+uniform bool u_slice_locked;
 
-float LinearizeDepth(float depth)
-{
-    float z = depth * 2.0 - 1.0; // back to NDC
-    return (2.0 * near * far) / (far + near - z * (far - near));
-}
 
 void main()
 {
+    ////////////////////////////////////////////////////////
+    // Slicing and Peeling
+    ////////////////////////////////////////////////////////
+    v_Visible = 1;
 
-    if(u_object_color.a == 1.0 || v_visible == 0)
+    vec3 min = vec3(u_Transform * vec4(u_min, 1.0));
+    vec3 max = vec3(u_Transform * vec4(u_max, 1.0));
+
+    vec4 temp_dir = vec4(normalize(u_slice_direction), 0.0);
+    if (u_slice_locked)
     {
-        discard;
+        temp_dir = u_Transform * temp_dir;
     }
-    vec4 color = u_object_color;
 
+    vec3 slice_dir = temp_dir.xyz;
 
-    //modulate = color.a ();
-    //float depth = LinearizeDepth(gl_FragCoord.z) / far;
-    float depth = gl_FragCoord.z;
+    vec3 slice_point = max + u_slice_depth * (min - max);
+    vec3 dir = slice_dir;
+    vec3 center =  vec3(u_Transform * vec4(a_Center, 1.0));
+    float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    // choose weight function
-    //float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - depth * 0.5, 3.0), 1e-2, 3e3);
-    //float weight = max(min(1.0, max(max(color.r, color.g), color.b) * color.a)), color.a) * clamp(0.03 / (1e-5 + pow(depth / 200, 4.0), 1e-2, 3e3);
-    float weight = color.a  * clamp(0.3 / (1e-5 + pow(depth /200, 4.0)), 1e-2, 3e3);
+    if (a_peel_depth < u_peel_depth || angle > 0)
+    {
+        v_Visible = 0;
+    }
+    ////////////////////////////////////////////////////////
 
-    accum = vec4(color.rgb * color.a, color.a) * weight;
-    //FragColor = vec4(0.0,1.0,0.0,1.0);
-    reveal = color.a;
-
+    vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
+    v_Pos = vec3(u_Transform * vec4(pos, 1.0));
+    v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
 }

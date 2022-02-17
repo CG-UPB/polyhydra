@@ -235,11 +235,11 @@ namespace vOS
                 pre_mesh_phong_path / "transparency_wb.frag",
                 pre_mesh_phong_path / "mesh_phong.geom"
         );
-//        s_shaders["transparency_dp"] = new Shader(
-//                pre_mesh_phong_path / "transparency_dp.vert",
-//                pre_mesh_phong_path / "transparency_dp.frag",
-//                pre_mesh_phong_path / "mesh_phong.geom"
-//        );
+        s_shaders["transparency_dp"] = new Shader(
+                pre_mesh_phong_path / "transparency_dp.vert",
+                pre_mesh_phong_path / "transparency_dp.frag",
+                pre_mesh_phong_path / "mesh_phong.geom"
+        );
     }
 
     void Shader::delete_all()

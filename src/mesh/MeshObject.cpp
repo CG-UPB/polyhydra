@@ -394,6 +394,7 @@ namespace vOS
             }
             // update peel_depth of cell
             cell_peel_property[cell] = minimum;
+            std::cout << minimum << std::endl;
             // update maximum depth found
             if (minimum > max_depth)
             {
