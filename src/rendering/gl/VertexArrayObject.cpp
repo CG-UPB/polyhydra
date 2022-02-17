@@ -5,9 +5,27 @@
 
 #include <iostream>
 #include <type_traits>
+#include "../meshes/CommonMeshes.h"
 
 namespace vOS
 {
+    VertexArrayObject* VertexArrayObject::s_screen_quad = nullptr;
+
+    void VertexArrayObject::draw_screen_quad()
+    {
+        if (s_screen_quad == nullptr)
+        {
+            s_screen_quad = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f),
+                                              CommonMeshes::PlaneXY::indices());
+            s_screen_quad->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
+        }
+        s_screen_quad->draw();
+    }
+
+    void VertexArrayObject::clean_up()
+    {
+        delete s_screen_quad;
+    }
 
     VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
     {
@@ -87,23 +105,25 @@ namespace vOS
         { gl_type = GL_UNSIGNED_INT; }
         else
         { throw std::invalid_argument("Invalid data type for gl buffer"); }
-
         m_buffers.push_back(-1);
 
         glBindVertexArray(m_vao);
-
         glGenBuffers(1, &m_buffers[m_buffers.size() - 1]);
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[m_buffers.size() - 1]);
         glBufferData(GL_ARRAY_BUFFER, (int) data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
-
-        glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
+        if (gl_type == GL_FLOAT)
+        {
+            glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
+        }
+        else
+        {
+            glVertexAttribIPointer(location, element_count, gl_type, element_count * sizeof(T), nullptr);
+        }
         glEnableVertexAttribArray(location);
-
         if (per_instance)
         {
             glVertexAttribDivisor(location, 1);
         }
-
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -118,6 +138,16 @@ namespace vOS
         glBindVertexArray(0);
     }
 
+    template<typename T>
+    void VertexArrayObject::update_attribute(const std::vector<T>& data, int location, int offset, int size)
+    {
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[location - 1]);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, (int) size * sizeof(T), &data[offset]);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
     // these are necessary for the linker to find the templated function types, otherwise we would need to implement
     // the template function in the header file, which would cause some problems
     template void VertexArrayObject::add_attribute<float>(const std::vector<float>& data, int location, int element_count, bool per_instance = false);
@@ -128,5 +158,7 @@ namespace vOS
     template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location);
     template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location);
 
-
+    template void VertexArrayObject::update_attribute<float>(const std::vector<float>& data, int location, int offset, int size);
+    template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location, int offset, int size);
+    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location, int offset, int size);
 }

@@ -1,48 +1,157 @@
 #pragma once
 
+#include <vector>
+#include <unordered_map>
+
 namespace vOS
 {
+    /**
+     * Attachment definition. Use this to configure the texture you want to attach to the framebuffer.
+     */
+    struct FrameBufferAttachment
+    {
+        int internal_format     = -1;
+        int format              = -1;
+        int type                = -1;
+        int attachment          = -1;
+        int texture_filter      = -1;
+        int texture_wrap        = -1;
+        int texture_comp_func   = -1;
+        int texture_comp_mode   = -1;
+        int generate_mipmap     = false;
+        bool multisample        = false;
+    };
+
+    /**
+     * Abstraction of an OpenGL Framebuffer with arbitrary attachments.
+     */
     class FrameBufferObject
     {
     public:
 
-        static void copy(const FrameBufferObject* src, const FrameBufferObject* dest);
+        /**
+         * Copies the attachment of one framebuffer to the attachment of another framebuffer.
+         *
+         * @param attachment attachment to be copied
+         * @param mask mask, for example GL_COLOR_BUFFER_BIT
+         * @param src framebuffer to be copied from
+         * @param dest framebuffer to be copied to
+         */
+        static void copy(int attachment, int mask, const FrameBufferObject* src, const FrameBufferObject* dest);
 
-        FrameBufferObject(int width, int height, bool multisample = false);
+        /**
+         * Creates a new FrameBufferObject with a specified width and height, and attachments.
+         *
+         * @param width width
+         * @param height height
+         * @param attachments attachments
+         */
+        FrameBufferObject(int width, int height, std::vector<FrameBufferAttachment>  attachments);
         ~FrameBufferObject();
 
+        /**
+         * Resizes this framebuffer to a new width and height.
+         *
+         * @param width new width
+         * @param height new height
+         */
         void resize(int width, int height);
 
+        /**
+         * Binds this framebuffer to be used for operations.
+         */
         void bind();
+
+        /**
+         * Unbinds this framebuffer.
+         */
         void unbind();
 
-        [[nodiscard]] unsigned int get_texture_id() const;
-        [[nodiscard]] unsigned int get_peel_texture_id() const;
-        [[nodiscard]] unsigned int get_depth_texture_id() const;
+        /**
+         * Returns the texture id of the specified attachment.
+         *
+         * @param attachment attachment
+         * @return texture id
+         */
+        [[nodiscard]] unsigned int get_texture(int attachment);
+
+        /**
+         * Returns the OpenGL id of this framebuffer.
+         *
+         * @return framebuffer id
+         */
         [[nodiscard]] unsigned int get_id() const;
+
+        /**
+         * Returns the current width of this framebuffer.
+         *
+         * @return current width
+         */
         [[nodiscard]] int get_width() const;
+
+        /**
+         * Returns the current height of this framebuffer.
+         *
+         * @return current height
+         */
         [[nodiscard]] int get_height() const;
+
+        // default attachment lists
+        static const std::vector<FrameBufferAttachment> RGBA_AND_DEPTH;
+        static const std::vector<FrameBufferAttachment> RGBA_AND_DEPTH_MULTISAMPLE;
 
     private:
 
-        static int s_num_samples;
-
+        /**
+         * Initializes texture attachments.
+         *
+         * @param width width
+         * @param height height
+         */
         void init(int width, int height);
 
+        /**
+         * Releases framebuffer and texture resources.
+         */
         void clean_up();
+
+        /**
+         * Creates an OpenGL Framebuffer.
+         *
+         * @return the framebuffer id
+         */
         unsigned int create_framebuffer();
-        unsigned int create_texture_attachment();
-        unsigned int create_color_attachment(unsigned int attachment);
-        unsigned int create_depth_texture_attachment();
+
+        /**
+         * Creates an attachment for this framebuffer with a given specification.
+         *
+         * @param attachment attachment specification
+         * @return the attachment texture id
+         */
+        [[nodiscard]] unsigned int create_attachment(const FrameBufferAttachment& attachment) const;
+
+        /**
+         * Checks if necessary values of a given attachment are set.
+         *
+         * @param attachment attachment to be checked
+         */
+        void check_attachment_valid(const FrameBufferAttachment& attachment) const;
+
+        // maximum number of supported msaa samples
+        static int s_num_samples;
+
+        // current width and height
         int m_width;
         int m_height;
-        bool m_multisample;
 
-        unsigned int m_frameBufferID;
-        unsigned int m_textureID;
-        unsigned int m_peel_textureID;
-        unsigned int m_depth_textureID;
-        int m_previousFrameBufferID;
-        int m_previousViewPort[4];
+        // internal ids and attachments
+        std::unordered_map<int, unsigned int> m_attachment_textures;
+        std::vector<FrameBufferAttachment> m_attachments;
+        std::vector<unsigned int> m_texture_ids;
+        unsigned int m_framebuffer_id;
+
+        // save previous configuration to restore them later
+        int m_previous_frameBuffer_id;
+        int m_previous_viewport[4];
     };
 }

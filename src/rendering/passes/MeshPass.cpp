@@ -12,20 +12,21 @@ namespace vOS
 
     void MeshPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
-        // Get Mesh
+        // Get MeshObject
         MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
         if(obj == nullptr)
             return;
 
 
         // Activate Wireframe mode if desired
-        std::string rendering_mode = obj->get_data().rendering_mode;
+        std::string rendering_mode = obj->get_data().m_rendering_mode;
         bool render_in_wireframe_mode = false;
         if(rendering_mode == "mesh_wireframe") {
             rendering_mode = "mesh_phong";
             render_in_wireframe_mode = true;
         }
 
+        // Gl Setup
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
@@ -33,6 +34,7 @@ namespace vOS
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
 
+        // Additonal Setup necessary if in wireframe mode
         if (render_in_wireframe_mode)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -46,12 +48,16 @@ namespace vOS
             glEnable(GL_BLEND);
         }
 
+        // Get shader
         auto m_mesh_shader = Shader::get(rendering_mode);
 
         m_mesh_shader->bind();
 
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        // Transform
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+
+        // Cell operations
         float cell_size = obj->get_data().m_cell_size;
         int peel_depth = obj->get_data().m_peel_level;
         float slice_depth = obj->get_data().m_slice_level;
@@ -60,11 +66,12 @@ namespace vOS
         auto min = bb.first;
         auto max = bb.second;
 
+        // View Operations
         glm::mat4 view_inv = glm::inverse(data.camera.view);
         glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
         auto slice_direction = obj->get_slice_dir(transform, view_dir);
 
-        // set all of our uniforms
+        // Shader uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);
         m_mesh_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
         m_mesh_shader->set_uniform_mat4f("u_View", data.camera.view);
@@ -79,18 +86,24 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_max", max);
         m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_mesh_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        m_mesh_shader->set_uniform_float("u_spec_strength", obj->get_data().m_specular_strength);
+        m_mesh_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
+        m_mesh_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
+        m_mesh_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
 
-        m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
-        m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
+        m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
+        m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
 
-        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", 0, m_mesh_view->m_pre_pass_framebuffer->get_depth_texture_id());
-        m_mesh_shader->set_uniform_sampler2D("u_color0_texture", 1, m_mesh_view->m_pre_pass_framebuffer->get_color_texture0_id());
-        m_mesh_shader->set_uniform_sampler2D("u_color1_texture", 2, m_mesh_view->m_pre_pass_framebuffer->get_color_texture1_id());
+        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,
+                                             m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_position", GL_TEXTURE2,m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
 
         vao->draw();
 
         m_mesh_shader->unbind();
 
+        // Revert to polygon mode, so that other Shader Passes are not wrongly rendered
         if (render_in_wireframe_mode)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

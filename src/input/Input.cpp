@@ -54,11 +54,13 @@ namespace vOS
     }
 
     void Input::set_keybind(int from, int to) {
+        // Erase Whatever keybinds exist that contain <from> or <to>
         if(m_keybinds.find(from) != m_keybinds.end())
             m_keybinds.erase(from);
         if(m_keybinds.find(to) != m_keybinds.end())
             m_keybinds.erase(to);
 
+        // Insert a two-way bind between <from> and <to>
         m_keybinds.insert(std::pair<int,int>(to,from) );
         m_keybinds.insert(std::pair<int,int>(from,to) );
     }

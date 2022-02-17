@@ -16,6 +16,7 @@ namespace vOS
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
         glEnable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -24,7 +25,7 @@ namespace vOS
 
         pre_phong_shader->bind();
 
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().offset);
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
         float cell_size = obj->get_data().m_cell_size;
         int peel_depth = obj->get_data().m_peel_level;
@@ -57,5 +58,37 @@ namespace vOS
         vao->draw();
 
         pre_phong_shader->unbind();
+    }
+
+    PrePass::PrePass(int width, int height)
+    {
+        m_clear_position_shader = Shader::get("pre_far");
+        m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
+    }
+
+    PrePass::~PrePass()
+    {
+        delete m_pre_pass_framebuffer;
+    }
+
+    void PrePass::resize_buffers(int width, int height)
+    {
+        m_pre_pass_framebuffer->resize(width, height);
+    }
+
+    PrePassFrameBufferObject* PrePass::get_framebuffer() const
+    {
+        return m_pre_pass_framebuffer;
+    }
+
+    void PrePass::clear_position_buffer(const RenderData& data)
+    {
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        m_clear_position_shader->bind();
+        m_clear_position_shader->set_uniform_float("u_far", data.camera.far);
+        VertexArrayObject::draw_screen_quad();
+        m_clear_position_shader->unbind();
     }
 }

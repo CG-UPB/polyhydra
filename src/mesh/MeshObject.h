@@ -9,6 +9,7 @@
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 #include "MeshVertexBuffer.h"
+#include "nlohmann/json.hpp"
 
 namespace vOS
 {
@@ -35,44 +36,110 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.35f, 0.35f, 0.35f, 0.7f), m_visible(true), rendering_mode("mesh_phong")
+        MeshData() : m_color(0.76f, 0.76f, 0.76f, 0.7f), m_visible(true), m_rendering_mode("mesh_phong")
         {
             m_peel_level = 0;
             m_slice_level = 0;
             m_cell_size = 1;
+
+            m_ambient_strength = 0.3;
+            m_diffuse_strength = 1;
+            m_specular_strength = 0.5;
+            m_specular_exponent = 8;
         }
+
+         [[nodiscard]] nlohmann::json to_json()
+         {
+            nlohmann::json j;
+
+            // Phong Data
+            j["phong_spec_strength"] = m_specular_strength;
+            j["phon_spec_exponent"] = m_specular_exponent;
+            j["phong_ambient_strength"] = m_ambient_strength;
+            j["phong_diffuse_strength"] = m_diffuse_strength;
+
+            // Toolbox Data
+            j["tool_slice_level"] = m_slice_level;
+            j["tool_slice_locked"] = m_slice_locked;
+            j["tool_peel_level"] = m_peel_level;
+            j["tool_cell_size"] = m_cell_size;
+
+             // Rendering Data
+             j["rendering_default_color"] = {m_color.r, m_color.g, m_color.b, m_color.a};
+             j["rendering_visible"] = m_visible;
+             j["rendering_mode"] = m_rendering_mode;
+
+             // Transform Data
+             j["transform_position"] = {m_position.x, m_position.y, m_position.z};
+             j["transform_position_offset"] = m_selection_offset;
+             j["transform_scale"] = {m_scale.x, m_scale.y, m_scale.z};
+             j["transform_offset"] = {m_offset.x, m_offset.y, m_offset.z};
+
+            return j;
+         }
+
+         void load_from_json(nlohmann::json j)
+         {
+             // Phong Data
+             m_specular_strength = j["phong_spec_strength"];
+             m_specular_exponent = j["phon_spec_exponent"];
+             m_ambient_strength = j["phong_ambient_strength"];
+             m_diffuse_strength = j["phong_diffuse_strength"];
+
+             // Toolbox Data
+             m_slice_level = j["tool_slice_level"];
+             m_slice_locked = j["tool_slice_locked"];
+             m_peel_level = j["tool_peel_level"];
+             m_cell_size = j["tool_cell_size"];
+
+             // Rendering Data
+             auto color_vec = j["rendering_default_color"];
+             m_color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
+             m_visible = j["rendering_visible"];
+             m_rendering_mode = j["rendering_mode"];
+
+
+             // Transform Data
+             m_selection_offset = j["transform_position_offset"];
+             auto pos_vec = j["transform_position"];
+             m_position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
+             auto scale_vec = j["transform_scale"];
+             m_scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
+             auto off_vec = j["transform_offset"];
+             m_offset = glm::vec3(off_vec[0], off_vec[1], off_vec[2]);
+         }
 
         [[nodiscard]] glm::mat4 get_transform() const
         {
-            glm::mat4 pos = glm::translate(position);
-            glm::mat4 scl = glm::scale(scale);
+            glm::mat4 pos = glm::translate(m_position);
+            glm::mat4 scl = glm::scale(m_scale * scale_normalization);
             return pos * scl;
         }
 
+        // Rendering Variables
+        Color m_color;
+        bool m_visible;
+        std::string m_rendering_mode;
+
+        float m_ambient_strength;
+        float m_diffuse_strength;
+        float m_specular_strength;
+        float m_specular_exponent;
+
+        // Toolbox Variables
         int m_peel_level;
         bool m_slice_locked = false;
         float m_slice_level;
         float m_cell_size;
-        bool m_visible;
         int selection_offset = 0;
+        float scale_normalization = 1.0f;
 
         std::string rendering_mode;
 
-        glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
-
-        Color m_color;
-
-    };
-
-    struct Highlight
-    {
-        Highlight(Color c, OpenVolumeMesh::VertexHandle vh) : color(c), v_h(vh)
-        {}
-
-        Color color;
-        OpenVolumeMesh::VertexHandle v_h;
+        // Transform Variables
+        glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 m_scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 m_offset = glm::vec3(0.0f, 0.0f, 0.0f);
     };
 
     class MeshObject
@@ -81,23 +148,26 @@ namespace vOS
 
         MeshObject();
 
-        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
+        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, std::string name);
 
         ~MeshObject();
 
         OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *m_mesh;
 
-        std::unordered_set<int> &get_all_selected_faces()
+        // Selection Functionality
+        std::unordered_set<int>& get_all_selected_faces()
         { return m_selected_faces; }
 
-        std::unordered_set<int> &get_all_selected_vertices()
+        std::unordered_set<int>& get_all_selected_vertices()
         { return m_selected_vertices; }
 
-        std::unordered_set<int> &get_all_selected_edges()
+        std::unordered_set<int>& get_all_selected_edges()
         { return m_selected_edges; }
 
-        std::unordered_set<int> &get_all_selected_cells()
+        std::unordered_set<int>& get_all_selected_cells()
         { return m_selected_cells; }
+
+        MeshVertexBuffer* get_mesh_vertex_buffer(){return m_mvb;}
 
         /**
          * Adds a shape on selected element (vertex, edge, face)
@@ -181,12 +251,16 @@ namespace vOS
         std::tuple<int, int> &selection_offset()
         { return m_selection_offset; };
 
-        glm::vec3 &get_mesh_offset();
+        void set_selection_offset(int start);
 
-        glm::vec3 &get_min()
+        glm::vec3& get_mesh_offset();
+
+        [[nodiscard]] VertexArrayObject* get_vao() const;
+
+        glm::vec3& get_min()
         { return m_min; };
 
-        glm::vec3 &get_max()
+        glm::vec3& get_max()
         { return m_max; };
 
         /**
@@ -211,12 +285,17 @@ namespace vOS
 
 
 
+        void set_mesh_name(std::string str){mesh_name = str;}
+        std::string get_mesh_name(){return mesh_name;}
+
         /**
          * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
          * we would have to update the vertex array with the data every time we render.
          *
          * @return the instanced sphere vao for this mesh
          */
+
+        [[nodiscard]] MeshVertexBuffer* get_mvb() const;
 
         [[nodiscard]] int get_num_visible_vertices() const;
         [[nodiscard]] int get_num_visible_edges() const;
@@ -245,6 +324,8 @@ namespace vOS
 
         const int key_multiplier = 1000000;
 
+        std::string mesh_name = "default";
+
         int m_max_peel_depth = 0;
 
         bool m_just_locked;
@@ -265,7 +346,6 @@ namespace vOS
 
         std::map<int, int> m_created_shapes;
 
-        std::map<OpenVolumeMesh::VertexHandle, Highlight> highlight_map;
 
         std::tuple<int, int> m_selection_offset;
 

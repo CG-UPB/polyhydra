@@ -30,17 +30,16 @@ namespace vOS
             m_lastY(0.0),
             m_arcBallOn(false)
     {
-
-
-        m_meshFrameBuffer = new FrameBufferObject(width, height, false);
-        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2);
-        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
-        m_screen_quad_frameBuffer = new FrameBufferObject(width, height);
-        m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
-
+        m_pre_pass = new PrePass(width, height);
         m_mesh_pass = new MeshPass(this);
+        m_ssao_pass = new SSAOPass(this, width, height);
         m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
         m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
+
+        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
+        m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
+        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -48,10 +47,10 @@ namespace vOS
         // set up the initial camera position, direction and orientation of the mesh
         m_render_data.camera.world = glm::mat4(1.0f);
         m_render_data.camera.projection = glm::perspective(
-                glm::radians(60.0f),
+                glm::radians(m_render_data.camera.fov_deg),
                 (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                0.1f,
-                500.0f
+                m_render_data.camera.near,
+                m_render_data.camera.far
         );
 
         m_render_data.camera.view = glm::lookAt(
@@ -71,10 +70,13 @@ namespace vOS
     MeshView::~MeshView()
     {
         delete m_meshFrameBuffer;
+        delete m_screen_quad_frameBuffer;
         delete m_selectionFrameBuffer;
         delete m_pixel_buffer;
+        delete m_pre_pass;
         delete m_mesh_pass;
         delete m_transparency_pass_wb;
+        delete m_ssao_pass;
     }
 
     void MeshView::handleResize()
@@ -89,17 +91,18 @@ namespace vOS
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_pre_pass_framebuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             m_render_data.camera.projection = glm::perspective(
-                    glm::radians(50.0f),
+                    glm::radians(m_render_data.camera.fov_deg),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    0.1f,
-                    500.0f
+                    m_render_data.camera.near,
+                    m_render_data.camera.far
             );
         }
     }
@@ -230,7 +233,7 @@ namespace vOS
         {
             m_zoom_point = obj->get_mesh_offset();
         }
-        mesh_data.offset = m_zoom_point;
+        mesh_data.m_offset = m_zoom_point;
 
 
         obj->update_vertex_buffer();
@@ -238,7 +241,6 @@ namespace vOS
         // render all passes
         if (obj->get_vao() != nullptr) {
             m_mesh_pass->render(obj->get_vao(), m_render_data, mesh_id);
-            m_highlight_pass.render(nullptr, m_render_data, mesh_id);
             m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
@@ -248,27 +250,38 @@ namespace vOS
         // export x times the original resolution -> we should make this configurable when taking a screenshot
         float resolution_upscale = 2.0f;
 
+        int prev_width = m_viewportPanelWidth;
+        int prev_height = m_viewportPanelHeight;
+
         int export_width = (int) ((float) m_viewportPanelWidth * resolution_upscale);
         int export_height = (int) ((float) m_viewportPanelHeight * resolution_upscale);
 
-        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, false);
-        auto export_framebuffer = new FrameBufferObject(export_width, export_height);
+        // we need to do this since some passes need the current width and height for rendering
+        m_viewportPanelWidth = export_width;
+        m_viewportPanelHeight = export_height;
 
-        //render_pre_pass();
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
+
+        m_pre_pass->resize_buffers(export_width, export_height);
+        m_ssao_pass->resize_buffers(export_width, export_height);
+
+        render_pre_pass();
+        render_ssao_pass();
 
         export_framebuffer_ms->bind();
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto active_mesh = Window::instance().get_active_mesh_obj();
+        auto active_mesh = Window::instance().get_focused_mesh_object();
         if (active_mesh != nullptr)
         {
             if(!m_zoom)
             {
-                m_zoom_point = Window::instance().get_active_mesh_obj()->get_mesh_offset();
+                m_zoom_point = Window::instance().get_focused_mesh_object()->get_mesh_offset();
             }
-            Window::instance().get_active_mesh_obj()->get_data().offset = m_zoom_point;
+            Window::instance().get_focused_mesh_object()->get_data().m_offset = m_zoom_point;
 
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
             {
@@ -283,7 +296,6 @@ namespace vOS
                 // render all passes
                 if (mesh->get_vao() != nullptr) {
                     m_mesh_pass->render(mesh->get_vao(), m_render_data, m.first);
-                    m_highlight_pass.render(nullptr, m_render_data, m.first);
                     m_shape_pass.render(nullptr, m_render_data, m.first);
                 }
             }
@@ -294,8 +306,14 @@ namespace vOS
 
         export_framebuffer_ms->unbind();
 
+        // restore the old width and height
+        m_viewportPanelWidth = prev_width;
+        m_viewportPanelHeight = prev_height;
+        m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+        m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+
         // copy our multisampled framebuffer to the output framebuffer
-        FrameBufferObject::copy(export_framebuffer_ms, export_framebuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, export_framebuffer_ms, export_framebuffer);
 
         export_framebuffer->bind();
 
@@ -353,7 +371,7 @@ namespace vOS
             // evaluate ID out of color
             int type = data[0] & 3;
             int id;
-            if (SelectionPass::DEBUG_MODE)
+            if (m_selection_pass.is_debug_mode())
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
             }
@@ -388,8 +406,10 @@ namespace vOS
 
     void MeshView::render_pre_pass()
     {
-        m_pre_pass_framebuffer->bind();
+        m_pre_pass->get_framebuffer()->bind();
+        glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_pre_pass->clear_position_buffer(m_render_data);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -399,12 +419,20 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             if (mesh->get_vao() != nullptr) {
-                m_pre_pass.render(mesh->get_vao(), m_render_data, m.first);
-                continue;
+                m_pre_pass->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
+        // we generate a mipmap for the position, this is used for ssao
+        // this needs to happen every frame, since the fragment position values always change
+        glBindTexture(GL_TEXTURE_2D, m_pre_pass->get_framebuffer()->get_position_texture());
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        m_pre_pass->get_framebuffer()->unbind();
+    }
 
-        m_pre_pass_framebuffer->unbind();
+    void MeshView::render_ssao_pass()
+    {
+        m_ssao_pass->render(nullptr, m_render_data, -1);
     }
 
     void MeshView::render_transparency_wb()
@@ -479,7 +507,7 @@ namespace vOS
                 {
                     m_zoom_point = mesh->get_mesh_offset();
                 }
-                mesh_data.offset = m_zoom_point;
+                mesh_data.m_offset = m_zoom_point;
 
                 mesh->update_vertex_buffer();
 
@@ -510,6 +538,7 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
+
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
@@ -517,30 +546,78 @@ namespace vOS
 
                 if (type == SELECTION_TYPE_FACE)
                 {
-                    // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
-                    // there is no valid ID (e.g when clicking background)
-                    int face_id = mesh->to_faceID(picked_id - from) - 1;
 
-                    //std::cout << "hovering face with id: " << face_id << std::endl;
-
-                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, face_id);
-
-                    OpenVolumeMesh::FaceHandle face(face_id);
-                    if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL || GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
                     {
-                        // Select element via Window class, to activate Callback function
-                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
-                        Window::instance().rendering_mutex.unlock();
-                        Window::instance().select_element(m.first, face_id, type);
-                        Window::instance().rendering_mutex.lock();
+                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+
+                        m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
+
+                        OpenVolumeMesh::FaceHandle face(face_id);
+                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face,0);
+
+                        OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
+                        OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>("DiggingProperty");
+
+                        if(cell_handle.idx() == -1 || !diggingProp[cell_handle]){
+                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
+
+                            cell_handle = mesh->m_mesh->incident_cell(hf1);
+
+                            //std::cout << "Zelle 2: " << cell_handle.idx();
+                        }
+
+                        if (GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
+                        {
+                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            {
+                                diggingProp[cell_handle] = false;
+
+                                auto mvb = mesh->get_mvb();
+                                mvb->update_digging_buffer(cell_handle.idx(),0.0f);
+                            }
+                        }else
+                        {
+                            // cell_handle beinhaltet cell
+                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            {
+                                // Select element via Window class, to activate Callback function
+                                // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                                Window::instance().rendering_mutex.unlock();
+                                Window::instance().select_element(m.first, cell_handle.idx(), 6);
+                                Window::instance().rendering_mutex.lock();
+                            }
+                        }
+
+
+                    }else {
+
+                        // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
+                        // there is no valid ID (e.g when clicking background)
+                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+
+                        //std::cout << "hovering face with id: " << face_id << std::endl;
+
+                    m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
+
+                        OpenVolumeMesh::FaceHandle face(face_id);
+                        if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        {
+                            // Select element via Window class, to activate Callback function
+                            // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+                            Window::instance().rendering_mutex.unlock();
+                            Window::instance().select_element(m.first, face_id, type);
+                            Window::instance().rendering_mutex.lock();
+                        }
                     }
+
 
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
                 {
                     int vertex_id = mesh->to_vertexID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, vertex_id);
+                    m_selection_hover_pass.hover( m_render_data, m.first, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -556,7 +633,7 @@ namespace vOS
                 {
                     int edge_id = mesh->to_edgeID(picked_id - from) - 1;
 
-                    m_selection_hover_pass.select(*mesh, m_render_data,m.first, type, edge_id);
+                    m_selection_hover_pass.hover(m_render_data, m.first, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -584,10 +661,10 @@ namespace vOS
             m_zoom = false;
         }
 
-        auto active_mesh = Window::instance().get_active_mesh_obj();
+        auto active_mesh = Window::instance().get_focused_mesh_object();
         if (!any_mesh_hovered && active_mesh != nullptr)
         {
-            m_selection_hover_pass.select(*active_mesh, m_render_data, 0, 0, 0);
+            m_selection_hover_pass.hover( m_render_data, 0, 0, 0);
         }
     }
 
@@ -599,13 +676,7 @@ namespace vOS
 
     void MeshView::show()
     {
-        if(GlobalViewerSettings::getInstance()->m_get_take_snapshot())
-        {
-            GlobalViewerSettings::getInstance()->m_set_take_snapshot(false);
-            // Snapshot erstellen
-            std::string filename = GlobalViewerSettings::getInstance()->m_get_actual_snapshot_filename();
-            this->m_take_screenshot(filename);
-        }
+        render_debug_menu();
 
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
@@ -616,6 +687,7 @@ namespace vOS
         handleMouseControl();
         // Render Meshes
         render_pre_pass();
+        render_ssao_pass();
 
         // Now render our mesh scene to the framebuffer texture
         // Start with opaque objects
@@ -653,31 +725,16 @@ namespace vOS
         //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
         topLeft.x += padding.x;
         topLeft.y += padding.y;
 
-        ImTextureID texture_id;
-        if (SelectionPass::DEBUG_MODE)
-        {
-            texture_id = reinterpret_cast<ImTextureID>(m_selectionFrameBuffer->get_texture_id());
-        }
-        else
-        {
-            texture_id = reinterpret_cast<ImTextureID>(m_screen_quad_frameBuffer->get_texture_id());
-        }
-
-        //texture_id = reinterpret_cast<ImTextureID>(m_meshFrameBuffer->get_texture_id());
-        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_wb->m_reveal_texture);
-        //texture_id = reinterpret_cast<ImTextureID>(m_transparency_pass_dp->m_front_texture);
-
-
         // finally, add the framebuffer texture as an image to the imgui window
         ImGui::GetWindowDrawList()->AddImage(
-                texture_id,
+                reinterpret_cast<ImTextureID>(get_selected_texture()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
                  ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
@@ -700,13 +757,14 @@ namespace vOS
             hovered_element_name += " : ";
             hovered_element_name += std::to_string(m_hovered_element_id);
 
-            ImGui::Text(hovered_element_name.c_str());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::TextColored(ImVec4(0,0,0,1), "%s", hovered_element_name.c_str());
         }
 
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
         {
-            auto mesh = Window::instance().get_active_mesh_obj()->m_mesh;
+            auto mesh = Window::instance().get_focused_mesh_object()->m_mesh;
 
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
             ImGui::Text("vertices: %zu", mesh->n_vertices());
@@ -718,5 +776,44 @@ namespace vOS
 
         ImGui::End();
         ImGui::PopStyleVar();
+    }
+
+    void MeshView::render_debug_menu()
+    {
+        if (ImGui::Begin("Debug"))
+        {
+            ImGui::Text("Viewport");
+            if (ImGui::RadioButton("Final Image", m_viewport_texture == FINAL_IMAGE))
+            {
+                m_viewport_texture = FINAL_IMAGE;
+            }
+            if (ImGui::RadioButton("Selection", m_viewport_texture == SELECTION))
+            {
+                m_viewport_texture = SELECTION;
+                GlobalViewerSettings::getInstance()->m_set_current_selection_activated(true);
+            }
+            if (ImGui::RadioButton("SSAO Pre", m_viewport_texture == SSAO_PRE))
+            {
+                m_viewport_texture = SSAO_PRE;
+            }
+            if (ImGui::RadioButton("SSAO Blur", m_viewport_texture == SSAO_BLUR))
+            {
+                m_viewport_texture = SSAO_BLUR;
+            }
+            m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
+        }
+        ImGui::End();
+    }
+
+    unsigned int MeshView::get_selected_texture()
+    {
+        switch (m_viewport_texture)
+        {
+            case FINAL_IMAGE: return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
+            case SSAO_BLUR: return m_ssao_pass->get_blur_texture();
+        }
+        return -1;
     }
 }

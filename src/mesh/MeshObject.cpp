@@ -23,17 +23,27 @@ namespace vOS
 
         m_should_update = false;
 
-        // create properties and set them persistent for later access
-        OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
-        cell_peel_property->set_persistent(true);
-        OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
-        vertex_peel_property->set_persistent(true);
+        OpenVolumeMesh::CellPropertyT<bool> diggingProp = m_mesh->request_cell_property<bool>("DiggingProperty");
+        diggingProp->set_persistent(true);
+
+        for(auto cell : m_mesh->cells())
+        {
+            diggingProp[cell] = true;
+        }
+
+        OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
+        highlightProp->set_persistent(true);
+        OpenVolumeMesh::VertexPropertyT <OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
+                "VertexHighlightColor");
+        highlightColProp->set_persistent(true);
 
     }
 
-    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh) : MeshObject()
+    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, std::string name) : MeshObject()
     {
         set_mesh(mesh);
+
+        mesh_name = name;
     }
 
 
@@ -70,8 +80,11 @@ namespace vOS
 
             OpenVolumeMesh::FaceHandle face(id);
 
+            m_mvb->set_face_color(face.idx(), 1, 0, 0, 1);
+
+            /*
             auto pick_pos = m_mesh->barycenter(face);
-            auto *shape = new Cylinder();
+            auto* shape = new Cylinder();
             shape->set_scale(0.02f, 0.02f, 0.02f);
             shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
             shape->set_base_color(1.0f, 0.0f, 0.0f);
@@ -82,8 +95,8 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
 
             m_created_shapes.insert({shape_key, shape_id});
-        } else if (type == 1)
-        {
+             */
+        }else if(type == 1) {
             m_selected_vertices.insert(id);
 
             // Add Shape
@@ -91,7 +104,7 @@ namespace vOS
             OpenVolumeMesh::VertexHandle vertex(id);
 
             auto pick_pos = m_mesh->vertex(vertex);
-            auto *shape = new Sphere();
+            auto* shape = new Sphere();
             shape->set_scale(0.02f, 0.02f, 0.02f);
             shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
             shape->set_base_color(0.0f, 1.0f, 0.0f);
@@ -125,8 +138,33 @@ namespace vOS
 
             m_created_shapes.insert({shape_key, shape_id});
         } else
-        {
+        if(type == 6){
             m_selected_cells.insert(id);
+
+            OpenVolumeMesh::CellHandle cell(id);
+
+            //std::cout << cell.idx() << std::endl;
+            bool first = true;
+
+            std::vector<glm::vec3> vertices;
+            for (auto cv_it : m_mesh->cell_vertices(cell))
+            {
+                auto v_pos = m_mesh->vertex(cv_it);
+                vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
+            }
+
+            MeshVertexBuffer * bufa = new MeshVertexBuffer();
+            glm::vec3 pick_pos = bufa->get_center(vertices);
+
+            auto* shape = new Sphere();
+            shape->set_scale(0.82f, 0.82f, 0.82f);
+            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+            shape->set_base_color(0.0f, 1.0f, 0.0f);
+
+            // There a guaranteed Mutex Guard around this method
+            Window::instance().rendering_mutex.unlock();
+            int shape_id = Window::instance().add_shape(shape);
+            Window::instance().rendering_mutex.lock();
 
         }
     }
@@ -136,12 +174,7 @@ namespace vOS
         // Delete Face Elements
         for (int element: m_selected_faces)
         {
-            // Delete Shape Element
-            int shape_key = 0 * key_multiplier + element;
-            int shape_id = m_created_shapes[shape_key];
-            Window::instance().rendering_mutex.unlock();
-            Window::instance().remove_shape(shape_id);
-            Window::instance().rendering_mutex.lock();
+            m_mvb->set_face_color(element, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
         }
         m_selected_faces.clear();
 
@@ -193,8 +226,8 @@ namespace vOS
 
         if (type == 0)
         {
-            auto entry = m_selected_faces.find(id);
-            m_selected_faces.erase(entry);
+            m_mvb->set_face_color(id, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
+            return;
         } else if (type == 1)
         {
             auto entry = m_selected_vertices.find(id);
@@ -320,7 +353,10 @@ namespace vOS
         }
         m_min = min;
         m_max = max;
-        m_mesh_offset_from_center = min + (max - min) * 0.5f;
+        glm::vec3 diameter = max - min;
+        m_mesh_offset_from_center = min + diameter * 0.5f;
+        // all meshes should have the same screen size, regardless of their actual size
+        m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
     }
 
     void MeshObject::calculate_peel_depth()
@@ -545,6 +581,10 @@ namespace vOS
     MeshObject::~MeshObject()
     {
         delete m_mvb;
+    }
+
+    MeshVertexBuffer *MeshObject::get_mvb() const {
+        return m_mvb;
     }
 }
 

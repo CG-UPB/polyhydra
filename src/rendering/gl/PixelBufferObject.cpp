@@ -26,7 +26,7 @@ namespace vOS
         delete[] m_pbo_ids;
     }
 
-    GLubyte* PixelBufferObject::start_read(int x, int y, int width, int height)
+    uint8_t* PixelBufferObject::start_read(int x, int y, int width, int height)
     {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -40,7 +40,7 @@ namespace vOS
 
         // now read the actual data from the next pbo
         glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids[next_index]);
-        return (GLubyte*) glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+        return (uint8_t*) glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
     }
 
     void PixelBufferObject::finish_read()

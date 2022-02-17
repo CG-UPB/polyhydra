@@ -23,6 +23,7 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/ImGuiFileDialog.h"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/glfw/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/glm/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h"
+        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/json-develop/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_image_write.h")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
@@ -37,6 +38,7 @@ add_subdirectory(glad)
 add_subdirectory(glfw)
 add_subdirectory(glm)
 add_subdirectory(OpenVolumeMesh)
+
 
 
 ###########################
@@ -70,7 +72,6 @@ set(IMGUI_INCLUDE_DIR  ${CMAKE_CURRENT_LIST_DIR}/imgui ${CMAKE_CURRENT_LIST_DIR}
 target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})
 
 target_link_libraries(imgui PUBLIC glad glfw)
-
 
 ###########################
 # ImGuiFileDialog

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <filesystem>
 #include "glm/mat4x4.hpp"
 
@@ -30,18 +31,19 @@ namespace vOS
         static Shader* get(const std::string& shader_name);
 
         /**
-         * Convenience shader references.
-         *
-         * @return the specified shader
+         * Utility shaders.
          */
-        static Shader* mesh_normal_shader() { return get("mesh_normal"); }
         static Shader* background_shader() { return get("background"); }
         static Shader* basic_shape_shader() { return get("basic_shape"); }
+        static Shader* quad_circle_shader() { return get("quad_circle"); }
+        static Shader* flat_color_shader() { return get("flat_color"); }
+
+        /**
+         * Selection shaders.
+         */
         static Shader* selection_face() { return get("selection_face"); }
         static Shader* selection_vertex_shader() { return get("selection_vertex"); }
         static Shader* selection_edge_shader() { return get("selection_edge"); }
-        static Shader* flat_color_shader() { return get("flat_color"); }
-        static Shader* quad_circle_shader() { return get("quad_circle"); }
         static Shader* edge_hover_shader() { return get("edge_hover"); }
         static Shader* pre_mesh_phong_shader() { return get("pre_mesh_phong"); }
 
@@ -71,6 +73,15 @@ namespace vOS
          * @param texture_id id of the texture to be bound
          */
         void set_uniform_sampler2D(const std::string& name, unsigned int binding, unsigned int texture_id);
+
+        /**
+         * Sets a uniform sampler2DMS for this shader.
+         *
+         * @param name name of the uniform
+         * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
+         * @param texture_id id of the texture to be bound
+         */
+        void set_uniform_sampler2DMS(const std::string& name, unsigned int binding, unsigned int texture_id);
 
         /**
          * Sets a uniform mat4 for this shader.
@@ -121,6 +132,14 @@ namespace vOS
         void set_uniform_vec3f(const std::string& name, const glm::vec3& value);
 
         /**
+         * Sets a uniform vec3 array for this shader.
+         *
+         * @param name name of the uniform
+         * @param values value the uniform is set to
+         */
+        void set_uniform_vec3f_array(const std::string& name, const std::vector<glm::vec3>& values);
+
+        /**
          * Sets a uniform vec4 for this shader.
          *
          * @param name name of the uniform
@@ -130,12 +149,20 @@ namespace vOS
 
     private:
 
+        /**
+         * Creates a new shader object from the given resource paths.
+         *
+         * @param vertexPath vertex resource path
+         * @param fragmentPath fragment resource path
+         * @param geometryPath geometry resource path (may be empty)
+         */
         Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath);
         ~Shader() = default;
 
         // all loaded shaders by name
         static std::unordered_map<std::string, Shader*> s_shaders;
 
+        // opengl program id
         unsigned int m_shaderID;
 
         // we are caching the uniform locations, so we don't need to query them every frame

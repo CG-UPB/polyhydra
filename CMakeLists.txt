@@ -29,22 +29,18 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/FrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/VertexArrayObject.cpp
         ${VOLUMESHOS_SRC}/Window.cpp
-        ${VOLUMESHOS_SRC}/panels/MenuBar.cpp
         ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp
         ${VOLUMESHOS_SRC}/mesh/MeshObject.cpp
         ${VOLUMESHOS_SRC}/input/Input.cpp
         ${VOLUMESHOS_SRC}/algorithms/Dijkstra.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/MeshPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/HighlightPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/BackgroundPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
         ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp
-        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp
         ${VOLUMESHOS_SRC}/panels/ToolBar.cpp
         ${VOLUMESHOS_SRC}/settings/GlobalViewerSettings.cpp
-        ${VOLUMESHOS_SRC}/panels/FileDialog.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionPass.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/IcoSphereMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.cpp
@@ -54,22 +50,28 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/PixelBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
+        ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
+        ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
         ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.h
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.h
-        ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_WB.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_DP.cpp
-        ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
-        ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
-        ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp src/panels/MeshLayerView.cpp src/panels/MeshLayerView.h src/algorithms/ExampleClass.cpp src/algorithms/ExampleClass.h)
+        ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp src/rendering/passes/SSAOPass.cpp
+        ${VOLUMESHOS_SRC}/util/Tooltips.h
+        ${VOLUMESHOS_SRC}/util/ModeEnum.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh ImGuiFileDialog stb)
+#json
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(ext/json-develop)
+
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json ImGuiFileDialog stb)
 
 # copy our resources to the build dir
 if(MSVC)

@@ -10,6 +10,16 @@ namespace vOS
     public:
 
         /**
+         * Renders a full screen quad.
+         */
+        static void draw_screen_quad();
+
+        /**
+         * Clean up resources.
+         */
+        static void clean_up();
+
+        /**
          * Creates a new VertexArrayObject from vertices and indices.
          *
          * @param vertices vector of vertices, aligned like so [x0, y0, z0, x1, y1, z1, ...]
@@ -64,9 +74,21 @@ namespace vOS
         template<typename T>
         void update_attribute(const std::vector<T>& data, int location);
 
-        unsigned int get_vao() const{return m_vao;};
+        /**
+         * Use this method to if you only want to update a small portion of the buffer.
+         *
+         * @tparam T type of the buffer data
+         * @param data new buffer data (the whole vector, not some part of it)
+         * @param location location of the attribute to be updated
+         * @param offset start position of the new data in the buffer
+         * @param size number of buffer entries to be updated
+         */
+        template<typename T>
+        void update_attribute(const std::vector<T>& data, int location, int offset, int size);
 
     private:
+
+        static VertexArrayObject* s_screen_quad;
 
         // number of vertex indices
         int m_numIndices;
