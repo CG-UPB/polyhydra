@@ -34,7 +34,7 @@ namespace vOS
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
 
-        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
@@ -444,7 +444,6 @@ namespace vOS
         glEnable(GL_BLEND);
         glBlendFunci(0, GL_ONE, GL_ONE);
         glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-        //glBlendFunci(2, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
         glBlendEquation(GL_FUNC_ADD);
         //glDisable(GL_CULL_FACE);
 
@@ -484,11 +483,17 @@ namespace vOS
 
     void MeshView::render_transparency_dp()
     {
-        int num_passes = 8;
-        unsigned int framebuffer = m_transparency_pass_dp->m_transparent_framebuffer;
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        int num_passes = 18;
         for( int i = 0; i < num_passes; i++)
         {
+            if(i % 2 == 0)
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer0->bind();
+            }
+            else
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer1->bind();
+            }
 
             // first render all meshes
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
@@ -508,16 +513,19 @@ namespace vOS
                 mesh->update_vertex_buffer();
 
                 if (mesh->get_vao() != nullptr) {
-                    m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first);
+                    m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first, i);
                 }
             }
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // then composite the transparent and opaque result
-        m_meshFrameBuffer->bind();
-        m_transparency_pass_dp->render_composition();
-        m_meshFrameBuffer->unbind();
 
+            if (i % 2 == 0)
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
+            }
+            else
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer1->unbind();
+            }
+        }
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -696,7 +704,7 @@ namespace vOS
         m_meshFrameBuffer->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data, 0);
+        //m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
         {
             renderMesh(m.first);
@@ -706,8 +714,8 @@ namespace vOS
         FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // Render transparent objects
-        render_transparency_wb();
-        //render_transparency_dp();
+        //render_transparency_wb();
+        render_transparency_dp();
 
 
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){

@@ -10,16 +10,17 @@ namespace vOS
      */
     struct FrameBufferAttachment
     {
-        int internal_format     = -1;
-        int format              = -1;
-        int type                = -1;
-        int attachment          = -1;
-        int texture_filter      = -1;
-        int texture_wrap        = -1;
-        int texture_comp_func   = -1;
-        int texture_comp_mode   = -1;
-        int generate_mipmap     = false;
-        bool multisample        = false;
+        unsigned int existing_id =  0;
+        int internal_format      = -1;
+        int format               = -1;
+        int type                 = -1;
+        int attachment           = -1;
+        int texture_filter       = -1;
+        int texture_wrap         = -1;
+        int texture_comp_func    = -1;
+        int texture_comp_mode    = -1;
+        int generate_mipmap      = false;
+        bool multisample         = false;
     };
 
     /**
