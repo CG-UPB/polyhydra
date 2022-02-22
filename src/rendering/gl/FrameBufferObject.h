@@ -10,7 +10,6 @@ namespace vOS
      */
     struct FrameBufferAttachment
     {
-        unsigned int existing_id =  0;
         int internal_format      = -1;
         int format               = -1;
         int type                 = -1;

@@ -12,7 +12,6 @@ namespace vOS
     const std::vector<FrameBufferAttachment> FrameBufferObject::RGBA_AND_DEPTH = {
             // color
             FrameBufferAttachment{
-                    .existing_id        = 0,
                     .internal_format    = GL_RGBA,
                     .format             = GL_RGBA,
                     .type               = GL_UNSIGNED_BYTE,
@@ -22,7 +21,6 @@ namespace vOS
             },
             // depth
             FrameBufferAttachment{
-                    .existing_id        = 0,
                     .internal_format    = GL_DEPTH_COMPONENT,
                     .format             = GL_DEPTH_COMPONENT,
                     .type               = GL_FLOAT,
@@ -84,6 +82,7 @@ namespace vOS
     unsigned int FrameBufferObject::create_framebuffer()
     {
         // specify all attachments as draw buffers
+        m_draw_buffers.clear();
         for (auto& attachment: m_attachments)
         {
             int atm = attachment.attachment;
@@ -196,60 +195,49 @@ namespace vOS
 
     unsigned int FrameBufferObject::create_attachment(const FrameBufferAttachment& attachment) const
     {
-        if (attachment.existing_id != 0)
+        check_attachment_valid(attachment);
+
+        unsigned int tex[1];
+        glGenTextures(1, tex);
+        if (attachment.multisample)
         {
-            //glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, attachment.existing_id);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D, attachment.existing_id, 0);
-            //glBindTexture(GL_TEXTURE_2D, 0);
-            return attachment.existing_id;
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, attachment.internal_format, m_width,
+                                    m_height, GL_TRUE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
         }
         else
         {
-            check_attachment_valid(attachment);
-
-            unsigned int tex[1];
-            glGenTextures(1, tex);
-            if (attachment.multisample)
+            glBindTexture(GL_TEXTURE_2D, tex[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, attachment.internal_format, m_width, m_height, 0, attachment.format,
+                         attachment.type, nullptr);
+            if (attachment.texture_filter != -1)
             {
-                glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex[0]);
-                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s_num_samples, attachment.internal_format, m_width,
-                                        m_height, GL_TRUE);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D_MULTISAMPLE, tex[0], 0);
-                glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, attachment.texture_filter);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, attachment.texture_filter);
             }
-            else
+            if (attachment.texture_wrap != -1)
             {
-                glBindTexture(GL_TEXTURE_2D, tex[0]);
-                glTexImage2D(GL_TEXTURE_2D, 0, attachment.internal_format, m_width, m_height, 0, attachment.format,
-                             attachment.type, nullptr);
-                if (attachment.texture_filter != -1)
-                {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, attachment.texture_filter);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, attachment.texture_filter);
-                }
-                if (attachment.texture_wrap != -1)
-                {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, attachment.texture_wrap);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, attachment.texture_wrap);
-                }
-                if (attachment.texture_comp_func != -1)
-                {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, attachment.texture_comp_func);
-                }
-                if (attachment.texture_comp_mode != -1)
-                {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, attachment.texture_comp_mode);
-                }
-                if (attachment.generate_mipmap)
-                {
-                    glGenerateMipmap(GL_TEXTURE_2D);
-                }
-                glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D, tex[0], 0);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, attachment.texture_wrap);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, attachment.texture_wrap);
             }
-            return tex[0];
-
+            if (attachment.texture_comp_func != -1)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, attachment.texture_comp_func);
+            }
+            if (attachment.texture_comp_mode != -1)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, attachment.texture_comp_mode);
+            }
+            if (attachment.generate_mipmap)
+            {
+                glGenerateMipmap(GL_TEXTURE_2D);
+            }
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D, tex[0], 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
+        return tex[0];
     }
 
     void FrameBufferObject::check_attachment_valid(const FrameBufferAttachment& attachment) const
