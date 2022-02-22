@@ -34,7 +34,7 @@ namespace vOS
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
 
-        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
@@ -486,15 +486,6 @@ namespace vOS
         int num_passes = 18;
         for( int i = 0; i < num_passes; i++)
         {
-            if(i % 2 == 0)
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer0->bind();
-            }
-            else
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer1->bind();
-            }
-
             // first render all meshes
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
             {
@@ -515,15 +506,6 @@ namespace vOS
                 if (mesh->get_vao() != nullptr) {
                     m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first, i);
                 }
-            }
-
-            if (i % 2 == 0)
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
-            }
-            else
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer1->unbind();
             }
         }
     }
@@ -807,6 +789,14 @@ namespace vOS
             {
                 m_viewport_texture = SSAO_BLUR;
             }
+            if (ImGui::RadioButton("Transparency Accum", m_viewport_texture == TRANSPARENCY_ACCUM))
+            {
+                m_viewport_texture = TRANSPARENCY_ACCUM;
+            }
+            if (ImGui::RadioButton("Transparency Reveal", m_viewport_texture == TRANSPARENCY_REVEAL))
+            {
+                m_viewport_texture = TRANSPARENCY_REVEAL;
+            }
             m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
         }
         ImGui::End();
@@ -820,6 +810,8 @@ namespace vOS
             case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();
+            case TRANSPARENCY_ACCUM: return m_transparency_pass_wb->get_accum_texture();
+            case TRANSPARENCY_REVEAL: return m_transparency_pass_wb->get_reveal_texture();
         }
         return -1;
     }

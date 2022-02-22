@@ -72,22 +72,30 @@ namespace vOS
         clean_up();
     }
 
+    void FrameBufferObject::attach_texture(int attachment, unsigned int texture, bool multisample)
+    {
+        int target = multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, texture, 0);
+        std::vector<unsigned int> new_draw_buffers = m_draw_buffers;
+        new_draw_buffers.push_back(attachment);
+        glDrawBuffers((int) new_draw_buffers.size(), new_draw_buffers.data());
+    }
+
     unsigned int FrameBufferObject::create_framebuffer()
     {
         // specify all attachments as draw buffers
-        std::vector<GLenum> draw_buffers;
         for (auto& attachment: m_attachments)
         {
             int atm = attachment.attachment;
             if (atm >= GL_COLOR_ATTACHMENT0 && atm <= GL_COLOR_ATTACHMENT31)
             {
-                draw_buffers.push_back(attachment.attachment);
+                m_draw_buffers.push_back(attachment.attachment);
             }
         }
         unsigned int fbo;
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glDrawBuffers((int) draw_buffers.size(), draw_buffers.data());
+        glDrawBuffers((int) m_draw_buffers.size(), m_draw_buffers.data());
         return fbo;
     }
 

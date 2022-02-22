@@ -24,7 +24,6 @@ uniform float u_ordering_strenth;
 uniform float u_t_min;
 uniform float u_t_max;
 
-uniform sampler2D u_depth;
 uniform sampler2D u_ssao_texture;
 
 float near = 0.1f;
@@ -38,12 +37,6 @@ float LinearizeDepth(float depth)
 
 void main()
 {
-    float previous_depth = texelFetch(u_depth, ivec2(gl_FragCoord.xy), 0).r;
-    if (gl_FragCoord.z > previous_depth)
-    {
-        discard;
-    }
-
     vec4 color = u_object_color;
 
     if(color.a == 1.0 || v_visible == 0)
@@ -56,7 +49,7 @@ void main()
     //ambient
     float ambientStrength = 1.0;
     float ao_factor = texture(u_ssao_texture, uv).r;
-    vec3 ambient = ambientStrength * u_lightColor * (ao_factor * 0.1 + 0.9);
+    vec3 ambient = ambientStrength * u_lightColor;
 
     // Phong Shading
 
@@ -90,8 +83,10 @@ void main()
     // choose weight function
     //float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - depth * 0.5, 3.0), 1e-2, 3e3);
     //float weight = max(min(1.0, max(max(color.r, color.g), color.b) * color.a)), color.a) * clamp(0.03 / (1e-5 + pow(depth / 200, 4.0), 1e-2, 3e3);
-    float weight = pow(color.a, u_pow) * clamp(u_range / (1e-5 + pow(depth * 0.8, u_ordering_strenth)), u_t_min, u_t_max);
+    //float weight = pow(color.a, u_pow) * clamp(u_range / (1e-5 + pow(depth * 0.8, u_ordering_strenth)), u_t_min, u_t_max);
     //float weight = pow(color.a + 0.01, 4.0) + max(1e-2, min(3.0 * 1e3, 100.0 / (1e-5 + pow(abs(depth) / 10.0, 3.0) + pow(abs(depth) / 200.0, 6.0))));
+
+    float weight = 1.0 / pow(1.0 + LinearizeDepth(depth), u_pow);
 
     accum = vec4(color.rgb * color.a, color.a) * weight;
     reveal = color.a;

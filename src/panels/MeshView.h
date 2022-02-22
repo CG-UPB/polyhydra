@@ -48,10 +48,12 @@ namespace vOS
 
         // these are just to differentiate between the different textures, we cannot directly use the texture ids
         // since they can change when resizing the framebuffer
-        static const int FINAL_IMAGE   = 0;
-        static const int SELECTION     = 1;
-        static const int SSAO_PRE      = 2;
-        static const int SSAO_BLUR     = 3;
+        static const int FINAL_IMAGE            = 0;
+        static const int SELECTION              = 1;
+        static const int SSAO_PRE               = 2;
+        static const int SSAO_BLUR              = 3;
+        static const int TRANSPARENCY_ACCUM     = 4;
+        static const int TRANSPARENCY_REVEAL    = 5;
 
         static const int SELECTION_TYPE_VERTEX = 1;
         static const int SELECTION_TYPE_EDGE = 2;

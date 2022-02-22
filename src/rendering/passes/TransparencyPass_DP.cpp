@@ -23,16 +23,11 @@ namespace vOS
         {
             FrameBufferAttachment
             {
-                    .existing_id        = m_mesh_view->m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0),
-                    .attachment         = GL_COLOR_ATTACHMENT0
-            },
-            FrameBufferAttachment
-            {
                     .internal_format    = GL_DEPTH_COMPONENT,
                     .format             = GL_DEPTH_COMPONENT,
                     .type               = GL_FLOAT,
                     .attachment         = GL_DEPTH_ATTACHMENT,
-                    .texture_filter     = GL_LINEAR
+                    .multisample        = true
             }
         };
         m_transparent_framebuffer0 = new FrameBufferObject(width, height, transparent_attachments0);
@@ -41,20 +36,16 @@ namespace vOS
         {
             FrameBufferAttachment
             {
-                .existing_id        = m_mesh_view->m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0),
-                .attachment         = GL_COLOR_ATTACHMENT0
-            },
-            FrameBufferAttachment
-            {
                     .internal_format    = GL_DEPTH_COMPONENT,
                     .format             = GL_DEPTH_COMPONENT,
                     .type               = GL_FLOAT,
                     .attachment         = GL_DEPTH_ATTACHMENT,
-                    .texture_filter     = GL_LINEAR
+                    .multisample        = true
             }
         };
         m_transparent_framebuffer1 = new FrameBufferObject(width, height, transparent_attachments1);
 
+        update_draw_texture();
     }
 
     TransparencyPass_DP::~TransparencyPass_DP()
@@ -85,13 +76,14 @@ namespace vOS
             if(pass == 0)
             {
                 unsigned int depth_texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
             }
             else
             {
                 unsigned int depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
             }
+            glClear(GL_DEPTH_BUFFER_BIT);
             render(vao, data, mesh_id);
             m_transparency_shader->unbind();
             m_transparent_framebuffer0->unbind();
@@ -101,7 +93,8 @@ namespace vOS
             m_transparent_framebuffer1->bind();
             m_transparency_shader->bind();
             unsigned int depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
-            m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+            m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
+            glClear(GL_DEPTH_BUFFER_BIT);
             render(vao, data, mesh_id);
             m_transparency_shader->unbind();
             m_transparent_framebuffer1->unbind();
@@ -157,7 +150,21 @@ namespace vOS
     {
         m_transparent_framebuffer0->resize(width, height);
         m_transparent_framebuffer1->resize(width, height);
+
+        update_draw_texture();
+
         //generate_transparency_framebuffer(width, height);
+    }
+
+    void TransparencyPass_DP::update_draw_texture()
+    {
+        unsigned int texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+        m_transparent_framebuffer0->bind();
+        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture, true);
+        m_transparent_framebuffer0->unbind();
+        m_transparent_framebuffer1->bind();
+        m_transparent_framebuffer1->attach_texture(GL_COLOR_ATTACHMENT0, texture, true);
+        m_transparent_framebuffer1->unbind();
     }
 
 }

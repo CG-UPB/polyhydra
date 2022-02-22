@@ -29,6 +29,8 @@ namespace vOS
     private:
         void clean_up_framebuffer();
 
+        void update_draw_texture();
+
         MeshView* m_mesh_view = nullptr;
         Shader* m_transparency_shader = nullptr;
         VertexArrayObject* m_vao;
