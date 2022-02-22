@@ -134,6 +134,7 @@ namespace vOS
         std::vector<float> m_sphere_peel_depths;
         std::vector<float> m_cylinder_peel_depths;
         std::vector<float> m_peel_depths;
+        std::vector<float> m_is_triangle;
 
         std::vector<float> m_sphere_is_digged;
         std::vector<float> m_cylinder_is_digged;

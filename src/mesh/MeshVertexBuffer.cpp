@@ -24,6 +24,7 @@ namespace vOS
         m_vao->add_attribute(m_is_face_boundary, 4, 1);
         m_vao->add_attribute(m_is_digged, 5, 1);
         m_vao->add_attribute(m_colors, 6, 4);
+        m_vao->add_attribute(m_is_triangle, 7, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -306,6 +307,8 @@ namespace vOS
         m_start_of_cell_vertices[cell.idx()] = m_is_digged.size();
         for (const FaceData& face : faces)
         {
+            float is_triangle = (face.vertices.size() > 3) ? 0.0f : 1.0f;
+
             // fill up vertex data
             for (const VertexData& vertex : face.vertices)
             {
@@ -337,6 +340,7 @@ namespace vOS
                 m_is_digged.push_back(1.0f);
                 nbr_vertices_of_cell++;
                 m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
+                m_is_triangle.push_back(is_triangle);
             }
 
             // add all indices of the face
