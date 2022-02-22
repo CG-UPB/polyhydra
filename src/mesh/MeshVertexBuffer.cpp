@@ -24,6 +24,7 @@ namespace vOS
         m_vao->add_attribute(m_is_face_boundary, 4, 1);
         m_vao->add_attribute(m_is_digged, 5, 1);
         m_vao->add_attribute(m_colors, 6, 4);
+        m_vao->add_attribute(m_is_isolated,7,1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -33,6 +34,7 @@ namespace vOS
         m_sphere_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
         m_sphere_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
         m_sphere_vao->add_attribute(m_sphere_is_digged, 5, 1, true);
+        m_sphere_vao->add_attribute(m_sphere_is_isolated, 6, 1, true);
 
         m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                CommonMeshes::Cylinder::edge_cylinder().indices());
@@ -42,6 +44,7 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_cylinder_cell_centers, 3, 3, true);
         m_cylinder_vao->add_attribute(m_cylinder_peel_depths, 4, 1, true);
         m_cylinder_vao->add_attribute(m_cylinder_is_digged, 5, 1, true);
+        m_cylinder_vao->add_attribute(m_cylinder_is_isolated, 6, 1, true);
 
     }
 
@@ -70,8 +73,11 @@ namespace vOS
     {
         OpenVolumeMesh::CellPropertyT<int> peel_property = mesh.request_cell_property<int>("PeelDepth");
         OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh.request_cell_property<bool>("DiggingProperty");
+        OpenVolumeMesh::CellPropertyT<bool> isolateProp = mesh.request_cell_property<bool>("IsolateProperty");
+
 
         bool isDigged = diggingProp[cell];
+        bool isIsolated = isolateProp[cell];
 
 
         std::vector<FaceData> faces;
@@ -108,6 +114,8 @@ namespace vOS
             m_sphere_peel_depths.push_back((float) peel_depth);
 
             m_sphere_is_digged.push_back(1.0f);
+
+            m_sphere_is_isolated.push_back(1.0f);
         }
 
         // same for the edges, only add them once for the selection
@@ -125,6 +133,7 @@ namespace vOS
 
             m_cylinder_peel_depths.push_back((float) peel_depth);
             m_cylinder_is_digged.push_back(1.0f);
+            m_cylinder_is_isolated.push_back(1.0f);
             num_selection_edges++;
         }
         m_selection_cylinder_digging_numbers[cell.idx()] = num_selection_edges;
@@ -337,6 +346,7 @@ namespace vOS
                 //std::cout << peel_property[cell] <<std::endl;
 
                 m_is_digged.push_back(1.0f);
+                m_is_isolated.push_back(1.0f);
                 nbr_vertices_of_cell++;
                 m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
             }
@@ -578,4 +588,88 @@ namespace vOS
         m_sphere_vao->update_attribute(m_sphere_is_digged, 5);
         m_cylinder_vao->update_attribute(m_cylinder_is_digged, 5);
     }
+
+    void MeshVertexBuffer::reset_digging()
+    {
+        for (size_t i = 0; i < m_is_digged.size(); i++) {
+            m_is_digged[i] = 1.0;
+        }
+        for (size_t i = 0; i < m_sphere_is_digged.size(); i++) {
+            m_sphere_is_digged[i] = 1.0;
+        }
+        for (size_t i = 0; i < m_cylinder_is_digged.size(); i++) {
+            m_cylinder_is_digged[i] = 1.0;
+        }
+
+        m_vao->update_attribute(m_is_digged,5);
+        m_sphere_vao->update_attribute(m_sphere_is_digged, 5);
+        m_cylinder_vao->update_attribute(m_cylinder_is_digged, 5);
+    }
+
+
+    void MeshVertexBuffer::update_isolate_buffer(int id, float newValue)
+    {
+        int nbr_vertices = m_size_of_cell_vertices[id];
+        int start = m_start_of_cell_vertices[id];
+
+        for (size_t i = 0; i < nbr_vertices;i++)
+        {
+            m_is_isolated[start+i] = newValue;
+        }
+
+        int sphere_index = m_selection_sphere_digging_indices[id];
+        int nbr_spheres = m_selection_sphere_digging_numbers[id];
+        for (size_t i = 0; i < nbr_spheres; i++)
+        {
+            m_sphere_is_isolated[sphere_index + i] = newValue;
+        }
+
+        int cylinder_index = m_selection_cylinder_digging_indices[id];
+        int nbr_cylinders = m_selection_cylinder_digging_numbers[id];
+        for (size_t i = 0; i < nbr_cylinders; i++)
+        {
+            m_cylinder_is_isolated[cylinder_index + i] = newValue;
+        }
+
+        activate_isolation();
+    }
+
+    void MeshVertexBuffer::start_isolation()
+    {
+        for (size_t i = 0; i < m_is_isolated.size(); i++) {
+            m_is_isolated[i] = 0.0;
+        }
+        for (size_t i = 0; i < m_sphere_is_isolated.size(); i++) {
+            m_sphere_is_isolated[i] = 0.0;
+        }
+        for (size_t i = 0; i < m_cylinder_is_isolated.size(); i++) {
+            m_cylinder_is_isolated[i] = 0.0;
+        }
+        //activate_isolation();
+    }
+
+    void MeshVertexBuffer::activate_isolation()
+    {
+        m_vao->update_attribute(m_is_isolated,7);
+        m_sphere_vao->update_attribute(m_sphere_is_isolated, 6);
+        m_cylinder_vao->update_attribute(m_cylinder_is_isolated, 6);
+    }
+
+    void MeshVertexBuffer::reset_isolation()
+    {
+        for (size_t i = 0; i < m_is_isolated.size(); i++) {
+            m_is_isolated[i] = 1.0;
+        }
+        for (size_t i = 0; i < m_sphere_is_isolated.size(); i++) {
+            m_sphere_is_isolated[i] = 1.0;
+        }
+        for (size_t i = 0; i < m_cylinder_is_isolated.size(); i++) {
+            m_cylinder_is_isolated[i] = 1.0;
+        }
+
+        m_vao->update_attribute(m_is_isolated,7);
+        m_sphere_vao->update_attribute(m_sphere_is_isolated, 6);
+        m_cylinder_vao->update_attribute(m_cylinder_is_isolated, 6);
+    }
+
 }

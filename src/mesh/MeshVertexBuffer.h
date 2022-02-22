@@ -66,6 +66,16 @@ namespace vOS
 
         void update_digging_buffer(int id, float newValue);
 
+        void update_isolate_buffer(int id, float newValue);
+
+        void reset_isolation();
+
+        void reset_digging();
+
+        void activate_isolation();
+
+        void start_isolation();
+
     private:
 
         void generate_buffer(Mesh& mesh);
@@ -119,6 +129,10 @@ namespace vOS
         std::vector<float> m_cylinder_is_digged;
         std::vector<float> m_is_digged;
 
+        std::vector<float> m_sphere_is_isolated;
+        std::vector<float> m_cylinder_is_isolated;
+        std::vector<float> m_is_isolated;
+
         std::vector<unsigned int> m_indices;
         std::vector<float> m_from_vertices;
         std::vector<float> m_to_vertices;
@@ -143,5 +157,7 @@ namespace vOS
 
 
         int m_num_vertices = 0;
+
+
     };
 }

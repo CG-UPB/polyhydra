@@ -93,5 +93,7 @@ namespace vOS
 
         friend class MeshPass;
         friend class SSAOPass;
+
+        void start_isolation();
     };
 }

@@ -7,6 +7,7 @@ layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_isBoundary;
 layout (location = 5) in float a_isDigged;
 layout (location = 6) in vec4 a_Color;
+layout (location = 7) in float a_isIsolated;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -38,6 +39,10 @@ void main()
     v_Visible = 1;
 
     if (a_isDigged == 0.0)
+    {
+        v_Visible = 0;
+    }
+    if (a_isIsolated == 0.0)
     {
         v_Visible = 0;
     }

@@ -21,6 +21,7 @@ namespace vOS
         [[nodiscard]] bool m_get_current_selection_activated() const{return m_current_selection_activated;};
         [[nodiscard]] bool m_get_current_digging_activated() const{return m_current_digging_active;};
         [[nodiscard]] int m_get_current_selection_mode() const{return m_current_selection_mode;};
+        [[nodiscard]] bool m_get_current_isolation_state() const{return m_isolation_started;};
         [[nodiscard]] int m_get_current_mesh_mode() const{return mesh_mode;};
 
 

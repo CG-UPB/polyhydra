@@ -288,6 +288,12 @@ namespace vOS
                             if (m_isolation_started) {
                                 m_isolation_started = false;
                                 GlobalViewerSettings::getInstance()->m_set_current_isolation_state(m_isolation_started);
+                                for (const auto& m: Window::instance().get_mesh_list())
+                                {
+                                    auto mesh = m.second;
+                                    auto mvb = mesh->get_mvb();
+                                    mvb->activate_isolation();
+                                }
                                 clicked++;
                             }
                         }
