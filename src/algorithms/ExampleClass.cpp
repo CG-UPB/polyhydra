@@ -131,7 +131,7 @@ void ExampleClass::selection_demonstration_ui(){
 
     static std::thread* s_run_thread;
     ImGui::Begin("Custom UI");
-
+/*
     if(ImGui::Button("Save Mesh Data"))
     {
         Window::instance().save_mesh_data(0);
@@ -160,7 +160,7 @@ void ExampleClass::selection_demonstration_ui(){
     {
         Window::instance().set_mesh_diffuse_strength(0, diffuse_strength);
     }
-
+*/
     // Next Phase
     if (ImGui::Button("Next"))
     {

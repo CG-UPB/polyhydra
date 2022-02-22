@@ -63,6 +63,7 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 
+
             Color color = Window::instance().get_mesh_color(m.first);
             float m_color[3];
             m_color[0] = color.get().r;

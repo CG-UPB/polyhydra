@@ -498,110 +498,42 @@ namespace vOS
 
     void Window::set_mesh_specular_exponent(int mesh_id, float exp)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_specular_exponent = exp;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_specular_exponent = exp;
     }
 
     float Window::get_mesh_specular_exponent(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_specular_exponent;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_specular_exponent;
     }
 
     void Window::set_mesh_specular_strength(int mesh_id, float strength)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_specular_strength = strength;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_specular_strength = strength;
     }
 
     float Window::get_mesh_specular_strength(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_specular_strength;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_specular_strength;
     }
 
     void Window::set_mesh_ambient_strength(int mesh_id, float strength)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_ambient_strength = strength;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_ambient_strength = strength;
     }
 
     float Window::get_mesh_ambient_strength(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_ambient_strength;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_ambient_strength;
     }
 
     void Window::set_mesh_diffuse_strength(int mesh_id, float strength)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_diffuse_strength = strength;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_diffuse_strength = strength;
     }
 
     float Window::get_mesh_diffuse_strength(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_diffuse_strength;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_diffuse_strength;
     }
 
     void Window::set_mesh_position(int mesh_id, float x, float y, float z)
@@ -731,9 +663,11 @@ namespace vOS
         rendering_mutex.lock();
         // Get MeshObject
         auto* mesh_obj = get_mesh_obj(index);
+
         if (mesh_obj == nullptr)
         {
             // Mesh Object does not exist at given index
+            rendering_mutex.unlock();
             return;
         }
 
@@ -809,16 +743,7 @@ namespace vOS
 
     MeshObject* Window::get_mesh_obj(int index)
     {
-        // Search MeshObject
-        auto search = m_mesh_objects.find(index);
-        if (search != m_mesh_objects.end())
-        {
-            return search->second;
-        }
-        else
-        {
-            return nullptr;
-        }
+        return m_mesh_objects[index];
     }
 
 

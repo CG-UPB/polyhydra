@@ -145,6 +145,8 @@ namespace vOS
             if (active_mesh != -1) {
                 if (ImGui::CollapsingHeader("Active Mesh Settings")) {
                     if (ImGui::BeginTable("split1", 1)) {
+
+
                         ImGui::TableNextColumn();
                         // Mesh transformations, such as position and scale
                         if (active_mesh >= 0) {
@@ -156,6 +158,25 @@ namespace vOS
                             m_mesh_position[2] = pos.z;
                             m_mesh_scale = scl.x;
                         }
+
+                        // Mesh Settings
+                        ImGui::Text("Mesh Settings:");
+                        ImGui::SameLine();
+                        if(ImGui::Button("Save"))
+                        {
+                            Window::instance().rendering_mutex.unlock();
+                            Window::instance().save_mesh_data(active_mesh);
+                            Window::instance().rendering_mutex.lock();
+                        }
+
+                        ImGui::SameLine();
+                        if(ImGui::Button("Load"))
+                        {
+                            Window::instance().rendering_mutex.unlock();
+                            Window::instance().load_mesh_data(active_mesh);
+                            Window::instance().rendering_mutex.lock();
+                        }
+
                         ImGui::Text("Position:");
                         ImGui::SameLine();
                         Tooltips::HelpMarkerWithQuestionMark("Adjust the mesh position");
@@ -291,6 +312,36 @@ namespace vOS
                                 clicked++;
                             }
                         }
+
+                        // Phong Settings
+
+                        // Ambient
+                        ImGui::Text("Ambient:");
+                        ImGui::SameLine();
+                        float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
+                        ImGui::SliderFloat("Ambient", &ambient_value, 0.0f, 1.0f);
+                        Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
+
+                        // Diffuse
+                        ImGui::Text("Diffuse:");
+                        ImGui::SameLine();
+                        float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
+                        ImGui::SliderFloat("Diffuse", &diffuse_value, 0.0f, 1.0f);
+                        Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
+
+                        // Specular
+                        ImGui::Text("Specular:");
+                        ImGui::SameLine();
+                        float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
+                        ImGui::SliderFloat("Specular", &specular_value, 0.0f, 1.0f);
+                        Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
+
+                        // Specular Exponent
+                        ImGui::Text("Specular Exponent:");
+                        ImGui::SameLine();
+                        float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
+                        ImGui::SliderFloat("Specular Exponent", &specular_exp, 0.0f, 10.0f);
+                        Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
                         ImGui::EndTable();
                     }
                 }
