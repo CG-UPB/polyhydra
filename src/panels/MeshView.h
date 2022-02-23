@@ -61,6 +61,10 @@ namespace vOS
         static const int SELECTION_TYPE_VERTEX = 1;
         static const int SELECTION_TYPE_EDGE = 2;
         static const int SELECTION_TYPE_FACE = 3;
+
+        static const int WEIGHTED_BLENDED = 0;
+        static const int DEPTH_PEELING = 1;
+
         int m_hovered_element_id = 0;
         int m_hovered_element_type = 0;
 
@@ -83,6 +87,7 @@ namespace vOS
 
         // selected texture for rendering (mostly for debugging)
         int m_viewport_texture = FINAL_IMAGE;
+        int m_transparency = WEIGHTED_BLENDED;
 
         // camera variables
         glm::vec3 m_previous_movement_vector;

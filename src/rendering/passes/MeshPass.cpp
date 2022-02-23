@@ -92,7 +92,7 @@ namespace vOS
         m_mesh_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
 
         m_mesh_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
-        m_mesh_shader->set_uniform_mat4f("u_diffuse_strength", data.light.view);
+        m_mesh_shader->set_uniform_mat4f("u_light_view", data.light.view);
 
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
@@ -102,7 +102,7 @@ namespace vOS
         m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
         //m_mesh_shader->set_uniform_sampler2D("u_position", GL_TEXTURE2,m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
 
-        m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2,m_mesh_view->m_shadow_pass->get_shadow_map());
+        m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2,m_mesh_view->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
 
 
         vao->draw();

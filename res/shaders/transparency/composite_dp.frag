@@ -9,8 +9,8 @@ uniform sampler2D new_layer_texture;
 void main()
 {
     ivec2 coords = ivec2(gl_FragCoord.xy);
-    vec4 new = texelFetch(new_layer_texture, coords, 0);
+    vec4 color = texelFetch(new_layer_texture, coords, 0);
 
-    FragColor = new;
+    FragColor = color;
 
 }

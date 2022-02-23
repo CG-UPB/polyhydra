@@ -65,9 +65,9 @@ namespace vOS
 
         // setup light including projection and view for shadow map
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
-        m_render_data.camera.world = glm::mat4(1.0f);
+        m_render_data.light.world = glm::mat4(1.0f);
         m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
-        m_render_data.light.position = glm::vec3{4.0f, 4.0f, 10.0f};
+        m_render_data.light.position = glm::vec3{0.0f, 10.0f, 0.0f};
 //        m_render_data.light.projection = glm::ortho(
 //            -100.0f, 100.0f,
 //            -100.0f, 100.0f,
@@ -90,7 +90,7 @@ namespace vOS
         m_zoom = false;
         m_zoom_point = glm::vec3(0, 0, 0);
 
-        num_passes = 2;
+        num_passes = 0;
     }
 
     MeshView::~MeshView()
@@ -529,16 +529,6 @@ namespace vOS
     void MeshView::render_transparency_dp()
     {
 
-
-        if (ImGui::Begin("DP_Passes"))
-        {
-            ImGui::SliderInt("DP_Passes", &num_passes, 1, 15);
-
-        }
-        ImGui::End();
-
-
-
         for( int i = 0; i < num_passes; i++)
         {
             // first render all meshes
@@ -562,7 +552,11 @@ namespace vOS
                     m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first, i);
                 }
             }
+            m_transparency_pass_dp->render_composition(num_passes);
+
         }
+
+
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -727,8 +721,9 @@ namespace vOS
         handleResize();
         handleMouseControl();
         // Render Meshes
-        render_pre_pass();
         render_shadow_map();
+        render_pre_pass();
+
         render_ssao_pass();
 
         // Now render our mesh scene to the framebuffer texture
@@ -752,13 +747,36 @@ namespace vOS
         FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // Render transparent objects
-        render_transparency_wb();
-        //render_transparency_dp();
 
-
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
-            renderSelection();
-        }
+//        if (ImGui::Begin("Transparency"))
+//        {
+//            if (ImGui::RadioButton("Weighted Blended", m_transparency == WEIGHTED_BLENDED))
+//            {
+//                m_transparency = WEIGHTED_BLENDED;
+//            }
+//            if (ImGui::RadioButton("Depth Peeling", m_transparency == DEPTH_PEELING))
+//            {
+//                m_transparency = DEPTH_PEELING;
+//
+//            }
+//
+//            if(m_transparency == DEPTH_PEELING)
+//            {
+//                ImGui::SliderInt("DP_Passes", &num_passes, 0, 50);
+//            }
+//        }
+//        ImGui::End();
+//
+//        switch (m_transparency)
+//        {
+//            case DEPTH_PEELING: render_transparency_dp();break;
+//            case WEIGHTED_BLENDED : render_transparency_wb();
+//        }
+//
+//
+//        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
+//            renderSelection();
+//        }
 
         // set render states
         glDisable(GL_DEPTH_TEST);
@@ -862,8 +880,8 @@ namespace vOS
     {
         switch (m_viewport_texture)
         {
-            case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            //case FINAL_IMAGE: return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+            //case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case FINAL_IMAGE: return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();

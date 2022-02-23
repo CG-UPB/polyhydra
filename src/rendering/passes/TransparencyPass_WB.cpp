@@ -64,17 +64,17 @@ namespace vOS
 
     void TransparencyPass_WB::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
-        if (ImGui::Begin("Transparency"))
-        {
-            ImGui::SliderFloat("Alpha Pow", &m_alpha_pow, 1.0f, 10.0f);
-            ImGui::SliderFloat("Pow", &m_pow, 1.0f, 10.0f);
-            ImGui::SliderFloat("Range", &m_range, 0.0f, 10.0f);
-            ImGui::SliderFloat("Depth Range", &m_depth_range, 1.0f, 1000.0f);
-            ImGui::SliderFloat("Ordering Strength", &m_ordering_strength, 0.0f, 20.0f);
-            ImGui::SliderFloat("Min", &m_min, 0.0f, 1.0f);
-            ImGui::SliderFloat("Max", &m_max, 1.0f, 1000.0f);
-        }
-        ImGui::End();
+//        if (ImGui::Begin("Transparency"))
+//        {
+//            ImGui::SliderFloat("Alpha Pow", &m_alpha_pow, 1.0f, 10.0f);
+//            ImGui::SliderFloat("Pow", &m_pow, 1.0f, 10.0f);
+//            ImGui::SliderFloat("Range", &m_range, 0.0f, 10.0f);
+//            ImGui::SliderFloat("Depth Range", &m_depth_range, 1.0f, 1000.0f);
+//            ImGui::SliderFloat("Ordering Strength", &m_ordering_strength, 0.0f, 20.0f);
+//            ImGui::SliderFloat("Min", &m_min, 0.0f, 1.0f);
+//            ImGui::SliderFloat("Max", &m_max, 1.0f, 1000.0f);
+//        }
+//        ImGui::End();
 
         // Get Mesh
         MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
