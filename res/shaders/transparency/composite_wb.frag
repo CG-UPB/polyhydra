@@ -29,7 +29,6 @@ void main()
 
     if (is_approximately_equal(revealage, 1.0f))
     {
-        //FragColor = accum;
         discard;
     }
 
@@ -45,6 +44,5 @@ void main()
 
     // dst' = (accum.rgb / accum.a) * (1 - revealage) + dst
     FragColor = vec4(average_color, 1.0 - revealage);
-    //FragColor.rgb = pow(FragColor.rgb, vec3(1.0/2.2));
 
 }

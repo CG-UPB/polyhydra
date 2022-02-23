@@ -9,6 +9,7 @@
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
+#include "../rendering/passes/ShadowMapPass.h"
 #include "../rendering/passes/TransparencyPass_WB.h"
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../Window.h"
@@ -20,6 +21,7 @@ namespace vOS
     class TransparencyPass_DP;
     class MeshPass;
     class SSAOPass;
+    class ShadowMapPass;
 
     class MeshView: public WindowPanel
     {
@@ -38,6 +40,7 @@ namespace vOS
         void renderSelection();
         void querySelection(int type, int picked_id);
         void render_pre_pass();
+        void render_shadow_map();
         void render_ssao_pass();
         void render_debug_menu();
         void render_transparency_wb();
@@ -66,6 +69,7 @@ namespace vOS
         bool m_lastDown;
         double m_lastX;
         double m_lastY;
+        int num_passes;
 
         int m_viewportPanelWidth;
         int m_viewportPanelHeight;
@@ -89,6 +93,7 @@ namespace vOS
         // render passes
         BackgroundPass m_background_pass;
         PrePass* m_pre_pass = nullptr;
+        ShadowMapPass* m_shadow_pass = nullptr;
         MeshPass* m_mesh_pass = nullptr;
         SSAOPass* m_ssao_pass = nullptr;
         ShapePass m_shape_pass;
@@ -103,6 +108,7 @@ namespace vOS
 
         friend class MeshPass;
         friend class SSAOPass;
+        friend class ShadowMapPass;
         friend class TransparencyPass_WB;
         friend class TransparencyPass_DP;
     };

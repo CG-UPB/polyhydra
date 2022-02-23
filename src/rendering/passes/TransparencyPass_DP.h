@@ -33,6 +33,7 @@ namespace vOS
 
         MeshView* m_mesh_view = nullptr;
         Shader* m_transparency_shader = nullptr;
+        Shader* m_composite_shader = nullptr;
         VertexArrayObject* m_vao;
 
 

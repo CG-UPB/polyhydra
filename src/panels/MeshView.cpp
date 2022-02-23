@@ -31,10 +31,11 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_pre_pass = new PrePass(width, height);
+        m_shadow_pass = new ShadowMapPass(width, height);
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
 
-        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
@@ -43,7 +44,6 @@ namespace vOS
         m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
 
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
-        m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
 
         // set up the initial camera position, direction and orientation of the mesh
         m_render_data.camera.world = glm::mat4(1.0f);
@@ -62,10 +62,35 @@ namespace vOS
 
         glm::mat4 inverse = glm::inverse(m_render_data.camera.view);
         glm::vec3 view_dir = {inverse[2][0], inverse[2][1], inverse[2][2]};
+
+        // setup light including projection and view for shadow map
+        m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
+        m_render_data.camera.world = glm::mat4(1.0f);
         m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
+        m_render_data.light.position = glm::vec3{4.0f, 4.0f, 10.0f};
+//        m_render_data.light.projection = glm::ortho(
+//            -100.0f, 100.0f,
+//            -100.0f, 100.0f,
+//            m_render_data.camera.near,
+//            m_render_data.camera.far
+//        );
+        m_render_data.light.projection = glm::perspective(
+                glm::radians(m_render_data.camera.fov_deg),
+                (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
+                m_render_data.camera.near,
+                m_render_data.camera.far
+        );
+        m_render_data.light.view = glm::lookAt(
+            m_render_data.light.position,
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+
 
         m_zoom = false;
         m_zoom_point = glm::vec3(0, 0, 0);
+
+        num_passes = 2;
     }
 
     MeshView::~MeshView()
@@ -96,6 +121,7 @@ namespace vOS
             m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -242,7 +268,7 @@ namespace vOS
         // render all passes
         if (obj->get_vao() != nullptr) {
             m_mesh_pass->render(obj->get_vao(), m_render_data, mesh_id);
-            m_shape_pass.render(nullptr, m_render_data, mesh_id);
+            //m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
 
@@ -431,6 +457,25 @@ namespace vOS
         m_pre_pass->get_framebuffer()->unbind();
     }
 
+    void MeshView::render_shadow_map()
+    {
+        m_shadow_pass->get_framebuffer()->bind();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+            if(!mesh->get_data().m_visible)
+            {
+                continue;
+            }
+            mesh->update_vertex_buffer();
+            if (mesh->get_vao() != nullptr) {
+                m_shadow_pass->render(mesh->get_vao(), m_render_data, m.first);
+            }
+        }
+        m_shadow_pass->get_framebuffer()->unbind();
+    }
+
     void MeshView::render_ssao_pass()
     {
         m_ssao_pass->render(nullptr, m_render_data, -1);
@@ -483,7 +528,17 @@ namespace vOS
 
     void MeshView::render_transparency_dp()
     {
-        int num_passes = 18;
+
+
+        if (ImGui::Begin("DP_Passes"))
+        {
+            ImGui::SliderInt("DP_Passes", &num_passes, 1, 15);
+
+        }
+        ImGui::End();
+
+
+
         for( int i = 0; i < num_passes; i++)
         {
             // first render all meshes
@@ -673,6 +728,7 @@ namespace vOS
         handleMouseControl();
         // Render Meshes
         render_pre_pass();
+        render_shadow_map();
         render_ssao_pass();
 
         // Now render our mesh scene to the framebuffer texture
@@ -806,7 +862,8 @@ namespace vOS
     {
         switch (m_viewport_texture)
         {
-            case FINAL_IMAGE: return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            //case FINAL_IMAGE: return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();

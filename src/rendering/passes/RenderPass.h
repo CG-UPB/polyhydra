@@ -22,8 +22,11 @@ namespace vOS
             float far = 100.0f;
         } camera;
         struct Light {
-            glm::vec3 position;
             glm::vec3 color;
+            glm::mat4 world;
+            glm::mat4 view;
+            glm::mat4 projection;
+            glm::vec3 position;
         } light;
     };
 

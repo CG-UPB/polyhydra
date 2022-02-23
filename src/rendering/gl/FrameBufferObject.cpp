@@ -95,6 +95,7 @@ namespace vOS
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glDrawBuffers((int) m_draw_buffers.size(), m_draw_buffers.data());
+
         return fbo;
     }
 
