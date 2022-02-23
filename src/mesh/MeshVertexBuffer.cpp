@@ -24,6 +24,7 @@ namespace vOS
         m_vao->add_attribute(m_is_face_boundary, 4, 1);
         m_vao->add_attribute(m_is_digged, 5, 1);
         m_vao->add_attribute(m_colors, 6, 4);
+        m_vao->add_attribute(m_selections, 10, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -332,6 +333,8 @@ namespace vOS
                 m_colors.push_back(1);
                 m_colors.push_back(0);
 
+                // Selection Status
+                m_selections.push_back(vertex.normal.x > 0.5 ? 1 : 0);
 
                 m_peel_depths.push_back((float)peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
@@ -403,7 +406,7 @@ namespace vOS
 
         int buffer_index = m_ovm_to_gl_face_indizes[ovm_id];
         int vertex_count = m_face_vertex_count[buffer_index];
-        int offset_index = m_face_offset_array[m_ovm_to_gl_face_indizes[ovm_id]];
+        int offset_index = m_face_offset_array[buffer_index];
         int color_array_index = offset_index * 4;
 
         for(int i = 0; i< vertex_count; i++) {
@@ -411,6 +414,23 @@ namespace vOS
             m_colors[color_array_index + (i*4) + 1] = g;
             m_colors[color_array_index + (i*4) + 2] = b;
             m_colors[color_array_index + (i*4) + 3] = a;
+        }
+        m_update_vao = true;
+    }
+
+    void MeshVertexBuffer::set_face_selection(int ovm_id, bool selected)
+    {
+        // Out of Bounce Check
+        if(ovm_id < 0 || ovm_id > m_ovm_to_gl_face_indizes.size())
+            return;
+
+        int buffer_index = m_ovm_to_gl_face_indizes[ovm_id];
+        int vertex_count = m_face_vertex_count[buffer_index];
+        int offset_index = m_face_offset_array[buffer_index];
+
+        for(int i = 0; i< vertex_count; i++)
+        {
+            m_selections[offset_index + i] = selected ? 1 : 0;
         }
         m_update_vao = true;
     }
@@ -493,6 +513,7 @@ namespace vOS
         if(m_update_vao)
         {
             m_vao->update_attribute(m_colors, 6);
+            m_vao->update_attribute(m_selections, 10);
             m_update_vao = false;
         }
         return m_vao;
