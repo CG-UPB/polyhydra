@@ -282,6 +282,8 @@ namespace vOS
                 res.push_back(temp);
             }
 
+            //window.get_mesh_obj(0)->remove_highlights();
+
             bool first = true;
             for (int i = 0; i < res.size(); i++)
             {
@@ -372,9 +374,10 @@ namespace vOS
         OpenVolumeMesh::IO::FileManager file_manager;
 
 
-        Window::instance().add_mesh(&m_mesh);
+
 
         LogWindow::getInstance()->addLog("Start Dijkstra");
+        //window.remove_all_vertex_highlights();
         init();
 
         Node currentVertex = std::make_pair(0.0f, m_start);
@@ -393,6 +396,7 @@ namespace vOS
         // Wait for Vos to initialize
         window.is_ready();
 
+        Window::instance().add_mesh(&m_mesh);
         auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
         box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
         box_start->set_base_color(0.2f, 0.2f, 1.0f);
@@ -458,6 +462,7 @@ namespace vOS
                 res.push_back(temp);
             }
 
+            //window.get_mesh_obj(0)->remove_highlights();
 
             bool first = true;
             for (int i = 0; i < res.size(); i++)

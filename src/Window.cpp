@@ -658,7 +658,7 @@ namespace vOS
     }
 
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh, int index)
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh, int index)
     {
         rendering_mutex.lock();
         // Create MeshObject
@@ -697,7 +697,7 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh)
+    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
     {
         rendering_mutex.lock();
         // Generate Index
@@ -769,7 +769,7 @@ namespace vOS
 
         std::vector<int> all_ids;
 
-        // Iterate all Meshes to get their IDs
+        // Iterate all Meshes to get_rgb their IDs
         for(auto obj : m_mesh_objects){
             all_ids.push_back(obj.first);
         }

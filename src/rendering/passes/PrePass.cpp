@@ -47,7 +47,7 @@ namespace vOS
         pre_phong_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         pre_phong_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         pre_phong_shader->set_uniform_float("u_cell_size", cell_size);
-        pre_phong_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get());
+        pre_phong_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get_rgba());
         pre_phong_shader->set_uniform_int("u_peel_depth", peel_depth);
         pre_phong_shader->set_uniform_float("u_slice_depth", slice_depth);
         pre_phong_shader->set_uniform_vec3f("u_min", min);

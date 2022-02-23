@@ -22,8 +22,11 @@ namespace vOS
         Color(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a)
         {}
 
-        [[nodiscard]] glm::vec3 get() const
+        [[nodiscard]] glm::vec3 get_rgb() const
         { return {r, g, b}; }
+
+        [[nodiscard]] glm::vec4 get_rgba() const
+        { return {r, g, b, a}; }
 
         float r;
         float g;
@@ -33,10 +36,10 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.76f, 0.76f, 0.76f, 1), m_visible(true), m_rendering_mode("mesh_phong")
+        MeshData() : m_color(0.76f, 0.76f, 0.76f, 1.0f), m_visible(true), m_rendering_mode("mesh_phong")
         {
             m_peel_level = 0;
-            m_slice_level =0;
+            m_slice_level = 0;
             m_cell_size = 1;
 
             m_ambient_strength = 0.3;
@@ -128,13 +131,15 @@ namespace vOS
         bool m_slice_locked = false;
         float m_slice_level;
         float m_cell_size;
+        int m_selection_offset = 0;
+        float scale_normalization = 1.0f;
+
+        std::string rendering_mode;
 
         // Transform Variables
         glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 m_scale = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 m_offset = glm::vec3(0.0f, 0.0f, 0.0f);
-        int m_selection_offset = 0;
-        float scale_normalization = 1.0f;
     };
 
     class MeshObject
@@ -143,11 +148,11 @@ namespace vOS
 
         MeshObject();
 
-        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh, std::string name);
+        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, std::string name);
 
         ~MeshObject();
 
-        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* m_mesh;
+        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *m_mesh;
 
         // Selection Functionality
         std::unordered_set<int>& get_all_selected_faces()
@@ -164,38 +169,87 @@ namespace vOS
 
         MeshVertexBuffer* get_mesh_vertex_buffer(){return m_mvb;}
 
+        /**
+         * Adds a shape on selected element (vertex, edge, face)
+         * @param id ID to access element data
+         * @param type declares type of element
+         */
         void select_element(int id, int type);
 
+        /**
+         * Removes a shape on selected element (vertex, edge, face)
+         * @param id ID to access element data
+         * @param type declares type of element
+         */
         void unselect_element(int id, int type);
 
+        /**
+         * Removes all shapes added by selection
+         */
         void unselect_all();
 
+        /**
+         * Checks if a specific element is selected
+         * @param id ID to access element data
+         * @param type declares type of element
+         * @return
+         */
         bool is_element_selected(int id, int type);
-
-        MeshData& get_data()
-        { return m_data; }
 
         void set_data(MeshData data)
         { m_data = std::move(data); }
 
+        /**
+         * Uses OVM FileManager to load Mesh from file
+         * @param file_path path to file
+         */
         void load_from_file(std::string file_path);
 
-        void write_to_file(const std::string& file_path) const;
+        /**
+         * Uses OVM FileManager to save Mesh to file
+         * @param file_path path to file
+         */
+        void write_to_file(const std::string &file_path) const;
 
-        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>* mesh);
+        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
 
+        /**
+         * Calculate the amount of needed selection ids
+         * @param start id where ids start
+         */
+        void set_selection_offset(int start);
+
+        /**
+         * updates the vertex_buffer
+         */
         void update_vertex_buffer();
 
+        /**
+         * converts selection id of vertices to OVM id
+         * @param value id value
+         * @return
+         */
         int to_vertexID(int value);
 
+        /**
+         * converts selection id of edges to OVM id
+         * @param value id value
+         * @return
+         */
         int to_edgeID(int value);
 
+        /**
+         * converts selection id of faces to OVM id
+         * @param value id value
+         * @return
+         */
         int to_faceID(int value);
 
-        std::tuple<int, int>& selection_offset()
-        { return m_selection_offset; };
 
-        void set_selection_offset(int start);
+        int get_max_peel_depth() const;
+
+        std::tuple<int, int> &selection_offset()
+        { return m_selection_offset; };
 
         glm::vec3& get_mesh_offset();
 
@@ -207,11 +261,25 @@ namespace vOS
         glm::vec3& get_max()
         { return m_max; };
 
-        std::pair<glm::vec3, glm::vec3>& get_transformed_bb(const glm::mat4& transform);
+        /**
+         * Calculates bounding box of transformed vertices. Used for slicing into camera direction.
+         * @param transform Transformation matrix
+         * @return bounding box in mesh coorinates
+         */
+        std::pair<glm::vec3, glm::vec3> &get_transformed_bb(const glm::mat4 &transform);
 
-        glm::vec3& get_slice_dir(const glm::mat4& transform, const glm::vec3& view_dir);
+        /**
+         * Calculates the direction the camera points to
+         * @param transform Transformation matrix
+         * @param view_dir camera direction
+         * @return direction vector
+         */
+        glm::vec3 &get_slice_dir(const glm::mat4 &transform, const glm::vec3 &view_dir);
 
-        int get_max_peel_depth() const;
+        MeshData &get_data()
+        { return m_data; }
+
+
 
         void set_mesh_name(std::string str){mesh_name = str;}
         std::string get_mesh_name(){return mesh_name;}
@@ -222,50 +290,74 @@ namespace vOS
          *
          * @return the instanced sphere vao for this mesh
          */
-        [[nodiscard]] VertexArrayObject* get_sphere_vao() const;
 
         [[nodiscard]] MeshVertexBuffer* get_mvb() const;
 
         [[nodiscard]] int get_num_visible_vertices() const;
-
-        [[nodiscard]] VertexArrayObject* get_cylinder_vao() const;
-
         [[nodiscard]] int get_num_visible_edges() const;
 
+        [[nodiscard]] VertexArrayObject *get_cylinder_vao() const;
+        [[nodiscard]] VertexArrayObject *get_sphere_vao() const;
+
+
+
     private:
+        /**
+         * Gets the center of the mesh (e.g for rotation) by calculating the bounding_box
+         */
         void calculate_mesh_offset();
 
-        [[nodiscard]] int calculate_selection_size() const;
-
+        /**
+         * Calculates the depth of vertices and cells
+         */
         void calculate_peel_depth();
+
+        /**
+         * calculates the amount of needed ids
+         * @return
+         */
+        [[nodiscard]] int calculate_selection_size() const;
 
         const int key_multiplier = 1000000;
 
         std::string mesh_name = "default";
 
+        int m_max_peel_depth = 0;
+
+        bool m_just_locked;
+
+        bool m_should_update;
+
         std::vector<float> m_vert_colors;
+
         std::vector<float> m_face_colors;
+
         std::unordered_set<int> m_selected_faces;
+
         std::unordered_set<int> m_selected_vertices;
+
         std::unordered_set<int> m_selected_edges;
+
         std::unordered_set<int> m_selected_cells;
+
         std::map<int, int> m_created_shapes;
 
 
         std::tuple<int, int> m_selection_offset;
+
+        std::pair<glm::vec3, glm::vec3> m_transformed_bb;
+
         glm::vec3 m_mesh_offset_from_center;
 
-        MeshVertexBuffer* m_mvb = nullptr;
+        glm::vec3 m_min;
+
+        glm::vec3 m_max;
+
+        glm::vec3 m_slice_dir;
+
+        MeshVertexBuffer *m_mvb = nullptr;
 
         MeshData m_data;
 
-        bool m_should_update;
-        glm::vec3 m_min;
-        glm::vec3 m_max;
-
-        int m_max_peel_depth = 0;
-        std::pair<glm::vec3, glm::vec3> m_transformed_bb;
-        glm::vec3 m_slice_dir;
-        bool m_just_locked;
     };
 }

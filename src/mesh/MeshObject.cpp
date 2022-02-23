@@ -18,7 +18,8 @@ namespace vOS
 
     MeshObject::MeshObject()
     {
-        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
+        // empty mesh
+        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
 
         m_should_update = false;
 
@@ -38,20 +39,29 @@ namespace vOS
 
     }
 
-    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh, std::string name) : MeshObject()
+    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, std::string name) : MeshObject()
     {
         set_mesh(mesh);
 
         mesh_name = name;
     }
 
+
     void MeshObject::load_from_file(std::string file_path)
     {
+        // open OVM FileManager
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
 
         m_should_update = true;
 
+    }
+
+    void MeshObject::write_to_file(const std::string &file_path) const
+    {
+        // open OVM FileManager
+        OpenVolumeMesh::IO::FileManager file_manager;
+        file_manager.writeFile(file_path, *m_mesh);
     }
 
     void MeshObject::select_element(int id, int type){
@@ -62,14 +72,15 @@ namespace vOS
         if(already_selected)
             return;
 
-        if(type == 0) {
+        if (type == 0)
+        {
             m_selected_faces.insert(id);
 
             // Add Shape
 
             OpenVolumeMesh::FaceHandle face(id);
 
-            m_mvb->set_face_color(face.idx(), 1,0,0, 1);
+            m_mvb->set_face_color(face.idx(), 1, 0, 0, 1);
 
             /*
             auto pick_pos = m_mesh->barycenter(face);
@@ -104,7 +115,8 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
 
             m_created_shapes.insert({shape_key, shape_id});
-        }else if(type == 2){
+        } else if (type == 2)
+        {
             m_selected_edges.insert(id);
 
             // Add Shape
@@ -112,8 +124,9 @@ namespace vOS
             auto vertices = m_mesh->edge_vertices(edge);
             auto v0 = m_mesh->vertex(vertices[0]);
             auto v1 = m_mesh->vertex(vertices[1]);
-            auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5, v0[2] + (v1[2] - v0[2]) * 0.5);
-            auto* shape = new Box();
+            auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5,
+                                      v0[2] + (v1[2] - v0[2]) * 0.5);
+            auto *shape = new Box();
             shape->set_scale(0.02f, 0.02f, 0.02f);
             shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
             shape->set_base_color(0.0f, 0.0f, 1.0f);
@@ -124,8 +137,8 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
 
             m_created_shapes.insert({shape_key, shape_id});
-        }else if(type == 6){
-
+        } else
+        if(type == 6){
             m_selected_cells.insert(id);
 
             OpenVolumeMesh::CellHandle cell(id);
@@ -156,16 +169,17 @@ namespace vOS
         }
     }
 
-    void MeshObject::unselect_all(){
+    void MeshObject::unselect_all()
+    {
         // Delete Face Elements
-        for(int element : m_selected_faces)
+        for (int element: m_selected_faces)
         {
             m_mvb->set_face_color(element, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
         }
         m_selected_faces.clear();
 
         // Delete Vertex Elements
-        for(int element : m_selected_vertices)
+        for (int element: m_selected_vertices)
         {
             // Delete Shape Element
             int shape_key = 1 * key_multiplier + element;
@@ -177,7 +191,7 @@ namespace vOS
         }
         m_selected_vertices.clear();
         // Delete Edge Elements
-        for(int element : m_selected_edges)
+        for (int element: m_selected_edges)
         {
             // Delete Shape Element
             int shape_key = 2 * key_multiplier + element;
@@ -189,7 +203,7 @@ namespace vOS
         }
         m_selected_edges.clear();
         // Delete Cell Elements
-        for(int element : m_selected_cells)
+        for (int element: m_selected_cells)
         {
             // Delete Shape Element
             int shape_key = 3 * key_multiplier + element;
@@ -203,24 +217,28 @@ namespace vOS
         m_created_shapes.clear();
     }
 
-    void MeshObject::unselect_element(int id, int type){
+    void MeshObject::unselect_element(int id, int type)
+    {
         // Element must be selected to be unselectable
         bool is_selected = is_element_selected(id, type);
-        if(!is_selected)
+        if (!is_selected)
             return;
 
-        if(type == 0) {
-
+        if (type == 0)
+        {
             m_mvb->set_face_color(id, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
             return;
-        }else if(type == 1) {
+        } else if (type == 1)
+        {
             auto entry = m_selected_vertices.find(id);
             m_selected_vertices.erase(entry);
-        }else if(type == 2) {
+        } else if (type == 2)
+        {
             auto entry = m_selected_edges.find(id);
             m_selected_edges.erase(entry);
-        }else {
-            auto entry =  m_selected_cells.find(id);
+        } else
+        {
+            auto entry = m_selected_cells.find(id);
             m_selected_cells.erase(entry);
         }
 
@@ -235,46 +253,57 @@ namespace vOS
 
         m_created_shapes.erase(m_created_shapes.find(shape_key));
     }
-    bool MeshObject::is_element_selected(int id, int type){
+
+    bool MeshObject::is_element_selected(int id, int type)
+    {
 
         if(type == 0)
+        {
             return m_selected_faces.find(id) != m_selected_faces.end();
-        else if(type == 1) {
+        }else if(type == 1)
+        {
             return m_selected_vertices.find(id) != m_selected_vertices.end();
         }else if(type == 2)
+        {
             return m_selected_edges.find(id) != m_selected_edges.end();
+        }
         else
+        {
             return m_selected_cells.find(id) != m_selected_cells.end();
+        }
     }
 
-    void MeshObject::write_to_file(const std::string& file_path) const
+    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh)
     {
-        OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.writeFile(file_path, *m_mesh);
-    }
-
-    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel <OpenVolumeMesh::Vec3f>* mesh)
-    {
-        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f>();
+        // copy given mesh
+        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
         m_mesh->assign(mesh);
 
-        OpenVolumeMesh::CellPropertyT<int> peel_property = m_mesh->request_cell_property<int>("PeelDepth");
-        peel_property->set_persistent(true);
+        OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
+        cell_peel_property->set_persistent(true);
+        OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
+        vertex_peel_property->set_persistent(true);
+
+        // calculates the depth of vertices and cells (saved in peel_property for cells)
         calculate_peel_depth();
 
-        m_should_update = true;
+        // calculates the amount of ids the mesh needs
         calculate_mesh_offset();
+
+        m_should_update = true;
     }
 
     void MeshObject::update_vertex_buffer()
     {
         int current_peel_level = m_data.m_peel_level;
-        int current_slice_level =  m_data.m_slice_level;
+        int current_slice_level = m_data.m_slice_level;
+
         if (m_should_update)
         {
             BufferSpecification spec;
             spec.peel_depth = current_peel_level;
             delete m_mvb;
+            // creates new MeshVertexBuffer that extracts each Cell from OVM mesh and get them ready for rendering pipeline
             m_mvb = new MeshVertexBuffer(m_mesh, spec);
         }
         m_should_update = false;
@@ -282,9 +311,9 @@ namespace vOS
 
     void MeshObject::calculate_mesh_offset()
     {
+
         std::vector<float> vertices;
-        std::cout <<" Calc offset " << m_mesh->n_vertices() << std::endl;
-        for (auto v_it : m_mesh->vertices())
+        for (auto v_it: m_mesh->vertices())
         {
             auto v_pos = m_mesh->vertex(v_it);
             vertices.push_back(v_pos[0]);
@@ -300,24 +329,21 @@ namespace vOS
             if (vertex.x < min.x)
             {
                 min.x = vertex.x;
-            }
-            else if (vertex.x > max.x)
+            } else if (vertex.x > max.x)
             {
                 max.x = vertex.x;
             }
             if (vertex.y < min.y)
             {
                 min.y = vertex.y;
-            }
-            else if (vertex.y > max.y)
+            } else if (vertex.y > max.y)
             {
                 max.y = vertex.y;
             }
             if (vertex.z < min.z)
             {
                 min.z = vertex.z;
-            }
-            else if (vertex.z > max.z)
+            } else if (vertex.z > max.z)
             {
                 max.z = vertex.z;
             }
@@ -338,55 +364,70 @@ namespace vOS
         std::vector<OpenVolumeMesh::VertexHandle> act_level;
         std::vector<OpenVolumeMesh::VertexHandle> next_level;
 
-        for(auto vertex : m_mesh->vertices())
+        // initialize every vertex on boundary with peel_level = 0, else: -1
+        for (auto vertex: m_mesh->vertices())
         {
             if(m_mesh->has_vertex_bottom_up_incidences() && m_mesh->is_boundary(vertex))
             {
                 vertex_peel_property[vertex] = 0;
                 act_level.push_back(vertex);
-            }
-            else
+            } else
             {
                 vertex_peel_property[vertex] = -1;
             }
         }
 
+        // actual depth
         int depth = 0;
 
         while(!act_level.empty())
         {
             depth++;
+            // to get the next layer we get the neighbour vertices of the vertices of actual layer
             for(auto vertex : act_level)
             {
+                // vertices of next layer are the vertices of adjacent cells (especially important for 90°+ angles)
                 for (auto neighbour_cell : m_mesh->vertex_cells(vertex))
                 {
                     for(auto neighbour : m_mesh->cell_vertices(neighbour_cell))
                     {
+                        // if not yet initalized: peel_depth of vertex = actual_depth
                         if (vertex_peel_property[neighbour] == -1)
                         {
                             vertex_peel_property[neighbour] = depth;
+                            // only fills with vertices that are not yet initialized
                             next_level.push_back(neighbour);
                         }
                     }
                 }
             }
+            // the next level is now the actual level
             act_level.clear();
             act_level.insert(act_level.begin(), next_level.begin(), next_level.end());
             next_level.clear();
         }
 
+        // now evaluate peel_level of cells: minimum peel_level of all vertices of the cell
         int max_depth = 0;
         for(auto cell : m_mesh->cells())
         {
-            int minimum = 100000;
+            //
+            int minimum = -1;
             for(auto cell_vertex : m_mesh->cell_vertices(cell))
             {
-                if(vertex_peel_property[cell_vertex] < minimum)
+                // the first one is already the minimum
+                if (minimum == -1)
+                {
+                    minimum = vertex_peel_property[cell_vertex];
+                }
+                else if(vertex_peel_property[cell_vertex] < minimum)
                 {
                     minimum = vertex_peel_property[cell_vertex];
                 }
             }
+            // update peel_depth of cell
             cell_peel_property[cell] = minimum;
+            // update maximum depth found
             if (minimum > max_depth)
             {
                 max_depth = minimum;
@@ -410,6 +451,7 @@ namespace vOS
     {
         return m_mvb->to_faceID(value);
     }
+
 
     glm::vec3& MeshObject::get_mesh_offset()
     {
@@ -466,6 +508,7 @@ namespace vOS
         {
             auto v_pos = m_mesh->vertex(v_it);
             glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);
+            // apply transformation matrix
             vec = transform * vec;
 
             vertices.push_back(vec[0]);
@@ -481,43 +524,41 @@ namespace vOS
             if (vertex.x < min.x)
             {
                 min.x = vertex.x;
-            }
-            else if (vertex.x > max.x)
+            } else if (vertex.x > max.x)
             {
                 max.x = vertex.x;
             }
             if (vertex.y < min.y)
             {
                 min.y = vertex.y;
-            }
-            else if (vertex.y > max.y)
+            } else if (vertex.y > max.y)
             {
                 max.y = vertex.y;
             }
             if (vertex.z < min.z)
             {
                 min.z = vertex.z;
-            }
-            else if (vertex.z > max.z)
+            } else if (vertex.z > max.z)
             {
                 max.z = vertex.z;
             }
         }
+
+        // undo the transformation for bounding box
         glm::vec3 m1(glm::inverse(transform) * min);
         glm::vec3 m2(glm::inverse(transform) * max);
-        m_transformed_bb = std::make_pair(m1,m2);
+        m_transformed_bb = std::make_pair(m1, m2);
         return m_transformed_bb;
     }
 
 
-    glm::vec3& MeshObject::get_slice_dir(const glm::mat4& transform, const glm::vec3& view_dir)
+    glm::vec3 &MeshObject::get_slice_dir(const glm::mat4 &transform, const glm::vec3 &view_dir)
     {
         if (!m_data.m_slice_locked)
         {
             m_just_locked = true;
             m_slice_dir = view_dir;
-        }
-        else
+        } else
         {
             if (m_just_locked)
             {

@@ -64,10 +64,11 @@ namespace vOS
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 
             Color color = Window::instance().get_mesh_color(m.first);
-            float m_color[3];
-            m_color[0] = color.get().r;
-            m_color[1] = color.get().g;
-            m_color[2] = color.get().b;
+            float m_color[4];
+            m_color[0] = color.get_rgba().r;
+            m_color[1] = color.get_rgba().g;
+            m_color[2] = color.get_rgba().b;
+            m_color[3] = color.get_rgba().a;
             str = "Color " + std::to_string(m.first);
             char_type = new char[str.length()];
             ImGui::ColorEdit4(strcpy(char_type, str.c_str()),m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();

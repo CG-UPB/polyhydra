@@ -68,7 +68,7 @@ namespace vOS {
          * Adds new OVM mesh to Vos
          * Returns index of Mesh for future identification
          */
-        int add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh);
+        int add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
         /**
          * Removes Mesh identified by given index
          */
@@ -77,7 +77,7 @@ namespace vOS {
          * Sets OVM Mesh at given index
          * Any Mesh occupying given index will be deleted
          */
-        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3f> *mesh, int index = 0);
+        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, int index = 0);
 
         /**
          * Sets the focused mesh inside the viewer

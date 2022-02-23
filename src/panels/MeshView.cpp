@@ -39,6 +39,9 @@ namespace vOS
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
 
+        m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
+        m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
+
         m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
 
@@ -73,6 +76,7 @@ namespace vOS
         delete m_pixel_buffer;
         delete m_pre_pass;
         delete m_mesh_pass;
+        delete m_transparency_pass_wb;
         delete m_ssao_pass;
     }
 
@@ -88,6 +92,8 @@ namespace vOS
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -430,6 +436,80 @@ namespace vOS
         m_ssao_pass->render(nullptr, m_render_data, -1);
     }
 
+    void MeshView::render_transparency_wb()
+    {
+        m_transparency_pass_wb->bind_transparent_buffer();
+        m_transparency_pass_wb->clear_framebuffer();
+        glDepthMask(GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendFunci(0, GL_ONE, GL_ONE);
+        glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+        glBlendEquation(GL_FUNC_ADD);
+        //glDisable(GL_CULL_FACE);
+
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+
+            MeshData& mesh_data = mesh->get_data();
+
+            if(!mesh->get_data().m_visible)
+            {
+                continue;
+            }
+
+//            if(!m_zoom)
+//            {
+//                m_zoom_point = mesh->get_mesh_offset();
+//            }
+//            mesh_data.offset = m_zoom_point;
+
+            mesh->update_vertex_buffer();
+
+            if (mesh->get_vao() != nullptr) {
+                m_transparency_pass_wb->render(mesh->get_vao(), m_render_data, m.first);
+            }
+        }
+        m_transparency_pass_wb->unbind_transparent_buffer();
+
+        glDepthFunc(GL_ALWAYS);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        m_meshFrameBuffer->bind();
+        m_transparency_pass_wb->render_composition();
+        m_meshFrameBuffer->unbind();
+    }
+
+    void MeshView::render_transparency_dp()
+    {
+        int num_passes = 18;
+        for( int i = 0; i < num_passes; i++)
+        {
+            // first render all meshes
+            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            {
+                auto mesh = m.second;
+                MeshData& mesh_data = mesh->get_data();
+                if(!mesh->get_data().m_visible)
+                {
+                    continue;
+                }
+                if(!m_zoom)
+                {
+                    m_zoom_point = mesh->get_mesh_offset();
+                }
+                mesh_data.m_offset = m_zoom_point;
+
+                mesh->update_vertex_buffer();
+
+                if (mesh->get_vao() != nullptr) {
+                    m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first, i);
+                }
+            }
+        }
+    }
+
     void MeshView::querySelection(int type, int picked_id)
     {
         // evaluate which in which mesh the color was selected
@@ -650,22 +730,42 @@ namespace vOS
         render_ssao_pass();
 
         // Now render our mesh scene to the framebuffer texture
-        m_meshFrameBuffer->bind();
+        // Start with opaque objects
 
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+
+        m_meshFrameBuffer->bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_background_pass.render(nullptr, m_render_data, 0);
-
         for (const auto& m: Window::instance().get_mesh_list())
         {
             renderMesh(m.first);
         }
-
         m_meshFrameBuffer->unbind();
+
+        FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
+
+        // Render transparent objects
+        render_transparency_wb();
+        //render_transparency_dp();
+
 
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
             renderSelection();
         }
+
+        // set render states
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
+        glDisable(GL_BLEND);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
@@ -743,6 +843,14 @@ namespace vOS
             {
                 m_viewport_texture = SSAO_BLUR;
             }
+            if (ImGui::RadioButton("Transparency Accum", m_viewport_texture == TRANSPARENCY_ACCUM))
+            {
+                m_viewport_texture = TRANSPARENCY_ACCUM;
+            }
+            if (ImGui::RadioButton("Transparency Reveal", m_viewport_texture == TRANSPARENCY_REVEAL))
+            {
+                m_viewport_texture = TRANSPARENCY_REVEAL;
+            }
             m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
         }
         ImGui::End();
@@ -756,6 +864,8 @@ namespace vOS
             case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();
+            case TRANSPARENCY_ACCUM: return m_transparency_pass_wb->get_accum_texture();
+            case TRANSPARENCY_REVEAL: return m_transparency_pass_wb->get_reveal_texture();
         }
         return -1;
     }

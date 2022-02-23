@@ -57,6 +57,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.h
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.h
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_WB.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_DP.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp src/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/util/Tooltips.h

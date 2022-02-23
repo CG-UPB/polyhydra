@@ -10,16 +10,16 @@ namespace vOS
      */
     struct FrameBufferAttachment
     {
-        int internal_format     = -1;
-        int format              = -1;
-        int type                = -1;
-        int attachment          = -1;
-        int texture_filter      = -1;
-        int texture_wrap        = -1;
-        int texture_comp_func   = -1;
-        int texture_comp_mode   = -1;
-        int generate_mipmap     = false;
-        bool multisample        = false;
+        int internal_format      = -1;
+        int format               = -1;
+        int type                 = -1;
+        int attachment           = -1;
+        int texture_filter       = -1;
+        int texture_wrap         = -1;
+        int texture_comp_func    = -1;
+        int texture_comp_mode    = -1;
+        int generate_mipmap      = false;
+        bool multisample         = false;
     };
 
     /**
@@ -48,6 +48,16 @@ namespace vOS
          */
         FrameBufferObject(int width, int height, std::vector<FrameBufferAttachment>  attachments);
         ~FrameBufferObject();
+
+        /**
+         * Attaches an existing texture to this framebuffer. The caller must ensure that this framebuffer is bound,
+         * and that the texture has the correct format. So this framebuffer does not take the ownership of the texture.
+         *
+         * @param attachment attachment the texture is bound to
+         * @param texture the texture to attach
+         * @param multisample is the texture multisampled?
+         */
+        void attach_texture(int attachment, unsigned int texture, bool multisample = false);
 
         /**
          * Resizes this framebuffer to a new width and height.
@@ -147,6 +157,7 @@ namespace vOS
         // internal ids and attachments
         std::unordered_map<int, unsigned int> m_attachment_textures;
         std::vector<FrameBufferAttachment> m_attachments;
+        std::vector<unsigned int> m_draw_buffers;
         std::vector<unsigned int> m_texture_ids;
         unsigned int m_framebuffer_id;
 

@@ -24,7 +24,8 @@ namespace vOS
         m_vao->add_attribute(m_is_face_boundary, 4, 1);
         m_vao->add_attribute(m_is_digged, 5, 1);
         m_vao->add_attribute(m_colors, 6, 4);
-        m_vao->add_attribute(m_is_isolated,7,1);
+        m_vao->add_attribute(m_is_isolated, 7, 1);
+        m_vao->add_attribute(m_is_triangle, 8, 1);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -159,7 +160,7 @@ namespace vOS
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
-            if(vertex_count == 3 || vertex_count == 4)
+            if(vertex_count == 3)
             {// get the face normal
                 auto hf_normal = mesh.normal(chf_it);
 
@@ -178,7 +179,6 @@ namespace vOS
                     v_data.normal.x = -hf_normal[0];
                     v_data.normal.y = -hf_normal[1];
                     v_data.normal.z = -hf_normal[2];
-                    v_data.ovm_handle = v;
 
                     face_data.vertices.push_back(v_data);
                 }
@@ -194,7 +194,7 @@ namespace vOS
                 m_num_vertices += vertex_count;
 
                 faces.push_back(face_data);
-            }else if(vertex_count > 4)
+            }else if(vertex_count > 3)
             {
                 // Triangulate Face
 
@@ -242,7 +242,7 @@ namespace vOS
                         float area = cross.length() /2;
 
                         // Calculate Normal of Triangle
-                        OpenVolumeMesh::VectorT<float,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
+                        OpenVolumeMesh::VectorT<double,3> normal = (pos_2 - pos_1).cross(pos_3 - pos_2);
 
                         // Add to Face Normal and multiply by triangle area
                         face_normal += normal * area;
@@ -277,7 +277,6 @@ namespace vOS
                     v_data.normal.x = face_normal[0];
                     v_data.normal.y = face_normal[1];
                     v_data.normal.z = face_normal[2];
-                    v_data.ovm_handle = v;
                     face_data.vertices.push_back(v_data);
                 }
 
@@ -317,6 +316,8 @@ namespace vOS
         m_start_of_cell_vertices[cell.idx()] = m_is_digged.size();
         for (const FaceData& face : faces)
         {
+            float is_triangle = (face.vertices.size() > 3) ? 0.0f : 1.0f;
+
             // fill up vertex data
             for (const VertexData& vertex : face.vertices)
             {
@@ -349,6 +350,7 @@ namespace vOS
                 m_is_isolated.push_back(1.0f);
                 nbr_vertices_of_cell++;
                 m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
+                m_is_triangle.push_back(is_triangle);
             }
 
             // add all indices of the face
@@ -362,7 +364,7 @@ namespace vOS
 
     }
 
-    void MeshVertexBuffer::add_face_indices(Mesh& mesh, FaceData& face)
+    void MeshVertexBuffer::add_face_indices(Mesh& mesh, FaceData& face) const
     {
         switch (face.vertices.size())
         {

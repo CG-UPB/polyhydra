@@ -5,10 +5,14 @@ in vec3 v_normal;
 in vec4 v_color;
 flat in int v_visible;
 
+in vec3 v_tri_dist;
+
+uniform bool u_draw_wireframe;
+
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
-uniform vec3 u_objectColor;
+uniform vec4 u_objectColor;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
@@ -21,7 +25,29 @@ out vec4 FragColor;
 void main()
 {
 
-    if (v_visible == 0)
+    if (u_draw_wireframe)
+    {
+        if (v_visible == 0)
+        {
+            discard;
+        }
+        float min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+        float max_dist_to_edge = max(max(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+        if (min_dist_to_edge > 0.0015)
+        {
+            discard;
+        }
+        if (max_dist_to_edge > 2.0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z))
+        {
+            discard;
+        }
+        FragColor = vec4(u_objectColor.rgb, 1.0);
+        return;
+    }
+
+    // if face is not visible or transparent: Discard fragment
+    // Transparency gets handled in another pass
+    if (v_visible == 0 || u_objectColor.a != 1.0)
     {
         discard;
     }
@@ -35,7 +61,7 @@ void main()
 
     // Phong Shading
 
-    vec3 used_color = mix(u_objectColor, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
+    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
 
     //diffuse
     float diffuseStrength = 1.0;

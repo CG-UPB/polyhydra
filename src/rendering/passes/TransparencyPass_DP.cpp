@@ -1,0 +1,170 @@
+
+#include <iostream>
+#include "glad/glad.h"
+#include "../../Window.h"
+#include "TransparencyPass_DP.h"
+#include "../../settings/GlobalViewerSettings.h"
+#include "../meshes/CommonMeshes.h"
+
+
+namespace vOS
+{
+    class MeshView;
+
+    TransparencyPass_DP::TransparencyPass_DP(MeshView *mesh_view, int width,int height):
+    m_mesh_view(mesh_view),
+    m_width(width),
+    m_height(height)
+    {
+        m_transparency_shader = Shader::get("transparency_dp");
+        //m_composite_shader = Shader::get("composite_dp");
+
+        std::vector<FrameBufferAttachment> transparent_attachments0 =
+        {
+            FrameBufferAttachment
+            {
+                    .internal_format    = GL_DEPTH_COMPONENT,
+                    .format             = GL_DEPTH_COMPONENT,
+                    .type               = GL_FLOAT,
+                    .attachment         = GL_DEPTH_ATTACHMENT,
+                    .multisample        = true
+            }
+        };
+        m_transparent_framebuffer0 = new FrameBufferObject(width, height, transparent_attachments0);
+
+        std::vector<FrameBufferAttachment> transparent_attachments1 =
+        {
+            FrameBufferAttachment
+            {
+                    .internal_format    = GL_DEPTH_COMPONENT,
+                    .format             = GL_DEPTH_COMPONENT,
+                    .type               = GL_FLOAT,
+                    .attachment         = GL_DEPTH_ATTACHMENT,
+                    .multisample        = true
+            }
+        };
+        m_transparent_framebuffer1 = new FrameBufferObject(width, height, transparent_attachments1);
+
+        update_draw_texture();
+    }
+
+    TransparencyPass_DP::~TransparencyPass_DP()
+    {
+        delete m_transparent_framebuffer0;
+        delete m_transparent_framebuffer1;
+
+        delete m_vao;
+
+    }
+
+    void TransparencyPass_DP::clean_up_framebuffer()
+    {
+
+    }
+
+    void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, int mesh_id, int pass)
+    {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_GREATER);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+        if(pass % 2 == 0)
+        {
+            m_transparent_framebuffer0->bind();
+            m_transparency_shader->bind();
+            if(pass == 0)
+            {
+                unsigned int depth_texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_DEPTH_ATTACHMENT);
+                m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
+            }
+            else
+            {
+                unsigned int depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
+                m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
+            }
+            glClear(GL_DEPTH_BUFFER_BIT);
+            render(vao, data, mesh_id);
+            m_transparency_shader->unbind();
+            m_transparent_framebuffer0->unbind();
+        }
+        else
+        {
+            m_transparent_framebuffer1->bind();
+            m_transparency_shader->bind();
+            unsigned int depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
+            m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            render(vao, data, mesh_id);
+            m_transparency_shader->unbind();
+            m_transparent_framebuffer1->unbind();
+        }
+
+    }
+
+    void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    {
+        // Get Mesh
+        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
+        if(obj == nullptr)
+            return;
+
+        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        float cell_size = obj->get_data().m_cell_size;
+        int peel_depth = obj->get_data().m_peel_level;
+        float slice_depth = obj->get_data().m_slice_level;
+
+        auto bb = obj->get_transformed_bb(transform);
+        auto min = bb.first;
+        auto max = bb.second;
+
+        glm::mat4 view_inv = glm::inverse(data.camera.view);
+        glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
+        auto slice_direction = obj->get_slice_dir(transform, view_dir);
+
+        // set all of our uniforms
+        m_transparency_shader->set_uniform_mat4f("u_Transform", transform);
+        m_transparency_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
+        m_transparency_shader->set_uniform_mat4f("u_View", data.camera.view);
+        m_transparency_shader->set_uniform_vec3f("u_lightPos", data.light.position);
+        m_transparency_shader->set_uniform_vec3f("u_camPos", data.camera.position);
+        m_transparency_shader->set_uniform_vec3f("u_lightColor", data.light.color);
+        m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
+        m_transparency_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
+        m_transparency_shader->set_uniform_int("u_peel_depth", peel_depth);
+        m_transparency_shader->set_uniform_float("u_slice_depth", slice_depth);
+        m_transparency_shader->set_uniform_vec3f("u_min", min);
+        m_transparency_shader->set_uniform_vec3f("u_max", max);
+        m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+        m_transparency_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+
+        m_transparency_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
+        m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
+
+        vao->draw();
+
+    }
+
+    void TransparencyPass_DP::resize_buffers(int width, int height)
+    {
+        m_transparent_framebuffer0->resize(width, height);
+        m_transparent_framebuffer1->resize(width, height);
+
+        update_draw_texture();
+
+        //generate_transparency_framebuffer(width, height);
+    }
+
+    void TransparencyPass_DP::update_draw_texture()
+    {
+        unsigned int texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+        m_transparent_framebuffer0->bind();
+        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture, true);
+        m_transparent_framebuffer0->unbind();
+        m_transparent_framebuffer1->bind();
+        m_transparent_framebuffer1->attach_texture(GL_COLOR_ATTACHMENT0, texture, true);
+        m_transparent_framebuffer1->unbind();
+    }
+
+}

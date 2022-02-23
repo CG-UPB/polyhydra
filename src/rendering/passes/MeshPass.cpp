@@ -6,6 +6,7 @@
 
 namespace vOS
 {
+
     MeshPass::MeshPass(MeshView* mesh_view): m_mesh_view(mesh_view)
     {}
 
@@ -36,14 +37,13 @@ namespace vOS
         // Additonal Setup necessary if in wireframe mode
         if (render_in_wireframe_mode)
         {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            glEnable(GL_LINE_SMOOTH);
-            glLineWidth(2);
+            glDisable(GL_CULL_FACE);
             glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
         else
         {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glEnable(GL_BLEND);
         }
 
         // Get shader
@@ -77,7 +77,7 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_mesh_shader->set_uniform_float("u_cell_size", cell_size);
-        m_mesh_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get());
+        m_mesh_shader->set_uniform_vec4f("u_objectColor", obj->get_data().m_color.get_rgba());
         m_mesh_shader->set_uniform_int("u_peel_depth", peel_depth);
         m_mesh_shader->set_uniform_float("u_slice_depth", slice_depth);
         m_mesh_shader->set_uniform_vec3f("u_min", min);
@@ -88,6 +88,7 @@ namespace vOS
         m_mesh_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
         m_mesh_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
         m_mesh_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
+        m_mesh_shader->set_uniform_bool("u_draw_wireframe", render_in_wireframe_mode);
 
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
@@ -101,10 +102,9 @@ namespace vOS
 
         m_mesh_shader->unbind();
 
-        // Revert to polygon mode, so that other Shader Passes are not wrongly rendered
         if (render_in_wireframe_mode)
         {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glEnable(GL_CULL_FACE);
         }
     }
 

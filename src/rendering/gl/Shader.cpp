@@ -78,6 +78,7 @@ namespace vOS
         {
             glGetProgramInfoLog(m_shaderID, 512, nullptr, infoLog);
             std::cout << "Error when linking shader program: " << infoLog << std::endl;
+            std::cout << "" << fragmentPath << std::endl;
         }
 
         // once linked, the shaders can be deleted
@@ -215,7 +216,10 @@ namespace vOS
             std::string& extension = name_with_extension[1];
 
             // we only have a fragment shader for this, we will load that manually later
-            if (name_without_extension == "pre_mesh_phong") {
+            if (name_without_extension == "pre_mesh_phong"
+                || name_without_extension == "transparency_wb"
+                || name_without_extension == "transparency_dp")
+            {
                 continue;
             }
 
@@ -253,9 +257,21 @@ namespace vOS
 
         // manually load the pre pass shader, since only the fragment shader is different from the phong shader
         std::filesystem::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
+        std::filesystem::path transparency_path = FileManager::get_resource_path() / shader_path / "transparency";
+
         s_shaders["pre_mesh_phong"] = new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 pre_mesh_phong_path / "pre_mesh_phong.frag",
+                pre_mesh_phong_path / "mesh_phong.geom"
+        );
+        s_shaders["transparency_wb"] = new Shader(
+                pre_mesh_phong_path / "mesh_phong.vert",
+                transparency_path / "transparency_wb.frag",
+                pre_mesh_phong_path / "mesh_phong.geom"
+        );
+        s_shaders["transparency_dp"] = new Shader(
+                pre_mesh_phong_path / "mesh_phong.vert",
+                transparency_path / "transparency_dp.frag",
                 pre_mesh_phong_path / "mesh_phong.geom"
         );
     }
