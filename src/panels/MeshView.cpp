@@ -53,7 +53,6 @@ namespace vOS
                 m_render_data.camera.near,
                 m_render_data.camera.far
         );
-
         m_render_data.camera.view = glm::lookAt(
                 m_render_data.camera.position,
                 glm::vec3{0.0f, 0.0f, 0.0f},
@@ -66,19 +65,13 @@ namespace vOS
         // setup light including projection and view for shadow map
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
         m_render_data.light.world = glm::mat4(1.0f);
-        m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
-        m_render_data.light.position = glm::vec3{0.0f, 10.0f, 0.0f};
-//        m_render_data.light.projection = glm::ortho(
-//            -100.0f, 100.0f,
-//            -100.0f, 100.0f,
-//            m_render_data.camera.near,
-//            m_render_data.camera.far
-//        );
+        //m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
+        m_render_data.light.position = glm::vec3{5.0f, 0.0f, 10.0f};
         m_render_data.light.projection = glm::perspective(
-                glm::radians(m_render_data.camera.fov_deg),
-                (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                m_render_data.camera.near,
-                m_render_data.camera.far
+            glm::radians(m_render_data.camera.fov_deg),
+            (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
+            m_render_data.camera.near,
+            m_render_data.camera.far
         );
         m_render_data.light.view = glm::lookAt(
             m_render_data.light.position,
@@ -126,6 +119,12 @@ namespace vOS
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             m_render_data.camera.projection = glm::perspective(
+                    glm::radians(m_render_data.camera.fov_deg),
+                    (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
+                    m_render_data.camera.near,
+                    m_render_data.camera.far
+            );
+            m_render_data.light.projection = glm::perspective(
                     glm::radians(m_render_data.camera.fov_deg),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                     m_render_data.camera.near,
@@ -189,6 +188,7 @@ namespace vOS
         float movement_speed = m_movement_speed_multiplier;
         m_movement_speed_multiplier *= 1.1f; // Gradually speed up movement
         m_render_data.camera.position += movement_vector * movement_speed;
+        m_render_data.light.position += movement_vector * movement_speed;
 
         //std::cout << m_render_data.camera.position[0] << " "  << m_render_data.camera.position[1] << " " << m_render_data.camera.position[2] << " " << std::endl;
 
@@ -214,6 +214,10 @@ namespace vOS
                     m_render_data.camera.world,
                     glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
             );
+            m_render_data.light.world = glm::scale(
+                    m_render_data.light.world,
+                    glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
+            );
         }
         m_lastDown = isDown;
 
@@ -235,6 +239,14 @@ namespace vOS
                 glm::vec3 axis_object = camera_to_object * axis_camera;
                 m_render_data.camera.world = glm::rotate(m_render_data.camera.world, glm::degrees(angle) * speed,
                                                          axis_object);
+
+
+                glm::vec3 axis_light = glm::cross(a, b);
+                glm::mat3 light_to_object = glm::inverse(
+                        glm::mat3(m_render_data.light.view) * glm::mat3(m_render_data.light.world));
+                glm::vec3 l_axis_object = light_to_object * axis_light;
+                m_render_data.light.world = glm::rotate(m_render_data.light.world,glm::degrees(angle) * speed,
+                                                         l_axis_object);
             }
         }
         m_lastX = mousePos.x;
@@ -461,6 +473,7 @@ namespace vOS
     {
         m_shadow_pass->get_framebuffer()->bind();
         glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -735,9 +748,8 @@ namespace vOS
         glDisable(GL_BLEND);
 
         m_meshFrameBuffer->bind();
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data, 0);
+        //m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
         {
             renderMesh(m.first);
@@ -748,35 +760,37 @@ namespace vOS
 
         // Render transparent objects
 
-//        if (ImGui::Begin("Transparency"))
-//        {
-//            if (ImGui::RadioButton("Weighted Blended", m_transparency == WEIGHTED_BLENDED))
-//            {
-//                m_transparency = WEIGHTED_BLENDED;
-//            }
-//            if (ImGui::RadioButton("Depth Peeling", m_transparency == DEPTH_PEELING))
-//            {
-//                m_transparency = DEPTH_PEELING;
-//
-//            }
-//
-//            if(m_transparency == DEPTH_PEELING)
-//            {
-//                ImGui::SliderInt("DP_Passes", &num_passes, 0, 50);
-//            }
-//        }
-//        ImGui::End();
-//
-//        switch (m_transparency)
-//        {
-//            case DEPTH_PEELING: render_transparency_dp();break;
-//            case WEIGHTED_BLENDED : render_transparency_wb();
-//        }
-//
-//
-//        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
-//            renderSelection();
-//        }
+        if (ImGui::Begin("Transparency"))
+        {
+            if (ImGui::RadioButton("Weighted Blended", m_transparency == WEIGHTED_BLENDED))
+            {
+                m_transparency = WEIGHTED_BLENDED;
+            }
+            if (ImGui::RadioButton("Depth Peeling", m_transparency == DEPTH_PEELING))
+            {
+                m_transparency = DEPTH_PEELING;
+
+            }
+
+            if(m_transparency == DEPTH_PEELING)
+            {
+                ImGui::SliderInt("DP_Passes", &num_passes, 0, 50);
+            }
+        }
+        ImGui::End();
+
+        switch (m_transparency)
+        {
+            case DEPTH_PEELING: render_transparency_dp();break;
+            case WEIGHTED_BLENDED : render_transparency_wb();
+        }
+
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
+            renderSelection();
+        }
+
+        //render_transparency_wb();
 
         // set render states
         glDisable(GL_DEPTH_TEST);
@@ -880,9 +894,9 @@ namespace vOS
     {
         switch (m_viewport_texture)
         {
-            //case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case FINAL_IMAGE: return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case SELECTION: return m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT);
+            //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();
             case TRANSPARENCY_ACCUM: return m_transparency_pass_wb->get_accum_texture();

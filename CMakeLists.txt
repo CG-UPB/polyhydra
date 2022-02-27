@@ -63,7 +63,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp src/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/util/Tooltips.h
-        ${VOLUMESHOS_SRC}/util/ModeEnum.h)
+        ${VOLUMESHOS_SRC}/util/ModeEnum.h src/algorithms/TestQuads.cpp src/algorithms/TestQuads.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

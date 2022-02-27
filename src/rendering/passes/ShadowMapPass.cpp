@@ -12,11 +12,11 @@ namespace vOS
         std::vector<FrameBufferAttachment> attachments =
         {
                 FrameBufferAttachment{
-                        .internal_format    = GL_RGBA16F,
-                        .format             = GL_RGBA,
+                        .internal_format    = GL_R32F,
+                        .format             = GL_RED,
                         .type               = GL_FLOAT,
                         .attachment         = GL_COLOR_ATTACHMENT0,
-                        .texture_filter     = GL_NEAREST,
+                        .texture_filter     = GL_LINEAR,
                         .texture_wrap       = GL_CLAMP_TO_EDGE
 
                 },
@@ -56,8 +56,7 @@ namespace vOS
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         m_shadow_framebuffer->bind();
         m_shadow_shader->bind();
 
@@ -65,11 +64,16 @@ namespace vOS
         glm::mat4 light_projection = data.light.projection;
         glm::mat4 light_view = data.light.view;
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform() * positionOffset;
 
         // Shader uniforms
         m_shadow_shader->set_uniform_mat4f("u_light_projection", light_projection);
         m_shadow_shader->set_uniform_mat4f("u_light_view", light_view);
-        m_shadow_shader->set_uniform_mat4f("u_transform", transform);
+        m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
+
+//        m_shadow_shader->set_uniform_mat4f("u_light_projection", data.camera.projection);
+//        m_shadow_shader->set_uniform_mat4f("u_light_view", data.camera.view);
+//        m_shadow_shader->set_uniform_mat4f("u_transform", transform);
 
         vao->draw();
 
