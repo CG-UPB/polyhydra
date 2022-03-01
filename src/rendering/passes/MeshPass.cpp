@@ -108,7 +108,8 @@ namespace vOS
         //m_mesh_shader->set_uniform_sampler2D("u_position", GL_TEXTURE2,m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
 
         m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2,m_mesh_view->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
-
+        m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE3,m_mesh_view->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4,m_mesh_view->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
 
         vao->draw();
 

@@ -32,7 +32,8 @@ namespace vOS
     {
         m_pre_pass = new PrePass(width, height);
         m_shadow_pass = new ShadowMapPass(width, height);
-        m_transparent_shadow_pass = new TransparentShadowMapPass(this, width, height);
+        m_transparent_shadow_pass= new TransparentShadowMapPass(width, height);
+        m_shadow_color_filter_pass = new ShadowColorFilterPass(this, width, height);
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
 
@@ -118,6 +119,7 @@ namespace vOS
             m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_shadow_color_filter_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_transparent_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
@@ -475,6 +477,7 @@ namespace vOS
 
     void MeshView::render_shadow_map()
     {
+        // render opaque shadow map
         m_shadow_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -491,10 +494,11 @@ namespace vOS
                 m_shadow_pass->render(mesh->get_vao(), m_render_data, m.first);
             }
         }
-        m_shadow_pass->get_framebuffer()->unbind();
+        m_shadow_color_filter_pass->get_framebuffer()->unbind();
 
+        // render transparent shadow map
         m_transparent_shadow_pass->get_framebuffer()->bind();
-        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -509,11 +513,32 @@ namespace vOS
             }
         }
         m_transparent_shadow_pass->get_framebuffer()->unbind();
+
+
+        // calculate color filter for transparent shadows
+        m_shadow_color_filter_pass->get_framebuffer()->bind();
+
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+            if(!mesh->get_data().m_visible)
+            {
+                continue;
+            }
+            mesh->update_vertex_buffer();
+            if (mesh->get_vao() != nullptr) {
+                m_shadow_color_filter_pass->render(mesh->get_vao(), m_render_data, m.first);
+            }
+        }
+        m_shadow_color_filter_pass->get_framebuffer()->unbind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glEnable(GL_CULL_FACE);
         glDisable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     }
 
     void MeshView::render_ssao_pass()
@@ -801,7 +826,7 @@ namespace vOS
 
         m_meshFrameBuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //m_background_pass.render(nullptr, m_render_data, 0);
+        m_background_pass.render(nullptr, m_render_data, 0);
         for (const auto& m: Window::instance().get_mesh_list())
         {
             renderMesh(m.first);
@@ -862,7 +887,8 @@ namespace vOS
         topLeft.y += padding.y;
 
         // finally, add the framebuffer texture as an image to the imgui window
-        ImGui::GetWindowDrawList()->AddImage(
+        ImGui::GetWindowDrawList()->AddImage
+        (
                 reinterpret_cast<ImTextureID>(get_selected_texture()),
                 ImGui::GetCursorScreenPos(),
                 {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
@@ -944,12 +970,10 @@ namespace vOS
 
     unsigned int MeshView::get_selected_texture()
     {
-
-
         switch (m_viewport_texture)
         {
             case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+            case SELECTION: return m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();

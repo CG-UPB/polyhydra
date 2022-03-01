@@ -10,6 +10,7 @@
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
 #include "../rendering/passes/ShadowMapPass.h"
+#include "../rendering/passes/ShadowColorFilterPass.h"
 #include "../rendering/passes/TransparentShadowMapPass.h"
 #include "../rendering/passes/TransparencyPass_WB.h"
 #include "../rendering/passes/TransparencyPass_DP.h"
@@ -23,6 +24,7 @@ namespace vOS
     class MeshPass;
     class SSAOPass;
     class ShadowMapPass;
+    class ShadowColorFilterPass;
     class TransparentShadowMapPass;
 
     class MeshView: public WindowPanel
@@ -101,6 +103,7 @@ namespace vOS
         BackgroundPass m_background_pass;
         PrePass* m_pre_pass = nullptr;
         ShadowMapPass* m_shadow_pass = nullptr;
+        ShadowColorFilterPass* m_shadow_color_filter_pass = nullptr;
         TransparentShadowMapPass* m_transparent_shadow_pass = nullptr;
         MeshPass* m_mesh_pass = nullptr;
         SSAOPass* m_ssao_pass = nullptr;
@@ -119,6 +122,7 @@ namespace vOS
         friend class MeshPass;
         friend class SSAOPass;
         friend class ShadowMapPass;
+        friend class ShadowColorFilterPass;
         friend class TransparentShadowMapPass;
         friend class TransparencyPass_WB;
         friend class TransparencyPass_DP;

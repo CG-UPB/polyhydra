@@ -11,7 +11,7 @@ namespace vOS
 
     public:
 
-        TransparentShadowMapPass(MeshView *mesh_view, int width, int height);
+        TransparentShadowMapPass(int width, int height);
         ~TransparentShadowMapPass();
 
         void resize_buffers(int width, int height);
@@ -21,10 +21,6 @@ namespace vOS
         [[nodiscard]] unsigned int get_shadow_map() const;
 
     private:
-        unsigned int m_width;
-        unsigned int m_height;
-
-        MeshView* m_mesh_view = nullptr;
         Shader* m_transparent_shadow_shader = nullptr;
         FrameBufferObject* m_transparent_shadow_framebuffer = nullptr;
     };

@@ -5,10 +5,7 @@
 
 namespace vOS
 {
-    TransparentShadowMapPass::TransparentShadowMapPass(MeshView *mesh_view, int width, int height):
-    m_mesh_view(mesh_view),
-    m_width(width),
-    m_height(height)
+    TransparentShadowMapPass::TransparentShadowMapPass(int width, int height)
     {
         m_transparent_shadow_shader = Shader::get("transparent_shadow_map");
 
@@ -16,14 +13,15 @@ namespace vOS
         {
             FrameBufferAttachment
             {
-                .internal_format    = GL_RGBA16F,
-                .format             = GL_RGBA,
+                .internal_format    = GL_DEPTH_COMPONENT,
+                .format             = GL_DEPTH_COMPONENT,
                 .type               = GL_FLOAT,
-                .attachment         = GL_COLOR_ATTACHMENT0,
-                .texture_filter     = GL_LINEAR,
-                .texture_wrap       = GL_CLAMP_TO_EDGE
-
-            },
+                .attachment         = GL_DEPTH_ATTACHMENT,
+                .texture_filter     = GL_NEAREST,
+                .texture_wrap       = GL_CLAMP_TO_EDGE,
+                .texture_comp_func  = GL_LEQUAL,
+                .texture_comp_mode  = GL_NONE
+            }
         };
         m_transparent_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
 
@@ -43,11 +41,9 @@ namespace vOS
 
         glDisable( GL_CULL_FACE );
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        //glBlendFunc(GL_ONE, GL_ONE);
-        glBlendEquation(GL_MAX);
+        glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
-        glDepthMask(GL_FALSE);
+        glDepthMask(GL_TRUE);
 
         m_transparent_shadow_framebuffer->bind();
         m_transparent_shadow_shader->bind();
@@ -64,13 +60,12 @@ namespace vOS
         m_transparent_shadow_shader->set_uniform_mat4f("u_light_view", light_view);
         m_transparent_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
 
-        auto opaque_depth = m_mesh_view->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT);
-        m_transparent_shadow_shader->set_uniform_sampler2D("u_opaque_depth_texture", GL_TEXTURE0, opaque_depth);
-
         vao->draw();
 
         m_transparent_shadow_shader->unbind();
         m_transparent_shadow_framebuffer->unbind();
+
+        glEnable(GL_CULL_FACE);
 
     }
 
