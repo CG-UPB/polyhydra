@@ -84,6 +84,8 @@ namespace vOS
         m_zoom_point = glm::vec3(0, 0, 0);
 
         num_passes = 0;
+
+        dp_layer = 0;
     }
 
     MeshView::~MeshView()
@@ -544,6 +546,21 @@ namespace vOS
 
         for( int i = 0; i < num_passes; i++)
         {
+            if(i % 2 == 0)
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer0->bind();
+                dp_layer = m_transparency_pass_dp->m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
+            }
+            else
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer1->bind();
+                dp_layer = m_transparency_pass_dp->m_transparent_framebuffer1->get_texture(GL_COLOR_ATTACHMENT0);
+
+            }
+            glClearDepth(0.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
             // first render all meshes
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
             {
@@ -561,11 +578,21 @@ namespace vOS
 
                 mesh->update_vertex_buffer();
 
-                if (mesh->get_vao() != nullptr) {
+                if (mesh->get_vao() != nullptr)
+                {
                     m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first, i);
                 }
             }
-            m_transparency_pass_dp->render_composition(num_passes);
+            if(i % 2 == 0)
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
+            }
+            else
+            {
+                m_transparency_pass_dp->m_transparent_framebuffer1->unbind();
+            }
+
+            m_transparency_pass_dp->render_composition(i);
 
         }
 
@@ -892,10 +919,13 @@ namespace vOS
 
     unsigned int MeshView::get_selected_texture()
     {
+
+
         switch (m_viewport_texture)
         {
             case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT);
+            case SELECTION: return dp_layer;
+            //case SELECTION: return m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT);
             //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();

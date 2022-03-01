@@ -21,12 +21,13 @@ namespace vOS
 
         std::vector<FrameBufferAttachment> transparent_attachments0 =
         {
-            FrameBufferAttachment{
+            FrameBufferAttachment
+            {
                     .internal_format    = GL_RGBA16F,
                     .format             = GL_RGBA,
                     .type               = GL_FLOAT,
                     .attachment         = GL_COLOR_ATTACHMENT0,
-                    .texture_filter     = GL_NEAREST,
+                    .texture_filter     = GL_LINEAR,
                     .texture_wrap       = GL_CLAMP_TO_EDGE
             },
             FrameBufferAttachment
@@ -50,21 +51,21 @@ namespace vOS
                     .format             = GL_RGBA,
                     .type               = GL_FLOAT,
                     .attachment         = GL_COLOR_ATTACHMENT0,
-                    .texture_filter     = GL_NEAREST,
+                    .texture_filter     = GL_LINEAR,
                     .texture_wrap       = GL_CLAMP_TO_EDGE
 
             },
             FrameBufferAttachment
-            {
-                    .internal_format    = GL_DEPTH_COMPONENT,
-                    .format             = GL_DEPTH_COMPONENT,
-                    .type               = GL_FLOAT,
-                    .attachment         = GL_DEPTH_ATTACHMENT,
-                    .texture_filter     = GL_NEAREST,
-                    .texture_wrap       = GL_CLAMP_TO_EDGE,
-                    .texture_comp_func  = GL_LEQUAL,
-                    .texture_comp_mode  = GL_NONE
-            }
+                {
+                        .internal_format    = GL_DEPTH_COMPONENT,
+                        .format             = GL_DEPTH_COMPONENT,
+                        .type               = GL_FLOAT,
+                        .attachment         = GL_DEPTH_ATTACHMENT,
+                        .texture_filter     = GL_NEAREST,
+                        .texture_wrap       = GL_CLAMP_TO_EDGE,
+                        .texture_comp_func  = GL_LEQUAL,
+                        .texture_comp_mode  = GL_NONE
+                }
         };
         m_transparent_framebuffer1 = new FrameBufferObject(width, height, transparent_attachments1);
 
@@ -95,9 +96,6 @@ namespace vOS
         if(pass % 2 == 0)
         {
             m_transparent_framebuffer0->bind();
-            glClearDepth(0.0f);
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             m_transparency_shader->bind();
             if(pass == 0)
             {
@@ -118,9 +116,6 @@ namespace vOS
         else
         {
             m_transparent_framebuffer1->bind();
-            glClearDepth(0.0f);
-            //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             m_transparency_shader->bind();
             unsigned int depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
             m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
@@ -128,8 +123,6 @@ namespace vOS
             m_transparency_shader->unbind();
             m_transparent_framebuffer1->unbind();
         }
-
-        render_composition(pass);
     }
 
     void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)

@@ -8,11 +8,11 @@ int main()
 //      ExampleClass cl;
 //     cl.initialize();
 
-//    vOS::Dijkstra dijkstra;
-//    dijkstra.start();
-
-    TestQuads test;
-    test.run();
+    vOS::Dijkstra dijkstra;
+    dijkstra.start();
+//
+//    TestQuads test;
+//    test.run();
 
     return 0;
 }
