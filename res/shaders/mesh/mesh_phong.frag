@@ -17,11 +17,15 @@ uniform int u_viewport_height;
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_shadow_texture;
+uniform sampler2D u_transparent_shadow_texture;
+uniform sampler2D u_color_filter_texture;
 
 out vec4 FragColor;
 
-float ShadowCalculation(vec4 pos_ls, float bias)
+float shadow_calculation(vec4 pos_ls, float bias)
 {
+    float shadow = 0.0;
+
     // range [-1, 1]
     vec3 proj_coords = pos_ls.xyz / pos_ls.w;
 
@@ -30,10 +34,31 @@ float ShadowCalculation(vec4 pos_ls, float bias)
 
     float closest_depth = texture(u_shadow_texture, proj_coords.xy).r;
     float current_depth = proj_coords.z;
-    float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+//    float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+
+    // sample surrounding values and use average value for smoother shadows
+    vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
+    for(int x = -2; x <= 2; ++x)
+    {
+        for(int y = -2; y <= 2; ++y)
+        {
+            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
+            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 25.0;
 
     return shadow;
 }
+
+//vec3 color_filter(vec4 pos_ls)
+//{
+//    vec3 color = texture(u_transparent_shadow_texture, proj_coords.xy);
+//    float current_depth = proj_coords.z;
+//
+//
+//    return color;
+//}
 
 void main()
 {
@@ -48,7 +73,7 @@ void main()
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
     //ambient
-    float ambientStrength = 1.0;
+    float ambientStrength = 0.8;
     float ao_factor = texture(u_ssao_texture, uv).r;
     vec3 ambient = ambientStrength * u_lightColor * ao_factor;
 
@@ -73,17 +98,14 @@ void main()
     vec3 specular = specularStrength * spec * u_lightColor;
 
     vec3 light_dir = normalize(u_lightPos - v_pos);
-    float bias = max(0.05 * (1.0 - dot(n, light_dir)), 0.005);
-    float shadow = ShadowCalculation(v_pos_ls, bias);
+    //float bias = 0.0001;
+
+    float bias = max(0.0005 * (1.0 - diff), 0.00005);
+
+    float shadow = shadow_calculation(v_pos_ls, bias);
 
     float norm = ambientStrength + diffuseStrength + specularStrength;
     vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) / norm * used_color;
 
     FragColor = vec4(result, 1.0);
-
-//    vec4 pos_ls = v_pos_ls;
-//    vec3 proj_coords = pos_ls.xyz / pos_ls.w;
-//    proj_coords = proj_coords * 0.5 + 0.5;
-//    float depth = texelFetch(u_shadow_texture, ivec2(proj_coords.xy), 0).r;
-//    FragColor = vec4(vec3(depth), 1.0);
 }

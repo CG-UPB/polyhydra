@@ -32,6 +32,7 @@ namespace vOS
     {
         m_pre_pass = new PrePass(width, height);
         m_shadow_pass = new ShadowMapPass(width, height);
+        m_transparent_shadow_pass = new TransparentShadowMapPass(this, width, height);
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
 
@@ -66,7 +67,7 @@ namespace vOS
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
         m_render_data.light.world = glm::mat4(1.0f);
         //m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
-        m_render_data.light.position = glm::vec3{5.0f, 0.0f, 10.0f};
+        m_render_data.light.position = glm::vec3{5.0f, 5.0f, 10.0f};
         m_render_data.light.projection = glm::perspective(
             glm::radians(m_render_data.camera.fov_deg),
             (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
@@ -117,6 +118,7 @@ namespace vOS
             m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_transparent_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -474,7 +476,8 @@ namespace vOS
     void MeshView::render_shadow_map()
     {
         m_shadow_pass->get_framebuffer()->bind();
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -489,6 +492,28 @@ namespace vOS
             }
         }
         m_shadow_pass->get_framebuffer()->unbind();
+
+        m_transparent_shadow_pass->get_framebuffer()->bind();
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        {
+            auto mesh = m.second;
+            if(!mesh->get_data().m_visible)
+            {
+                continue;
+            }
+            mesh->update_vertex_buffer();
+            if (mesh->get_vao() != nullptr) {
+                m_transparent_shadow_pass->render(mesh->get_vao(), m_render_data, m.first);
+            }
+        }
+        m_transparent_shadow_pass->get_framebuffer()->unbind();
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+        glEnable(GL_CULL_FACE);
+        glDisable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     void MeshView::render_ssao_pass()
@@ -924,8 +949,7 @@ namespace vOS
         switch (m_viewport_texture)
         {
             case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return dp_layer;
-            //case SELECTION: return m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT);
+            case SELECTION: return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();

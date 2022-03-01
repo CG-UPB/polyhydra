@@ -24,6 +24,5 @@ namespace vOS
 
         Shader* m_shadow_shader = nullptr;
         FrameBufferObject* m_shadow_framebuffer = nullptr;
-        FrameBufferObject* m_shadow_framebuffer_transparent = nullptr;
     };
 }

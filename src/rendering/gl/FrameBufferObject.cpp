@@ -94,7 +94,16 @@ namespace vOS
         unsigned int fbo;
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glDrawBuffers((int) m_draw_buffers.size(), m_draw_buffers.data());
+
+        if(m_draw_buffers.size() > 0)
+        {
+            glDrawBuffers((int) m_draw_buffers.size(), m_draw_buffers.data());
+        }
+        else
+        {
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        }
 
         return fbo;
     }

@@ -61,6 +61,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_DP.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparentShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp src/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/util/Tooltips.h
         ${VOLUMESHOS_SRC}/util/ModeEnum.h src/algorithms/TestQuads.cpp src/algorithms/TestQuads.h)

@@ -11,15 +11,6 @@ namespace vOS
 
         std::vector<FrameBufferAttachment> attachments =
         {
-                FrameBufferAttachment{
-                        .internal_format    = GL_R32F,
-                        .format             = GL_RED,
-                        .type               = GL_FLOAT,
-                        .attachment         = GL_COLOR_ATTACHMENT0,
-                        .texture_filter     = GL_LINEAR,
-                        .texture_wrap       = GL_CLAMP_TO_EDGE
-
-                },
                 FrameBufferAttachment
                 {
                         .internal_format    = GL_DEPTH_COMPONENT,
@@ -32,8 +23,7 @@ namespace vOS
                         .texture_comp_mode  = GL_NONE
                 }
         };
-        m_shadow_framebuffer             = new FrameBufferObject(width, height, attachments);
-        //m_shadow_framebuffer_transparent = new FrameBufferObject(width, height, attachments);
+        m_shadow_framebuffer                = new FrameBufferObject(width, height, attachments);
 
     }
 
@@ -49,9 +39,7 @@ namespace vOS
         if(obj == nullptr)
             return;
 
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
-        glCullFace(GL_BACK);
+        glDisable( GL_CULL_FACE );
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
@@ -67,18 +55,17 @@ namespace vOS
         glm::mat4 l_transform = data.light.world * obj->get_data().get_transform() * positionOffset;
 
         // Shader uniforms
+        m_shadow_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
         m_shadow_shader->set_uniform_mat4f("u_light_projection", light_projection);
         m_shadow_shader->set_uniform_mat4f("u_light_view", light_view);
         m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
-
-//        m_shadow_shader->set_uniform_mat4f("u_light_projection", data.camera.projection);
-//        m_shadow_shader->set_uniform_mat4f("u_light_view", data.camera.view);
-//        m_shadow_shader->set_uniform_mat4f("u_transform", transform);
 
         vao->draw();
 
         m_shadow_shader->unbind();
         m_shadow_framebuffer->unbind();
+
+        glEnable(GL_CULL_FACE);
     }
 
     void ShadowMapPass::resize_buffers(int width, int height)
