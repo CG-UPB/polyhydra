@@ -460,7 +460,7 @@ namespace vOS
 
     VertexArrayObject* MeshObject::get_vao() const
     {
-        return m_mvb->get_vao();
+        return m_mvb->get_vao_by_face();
     }
 
     VertexArrayObject* MeshObject::get_sphere_vao() const

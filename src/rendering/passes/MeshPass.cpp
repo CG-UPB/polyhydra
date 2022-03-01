@@ -18,6 +18,12 @@ namespace vOS
             return;
 
 
+        if (ImGui::Begin("Rounding"))
+        {
+            ImGui::SliderFloat("Size", &m_rounding_size, 0.0f, 2.0f);
+        }
+        ImGui::End();
+
         // Activate Wireframe mode if desired
         std::string rendering_mode = obj->get_data().m_rendering_mode;
         bool render_in_wireframe_mode = false;
@@ -89,6 +95,8 @@ namespace vOS
         m_mesh_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
         m_mesh_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
         m_mesh_shader->set_uniform_bool("u_draw_wireframe", render_in_wireframe_mode);
+        m_mesh_shader->set_uniform_bool("u_rounding", m_rounding);
+        m_mesh_shader->set_uniform_float("u_rounding_size", m_rounding_size);
 
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
@@ -98,7 +106,14 @@ namespace vOS
         m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
         m_mesh_shader->set_uniform_sampler2D("u_position", GL_TEXTURE2,m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
 
-        vao->draw();
+        if (m_rounding)
+        {
+            obj->get_mvb()->get_vao_rounded()->draw();
+        }
+        else
+        {
+            vao->draw();
+        }
 
         m_mesh_shader->unbind();
 

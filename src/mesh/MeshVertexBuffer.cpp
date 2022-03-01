@@ -3,6 +3,8 @@
 #include "../rendering/meshes/CommonMeshes.h"
 
 #include <OpenVolumeMesh/Attribs/NormalAttrib.hh>
+#include <unordered_set>
+#include "../util/VecUtil.h"
 
 namespace vOS
 {
@@ -17,20 +19,30 @@ namespace vOS
 
         generate_buffer(*current_mesh);
 
-        m_vao = new VertexArrayObject(m_positions, m_indices);
-        m_vao->add_attribute(m_normals, 1, 3);
-        m_vao->add_attribute(m_cell_centers, 2, 3);
-        m_vao->add_attribute(m_peel_depths, 3, 1);
-        m_vao->add_attribute(m_is_face_boundary, 4, 1);
-        m_vao->add_attribute(m_is_digged, 5, 1);
-        m_vao->add_attribute(m_colors, 6, 4);
-        m_vao->add_attribute(m_is_isolated, 7, 1);
-        m_vao->add_attribute(m_is_triangle, 8, 1);
+        m_vao_by_face = new VertexArrayObject(m_positions_by_face, m_indices);
+        m_vao_by_face->add_attribute(m_normals_by_face, 1, 3);
+        m_vao_by_face->add_attribute(m_cell_centers_by_face, 2, 3);
+        m_vao_by_face->add_attribute(m_peel_depths_by_face, 3, 1);
+        m_vao_by_face->add_attribute(m_is_digged_by_face, 4, 1);
+        m_vao_by_face->add_attribute(m_colors_by_face, 5, 4);
+        m_vao_by_face->add_attribute(m_is_isolated_by_face, 6, 1);
+        m_vao_by_face->add_attribute(m_is_triangle_by_face, 7, 1);
+
+        m_vao_rounded = new VertexArrayObject(m_positions_rounded, m_indices_rounded);
+        m_vao_rounded->add_attribute(m_normals_rounded, 1, 3);
+        m_vao_rounded->add_attribute(m_cell_centers_rounded, 2, 3);
+        m_vao_rounded->add_attribute(m_peel_depths_rounded, 3, 1);
+        m_vao_rounded->add_attribute(m_is_digged_rounded, 4, 1);
+        m_vao_rounded->add_attribute(m_colors_rounded, 5, 4);
+        m_vao_rounded->add_attribute(m_is_isolated_rounded, 6, 1);
+        m_vao_rounded->add_attribute(m_is_triangle_rounded, 7, 1);
+        m_vao_rounded->add_attribute(m_vertex_types_rounded, 8, 1);
+        m_vao_rounded->add_attribute(m_face_center_or_to_vertex_rounded, 9, 3);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
 
-        m_sphere_vao->add_attribute(m_normals, 1, 3, true);
+        m_sphere_vao->add_attribute(m_normals_by_face, 1, 3, true);
         m_sphere_vao->add_attribute(m_selection_vertices, 2, 3, true);
         m_sphere_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
         m_sphere_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
@@ -51,10 +63,10 @@ namespace vOS
 
     MeshVertexBuffer::~MeshVertexBuffer()
     {
-        delete m_vao;
+        delete m_vao_by_face;
+        delete m_vao_rounded;
         delete m_sphere_vao;
         delete m_cylinder_vao;
-
     }
 
     void MeshVertexBuffer::generate_buffer(Mesh& mesh)
@@ -66,11 +78,284 @@ namespace vOS
         // add every cell to the vertex buffer
         for (auto c_it: mesh.cells())
         {
-            add_cell(mesh, c_it);
+            add_cell_by_faces(mesh, c_it);
+            add_cell_rounded(mesh, c_it);
         }
     }
 
-    void MeshVertexBuffer::add_cell(Mesh& mesh, Cell cell)
+    unsigned int MeshVertexBuffer::add_vertex_data_to_cell_data(RoundedCellData& data, const float type, const glm::vec3& pos,
+                                                        const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv)
+    {
+        auto& cell_center = m_cell_centers[data.cell_id];
+        auto peel_depth = m_peel_depths[data.cell_id];
+        unsigned int index = data.vertex_types.size();
+        data.vertex_types.push_back(type);
+        data.vertex_positions.push_back(pos.x);
+        data.vertex_positions.push_back(pos.y);
+        data.vertex_positions.push_back(pos.z);
+        data.vertex_normals.push_back(norm.x);
+        data.vertex_normals.push_back(norm.y);
+        data.vertex_normals.push_back(norm.z);
+        data.vertex_cell_centers.push_back(cell_center.x);
+        data.vertex_cell_centers.push_back(cell_center.y);
+        data.vertex_cell_centers.push_back(cell_center.z);
+        data.vertex_colors.push_back(col.x);
+        data.vertex_colors.push_back(col.y);
+        data.vertex_colors.push_back(col.z);
+        data.vertex_colors.push_back(col.w);
+        data.vertex_peel_depths.push_back(peel_depth);
+        data.vertex_is_triangle.push_back(1.0f);
+        data.vertex_is_digged.push_back(1.0f);
+        data.vertex_is_isolated.push_back(1.0f);
+        data.face_center_or_to_vertex.push_back(fc_or_tv.x);
+        data.face_center_or_to_vertex.push_back(fc_or_tv.y);
+        data.face_center_or_to_vertex.push_back(fc_or_tv.z);
+        m_current_rounded_index++;
+        return index;
+    }
+
+    void MeshVertexBuffer::add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2)
+    {
+        data.indices.push_back(m_current_rounded_index + i0);
+        data.indices.push_back(m_current_rounded_index + i1);
+        data.indices.push_back(m_current_rounded_index + i2);
+    }
+
+    void MeshVertexBuffer::add_cell_rounded(Mesh& mesh, Cell cell)
+    {
+        std::unordered_map<int, glm::vec3> face_centers;
+        std::unordered_map<int, glm::vec3> face_normals;
+        std::unordered_map<int, std::vector<RoundedVertexData>> cell_vertices;
+        // start with the halffaces, because with them, we can navigate inside the current cell without other cells
+        // if we would instead take the halfedges of a vertex for example, they would include other cells,
+        // which we don't want
+        for (auto chf_it: mesh.cell_halffaces(cell))
+        {
+            face_normals[chf_it.idx()] = VecUtil::normal_to_vec3(mesh, chf_it);
+            glm::vec3 center(0.0f);
+            int num_vertices = 0;
+            // first, get the center of the halfface
+            for (auto hfv_it: mesh.halfface_vertices(chf_it))
+            {
+                center += VecUtil::pos_to_vec3(mesh, hfv_it);
+                num_vertices++;
+            }
+            face_centers[chf_it.idx()] = center / (float) num_vertices;
+            // This is a bit tricky, for each vertex we want a way to iterate over all adjacent edges, but ONLY within
+            // the current cell. And additionally, they need to be in order, meaning all edges that lie next to each other
+            // in our vector must share the same halfface. Basically, imagine a halfface circle around each vertex.
+            // This is important when we want to calculate the edge normals, for example.
+            for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
+            {
+                // this is the corner vertex we are currently looking at
+                auto from_vertex = mesh.from_vertex_handle(hfhe_it);
+                // since we are iterating over the halfedges, we can get vertices twice, so just check the next one
+                if (cell_vertices.find(from_vertex.idx()) != cell_vertices.end())
+                {
+                    continue;
+                }
+                // this is the data we need to store so that we can iterate over the vertices with more information later
+                // basically, store the outgoing halfedge, and one adjacent halfface of the edge
+                // from
+                // |    \
+                // he    \
+                // |   hf \
+                // to -----*
+                cell_vertices[from_vertex.idx()].push_back({
+                    from_vertex.idx(),
+                    mesh.to_vertex_handle(hfhe_it).idx(),
+                    hfhe_it.idx(),
+                    chf_it.idx()
+                });
+                auto current_halfedge = hfhe_it;
+                auto current_halfface = chf_it;
+                do
+                {
+                    // with this, we can get the next halfface within the cell, like this
+                    //              *
+                    //           /  |  \
+                    //        /     he    \
+                    //     /        |        \
+                    //  /       *------->      \
+                    // *------------*------------*
+                    current_halfface = mesh.adjacent_halfface_in_cell(current_halfface, current_halfedge);
+                    // exit condition, we have closed the loop
+                    if (current_halfface == chf_it)
+                    {
+                        break;
+                    }
+                    // now that we have our next halfface, we need to find the associated halfedge that starts at
+                    // the corner vertex within the halfface
+                    for (auto chfhe_it: mesh.halfface_halfedges(current_halfface))
+                    {
+                        auto from = mesh.from_vertex_handle(chfhe_it);
+                        if (from == from_vertex)
+                        {
+                            // we have found our halfedge
+                            current_halfedge = chfhe_it;
+                            cell_vertices[from_vertex.idx()].push_back({
+                                from_vertex.idx(),
+                                mesh.to_vertex_handle(chfhe_it).idx(),
+                                current_halfedge.idx(),
+                                current_halfface.idx()
+                            });
+                            break;
+                        }
+                    }
+                } while (current_halfface != chf_it);
+            }
+        }
+
+        // now we need some maps to store the indices of the vertices we are going to create. We need to iterate
+        // over them later and use these maps to tell opengl which ones to connect as triangles.
+        // basically, almost all of them map from ovm id to opengl index
+
+        // for each halfface the vertex that lies in the center of the halfface
+        std::unordered_map<int, unsigned int> face_center_indices;
+        // the index for each corner vertex of the cell
+        std::unordered_map<int, unsigned int> corner_vertex_indices;
+        // for each halfface those vertices that are close to the edge, basically the smaller triangle in the middle
+        std::unordered_map<int, std::vector<RoundedFaceVertexData>> halfface_vertices_indices;
+        // for each corner vertex of the halfface, the vertex on the inner triangle that is closest to the corner
+        std::unordered_map<int, std::unordered_map<int, unsigned int>> corner_vertex_face_vertex_index;
+        // for each halfedge, and for a given corner vertex, the new vertex on the halfedge that is closest to the corner
+        // *-----*---------he----------*-----*
+        //       ^                     ^
+        //       |                     |
+        // this one for           this one for
+        // the left corner        the right corner
+        std::unordered_map<int, std::unordered_map<int, unsigned int>> halfedge_vertex_indices;
+
+        RoundedCellData cell_data;
+        cell_data.cell_id = cell.idx();
+        glm::vec4 color(1.0f);
+        glm::vec3 zero(0.0f);
+        // iterate over the vertices that we have collected earlier
+        for (auto& it: cell_vertices)
+        {
+            // ovm id of the corner vertex
+            const int vertex_id = it.first;
+            // the outgoing halfedges and halffaces in a circle around the corner
+            const auto& vertex_data = it.second;
+            glm::vec3 corner_normal(0.0f);
+            glm::vec3 corner_pos = VecUtil::pos_to_vec3(mesh, vertex_id);
+            for (size_t i = 0; i < vertex_data.size(); i++)
+            {
+                auto& prev_data = vertex_data[i];
+                auto& data = vertex_data[(i + 1) % vertex_data.size()];
+                auto& next_data = vertex_data[(i + 2) % vertex_data.size()];
+                corner_normal += VecUtil::normal_to_vec3(mesh, data.halfface_id);
+                // edge vertex
+                glm::vec3 face_normal = VecUtil::normal_to_vec3(mesh, data.halfface_id);
+                glm::vec3 prev_face_normal = VecUtil::normal_to_vec3(mesh, prev_data.halfface_id);
+                glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
+                glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(mesh, data.to_vertex_id);
+                halfedge_vertex_indices[data.halfedge_id][data.from_vertex_id] = add_vertex_data_to_cell_data(
+                        cell_data,
+                        ROUNDED_VERTEX_TYPE_EDGE,
+                        corner_pos,
+                        edge_normal,
+                        color,
+                        to_vertex_pos
+                );
+                // face vertex
+                glm::vec3 face_center = face_centers[data.halfface_id];
+                unsigned int face_vertex_index = add_vertex_data_to_cell_data(
+                        cell_data,
+                        ROUNDED_VERTEX_TYPE_FACE,
+                        corner_pos,
+                        face_normal,
+                        color,
+                        face_center
+                );
+                halfface_vertices_indices[data.halfface_id].push_back({
+                    face_vertex_index,
+                    vertex_id,
+                    data.to_vertex_id,
+                    next_data.to_vertex_id,
+                    data.halfedge_id,
+                    next_data.halfedge_id
+                });
+                corner_vertex_face_vertex_index[vertex_id][data.halfface_id] = face_vertex_index;
+            }
+            corner_normal = glm::normalize(corner_normal);
+            // corner vertex
+            corner_vertex_indices[vertex_id] = add_vertex_data_to_cell_data(
+                    cell_data,
+                    ROUNDED_VERTEX_TYPE_CORNER,
+                    corner_pos,
+                    corner_normal,
+                    color,
+                    zero
+            );
+        }
+        for (auto& it : face_centers)
+        {
+            // center vertex
+            const int halfface_id = it.first;
+            const auto& center_pos = it.second;
+            face_center_indices[halfface_id] = add_vertex_data_to_cell_data(
+                    cell_data,
+                    ROUNDED_VERTEX_TYPE_CENTER,
+                    center_pos,
+                    face_normals[halfface_id],
+                    color,
+                    zero
+            );
+        }
+
+        // our last job is to triangulate all of our vertices that we have created
+        // we start by iterating over the vertices of our inner triangle. This way, we can find the closest corner
+        // vertex and go on from there
+        for (const auto& it : halfface_vertices_indices)
+        {
+            // this is the current halfface ovm id that we are in
+            const int halfface_id = it.first;
+            // index of the halfface center vertex
+            const unsigned int face_center_index = face_center_indices[halfface_id];
+            const auto& face_vertices_data = it.second;
+            for (const auto& face_vertex : face_vertices_data)
+            {
+                // there is sadly no clean way to do this
+                const int corner_vertex_id = face_vertex.vertex_id;
+                const int to_corner_vertex_id = face_vertex.to_vertex_id;
+                const int next_to_corner_vertex_id = face_vertex.next_to_vertex_id;
+
+                const int to_corner_vertex_halfedge_id = face_vertex.to_vertex_halfedge_id;
+                const int next_to_corner_vertex_halfedge_id = face_vertex.next_to_vertex_halfedge_id;
+
+                const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
+
+                const unsigned int face_corner_vertex_index = corner_vertex_face_vertex_index[corner_vertex_id][halfface_id];
+                const unsigned int face_to_corner_vertex_index = corner_vertex_face_vertex_index[to_corner_vertex_id][halfface_id];
+                const unsigned int face_next_to_corner_vertex_index = corner_vertex_face_vertex_index[next_to_corner_vertex_id][halfface_id];
+
+                const unsigned int to_corner_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_halfedge_id][corner_vertex_id];
+                const unsigned int next_to_corner_vertex_halfedge_index = halfedge_vertex_indices[next_to_corner_vertex_halfedge_id][corner_vertex_id];
+                const unsigned int next_to_vertex_halfedge_index = halfedge_vertex_indices[next_to_corner_vertex_halfedge_id][next_to_corner_vertex_id];
+
+                add_cell_triangle_indices(cell_data, face_center_index, face_corner_vertex_index, face_to_corner_vertex_index);
+                add_cell_triangle_indices(cell_data, corner_vertex_index, to_corner_vertex_halfedge_index, next_to_corner_vertex_halfedge_index);
+                add_cell_triangle_indices(cell_data, face_corner_vertex_index, next_to_corner_vertex_halfedge_index, to_corner_vertex_halfedge_index);
+                add_cell_triangle_indices(cell_data, face_corner_vertex_index, to_corner_vertex_halfedge_index, face_to_corner_vertex_index);
+                add_cell_triangle_indices(cell_data, face_corner_vertex_index, next_to_vertex_halfedge_index, next_to_corner_vertex_halfedge_index);
+            }
+        }
+        // if you have a prettier way to write this tell me please
+        m_indices_rounded.insert(m_indices_rounded.end(), cell_data.indices.begin(), cell_data.indices.end());
+        m_positions_rounded.insert(m_positions_rounded.end(), cell_data.vertex_positions.begin(), cell_data.vertex_positions.end());
+        m_normals_rounded.insert(m_normals_rounded.end(), cell_data.vertex_normals.begin(), cell_data.vertex_normals.end());
+        m_cell_centers_rounded.insert(m_cell_centers_rounded.end(), cell_data.vertex_cell_centers.begin(), cell_data.vertex_cell_centers.end());
+        m_colors_rounded.insert(m_colors_rounded.end(), cell_data.vertex_colors.begin(), cell_data.vertex_colors.end());
+        m_peel_depths_rounded.insert(m_peel_depths_rounded.end(), cell_data.vertex_peel_depths.begin(), cell_data.vertex_peel_depths.end());
+        m_is_triangle_rounded.insert(m_is_triangle_rounded.end(), cell_data.vertex_is_triangle.begin(), cell_data.vertex_is_triangle.end());
+        m_is_digged_rounded.insert(m_is_digged_rounded.end(), cell_data.vertex_is_digged.begin(), cell_data.vertex_is_digged.end());
+        m_is_isolated_rounded.insert(m_is_isolated_rounded.end(), cell_data.vertex_is_isolated.begin(), cell_data.vertex_is_isolated.end());
+        m_vertex_types_rounded.insert(m_vertex_types_rounded.end(), cell_data.vertex_types.begin(), cell_data.vertex_types.end());
+        m_face_center_or_to_vertex_rounded.insert(m_face_center_or_to_vertex_rounded.end(), cell_data.face_center_or_to_vertex.begin(), cell_data.face_center_or_to_vertex.end());
+    }
+
+    void MeshVertexBuffer::add_cell_by_faces(Mesh& mesh, Cell cell)
     {
         OpenVolumeMesh::CellPropertyT<int> peel_property = mesh.request_cell_property<int>("PeelDepth");
         OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh.request_cell_property<bool>("DiggingProperty");
@@ -101,9 +386,11 @@ namespace vOS
 
         // get the center, so we can add it as a vertex attribute
         glm::vec3 cell_center = get_center(vertices);
+        m_cell_centers[cell.idx()] = cell_center;
 
         // get peel depth of the cell
         int peel_depth = peel_property[cell];
+        m_peel_depths[cell.idx()] = (float) peel_depth;
 
         m_selection_sphere_digging_indices[cell.idx()] = (int) m_sphere_is_digged.size();
         for (int i = 0; i < num_selection_vertices; i++)
@@ -149,12 +436,6 @@ namespace vOS
             auto hf_normal = mesh.normal(chf_it);
             auto normal = glm::vec3(hf_normal[0], hf_normal[1], hf_normal[2]);
 
-            // remember if face is boundary, so that we can discard non boundary faces in the shader if needed
-            if (mesh.is_boundary(face_handle))
-            {
-                face_data.is_boundary = true;
-            }
-
             // Count the amount of Vertices this Face has
             std::vector<glm::vec3> original_face_vertices;
             for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
@@ -169,7 +450,7 @@ namespace vOS
             if (original_face_vertices.size() == 3)
             {
                 // iterate over the halfedges of the halfface
-                for (auto vertex_pos : original_face_vertices)
+                for (auto vertex_pos: original_face_vertices)
                 {
                     // get geometry data
                     VertexData v_data;
@@ -184,8 +465,7 @@ namespace vOS
                 m_num_vertices += (int) original_face_vertices.size();
 
                 faces.push_back(face_data);
-            }
-            else if (original_face_vertices.size() > 3)
+            } else if (original_face_vertices.size() > 3)
             {
                 bool first_edge = true;
                 glm::vec3 previous_position(0.0f);
@@ -197,14 +477,14 @@ namespace vOS
 
                 // Get Midpoint of all Vertices
                 glm::vec3 midpoint(0.0f);
-                for (auto vertex_pos : original_face_vertices)
+                for (auto vertex_pos: original_face_vertices)
                 {
                     midpoint += vertex_pos;
                 }
                 midpoint /= original_face_vertices.size();
 
                 // Add every other Vertex to the list, and calculate the local normals for each
-                for (auto vertex_pos : original_face_vertices)
+                for (auto vertex_pos: original_face_vertices)
                 {
                     if (!first_edge)
                     {
@@ -225,8 +505,7 @@ namespace vOS
                         // Add to Face Normal and multiply by triangle area
                         face_normal += n * area;
                         previous_position = vertex_pos;
-                    }
-                    else
+                    } else
                     {
                         first_edge = false;
                         previous_position = vertex_pos;
@@ -237,7 +516,7 @@ namespace vOS
                 face_data.vertices[0].normal = face_normal;
 
                 // Add Vertex Data
-                for (auto vertex_pos : original_face_vertices)
+                for (auto vertex_pos: original_face_vertices)
                 {
                     VertexData v_data;
                     v_data.position = vertex_pos;
@@ -249,8 +528,7 @@ namespace vOS
                 add_face_indices(mesh, face_data);
                 m_num_vertices += (int) face_data.vertices.size();
                 faces.push_back(face_data);
-            }
-            else
+            } else
             {
                 std::cout << "Face " << face_id << " has less than 3 vertices" << std::endl;
                 continue;
@@ -273,7 +551,7 @@ namespace vOS
         // now that we collected the data we need, we can update or buffer arrays
         int nbr_vertices_of_cell = 0;
 
-        m_start_of_cell_vertices[cell.idx()] = m_is_digged.size();
+        m_start_of_cell_vertices[cell.idx()] = m_is_digged_by_face.size();
         for (const FaceData& face: faces)
         {
             float is_triangle = (face.vertices.size() > 3) ? 0.0f : 1.0f;
@@ -282,35 +560,34 @@ namespace vOS
             for (const VertexData& vertex: face.vertices)
             {
                 // position
-                m_positions.push_back(vertex.position.x);
-                m_positions.push_back(vertex.position.y);
-                m_positions.push_back(vertex.position.z);
+                m_positions_by_face.push_back(vertex.position.x);
+                m_positions_by_face.push_back(vertex.position.y);
+                m_positions_by_face.push_back(vertex.position.z);
 
                 // normal
-                m_normals.push_back(vertex.normal.x);
-                m_normals.push_back(vertex.normal.y);
-                m_normals.push_back(vertex.normal.z);
+                m_normals_by_face.push_back(vertex.normal.x);
+                m_normals_by_face.push_back(vertex.normal.y);
+                m_normals_by_face.push_back(vertex.normal.z);
 
                 // cell center
-                m_cell_centers.push_back(cell_center.x);
-                m_cell_centers.push_back(cell_center.y);
-                m_cell_centers.push_back(cell_center.z);
+                m_cell_centers_by_face.push_back(cell_center.x);
+                m_cell_centers_by_face.push_back(cell_center.y);
+                m_cell_centers_by_face.push_back(cell_center.z);
 
                 // Color
-                m_colors.push_back(1);
-                m_colors.push_back(1);
-                m_colors.push_back(1);
-                m_colors.push_back(0);
+                m_colors_by_face.push_back(1);
+                m_colors_by_face.push_back(1);
+                m_colors_by_face.push_back(1);
+                m_colors_by_face.push_back(0);
 
 
-                m_peel_depths.push_back((float) peel_depth);
+                m_peel_depths_by_face.push_back((float) peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
 
-                m_is_digged.push_back(1.0f);
-                m_is_isolated.push_back(1.0f);
+                m_is_digged_by_face.push_back(1.0f);
+                m_is_isolated_by_face.push_back(1.0f);
                 nbr_vertices_of_cell++;
-                m_is_face_boundary.push_back(face.is_boundary ? 1.0f : 0.0f);
-                m_is_triangle.push_back(is_triangle);
+                m_is_triangle_by_face.push_back(is_triangle);
             }
 
             // add all indices of the face
@@ -369,10 +646,10 @@ namespace vOS
 
         for (int i = 0; i < vertex_count; i++)
         {
-            m_colors[color_array_index + (i * 4)] = r;
-            m_colors[color_array_index + (i * 4) + 1] = g;
-            m_colors[color_array_index + (i * 4) + 2] = b;
-            m_colors[color_array_index + (i * 4) + 3] = a;
+            m_colors_by_face[color_array_index + (i * 4)] = r;
+            m_colors_by_face[color_array_index + (i * 4) + 1] = g;
+            m_colors_by_face[color_array_index + (i * 4) + 2] = b;
+            m_colors_by_face[color_array_index + (i * 4) + 3] = a;
         }
         m_update_vao = true;
     }
@@ -448,14 +725,24 @@ namespace vOS
         return vertices;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_vao()
+    VertexArrayObject* MeshVertexBuffer::get_vao_by_face()
     {
         if (m_update_vao)
         {
-            m_vao->update_attribute(m_colors, 6);
+            m_vao_by_face->update_attribute(m_colors_by_face, 6);
             m_update_vao = false;
         }
-        return m_vao;
+        return m_vao_by_face;
+    }
+
+    VertexArrayObject* MeshVertexBuffer::get_vao_rounded()
+    {
+        if (m_update_vao)
+        {
+            m_vao_rounded->update_attribute(m_colors_rounded, 6);
+            m_update_vao = false;
+        }
+        return m_vao_rounded;
     }
 
     int MeshVertexBuffer::to_vertexID(int value)
@@ -517,7 +804,7 @@ namespace vOS
 
         for (size_t i = 0; i < nbr_vertices; i++)
         {
-            m_is_digged[start + i] = newValue;
+            m_is_digged_by_face[start + i] = newValue;
         }
 
         int sphere_index = m_selection_sphere_digging_indices[id];
@@ -534,16 +821,16 @@ namespace vOS
             m_cylinder_is_digged[cylinder_index + i] = newValue;
         }
 
-        m_vao->update_attribute(m_is_digged, 5);
+        m_vao_by_face->update_attribute(m_is_digged_by_face, 5);
         m_sphere_vao->update_attribute(m_sphere_is_digged, 5);
         m_cylinder_vao->update_attribute(m_cylinder_is_digged, 5);
     }
 
     void MeshVertexBuffer::reset_digging()
     {
-        for (size_t i = 0; i < m_is_digged.size(); i++)
+        for (size_t i = 0; i < m_is_digged_by_face.size(); i++)
         {
-            m_is_digged[i] = 1.0;
+            m_is_digged_by_face[i] = 1.0;
         }
         for (size_t i = 0; i < m_sphere_is_digged.size(); i++)
         {
@@ -554,7 +841,7 @@ namespace vOS
             m_cylinder_is_digged[i] = 1.0;
         }
 
-        m_vao->update_attribute(m_is_digged, 5);
+        m_vao_by_face->update_attribute(m_is_digged_by_face, 5);
         m_sphere_vao->update_attribute(m_sphere_is_digged, 5);
         m_cylinder_vao->update_attribute(m_cylinder_is_digged, 5);
     }
@@ -567,7 +854,7 @@ namespace vOS
 
         for (size_t i = 0; i < nbr_vertices; i++)
         {
-            m_is_isolated[start + i] = newValue;
+            m_is_isolated_by_face[start + i] = newValue;
         }
 
         int sphere_index = m_selection_sphere_digging_indices[id];
@@ -589,9 +876,9 @@ namespace vOS
 
     void MeshVertexBuffer::start_isolation()
     {
-        for (size_t i = 0; i < m_is_isolated.size(); i++)
+        for (size_t i = 0; i < m_is_isolated_by_face.size(); i++)
         {
-            m_is_isolated[i] = 0.0;
+            m_is_isolated_by_face[i] = 0.0;
         }
         for (size_t i = 0; i < m_sphere_is_isolated.size(); i++)
         {
@@ -606,16 +893,16 @@ namespace vOS
 
     void MeshVertexBuffer::activate_isolation()
     {
-        m_vao->update_attribute(m_is_isolated, 7);
+        m_vao_by_face->update_attribute(m_is_isolated_by_face, 7);
         m_sphere_vao->update_attribute(m_sphere_is_isolated, 6);
         m_cylinder_vao->update_attribute(m_cylinder_is_isolated, 6);
     }
 
     void MeshVertexBuffer::reset_isolation()
     {
-        for (size_t i = 0; i < m_is_isolated.size(); i++)
+        for (size_t i = 0; i < m_is_isolated_by_face.size(); i++)
         {
-            m_is_isolated[i] = 1.0;
+            m_is_isolated_by_face[i] = 1.0;
         }
         for (size_t i = 0; i < m_sphere_is_isolated.size(); i++)
         {
@@ -626,7 +913,7 @@ namespace vOS
             m_cylinder_is_isolated[i] = 1.0;
         }
 
-        m_vao->update_attribute(m_is_isolated, 7);
+        m_vao_by_face->update_attribute(m_is_isolated_by_face, 7);
         m_sphere_vao->update_attribute(m_sphere_is_isolated, 6);
         m_cylinder_vao->update_attribute(m_cylinder_is_isolated, 6);
     }

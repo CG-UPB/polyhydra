@@ -25,11 +25,53 @@ namespace vOS
 
     struct FaceData
     {
-        bool is_boundary = false;
-
         std::vector<VertexData> vertices;
         std::vector<unsigned int> indices;
         std::vector<unsigned int> face_ids;
+    };
+
+    struct RoundedVertexData
+    {
+        int from_vertex_id = -1;
+        int to_vertex_id = -1;
+        int halfedge_id = -1;
+        int halfface_id = -1;
+    };
+
+    struct RoundedFaceVertexData
+    {
+        unsigned int index = -1;
+        int vertex_id = -1;
+        int to_vertex_id = -1;
+        int next_to_vertex_id = -1;
+        int to_vertex_halfedge_id = -1;
+        int next_to_vertex_halfedge_id = -1;
+    };
+
+    struct RoundedCellData
+    {
+        int cell_id = -1;
+        // element size 1
+        std::vector<float> vertex_types;
+        // element size 3
+        std::vector<float> vertex_positions;
+        // element size 3
+        std::vector<float> vertex_normals;
+        // element size 3
+        std::vector<float> vertex_cell_centers;
+        // element size 4
+        std::vector<float> vertex_colors;
+        // element size 1
+        std::vector<float> vertex_peel_depths;
+        // element size 1
+        std::vector<float> vertex_is_triangle;
+        // element size 1
+        std::vector<float> vertex_is_digged;
+        // element size 1
+        std::vector<float> vertex_is_isolated;
+        // element size 3, depending on the vertex type, we store different positions in here
+        std::vector<float> face_center_or_to_vertex;
+        std::vector<unsigned int> indices;
     };
 
     class MeshVertexBuffer
@@ -72,7 +114,9 @@ namespace vOS
 
         static glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
 
-        VertexArrayObject *get_vao();
+        VertexArrayObject *get_vao_by_face();
+
+        VertexArrayObject* get_vao_rounded();
 
         void set_face_color(int ovm_id, float r, float g, float b, float a);
 
@@ -94,6 +138,12 @@ namespace vOS
         void start_isolation();
 
     private:
+
+        static constexpr float ROUNDED_VERTEX_TYPE_FACE     = 0.0f;
+        static constexpr float ROUNDED_VERTEX_TYPE_EDGE     = 1.0f;
+        static constexpr float ROUNDED_VERTEX_TYPE_CORNER   = 2.0f;
+        static constexpr float ROUNDED_VERTEX_TYPE_CENTER   = 3.0f;
+
         /**
          * adds data to VertexBuffer for each cell
          * uses add_cell()
@@ -101,7 +151,13 @@ namespace vOS
          */
         void generate_buffer(Mesh &mesh);
 
-        void add_cell(Mesh& mesh, Cell cell);
+        void add_cell_rounded(Mesh& mesh, Cell cell);
+
+        unsigned int add_vertex_data_to_cell_data(RoundedCellData& data, float type, const glm::vec3& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv);
+
+        void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2);
+
+        void add_cell_by_faces(Mesh& mesh, Cell cell);
 
         void add_face_indices(Mesh &mesh, FaceData &face) const;
 
@@ -124,7 +180,8 @@ namespace vOS
 
         std::vector<float> m_original_vertices;
 
-        VertexArrayObject* m_vao = nullptr;
+        VertexArrayObject* m_vao_by_face = nullptr;
+        VertexArrayObject* m_vao_rounded = nullptr;
         VertexArrayObject* m_sphere_vao = nullptr;
         VertexArrayObject* m_cylinder_vao = nullptr;
 
@@ -133,28 +190,47 @@ namespace vOS
         std::vector<int> m_edge_ids;
         std::vector<int> m_face_ids;
 
-        // vertex attributes
-        std::vector<float> m_positions;
-        std::vector<float> m_normals;
-        std::vector<float> m_cell_centers;
-        std::vector<float> m_is_face_boundary;
-        std::vector<float> m_colors;
+        // to be used for rounded cells as well, no need to calculate twice
+        std::unordered_map<int, glm::vec3> m_cell_centers;
+        std::unordered_map<int, float> m_peel_depths;
+
+        // vertex attributes for cells by face
+        std::vector<float> m_positions_by_face;
+        std::vector<float> m_normals_by_face;
+        std::vector<float> m_cell_centers_by_face;
+        std::vector<float> m_colors_by_face;
+        std::vector<float> m_peel_depths_by_face;
+        std::vector<float> m_is_triangle_by_face;
+        std::vector<float> m_is_digged_by_face;
+        std::vector<float> m_is_isolated_by_face;
+
+        // vertex attributes for rounded cells
+        std::vector<float> m_positions_rounded;
+        std::vector<float> m_normals_rounded;
+        std::vector<float> m_cell_centers_rounded;
+        std::vector<float> m_colors_rounded;
+        std::vector<float> m_peel_depths_rounded;
+        std::vector<float> m_is_triangle_rounded;
+        std::vector<float> m_is_digged_rounded;
+        std::vector<float> m_is_isolated_rounded;
+        std::vector<float> m_vertex_types_rounded;
+        std::vector<float> m_face_center_or_to_vertex_rounded;
+        int m_current_rounded_index = 0;
+
+        // selection
         std::vector<float> m_sphere_cell_centers;
         std::vector<float> m_cylinder_cell_centers;
         std::vector<float> m_sphere_peel_depths;
         std::vector<float> m_cylinder_peel_depths;
-        std::vector<float> m_peel_depths;
-        std::vector<float> m_is_triangle;
 
         std::vector<float> m_sphere_is_digged;
         std::vector<float> m_cylinder_is_digged;
-        std::vector<float> m_is_digged;
 
         std::vector<float> m_sphere_is_isolated;
         std::vector<float> m_cylinder_is_isolated;
-        std::vector<float> m_is_isolated;
 
         std::vector<unsigned int> m_indices;
+        std::vector<unsigned int> m_indices_rounded;
         std::vector<float> m_from_vertices;
         std::vector<float> m_to_vertices;
         std::vector<float> m_selection_vertices;
