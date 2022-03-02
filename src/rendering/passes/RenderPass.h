@@ -25,6 +25,10 @@ namespace vOS
             glm::vec3 position;
             glm::vec3 color;
         } light;
+        struct {
+            bool active = true;
+            float size = 0.1f;
+        } rounding;
     };
 
     class RenderPass

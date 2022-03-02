@@ -61,7 +61,7 @@ void main()
 
     // Phong Shading
 
-    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
+    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), 0.0);
 
     //diffuse
     float diffuseStrength = 1.0;

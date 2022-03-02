@@ -110,15 +110,14 @@ namespace vOS
         data.face_center_or_to_vertex.push_back(fc_or_tv.x);
         data.face_center_or_to_vertex.push_back(fc_or_tv.y);
         data.face_center_or_to_vertex.push_back(fc_or_tv.z);
-        m_current_rounded_index++;
         return index;
     }
 
     void MeshVertexBuffer::add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2)
     {
         data.indices.push_back(m_current_rounded_index + i0);
-        data.indices.push_back(m_current_rounded_index + i1);
         data.indices.push_back(m_current_rounded_index + i2);
+        data.indices.push_back(m_current_rounded_index + i1);
     }
 
     void MeshVertexBuffer::add_cell_rounded(Mesh& mesh, Cell cell)
@@ -186,23 +185,55 @@ namespace vOS
                     }
                     // now that we have our next halfface, we need to find the associated halfedge that starts at
                     // the corner vertex within the halfface
-                    for (auto chfhe_it: mesh.halfface_halfedges(current_halfface))
+                    int count = 0;
+                    for (auto chfe_it: mesh.halfface_edges(current_halfface))
                     {
-                        auto from = mesh.from_vertex_handle(chfhe_it);
-                        if (from == from_vertex)
+                        count++;
+                        auto [he0, he1] = mesh.edge_halfedges(chfe_it);
+                        auto from0 = mesh.from_vertex_handle(he0);
+                        auto from1 = mesh.from_vertex_handle(he1);
+                        if (from0 == from_vertex && current_halfedge != he0)
                         {
                             // we have found our halfedge
-                            current_halfedge = chfhe_it;
+                            current_halfedge = he0;
                             cell_vertices[from_vertex.idx()].push_back({
-                                from_vertex.idx(),
-                                mesh.to_vertex_handle(chfhe_it).idx(),
-                                current_halfedge.idx(),
-                                current_halfface.idx()
+                                   from_vertex.idx(),
+                                   mesh.to_vertex_handle(current_halfedge).idx(),
+                                   current_halfedge.idx(),
+                                   current_halfface.idx()
+                            });
+                            break;
+                        }
+                        if (from1 == from_vertex && current_halfedge != he1)
+                        {
+                            // we have found our halfedge
+                            current_halfedge = he1;
+                            cell_vertices[from_vertex.idx()].push_back({
+                                   from_vertex.idx(),
+                                   mesh.to_vertex_handle(current_halfedge).idx(),
+                                   current_halfedge.idx(),
+                                   current_halfface.idx()
                             });
                             break;
                         }
                     }
+                    std::cout << "edges: " << count << std::endl;
                 } while (current_halfface != chf_it);
+            }
+        }
+
+        for (auto& cell_vertex : cell_vertices)
+        {
+            auto data = cell_vertex.second;
+            for (auto v_data : data)
+            {
+                auto vertex_id = v_data.from_vertex_id;
+                auto to_id = v_data.to_vertex_id;
+                auto halfedge_id = v_data.halfedge_id;
+
+                std::cout << "from vertex: " << vertex_id << ", to vertex: " << to_id << ", halfedge: " << halfedge_id << std::endl;
+                std::cout << "halfedge from: " << mesh.from_vertex_handle(OpenVolumeMesh::HalfEdgeHandle{halfedge_id}) << std::endl;
+                std::cout << "halfedge to: " << mesh.to_vertex_handle(OpenVolumeMesh::HalfEdgeHandle{halfedge_id}) << std::endl;
             }
         }
 
@@ -239,18 +270,29 @@ namespace vOS
             const auto& vertex_data = it.second;
             glm::vec3 corner_normal(0.0f);
             glm::vec3 corner_pos = VecUtil::pos_to_vec3(mesh, vertex_id);
+            std::cout << "vertex data size: " << vertex_data.size() << std::endl;
             for (size_t i = 0; i < vertex_data.size(); i++)
             {
-                auto& prev_data = vertex_data[i];
+                auto& prev_data = vertex_data[(i + 2) % vertex_data.size()];
                 auto& data = vertex_data[(i + 1) % vertex_data.size()];
-                auto& next_data = vertex_data[(i + 2) % vertex_data.size()];
+                auto& next_data = vertex_data[i];
+
+                std::cout << "prev_data: from: " << prev_data.from_vertex_id << ", to: " << prev_data.to_vertex_id << std::endl;
+                std::cout << "data: from: " << data.from_vertex_id << ", to: " << data.to_vertex_id << std::endl;
+                std::cout << "next_data: from: " << next_data.from_vertex_id << ", to: " << next_data.to_vertex_id << std::endl;
+                std::cout << "\n" << std::endl;
+
                 corner_normal += VecUtil::normal_to_vec3(mesh, data.halfface_id);
                 // edge vertex
                 glm::vec3 face_normal = VecUtil::normal_to_vec3(mesh, data.halfface_id);
                 glm::vec3 prev_face_normal = VecUtil::normal_to_vec3(mesh, prev_data.halfface_id);
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
                 glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(mesh, data.to_vertex_id);
-                halfedge_vertex_indices[data.halfedge_id][data.from_vertex_id] = add_vertex_data_to_cell_data(
+                // TODO: Edge statt halfedge nehmen
+
+                auto edge = mesh.edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
+
+                halfedge_vertex_indices[edge.idx()][data.from_vertex_id] = add_vertex_data_to_cell_data(
                         cell_data,
                         ROUNDED_VERTEX_TYPE_EDGE,
                         corner_pos,
@@ -317,28 +359,36 @@ namespace vOS
             for (const auto& face_vertex : face_vertices_data)
             {
                 // there is sadly no clean way to do this
-                const int corner_vertex_id = face_vertex.vertex_id;
+                const int corner_vertex_id = face_vertex.corner_vertex_id;
                 const int to_corner_vertex_id = face_vertex.to_vertex_id;
                 const int next_to_corner_vertex_id = face_vertex.next_to_vertex_id;
 
                 const int to_corner_vertex_halfedge_id = face_vertex.to_vertex_halfedge_id;
                 const int next_to_corner_vertex_halfedge_id = face_vertex.next_to_vertex_halfedge_id;
 
+                const int to_corner_vertex_edge_id = mesh.edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
+                const int next_to_corner_vertex_edge_id = mesh.edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
+
                 const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
 
-                const unsigned int face_corner_vertex_index = corner_vertex_face_vertex_index[corner_vertex_id][halfface_id];
+                const unsigned int face_corner_vertex_index = face_vertex.index;
                 const unsigned int face_to_corner_vertex_index = corner_vertex_face_vertex_index[to_corner_vertex_id][halfface_id];
-                const unsigned int face_next_to_corner_vertex_index = corner_vertex_face_vertex_index[next_to_corner_vertex_id][halfface_id];
 
-                const unsigned int to_corner_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_halfedge_id][corner_vertex_id];
-                const unsigned int next_to_corner_vertex_halfedge_index = halfedge_vertex_indices[next_to_corner_vertex_halfedge_id][corner_vertex_id];
-                const unsigned int next_to_vertex_halfedge_index = halfedge_vertex_indices[next_to_corner_vertex_halfedge_id][next_to_corner_vertex_id];
+                const unsigned int to_corner_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_edge_id][corner_vertex_id];
+                const unsigned int next_to_corner_vertex_halfedge_index = halfedge_vertex_indices[next_to_corner_vertex_edge_id][corner_vertex_id];
+                const unsigned int to_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_edge_id][to_corner_vertex_id];
 
+                // face center
                 add_cell_triangle_indices(cell_data, face_center_index, face_corner_vertex_index, face_to_corner_vertex_index);
-                add_cell_triangle_indices(cell_data, corner_vertex_index, to_corner_vertex_halfedge_index, next_to_corner_vertex_halfedge_index);
-                add_cell_triangle_indices(cell_data, face_corner_vertex_index, next_to_corner_vertex_halfedge_index, to_corner_vertex_halfedge_index);
-                add_cell_triangle_indices(cell_data, face_corner_vertex_index, to_corner_vertex_halfedge_index, face_to_corner_vertex_index);
-                add_cell_triangle_indices(cell_data, face_corner_vertex_index, next_to_vertex_halfedge_index, next_to_corner_vertex_halfedge_index);
+
+                // corner triangle
+                add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, next_to_corner_vertex_halfedge_index, corner_vertex_index);
+
+                // opposite of corner triangle
+                add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, face_corner_vertex_index, next_to_corner_vertex_halfedge_index);
+
+                add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, face_to_corner_vertex_index, face_corner_vertex_index);
+                add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, to_vertex_halfedge_index, face_to_corner_vertex_index);
             }
         }
         // if you have a prettier way to write this tell me please
@@ -353,6 +403,8 @@ namespace vOS
         m_is_isolated_rounded.insert(m_is_isolated_rounded.end(), cell_data.vertex_is_isolated.begin(), cell_data.vertex_is_isolated.end());
         m_vertex_types_rounded.insert(m_vertex_types_rounded.end(), cell_data.vertex_types.begin(), cell_data.vertex_types.end());
         m_face_center_or_to_vertex_rounded.insert(m_face_center_or_to_vertex_rounded.end(), cell_data.face_center_or_to_vertex.begin(), cell_data.face_center_or_to_vertex.end());
+
+        m_current_rounded_index += (int) cell_data.vertex_positions.size() / 3;
     }
 
     void MeshVertexBuffer::add_cell_by_faces(Mesh& mesh, Cell cell)

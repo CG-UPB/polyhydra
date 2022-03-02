@@ -718,6 +718,12 @@ namespace vOS
     {
         render_debug_menu();
 
+        if (ImGui::Begin("Rounding"))
+        {
+            ImGui::SliderFloat("Size", &m_render_data.rounding.size, 0.0f, 0.5f);
+        }
+        ImGui::End();
+
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");

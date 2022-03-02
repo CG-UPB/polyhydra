@@ -41,7 +41,7 @@ namespace vOS
     struct RoundedFaceVertexData
     {
         unsigned int index = -1;
-        int vertex_id = -1;
+        int corner_vertex_id = -1;
         int to_vertex_id = -1;
         int next_to_vertex_id = -1;
         int to_vertex_halfedge_id = -1;

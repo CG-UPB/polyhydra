@@ -42,7 +42,7 @@ const float ROUNDED_VERTEX_TYPE_CORNER   = 2.0;
 const float ROUNDED_VERTEX_TYPE_CENTER   = 3.0;
 
 const float EDGE_FACTOR = 1.0 / sqrt(2.0);
-const float CORNER_FACTOR = sqrt(6.0) / 4.0;
+const float CORNER_FACTOR = sqrt(6.0) / 5.0;
 
 void main()
 {
@@ -100,7 +100,7 @@ void main()
             vec3 to_vertex = a_rounded_face_center_or_to_vertex;
             vec3 dir = to_vertex - position;
             float len = length(dir);
-            position += normalize(dir) * EDGE_FACTOR * r;// - a_Normal * (r - EDGE_FACTOR * r);
+            position += normalize(dir) * EDGE_FACTOR * r + a_Normal * (r - EDGE_FACTOR * r);
         }
         // this is a corner vertex
         else if (a_rounded_vertex_type == ROUNDED_VERTEX_TYPE_CORNER)
@@ -111,7 +111,7 @@ void main()
 
     vec3 pos = a_Center + (position - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
+    v_Normal = mat3(transpose(inverse(u_Transform))) * -a_Normal;
     v_Color = a_Color;
     v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
 }

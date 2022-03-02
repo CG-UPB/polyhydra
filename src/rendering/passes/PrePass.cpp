@@ -54,8 +54,17 @@ namespace vOS
         pre_phong_shader->set_uniform_vec3f("u_max", max);
         pre_phong_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         pre_phong_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        pre_phong_shader->set_uniform_bool("u_rounding", data.rounding.active);
+        pre_phong_shader->set_uniform_float("u_rounding_size", data.rounding.size);
 
-        vao->draw();
+        if (data.rounding.active)
+        {
+            obj->get_mvb()->get_vao_rounded()->draw();
+        }
+        else
+        {
+            vao->draw();
+        }
 
         pre_phong_shader->unbind();
     }
