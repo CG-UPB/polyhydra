@@ -32,7 +32,7 @@ void main()
 
     float last_depth = texelFetch(last_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
 
-    if(frag_depth >= last_depth || color.a == 1.0 || v_visible == 0)
+    if(frag_depth >= last_depth || color.a >= 1.0 || v_visible == 0)
     {
         discard;
     }

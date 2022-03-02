@@ -15,7 +15,7 @@ namespace vOS
 
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id, int pass);
-        void render_composition(int passes);
+        void render_composition(int current_passes, int max_passes);
         void resize_buffers(int width, int height);
         void clear_framebuffer() const;
 

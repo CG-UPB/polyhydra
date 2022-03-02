@@ -5,6 +5,8 @@
 #include "TestQuads.h"
 #include "../Window.h"
 #include <time.h>
+#include <OpenVolumeMesh/FileManager/FileManager.hh>
+#include "../panels/NewFileDialog.h"
 
 
 TestQuads::TestQuads()
@@ -29,6 +31,22 @@ void TestQuads::ui()
     if (ImGui::Button("Add Quad"))
     {
         add_quad();
+    }
+    if (ImGui::Button("Load Mesh"))
+    {
+        vOS::NewFileDialog file_dialog;
+
+        char const * filename;
+
+        filename = file_dialog.openDialog("Open Mesh File");
+
+        if (filename != NULL){
+            vOS::Window &window = vOS::Window::instance();
+            OpenVolumeMesh::GeometricPolyhedralMeshV3d mesh;
+            OpenVolumeMesh::IO::FileManager file_manager;
+            file_manager.readFile(filename, mesh);
+            window.add_mesh(&mesh);
+        }
     }
     ImGui::End();
 }
@@ -81,6 +99,8 @@ void TestQuads::add_quad()
 
     srand(time(nullptr));
     window.set_mesh_color(mesh_id, vOS::Color((float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX, 0.4));
+    //window.set_mesh_color(mesh_id, vOS::Color( 0.0, 0.0, 1.0,1.0));
+
 
 }
 
@@ -110,7 +130,9 @@ void TestQuads::run()
         auto mesh = create_quad(m_quad_positions);
         int mesh_id = window.add_mesh(&mesh);
         window.set_mesh_position(mesh_id, (((float)i)/2)*translate, (((float)i)/2)*translate, ((float)i)*translate);
-        window.set_mesh_color(mesh_id, vOS::Color((float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX));
+        //window.set_mesh_color(mesh_id, vOS::Color((float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX));
+        window.set_mesh_color(mesh_id, vOS::Color( 0.0, 0.0, 1.0,1.0));
+
     }
 
     window.open();

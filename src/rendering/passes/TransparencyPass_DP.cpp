@@ -179,19 +179,18 @@ namespace vOS
 
     }
 
-    void TransparencyPass_DP::render_composition(int passes)
+    void TransparencyPass_DP::render_composition(int current_pass, int max_passes)
     {
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
         unsigned int new_layer;
 
-        if(passes % 2 == 0)
+        if(current_pass % 2 == 0)
         {
             new_layer = m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
         }
@@ -203,6 +202,9 @@ namespace vOS
 
         m_mesh_view->m_meshFrameBuffer->bind();
         m_composite_shader->bind();
+        m_composite_shader->set_uniform_int("u_current_pass", current_pass);
+        m_composite_shader->set_uniform_int("u_max_passes", max_passes - 1);
+
         m_composite_shader->set_uniform_sampler2D("new_layer_texture", GL_TEXTURE0, new_layer);
         VertexArrayObject::draw_screen_quad();
         m_composite_shader->unbind();

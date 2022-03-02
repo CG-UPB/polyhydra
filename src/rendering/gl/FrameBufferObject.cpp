@@ -240,6 +240,11 @@ namespace vOS
             {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, attachment.texture_comp_mode);
             }
+            if (attachment.border_color != -1)
+            {
+                float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+                glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+            }
             if (attachment.generate_mipmap)
             {
                 glGenerateMipmap(GL_TEXTURE_2D);

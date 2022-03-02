@@ -518,7 +518,9 @@ namespace vOS
         // calculate color filter for transparent shadows
         m_shadow_color_filter_pass->get_framebuffer()->bind();
 
-        glClearColor(0.0, 0.0, 0.0, 1.0);
+        //glClearColor(1.0, 1.0, 1.0, 0.0 );
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
@@ -642,7 +644,7 @@ namespace vOS
                 m_transparency_pass_dp->m_transparent_framebuffer1->unbind();
             }
 
-            m_transparency_pass_dp->render_composition(i);
+            m_transparency_pass_dp->render_composition(i, num_passes);
 
         }
 

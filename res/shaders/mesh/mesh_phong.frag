@@ -48,6 +48,11 @@ float shadow_calculation(vec4 pos_ls, float bias)
     }
     shadow /= 9.0;
 
+    if(proj_coords.z > 1.0)
+    {
+        shadow = 0.0;
+    }
+
     return shadow;
 }
 
@@ -77,7 +82,7 @@ vec3 color_filter(vec4 pos_ls)
 
     vec4 color = texture(u_color_filter_texture, proj_coords.xy);
 
-    return color.rgb;
+    return  (1 - color.a) *  color.rgb;
 }
 
 void main()
@@ -85,21 +90,27 @@ void main()
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
-    if (v_visible == 0 || u_objectColor.a != 1.0)
+    if (v_visible == 0 || u_objectColor.a < 1.0 - 0.001)
     {
         discard;
     }
     vec3 light_color = u_lightColor;
     vec3 n = -normalize(v_normal);
     vec3 l = normalize(vec3(0.0, -1.0, -1.0));
+    vec3 light_dir = normalize(u_lightPos - v_pos);
     float diff = max(0.0, dot(l, n));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
     // shadow calculation
-    float bias = max(0.0005 * (1.0 - diff), 0.00005);
+    float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
     float shadow = shadow_calculation(v_pos_ls, bias);
     float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
+    transparent_shadow = 0.0;
+
+
+    // Phong Shading
+    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
 
     if(transparent_shadow != 0.0)
     {
@@ -107,17 +118,15 @@ void main()
         {
             // if pixel only lays in transparent shadow, then apply color filter
             light_color = light_color * color_filter(v_pos_ls);
+            shadow = 1.0;
         }
     }
+    shadow = 0.0;
 
     //ambient
-    float ambientStrength = 0.8;
+    float ambientStrength = 1.0;
     float ao_factor = texture(u_ssao_texture, uv).r;
     vec3 ambient = ambientStrength * light_color * ao_factor;
-
-    // Phong Shading
-
-    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
 
     //diffuse
     float diffuseStrength = 1.0;
@@ -132,7 +141,6 @@ void main()
     float spec = pow(max(0.0, dot(v, r)), 8);
     vec3 specular = specularStrength * spec * light_color;
 
-    vec3 light_dir = normalize(u_lightPos - v_pos);
 
     float norm = ambientStrength + diffuseStrength + specularStrength;
     vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) / norm * used_color;

@@ -20,7 +20,7 @@ namespace vOS
                         .texture_filter     = GL_NEAREST,
                         .texture_wrap       = GL_CLAMP_TO_EDGE,
                         .texture_comp_func  = GL_LEQUAL,
-                        .texture_comp_mode  = GL_NONE
+                        .texture_comp_mode  = GL_NONE,
                 }
         };
         m_shadow_framebuffer                = new FrameBufferObject(width, height, attachments);
@@ -39,7 +39,8 @@ namespace vOS
         if(obj == nullptr)
             return;
 
-        glDisable( GL_CULL_FACE );
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
@@ -65,6 +66,7 @@ namespace vOS
         m_shadow_shader->unbind();
         m_shadow_framebuffer->unbind();
 
+        glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);
     }
 

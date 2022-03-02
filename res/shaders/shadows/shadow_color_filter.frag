@@ -14,5 +14,5 @@ void main()
         discard;
     }
 
-    FragColor = vec4(vec3(u_object_color.a * u_object_color.rgb), u_object_color.a);
+    FragColor = vec4(vec3((u_object_color.a) * u_object_color.rgb), u_object_color.a);
 }

@@ -44,11 +44,12 @@ namespace vOS
 
         glDisable( GL_CULL_FACE );
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
-        //glBlendEquation(GL_MAX);
-        glDepthFunc(GL_LESS);
         glDepthMask(GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendFunc( GL_ONE, GL_ONE);
+        glBlendEquation(GL_FUNC_ADD);
+        glDepthFunc(GL_LESS);
+
 
         m_color_filter_framebuffer->bind();
         m_color_filter_shader->bind();
