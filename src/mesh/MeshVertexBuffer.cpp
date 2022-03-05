@@ -179,10 +179,8 @@ namespace vOS
                     }
                     // now that we have our next halfface, we need to find the associated halfedge that starts at
                     // the corner vertex within the halfface
-                    int count = 0;
                     for (auto chfe_it: mesh.halfface_edges(current_halfface))
                     {
-                        count++;
                         auto [he0, he1] = mesh.edge_halfedges(chfe_it);
                         auto from0 = mesh.from_vertex_handle(he0);
                         auto from1 = mesh.from_vertex_handle(he1);
@@ -211,7 +209,6 @@ namespace vOS
                             break;
                         }
                     }
-                    std::cout << "edges: " << count << std::endl;
                 } while (current_halfface != chf_it);
             }
         }
@@ -258,6 +255,7 @@ namespace vOS
                 // edge vertex
                 glm::vec3 face_normal = VecUtil::normal_to_vec3(mesh, data.halfface_id);
                 glm::vec3 prev_face_normal = VecUtil::normal_to_vec3(mesh, prev_data.halfface_id);
+                float face_angle = VecUtil::get_angle(face_normal, prev_face_normal);
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
                 glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(mesh, data.to_vertex_id);
                 auto edge = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
