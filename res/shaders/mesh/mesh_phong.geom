@@ -30,7 +30,7 @@ float dist_to_edge(vec3 e0, vec3 e1, vec3 p)
     return length(cross(p - e0, p - e1)) / length(e1 - e0);
 }
 
-void vertex(vec3 pos, vec3 normal, vec4 color, int visible, vec4 pos_ls)
+void vertex(vec4 screen_pos, vec3 pos, vec3 normal, vec4 color, int visible, vec4 pos_ls)
 {
     gl_Position = screen_pos;
     v_pos = pos;

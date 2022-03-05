@@ -300,11 +300,9 @@ namespace vOS
 
         if (m_should_update)
         {
-            BufferSpecification spec;
-            spec.peel_depth = current_peel_level;
             delete m_mvb;
             // creates new MeshVertexBuffer that extracts each Cell from OVM mesh and get them ready for rendering pipeline
-            m_mvb = new MeshVertexBuffer(m_mesh, spec);
+            m_mvb = new MeshVertexBuffer(m_mesh);
         }
         m_should_update = false;
     }

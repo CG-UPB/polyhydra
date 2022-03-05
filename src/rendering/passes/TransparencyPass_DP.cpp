@@ -99,7 +99,7 @@ namespace vOS
             m_transparency_shader->bind();
             if(pass == 0)
             {
-                unsigned int depth_texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_DEPTH_ATTACHMENT);
+                unsigned int depth_texture = m_mesh_view->m_screen_quad_frameBuffer->get_texture(GL_DEPTH_ATTACHMENT);
                 //depth_texture = m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture();
                 m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
             }
@@ -111,7 +111,6 @@ namespace vOS
             render(vao, data, mesh_id);
             m_transparency_shader->unbind();
             m_transparent_framebuffer0->unbind();
-
         }
         else
         {

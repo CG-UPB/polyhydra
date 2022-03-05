@@ -131,11 +131,6 @@ void main()
     float shadow = shadow_calculation(v_pos_ls, bias);
     float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
     transparent_shadow = 0.0;
-
-
-    // Phong Shading
-    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), v_color.w);
-
     if(transparent_shadow != 0.0)
     {
         if(shadow == 0.0)
@@ -150,7 +145,7 @@ void main()
     //ambient
     float ambientStrength = 1.0;
     float ao_factor = texture(u_ssao_texture, uv).r;
-    vec3 ambient = ambientStrength * lightColor * ao_factor;
+    vec3 ambient = ambientStrength * light_color * ao_factor;
 
     // Phong Shading
 

@@ -37,7 +37,7 @@ namespace vOS
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
 
-        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
+        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
@@ -1036,7 +1036,7 @@ namespace vOS
     {
         switch (m_viewport_texture)
         {
-            case FINAL_IMAGE: return m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case FINAL_IMAGE: return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION: return m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
