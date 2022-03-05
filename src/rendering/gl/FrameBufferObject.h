@@ -18,6 +18,7 @@ namespace vOS
         int texture_wrap         = -1;
         int texture_comp_func    = -1;
         int texture_comp_mode    = -1;
+        int border_color         = -1;
         int generate_mipmap      = false;
         bool multisample         = false;
     };

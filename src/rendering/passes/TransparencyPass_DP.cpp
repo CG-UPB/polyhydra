@@ -17,35 +17,59 @@ namespace vOS
     m_height(height)
     {
         m_transparency_shader = Shader::get("transparency_dp");
-        //m_composite_shader = Shader::get("composite_dp");
+        m_composite_shader = Shader::get("composite_dp");
 
         std::vector<FrameBufferAttachment> transparent_attachments0 =
         {
+            FrameBufferAttachment
+            {
+                    .internal_format    = GL_RGBA16F,
+                    .format             = GL_RGBA,
+                    .type               = GL_FLOAT,
+                    .attachment         = GL_COLOR_ATTACHMENT0,
+                    .texture_filter     = GL_LINEAR,
+                    .texture_wrap       = GL_CLAMP_TO_EDGE
+            },
             FrameBufferAttachment
             {
                     .internal_format    = GL_DEPTH_COMPONENT,
                     .format             = GL_DEPTH_COMPONENT,
                     .type               = GL_FLOAT,
                     .attachment         = GL_DEPTH_ATTACHMENT,
-                    .multisample        = true
+                    .texture_filter     = GL_NEAREST,
+                    .texture_wrap       = GL_CLAMP_TO_EDGE,
+                    .texture_comp_func  = GL_LEQUAL,
+                    .texture_comp_mode  = GL_NONE
             }
         };
         m_transparent_framebuffer0 = new FrameBufferObject(width, height, transparent_attachments0);
 
         std::vector<FrameBufferAttachment> transparent_attachments1 =
         {
-            FrameBufferAttachment
-            {
-                    .internal_format    = GL_DEPTH_COMPONENT,
-                    .format             = GL_DEPTH_COMPONENT,
+            FrameBufferAttachment{
+                    .internal_format    = GL_RGBA16F,
+                    .format             = GL_RGBA,
                     .type               = GL_FLOAT,
-                    .attachment         = GL_DEPTH_ATTACHMENT,
-                    .multisample        = true
-            }
+                    .attachment         = GL_COLOR_ATTACHMENT0,
+                    .texture_filter     = GL_LINEAR,
+                    .texture_wrap       = GL_CLAMP_TO_EDGE
+
+            },
+            FrameBufferAttachment
+                {
+                        .internal_format    = GL_DEPTH_COMPONENT,
+                        .format             = GL_DEPTH_COMPONENT,
+                        .type               = GL_FLOAT,
+                        .attachment         = GL_DEPTH_ATTACHMENT,
+                        .texture_filter     = GL_NEAREST,
+                        .texture_wrap       = GL_CLAMP_TO_EDGE,
+                        .texture_comp_func  = GL_LEQUAL,
+                        .texture_comp_mode  = GL_NONE
+                }
         };
         m_transparent_framebuffer1 = new FrameBufferObject(width, height, transparent_attachments1);
 
-        update_draw_texture();
+        //update_draw_texture();
     }
 
     TransparencyPass_DP::~TransparencyPass_DP()
@@ -65,9 +89,9 @@ namespace vOS
     void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, int mesh_id, int pass)
     {
         glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
         glDepthFunc(GL_GREATER);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_BLEND);
 
         if(pass % 2 == 0)
         {
@@ -76,30 +100,29 @@ namespace vOS
             if(pass == 0)
             {
                 unsigned int depth_texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
+                //depth_texture = m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture();
+                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
             }
             else
             {
                 unsigned int depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
+                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
             }
-            glClear(GL_DEPTH_BUFFER_BIT);
             render(vao, data, mesh_id);
             m_transparency_shader->unbind();
             m_transparent_framebuffer0->unbind();
+
         }
         else
         {
             m_transparent_framebuffer1->bind();
             m_transparency_shader->bind();
             unsigned int depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
-            m_transparency_shader->set_uniform_sampler2DMS("last_depth_texture", GL_TEXTURE0, depth_texture);
-            glClear(GL_DEPTH_BUFFER_BIT);
+            m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
             render(vao, data, mesh_id);
             m_transparency_shader->unbind();
             m_transparent_framebuffer1->unbind();
         }
-
     }
 
     void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
@@ -138,11 +161,59 @@ namespace vOS
         m_transparency_shader->set_uniform_vec3f("u_max", max);
         m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_transparency_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        m_transparency_shader->set_uniform_float("u_pow", m_pow);
+        m_transparency_shader->set_uniform_float("u_alpha_pow", m_alpha_pow);
+        m_transparency_shader->set_uniform_float("u_range", m_range);
+        m_transparency_shader->set_uniform_float("u_depth_range", m_depth_range);
+        m_transparency_shader->set_uniform_float("u_ordering_strength", m_ordering_strength);
+        m_transparency_shader->set_uniform_float("u_t_min", m_min);
+        m_transparency_shader->set_uniform_float("u_t_max", m_max);
 
         m_transparency_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
         m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
 
+        //m_transparency_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE0, m_depth_texture);
+        m_transparency_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1, m_mesh_view->m_ssao_pass->get_blur_texture());
+
         vao->draw();
+
+    }
+
+    void TransparencyPass_DP::render_composition(int current_pass, int max_passes)
+    {
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+
+        unsigned int new_layer;
+
+        if(current_pass % 2 == 0)
+        {
+            new_layer = m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
+        }
+        else
+        {
+            new_layer = m_transparent_framebuffer1->get_texture(GL_COLOR_ATTACHMENT0);
+        }
+
+
+        m_mesh_view->m_meshFrameBuffer->bind();
+        m_composite_shader->bind();
+        m_composite_shader->set_uniform_int("u_current_pass", current_pass);
+        m_composite_shader->set_uniform_int("u_max_passes", max_passes - 1);
+
+        m_composite_shader->set_uniform_sampler2D("new_layer_texture", GL_TEXTURE0, new_layer);
+        VertexArrayObject::draw_screen_quad();
+        m_composite_shader->unbind();
+        m_mesh_view->m_meshFrameBuffer->unbind();
+
+
+        glDisable(GL_BLEND);
+        glClearDepth(1.0f);
+        glEnable(GL_CULL_FACE);
 
     }
 
@@ -151,8 +222,7 @@ namespace vOS
         m_transparent_framebuffer0->resize(width, height);
         m_transparent_framebuffer1->resize(width, height);
 
-        update_draw_texture();
-
+        //update_draw_texture();
         //generate_transparency_framebuffer(width, height);
     }
 
@@ -160,10 +230,10 @@ namespace vOS
     {
         unsigned int texture = m_mesh_view->m_meshFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
         m_transparent_framebuffer0->bind();
-        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture, true);
+        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture);
         m_transparent_framebuffer0->unbind();
         m_transparent_framebuffer1->bind();
-        m_transparent_framebuffer1->attach_texture(GL_COLOR_ATTACHMENT0, texture, true);
+        m_transparent_framebuffer1->attach_texture(GL_COLOR_ATTACHMENT0, texture);
         m_transparent_framebuffer1->unbind();
     }
 

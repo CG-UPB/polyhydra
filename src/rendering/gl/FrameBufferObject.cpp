@@ -94,7 +94,17 @@ namespace vOS
         unsigned int fbo;
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glDrawBuffers((int) m_draw_buffers.size(), m_draw_buffers.data());
+
+        if(m_draw_buffers.size() > 0)
+        {
+            glDrawBuffers((int) m_draw_buffers.size(), m_draw_buffers.data());
+        }
+        else
+        {
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        }
+
         return fbo;
     }
 
@@ -229,6 +239,11 @@ namespace vOS
             if (attachment.texture_comp_mode != -1)
             {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, attachment.texture_comp_mode);
+            }
+            if (attachment.border_color != -1)
+            {
+                float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+                glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
             }
             if (attachment.generate_mipmap)
             {

@@ -9,6 +9,9 @@
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
+#include "../rendering/passes/ShadowMapPass.h"
+#include "../rendering/passes/ShadowColorFilterPass.h"
+#include "../rendering/passes/TransparentShadowMapPass.h"
 #include "../rendering/passes/TransparencyPass_WB.h"
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../Window.h"
@@ -20,6 +23,9 @@ namespace vOS
     class TransparencyPass_DP;
     class MeshPass;
     class SSAOPass;
+    class ShadowMapPass;
+    class ShadowColorFilterPass;
+    class TransparentShadowMapPass;
 
     class MeshView: public WindowPanel
     {
@@ -39,6 +45,7 @@ namespace vOS
         void renderSelection();
         void querySelection(int type, int picked_id);
         void render_pre_pass();
+        void render_shadow_map();
         void render_ssao_pass();
         void render_debug_menu();
         void render_transparency_wb();
@@ -59,6 +66,10 @@ namespace vOS
         static const int SELECTION_TYPE_VERTEX = 1;
         static const int SELECTION_TYPE_EDGE = 2;
         static const int SELECTION_TYPE_FACE = 3;
+
+        static const int WEIGHTED_BLENDED = 0;
+        static const int DEPTH_PEELING = 1;
+
         int m_hovered_element_id = 0;
         int m_hovered_element_type = 0;
 
@@ -67,6 +78,7 @@ namespace vOS
         bool m_lastDown;
         double m_lastX;
         double m_lastY;
+        int num_passes;
 
         int m_viewportPanelWidth;
         int m_viewportPanelHeight;
@@ -80,6 +92,7 @@ namespace vOS
 
         // selected texture for rendering (mostly for debugging)
         int m_viewport_texture = FINAL_IMAGE;
+        int m_transparency = WEIGHTED_BLENDED;
 
         // camera variables
         glm::vec3 m_previous_movement_vector;
@@ -90,6 +103,9 @@ namespace vOS
         // render passes
         BackgroundPass m_background_pass;
         PrePass* m_pre_pass = nullptr;
+        ShadowMapPass* m_shadow_pass = nullptr;
+        ShadowColorFilterPass* m_shadow_color_filter_pass = nullptr;
+        TransparentShadowMapPass* m_transparent_shadow_pass = nullptr;
         MeshPass* m_mesh_pass = nullptr;
         SSAOPass* m_ssao_pass = nullptr;
         ShapePass m_shape_pass;
@@ -102,8 +118,13 @@ namespace vOS
         int m_frame_limit = 4;
         int m_current_frame = 0;
 
+        unsigned int dp_layer;
+
         friend class MeshPass;
         friend class SSAOPass;
+        friend class ShadowMapPass;
+        friend class ShadowColorFilterPass;
+        friend class TransparentShadowMapPass;
         friend class TransparencyPass_WB;
         friend class TransparencyPass_DP;
     };

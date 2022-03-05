@@ -54,6 +54,7 @@ namespace vOS
         // Transform
         glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform() * positionOffset;
 
         // Cell operations
         float cell_size = obj->get_data().m_cell_size;
@@ -92,13 +93,24 @@ namespace vOS
         m_mesh_shader->set_uniform_bool("u_rounding", data.rounding.active);
         m_mesh_shader->set_uniform_float("u_rounding_size", data.rounding.size);
 
+        m_mesh_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
+        m_mesh_shader->set_uniform_mat4f("u_light_view", data.light.view);
+        m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
+
+//        m_mesh_shader->set_uniform_mat4f("u_light_projection", data.camera.projection);
+//        m_mesh_shader->set_uniform_mat4f("u_light_view", data.camera.view);
+
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
 
         m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,
                                              m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
         m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
-        m_mesh_shader->set_uniform_sampler2D("u_position", GL_TEXTURE2,m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
+        //m_mesh_shader->set_uniform_sampler2D("u_position", GL_TEXTURE2,m_mesh_view->m_pre_pass->get_framebuffer()->get_position_texture());
+
+        m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2,m_mesh_view->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE3,m_mesh_view->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4,m_mesh_view->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
 
         if (data.rounding.active)
         {

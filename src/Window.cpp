@@ -799,7 +799,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(m_focused_mesh);
         if (mesh_obj != nullptr)
         {
-            m_mesh_view->set_zoom_point(mesh_obj->get_mesh_offset());
+            //m_mesh_view->set_zoom_point(mesh_obj->get_mesh_offset());
         }
     }
 

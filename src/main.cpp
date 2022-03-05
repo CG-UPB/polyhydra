@@ -2,10 +2,11 @@
 #include "algorithms/Dijkstra.h"
 #include "algorithms/ExampleClass.h"
 #include "algorithms/TestClass.h"
+#include "algorithms/TestQuads.h"
 
 int main()
 {
-//      ExampleClass cl;
+//     ExampleClass cl;
 //     cl.initialize();
 
 
@@ -14,6 +15,9 @@ int main()
 
     vOS::Dijkstra dijkstra;
     dijkstra.start();
+
+//    TestQuads test;
+//    test.run();
 
     return 0;
 }
