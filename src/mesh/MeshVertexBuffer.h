@@ -54,7 +54,24 @@ namespace vOS
 
         VertexArrayObject* get_vao();
 
+        /**
+         * Colors the given Face in desired colors
+         * The strong a is, the more pronounced the given color is
+         * An Alpha value of 0 will have no visible effect, 1 will completely override the object default color
+         * @param ovm_id
+         * @param r
+         * @param g
+         * @param b
+         * @param a
+         */
         void set_face_color(int ovm_id, float r, float g, float b, float a);
+
+        /**
+         * Select or unselect the given Face
+         * @param ovm_id
+         * @param selected
+         */
+        void set_face_selection(int ovm_id, bool selected);
 
         VertexArrayObject* get_sphere_vao();
 
@@ -109,6 +126,7 @@ namespace vOS
         std::vector<float> m_cell_centers;
         std::vector<float> m_is_face_boundary;
         std::vector<float> m_colors;
+        std::vector<float> m_selections;
         std::vector<float> m_sphere_cell_centers;
         std::vector<float> m_cylinder_cell_centers;
         std::vector<float> m_sphere_peel_depths;

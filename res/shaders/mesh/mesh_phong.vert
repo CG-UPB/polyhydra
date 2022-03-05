@@ -7,6 +7,7 @@ layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_isBoundary;
 layout (location = 5) in float a_isDigged;
 layout (location = 6) in vec4 a_Color;
+layout (location = 10) in float a_isSelected;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -21,6 +22,10 @@ uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
 uniform vec3 u_objectColor;
 uniform float u_cell_size;
+uniform float u_spec_strength;
+uniform float u_spec_exponent;
+uniform float u_ambient_strength;
+uniform float u_diffuse_strength;
 
 uniform int u_peel_depth;
 uniform float u_slice_depth;
@@ -67,5 +72,20 @@ void main()
     vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
-    v_Color = a_Color;
+    v_Color = vec4(mix(u_objectColor, vec3(a_Color.x,a_Color.y,a_Color.z), a_Color.w), 1);
+
+    if(a_isSelected > 0.0)
+    {
+        // Colorness is 0, if all rgb values are the same, and above 1 if they have a color difference
+        float colorness = abs(v_Color.x - v_Color.y) + abs(v_Color.x - v_Color.z);
+
+        vec3 inverse_color = vec3(1 - v_Color.x, 1 - v_Color.y , 1 - v_Color.z);
+
+        vec3 selection_color = colorness * inverse_color + (1-colorness) * vec3(1,0,0);
+
+        selection_color = normalize(selection_color);
+
+        v_Color =vec4(selection_color, 1);
+
+    }
 }
