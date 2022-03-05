@@ -586,8 +586,8 @@ namespace vOS
 
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
 
         m_meshFrameBuffer->bind();
@@ -1037,7 +1037,7 @@ namespace vOS
         switch (m_viewport_texture)
         {
             case FINAL_IMAGE: return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+            case SELECTION: return m_transparency_pass_dp->m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
             //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();
