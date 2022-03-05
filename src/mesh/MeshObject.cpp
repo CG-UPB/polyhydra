@@ -70,7 +70,6 @@ namespace vOS
             OpenVolumeMesh::FaceHandle face(id);
 
             m_mvb->set_face_selection(face.idx(), true);
-            m_mvb->set_face_color(face.idx(), 1,0,0,1);
 
             /*
             auto pick_pos = m_mesh->barycenter(face);
@@ -162,7 +161,7 @@ namespace vOS
         for(int element : m_selected_faces)
         {
             m_mvb->set_face_selection(element, false);
-            m_mvb->set_face_color(element, 1,0,0,0);
+
         }
         m_selected_faces.clear();
 
@@ -214,7 +213,6 @@ namespace vOS
         if(type == 0) {
 
             m_mvb->set_face_selection(id, false);
-            m_mvb->set_face_color(id, 1,0,0,0);
             return;
         }else if(type == 1) {
             auto entry = m_selected_vertices.find(id);

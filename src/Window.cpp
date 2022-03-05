@@ -313,6 +313,19 @@ namespace vOS
         return get_mesh_obj(mesh_id)->get_data().m_color;
     }
 
+
+    void Window::set_mesh_selection_color(int mesh_id, Color color)
+    {
+        // Change MeshObject Data
+        get_mesh_obj(mesh_id)->get_data().m_selection_color = color;
+    }
+
+    Color Window::get_mesh_selection_color(int mesh_id)
+    {
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_selection_color;
+    }
+
     void Window::set_mesh_visibility(bool visible)
     {
         // Change MeshObject Data

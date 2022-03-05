@@ -176,6 +176,18 @@ namespace vOS {
         Color get_mesh_color(int mesh_id);
 
         /**
+         * Applies color to mesh with given mesh_id for selected faces
+         * The lower the alpha is, the more an inverse color is chosen instead, ie. with 0 Alpha, the selection color will be the inverse of the usual color
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_selection_color(int mesh_id, Color color);
+
+        /**
+         * Returns the actual selection color for mesh with id = mesh_id  for selected faces
+         */
+        Color get_mesh_selection_color(int mesh_id);
+
+        /**
          * Applies visibility to the given mesh_id.
          * A mesh that is not visible, will not be rendered in the Meshview class
          */
@@ -191,6 +203,7 @@ namespace vOS {
          * returns the visibility of the mesh with given mesh_id
          */
         bool get_mesh_visibility(int mesh_id);
+
 
         /**
          * Manually sets Peel level of a Mesh

@@ -49,7 +49,6 @@ void ExampleClass::simple_run(){
     Window& window = Window::instance();
     window.add_mesh(&m_mesh);
 
-    window.load_mesh_data(0);
 }
 
 void ExampleClass::set_mesh_data()

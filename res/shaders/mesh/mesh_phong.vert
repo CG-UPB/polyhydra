@@ -26,6 +26,7 @@ uniform float u_spec_strength;
 uniform float u_spec_exponent;
 uniform float u_ambient_strength;
 uniform float u_diffuse_strength;
+uniform vec4 u_selection_color;
 
 uniform int u_peel_depth;
 uniform float u_slice_depth;
@@ -85,6 +86,8 @@ void main()
 
         selection_color = normalize(selection_color);
 
+        // Override inverse color with preset selection color
+        selection_color = mix(selection_color, u_selection_color.xyz, u_selection_color.w);
         v_Color =vec4(selection_color, 1);
 
     }
