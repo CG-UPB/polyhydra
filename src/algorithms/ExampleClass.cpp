@@ -12,7 +12,7 @@ using namespace vOS;
 
 void ExampleClass::initialize() {
     // Set Custom UI for phase changing
-    Window::instance().set_vos_initialized(std::bind(&ExampleClass::start, this));
+    Window::instance().set_vos_initialized([this] { start(); });
 
     Window::instance().open();
 }

@@ -59,9 +59,7 @@ namespace vOS
             str = "##Visible " + std::to_string(m.first);
             char_type = new char[str.length()];
             ImGui::SameLine();ImGui::Checkbox(strcpy(char_type, str.c_str()), &visible);ImGui::SameLine();
-            Window::instance().rendering_mutex.unlock();
             Window::instance().set_mesh_visibility(m.first, visible);
-            Window::instance().rendering_mutex.lock();
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 
 
@@ -73,9 +71,7 @@ namespace vOS
             str = "Color " + std::to_string(m.first);
             char_type = new char[str.length()];
             ImGui::ColorEdit4(strcpy(char_type, str.c_str()),m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
-            Window::instance().rendering_mutex.unlock();
             Window::instance().set_mesh_color(m.first, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
-            Window::instance().rendering_mutex.lock();
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
 
@@ -98,9 +94,7 @@ namespace vOS
             char_type = new char[str.length()];
             ImGui::Combo(strcpy(char_type, str.c_str()), &current_rendering_mode_int, rendering_mode_external_names,
                          IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
-            Window::instance().rendering_mutex.unlock();
             Window::instance().set_mesh_rendering_mode(m.first,rendering_mode_internal_names[current_rendering_mode_int]);
-            Window::instance().rendering_mutex.lock();
             Tooltips::ToolTipByHovering("Sets the rendering mode of the mesh");
 
             // Advanced Settings
