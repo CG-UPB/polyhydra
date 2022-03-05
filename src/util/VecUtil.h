@@ -48,5 +48,45 @@ namespace vOS
         {
             return glm::acos(glm::dot(vec0, vec1));
         }
+
+        [[nodiscard]] static std::pair<glm::vec3, glm::vec3> get_bounding_box(const std::vector<glm::vec3>& vertices)
+        {
+            glm::vec3 min = vertices[0];
+            glm::vec3 max = vertices[0];
+            for (int i = 1; i < vertices.size(); i++)
+            {
+                const glm::vec3& vertex = vertices[i];
+                if (vertex.x < min.x)
+                {
+                    min.x = vertex.x;
+                } else if (vertex.x > max.x)
+                {
+                    max.x = vertex.x;
+                }
+                if (vertex.y < min.y)
+                {
+                    min.y = vertex.y;
+                } else if (vertex.y > max.y)
+                {
+                    max.y = vertex.y;
+                }
+                if (vertex.z < min.z)
+                {
+                    min.z = vertex.z;
+                } else if (vertex.z > max.z)
+                {
+                    max.z = vertex.z;
+                }
+            }
+            return std::make_pair(min, max);
+        }
+
+        [[nodiscard]] static inline glm::vec3 get_center(const std::vector<glm::vec3>& vertices)
+        {
+            auto bb = get_bounding_box(vertices);
+            auto min = bb.first;
+            auto max = bb.second;
+            return min + (max - min) * 0.5f;
+        }
     };
 }

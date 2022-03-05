@@ -60,8 +60,8 @@ void main()
         v_Visible = 0;
     }
 
-    vec3 min = vec3(u_Transform * vec4(u_min, 1.0));
-    vec3 max = vec3(u_Transform * vec4(u_max, 1.0));
+    vec3 min_slice = vec3(u_Transform * vec4(u_min, 1.0));
+    vec3 max_slice = vec3(u_Transform * vec4(u_max, 1.0));
 
     vec4 temp_dir = vec4(normalize(u_slice_direction), 0.0);
     if (u_slice_locked)
@@ -71,7 +71,7 @@ void main()
 
     vec3 slice_dir = temp_dir.xyz;
 
-    vec3 slice_point = max + u_slice_depth * (min - max);
+    vec3 slice_point = max_slice + u_slice_depth * (min_slice - max_slice);
     vec3 dir = slice_dir;
     vec3 center =  vec3(u_Transform * vec4(a_Center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
@@ -92,7 +92,7 @@ void main()
             vec3 face_center = a_rounded_face_center_or_to_vertex;
             vec3 dir = face_center - position;
             float len = length(dir);
-            position += normalize(dir) * r;
+            position += normalize(dir) * min(r, len);
         }
         // this vertex lies on an edge
         else if (a_rounded_vertex_type == ROUNDED_VERTEX_TYPE_EDGE)
@@ -100,12 +100,12 @@ void main()
             vec3 to_vertex = a_rounded_face_center_or_to_vertex;
             vec3 dir = to_vertex - position;
             float len = length(dir);
-            position += normalize(dir) * EDGE_FACTOR * r + a_Normal * (r - EDGE_FACTOR * r);
+            position += normalize(dir) * min(EDGE_FACTOR * r, len * 0.5) + a_Normal * (r - EDGE_FACTOR * r);
         }
         // this is a corner vertex
         else if (a_rounded_vertex_type == ROUNDED_VERTEX_TYPE_CORNER)
         {
-            position += a_Normal * (r - CORNER_FACTOR * r);
+            position += a_Normal * min(r - CORNER_FACTOR * r, length(position - a_Center));
         }
     }
 

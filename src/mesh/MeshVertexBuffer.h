@@ -10,12 +10,6 @@ namespace vOS
     typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> Mesh;
     typedef OpenVolumeMesh::CellHandle Cell;
 
-    struct BufferSpecification
-    {
-        int peel_depth = 0;
-        int slice_depth = 0;
-    };
-
     struct VertexData
     {
         glm::vec3 position{};
@@ -51,25 +45,15 @@ namespace vOS
     struct RoundedCellData
     {
         int cell_id = -1;
-        // element size 1
         std::vector<float> vertex_types;
-        // element size 3
         std::vector<float> vertex_positions;
-        // element size 3
         std::vector<float> vertex_normals;
-        // element size 3
         std::vector<float> vertex_cell_centers;
-        // element size 4
         std::vector<float> vertex_colors;
-        // element size 1
         std::vector<float> vertex_peel_depths;
-        // element size 1
         std::vector<float> vertex_is_triangle;
-        // element size 1
         std::vector<float> vertex_is_digged;
-        // element size 1
         std::vector<float> vertex_is_isolated;
-        // element size 3, depending on the vertex type, we store different positions in here
         std::vector<float> face_center_or_to_vertex;
         std::vector<unsigned int> indices;
     };
@@ -78,11 +62,7 @@ namespace vOS
     {
     public:
 
-        MeshVertexBuffer(){};
-
-        explicit MeshVertexBuffer(Mesh *mesh, BufferSpecification spec);
-
-
+        explicit MeshVertexBuffer(Mesh *mesh);
         ~MeshVertexBuffer();
 
         /**
@@ -111,8 +91,6 @@ namespace vOS
         [[nodiscard]] int get_num_selection_edges() const;
 
         std::vector<float> &get_original_vertices();
-
-        static glm::vec3 get_center(const std::vector<glm::vec3>& vertices);
 
         VertexArrayObject *get_vao_by_face();
 
@@ -164,11 +142,7 @@ namespace vOS
         void add_from_to_vertex(Mesh &mesh, const OpenVolumeMesh::VertexHandle &from,
                                 const OpenVolumeMesh::VertexHandle &to);
 
-        static std::pair<glm::vec3, glm::vec3> get_bounding_box(const std::vector<glm::vec3> &vertices);
-
         static std::vector<float> get_vertices(Mesh &mesh);
-
-        BufferSpecification m_spec;
 
         /**
          * Set to true, if some update has been made to the vao buffers (like face color)

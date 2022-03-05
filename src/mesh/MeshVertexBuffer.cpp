@@ -9,15 +9,10 @@
 namespace vOS
 {
 
-    MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh, BufferSpecification spec) : m_spec(spec)
+    MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh)
     {
-        int peel_depth = spec.peel_depth;
-        int slice_depth = spec.slice_depth;
-
-        Mesh* current_mesh = mesh;
-        m_original_vertices = get_vertices(*current_mesh);
-
-        generate_buffer(*current_mesh);
+        m_original_vertices = get_vertices(*mesh);
+        generate_buffer(*mesh);
 
         m_vao_by_face = new VertexArrayObject(m_positions_by_face, m_indices);
         m_vao_by_face->add_attribute(m_normals_by_face, 1, 3);
@@ -58,7 +53,6 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_cylinder_peel_depths, 4, 1, true);
         m_cylinder_vao->add_attribute(m_cylinder_is_digged, 5, 1, true);
         m_cylinder_vao->add_attribute(m_cylinder_is_isolated, 6, 1, true);
-
     }
 
     MeshVertexBuffer::~MeshVertexBuffer()
@@ -222,21 +216,6 @@ namespace vOS
             }
         }
 
-        for (auto& cell_vertex : cell_vertices)
-        {
-            auto data = cell_vertex.second;
-            for (auto v_data : data)
-            {
-                auto vertex_id = v_data.from_vertex_id;
-                auto to_id = v_data.to_vertex_id;
-                auto halfedge_id = v_data.halfedge_id;
-
-                std::cout << "from vertex: " << vertex_id << ", to vertex: " << to_id << ", halfedge: " << halfedge_id << std::endl;
-                std::cout << "halfedge from: " << mesh.from_vertex_handle(OpenVolumeMesh::HalfEdgeHandle{halfedge_id}) << std::endl;
-                std::cout << "halfedge to: " << mesh.to_vertex_handle(OpenVolumeMesh::HalfEdgeHandle{halfedge_id}) << std::endl;
-            }
-        }
-
         // now we need some maps to store the indices of the vertices we are going to create. We need to iterate
         // over them later and use these maps to tell opengl which ones to connect as triangles.
         // basically, almost all of them map from ovm id to opengl index
@@ -270,28 +249,18 @@ namespace vOS
             const auto& vertex_data = it.second;
             glm::vec3 corner_normal(0.0f);
             glm::vec3 corner_pos = VecUtil::pos_to_vec3(mesh, vertex_id);
-            std::cout << "vertex data size: " << vertex_data.size() << std::endl;
             for (size_t i = 0; i < vertex_data.size(); i++)
             {
                 auto& prev_data = vertex_data[(i + 2) % vertex_data.size()];
                 auto& data = vertex_data[(i + 1) % vertex_data.size()];
                 auto& next_data = vertex_data[i];
-
-                std::cout << "prev_data: from: " << prev_data.from_vertex_id << ", to: " << prev_data.to_vertex_id << std::endl;
-                std::cout << "data: from: " << data.from_vertex_id << ", to: " << data.to_vertex_id << std::endl;
-                std::cout << "next_data: from: " << next_data.from_vertex_id << ", to: " << next_data.to_vertex_id << std::endl;
-                std::cout << "\n" << std::endl;
-
                 corner_normal += VecUtil::normal_to_vec3(mesh, data.halfface_id);
                 // edge vertex
                 glm::vec3 face_normal = VecUtil::normal_to_vec3(mesh, data.halfface_id);
                 glm::vec3 prev_face_normal = VecUtil::normal_to_vec3(mesh, prev_data.halfface_id);
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
                 glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(mesh, data.to_vertex_id);
-                // TODO: Edge statt halfedge nehmen
-
-                auto edge = mesh.edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
-
+                auto edge = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
                 halfedge_vertex_indices[edge.idx()][data.from_vertex_id] = add_vertex_data_to_cell_data(
                         cell_data,
                         ROUNDED_VERTEX_TYPE_EDGE,
@@ -366,8 +335,8 @@ namespace vOS
                 const int to_corner_vertex_halfedge_id = face_vertex.to_vertex_halfedge_id;
                 const int next_to_corner_vertex_halfedge_id = face_vertex.next_to_vertex_halfedge_id;
 
-                const int to_corner_vertex_edge_id = mesh.edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
-                const int next_to_corner_vertex_edge_id = mesh.edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
+                const int to_corner_vertex_edge_id = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
+                const int next_to_corner_vertex_edge_id = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
 
                 const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
 
@@ -437,7 +406,7 @@ namespace vOS
         m_selection_sphere_digging_numbers[cell.idx()] = num_selection_vertices;
 
         // get the center, so we can add it as a vertex attribute
-        glm::vec3 cell_center = get_center(vertices);
+        glm::vec3 cell_center = VecUtil::get_center(vertices);
         m_cell_centers[cell.idx()] = cell_center;
 
         // get peel depth of the cell
@@ -717,47 +686,6 @@ namespace vOS
         m_to_vertices.push_back(to_pos[0]);
         m_to_vertices.push_back(to_pos[1]);
         m_to_vertices.push_back(to_pos[2]);
-    }
-
-    std::pair<glm::vec3, glm::vec3> MeshVertexBuffer::get_bounding_box(const std::vector<glm::vec3>& vertices)
-    {
-        glm::vec3 min = vertices[0];
-        glm::vec3 max = vertices[0];
-        for (int i = 1; i < vertices.size(); i++)
-        {
-            const glm::vec3& vertex = vertices[i];
-            if (vertex.x < min.x)
-            {
-                min.x = vertex.x;
-            } else if (vertex.x > max.x)
-            {
-                max.x = vertex.x;
-            }
-            if (vertex.y < min.y)
-            {
-                min.y = vertex.y;
-            } else if (vertex.y > max.y)
-            {
-                max.y = vertex.y;
-            }
-            if (vertex.z < min.z)
-            {
-                min.z = vertex.z;
-            } else if (vertex.z > max.z)
-            {
-                max.z = vertex.z;
-            }
-        }
-        auto bb = std::make_pair(min, max);
-        return bb;
-    }
-
-    glm::vec3 MeshVertexBuffer::get_center(const std::vector<glm::vec3>& vertices)
-    {
-        auto bb = get_bounding_box(vertices);
-        auto min = bb.first;
-        auto max = bb.second;
-        return min + (max - min) * 0.5f;
     }
 
     std::vector<float> MeshVertexBuffer::get_vertices(Mesh& mesh)
