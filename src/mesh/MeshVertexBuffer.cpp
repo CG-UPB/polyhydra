@@ -235,7 +235,7 @@ namespace vOS
 
         RoundedCellData cell_data;
         cell_data.cell_id = cell.idx();
-        glm::vec4 color(1.0f);
+        glm::vec4 color(1.0f, 1.0f, 1.0f, 0.0f);
         glm::vec3 zero(0.0f);
         // iterate over the vertices that we have collected earlier
         for (auto& it: cell_vertices)

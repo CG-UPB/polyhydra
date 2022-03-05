@@ -124,7 +124,7 @@ void main()
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
     v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
 
-    v_Color = vec4(mix(u_objectColor, vec3(a_Color.x,a_Color.y,a_Color.z), a_Color.w), 1);
+    v_Color = vec4(mix(u_objectColor.rgb, a_Color.rgb, a_Color.a), 1.0);
 
     if(a_isSelected > 0.0)
     {

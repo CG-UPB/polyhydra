@@ -99,7 +99,7 @@ namespace vOS
             Tooltips::ToolTipByHovering("Sets the rendering mode of the mesh");
 
             // Advanced Settings
-            ImGui::SameLine();
+            //ImGui::SameLine();
             if (ImGui::CollapsingHeader("Advanced Settings")) {
                 if (ImGui::BeginTable("split1", 1)) {
                     ImGui::TableNextColumn();
