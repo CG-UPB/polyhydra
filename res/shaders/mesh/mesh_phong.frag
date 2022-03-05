@@ -121,7 +121,7 @@ void main()
             shadow = 1.0;
         }
     }
-    shadow = 0.0;
+    //shadow = 0.0;
 
     //ambient
     float ambientStrength = 1.0;

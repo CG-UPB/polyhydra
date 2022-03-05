@@ -78,7 +78,7 @@ void main()
     float depth = gl_FragCoord.z;
     //float depth = LinearizeDepth(gl_FragCoord.z) / far;
 
-    color.a = pow(color.a, 2.0);
+    //color.a = pow(color.a, 2.0);
 
     // choose weight function
     float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - depth * 0.5, 3.0), 1e-2, 3e3);

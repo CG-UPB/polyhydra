@@ -58,7 +58,6 @@ namespace vOS
         // first update the normal face attribute for all faces
         OpenVolumeMesh::NormalAttrib normals(mesh);
         normals.update_face_normals();
-
         // add every cell to the vertex buffer
         for (auto c_it : mesh.cells())
         {

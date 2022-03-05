@@ -587,6 +587,8 @@ namespace vOS
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+
 
         m_meshFrameBuffer->bind();
         m_transparency_pass_wb->render_composition();
