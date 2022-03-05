@@ -25,7 +25,7 @@ namespace vOS {
 
         /**
          *
-         * This method creates a file dialog, which returns the path of an ovm-file, after the user has chosen some. If
+         * This method creates a file dialog, which returns the path of a ovm-file, after the user has chosen some. If
          * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
          *
          * @param filedialog - the title of the window prompt
@@ -35,13 +35,34 @@ namespace vOS {
 
         /**
          *
-         * This method creates a file dialog, which returns the path of an png- or bmp-file, after the user has chosen some. If
+         * This method creates a file dialog, which returns the path of a png- or bmp-file, after the user has chosen some. If
+         * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
+         *
+         * @param filedialog - the title of the window prompt
+         * @param default_name - the default name of the file
+         * @return char const * filename, or NULL
+         */
+        char const * saveDialog(const char * filedialog, std::string default_name = "file.png");
+
+        /**
+         *
+         * This method creates a file dialog, which returns the path of a json file, after the user has chosen some. If
          * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
          *
          * @param filedialog - the title of the window prompt
          * @return char const * filename, or NULL
          */
-        char const * saveDialog(const char * filedialog);
+        char const * loadMeshSettings(const char * filedialog);
+
+        /**
+         *
+         * This method creates a file dialog, which returns the path of a json-file, after the user has chosen some. If
+         * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
+         *
+         * @param filedialog - the title of the window prompt
+         * @return char const * filename, or NULL
+         */
+        char const * saveMeshSettings(const char * filedialog);
 
     private:
 
@@ -51,6 +72,11 @@ namespace vOS {
         char const * l_OpenfilterPattern[1] = {"*.ovm" };
         // file endings for the savefile-dialog
         char const * l_SavefilterPattern[2] = {"*.png", "*.bmp" };
+
+        // file ending for the load-mesh-data-dialog
+        char const * l_LoadMeshfilterPattern[1] = {"*.json" };
+        // file ending for the save-mesh-data-dialog
+        char const * l_SaveMeshfilterPattern[1] = {"*.json" };
     };
 }
 

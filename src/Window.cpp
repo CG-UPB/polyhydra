@@ -286,28 +286,14 @@ namespace vOS
 
     void Window::set_mesh_rendering_mode(int mesh_id, std::string mode)
     {
-        rendering_mutex.lock();
-
         // Change MeshObject Data
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_rendering_mode = std::move(mode);
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_rendering_mode = std::move(mode);
     }
 
     std::string Window::get_mesh_rendering_mode(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_rendering_mode;
-        }
-        return "";
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_rendering_mode;
     }
 
     void Window::set_mesh_color(Color color)
@@ -317,60 +303,32 @@ namespace vOS
 
     void Window::set_mesh_color(int mesh_id, Color color)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_color = color;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_color = color;
     }
 
     Color Window::get_mesh_color(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_color;
-        }
-        return {1.0f, 1.0f, 1.0f};
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_color;
     }
 
     void Window::set_mesh_visibility(bool visible)
     {
+        // Change MeshObject Data
         set_mesh_visibility(0, visible);
     }
 
     void Window::set_mesh_visibility(int mesh_id, bool visible)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_visible = visible;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_visible = visible;
     }
 
     bool Window::get_mesh_visibility(int mesh_id)
     {
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_visible;
-        }
-        return false;
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_visible;
     }
 
     void Window::set_mesh_slice_level(float slice_level)
