@@ -22,6 +22,7 @@ namespace vOS
         m_vao_by_face->add_attribute(m_colors_by_face, 5, 4);
         m_vao_by_face->add_attribute(m_is_isolated_by_face, 6, 1);
         m_vao_by_face->add_attribute(m_is_triangle_by_face, 7, 1);
+        m_vao_by_face->add_attribute(m_selections, 10, 1);
 
         m_vao_rounded = new VertexArrayObject(m_positions_rounded, m_indices_rounded);
         m_vao_rounded->add_attribute(m_normals_rounded, 1, 3);
@@ -598,6 +599,8 @@ namespace vOS
                 m_colors_by_face.push_back(1);
                 m_colors_by_face.push_back(0);
 
+                // Selection Status
+                m_selections.push_back(vertex.normal.x > 0.5 ? 1 : 0);
 
                 m_peel_depths_by_face.push_back((float) peel_depth);
                 //std::cout << peel_property[cell] <<std::endl;
@@ -659,7 +662,7 @@ namespace vOS
 
         int buffer_index = m_ovm_to_gl_face_indizes[ovm_id];
         int vertex_count = m_face_vertex_count[buffer_index];
-        int offset_index = m_face_offset_array[m_ovm_to_gl_face_indizes[ovm_id]];
+        int offset_index = m_face_offset_array[buffer_index];
         int color_array_index = offset_index * 4;
 
         for (int i = 0; i < vertex_count; i++)
@@ -668,6 +671,23 @@ namespace vOS
             m_colors_by_face[color_array_index + (i * 4) + 1] = g;
             m_colors_by_face[color_array_index + (i * 4) + 2] = b;
             m_colors_by_face[color_array_index + (i * 4) + 3] = a;
+        }
+        m_update_vao = true;
+    }
+
+    void MeshVertexBuffer::set_face_selection(int ovm_id, bool selected)
+    {
+        // Out of Bounce Check
+        if(ovm_id < 0 || ovm_id > m_ovm_to_gl_face_indizes.size())
+            return;
+
+        int buffer_index = m_ovm_to_gl_face_indizes[ovm_id];
+        int vertex_count = m_face_vertex_count[buffer_index];
+        int offset_index = m_face_offset_array[buffer_index];
+
+        for(int i = 0; i< vertex_count; i++)
+        {
+            m_selections[offset_index + i] = selected ? 1 : 0;
         }
         m_update_vao = true;
     }
@@ -707,6 +727,7 @@ namespace vOS
         if (m_update_vao)
         {
             m_vao_by_face->update_attribute(m_colors_by_face, 6);
+            m_vao_by_face->update_attribute(m_selections, 10);
             m_update_vao = false;
         }
         return m_vao_by_face;

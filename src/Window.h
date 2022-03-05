@@ -151,6 +151,15 @@ namespace vOS {
         std::string get_mesh_rendering_mode(int mesh_id);
 
         /**
+         * Draws face in given Color.
+         * Alpha values determines how much given color should override default mesh color (1 : complete overwrite, 0 : no effect)
+         * @param mesh_id
+         * @param ovm_face_id
+         * @param color
+         */
+        void set_face_color(int mesh_id, int ovm_face_id, Color color);
+
+        /**
          * Applies color to mesh with given mesh_id
          * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
@@ -165,6 +174,18 @@ namespace vOS {
          * Returns the actual color for mesh with id = mesh_id
          */
         Color get_mesh_color(int mesh_id);
+
+        /**
+         * Applies color to mesh with given mesh_id for selected faces
+         * The lower the alpha is, the more an inverse color is chosen instead, ie. with 0 Alpha, the selection color will be the inverse of the usual color
+         * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
+         */
+        void set_mesh_selection_color(int mesh_id, Color color);
+
+        /**
+         * Returns the actual selection color for mesh with id = mesh_id  for selected faces
+         */
+        Color get_mesh_selection_color(int mesh_id);
 
         /**
          * Applies visibility to the given mesh_id.
@@ -182,6 +203,7 @@ namespace vOS {
          * returns the visibility of the mesh with given mesh_id
          */
         bool get_mesh_visibility(int mesh_id);
+
 
         /**
          * Manually sets Peel level of a Mesh

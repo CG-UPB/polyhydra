@@ -12,7 +12,7 @@ using namespace vOS;
 
 void ExampleClass::initialize() {
     // Set Custom UI for phase changing
-    Window::instance().set_vos_initialized(std::bind(&ExampleClass::start, this));
+    Window::instance().set_vos_initialized([this] { start(); });
 
     Window::instance().open();
 }
@@ -49,7 +49,6 @@ void ExampleClass::simple_run(){
     Window& window = Window::instance();
     window.add_mesh(&m_mesh);
 
-    window.load_mesh_data(0);
 }
 
 void ExampleClass::set_mesh_data()
@@ -131,7 +130,7 @@ void ExampleClass::selection_demonstration_ui(){
 
     static std::thread* s_run_thread;
     ImGui::Begin("Custom UI");
-
+/*
     if(ImGui::Button("Save Mesh Data"))
     {
         Window::instance().save_mesh_data(0);
@@ -160,7 +159,7 @@ void ExampleClass::selection_demonstration_ui(){
     {
         Window::instance().set_mesh_diffuse_strength(0, diffuse_strength);
     }
-
+*/
     // Next Phase
     if (ImGui::Button("Next"))
     {

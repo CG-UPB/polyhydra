@@ -47,7 +47,6 @@ namespace vOS
         mesh_name = name;
     }
 
-
     void MeshObject::load_from_file(std::string file_path)
     {
         // open OVM FileManager
@@ -81,7 +80,7 @@ namespace vOS
 
             OpenVolumeMesh::FaceHandle face(id);
 
-            m_mvb->set_face_color(face.idx(), 1, 0, 0, 1);
+            m_mvb->set_face_selection(face.idx(), true);
 
             /*
             auto pick_pos = m_mesh->barycenter(face);
@@ -174,7 +173,8 @@ namespace vOS
         // Delete Face Elements
         for (int element: m_selected_faces)
         {
-            m_mvb->set_face_color(element, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
+            m_mvb->set_face_selection(element, false);
+
         }
         m_selected_faces.clear();
 
@@ -224,9 +224,9 @@ namespace vOS
         if (!is_selected)
             return;
 
-        if (type == 0)
-        {
-            m_mvb->set_face_color(id, m_data.m_color.r, m_data.m_color.g, m_data.m_color.b, 0);
+        if(type == 0) {
+
+            m_mvb->set_face_selection(id, false);
             return;
         } else if (type == 1)
         {

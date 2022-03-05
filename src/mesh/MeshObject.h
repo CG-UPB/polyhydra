@@ -36,7 +36,7 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.76f, 0.76f, 0.76f, 1.0f), m_visible(true), m_rendering_mode("mesh_phong")
+        MeshData() : m_color(0.76f, 0.76f, 0.76f, 1), m_selection_color(0.76f, 0.76f, 0.76f, 0), m_visible(true), m_rendering_mode("mesh_phong")
         {
             m_peel_level = 0;
             m_slice_level = 0;
@@ -68,6 +68,7 @@ namespace vOS
              j["rendering_default_color"] = {m_color.r, m_color.g, m_color.b, m_color.a};
              j["rendering_visible"] = m_visible;
              j["rendering_mode"] = m_rendering_mode;
+             j["rendering_selection_color"] =  {m_selection_color.r, m_selection_color.g, m_selection_color.b, m_selection_color.a};
 
              // Transform Data
              j["transform_position"] = {m_position.x, m_position.y, m_position.z};
@@ -97,6 +98,8 @@ namespace vOS
              m_color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
              m_visible = j["rendering_visible"];
              m_rendering_mode = j["rendering_mode"];
+             color_vec = j["rendering_selection_color"];
+             m_selection_color =  Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
 
 
              // Transform Data
@@ -118,6 +121,7 @@ namespace vOS
 
         // Rendering Variables
         Color m_color;
+        Color m_selection_color;
         bool m_visible;
         std::string m_rendering_mode;
 

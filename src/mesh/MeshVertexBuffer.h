@@ -96,12 +96,28 @@ namespace vOS
 
         VertexArrayObject* get_vao_rounded();
 
+        /**
+         * Colors the given Face in desired colors
+         * The strong a is, the more pronounced the given color is
+         * An Alpha value of 0 will have no visible effect, 1 will completely override the object default color
+         * @param ovm_id
+         * @param r
+         * @param g
+         * @param b
+         * @param a
+         */
         void set_face_color(int ovm_id, float r, float g, float b, float a);
 
-        VertexArrayObject *get_sphere_vao();
+        /**
+         * Select or unselect the given Face
+         * @param ovm_id
+         * @param selected
+         */
+        void set_face_selection(int ovm_id, bool selected);
 
-        VertexArrayObject *get_cylinder_vao();
+        VertexArrayObject* get_sphere_vao();
 
+        VertexArrayObject* get_cylinder_vao();
 
         void update_digging_buffer(int id, float newValue);
 
@@ -173,6 +189,7 @@ namespace vOS
         std::vector<float> m_normals_by_face;
         std::vector<float> m_cell_centers_by_face;
         std::vector<float> m_colors_by_face;
+        std::vector<float> m_selections;
         std::vector<float> m_peel_depths_by_face;
         std::vector<float> m_is_triangle_by_face;
         std::vector<float> m_is_digged_by_face;
@@ -225,10 +242,6 @@ namespace vOS
         std::map<int, int> m_selection_sphere_digging_numbers;
         std::map<int, int> m_selection_cylinder_digging_numbers;
 
-
-
         int m_num_vertices = 0;
-
-
     };
 }

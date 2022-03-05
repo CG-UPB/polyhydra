@@ -287,28 +287,14 @@ namespace vOS
 
     void Window::set_mesh_rendering_mode(int mesh_id, std::string mode)
     {
-        rendering_mutex.lock();
-
         // Change MeshObject Data
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_rendering_mode = std::move(mode);
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_rendering_mode = std::move(mode);
     }
 
     std::string Window::get_mesh_rendering_mode(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_rendering_mode;
-        }
-        return "";
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_rendering_mode;
     }
 
     void Window::set_mesh_color(Color color)
@@ -318,60 +304,45 @@ namespace vOS
 
     void Window::set_mesh_color(int mesh_id, Color color)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_color = color;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_color = color;
     }
 
     Color Window::get_mesh_color(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_color;
-        }
-        return {1.0f, 1.0f, 1.0f};
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_color;
+    }
+
+
+    void Window::set_mesh_selection_color(int mesh_id, Color color)
+    {
+        // Change MeshObject Data
+        get_mesh_obj(mesh_id)->get_data().m_selection_color = color;
+    }
+
+    Color Window::get_mesh_selection_color(int mesh_id)
+    {
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_selection_color;
     }
 
     void Window::set_mesh_visibility(bool visible)
     {
+        // Change MeshObject Data
         set_mesh_visibility(0, visible);
     }
 
     void Window::set_mesh_visibility(int mesh_id, bool visible)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_visible = visible;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_visible = visible;
     }
 
     bool Window::get_mesh_visibility(int mesh_id)
     {
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_visible;
-        }
-        return false;
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_visible;
     }
 
     void Window::set_mesh_slice_level(float slice_level)
@@ -381,55 +352,26 @@ namespace vOS
 
     void Window::set_mesh_slice_level(int mesh_id, float slice_level)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_slice_level = slice_level;
-        }
-
-        rendering_mutex.unlock();
+            get_mesh_obj(mesh_id)->get_data().m_slice_level = slice_level;
     }
 
     float Window::get_mesh_slice_level(int mesh_id)
     {
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_slice_level;
-        }
-        return false;
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_slice_level;
     }
 
     void Window::set_mesh_slice_locked(int mesh_id, bool locked)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_slice_locked = locked;
-        }
-
-        rendering_mutex.unlock();
+            get_mesh_obj(mesh_id)->get_data().m_slice_locked = locked;
     }
 
     bool Window::get_mesh_slice_locked(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_slice_locked;
-        }
-        return false;
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_slice_locked;
     }
 
     void Window::set_mesh_peel_level(int peel_level)
@@ -439,29 +381,14 @@ namespace vOS
 
     void Window::set_mesh_peel_level(int mesh_id, int peel_level)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_peel_level = peel_level;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_peel_level = peel_level;
     }
 
     int Window::get_mesh_peel_level(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_peel_level;
-        }
-        return false;
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_peel_level;
     }
 
     void Window::set_mesh_cell_size(float cell_size)
@@ -471,168 +398,67 @@ namespace vOS
 
     void Window::set_mesh_cell_size(int mesh_id, float cell_size)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_cell_size = cell_size;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_cell_size = cell_size;
     }
 
     float Window::get_mesh_cell_size(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_cell_size;
-        }
-        return false;
+        // Get MeshObject Data
+        return get_mesh_obj(mesh_id)->get_data().m_cell_size;
     }
 
 
     void Window::set_mesh_specular_exponent(int mesh_id, float exp)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_specular_exponent = exp;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_specular_exponent = exp;
     }
 
     float Window::get_mesh_specular_exponent(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_specular_exponent;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_specular_exponent;
     }
 
     void Window::set_mesh_specular_strength(int mesh_id, float strength)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_specular_strength = strength;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_specular_strength = strength;
     }
 
     float Window::get_mesh_specular_strength(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_specular_strength;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_specular_strength;
     }
 
     void Window::set_mesh_ambient_strength(int mesh_id, float strength)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_ambient_strength = strength;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_ambient_strength = strength;
     }
 
     float Window::get_mesh_ambient_strength(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_ambient_strength;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_ambient_strength;
     }
 
     void Window::set_mesh_diffuse_strength(int mesh_id, float strength)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_diffuse_strength = strength;
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_diffuse_strength = strength;
     }
 
     float Window::get_mesh_diffuse_strength(int mesh_id)
     {
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
-        if (mesh_obj != nullptr)
-        {
-            auto data = mesh_obj->get_data();
-            return data.m_diffuse_strength;
-        }
-        return false;
+        return get_mesh_obj(mesh_id)->get_data().m_diffuse_strength;
     }
 
     void Window::set_mesh_position(int mesh_id, float x, float y, float z)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_position = glm::vec3(x, y, z);
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_position = glm::vec3(x, y, z);
     }
 
     void Window::set_mesh_scale(int mesh_id, float scale)
     {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
         // Change MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            mesh_obj->get_data().m_scale = glm::vec3(scale, scale, scale);
-        }
-
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_data().m_scale = glm::vec3(scale, scale, scale);
     }
 
 
@@ -684,9 +510,11 @@ namespace vOS
         }
 
         // If no other Mesh exists, focus the newly added Mesh
-        if (m_mesh_objects.size() == 1)
+        if (m_mesh_objects.size() == 1) {
+            rendering_mutex.unlock();
             set_mesh_focus(index);
-
+            rendering_mutex.lock();
+        }
         // Calculate Offsets
         int offset = 0;
         for (const auto& mesh_obj: m_mesh_objects)
@@ -713,8 +541,12 @@ namespace vOS
         m_mesh_objects.emplace(index, mesh_obj);
 
         // If no other Mesh exists, focus the newly added Mesh
-        if (m_mesh_objects.size() == 1)
+        if (m_mesh_objects.size() == 1) {
+
+            rendering_mutex.unlock();
             set_mesh_focus(index);
+            rendering_mutex.lock();
+        }
 
         // Calculate Offsets
         int offset = 0;
@@ -732,9 +564,11 @@ namespace vOS
         rendering_mutex.lock();
         // Get MeshObject
         auto* mesh_obj = get_mesh_obj(index);
+
         if (mesh_obj == nullptr)
         {
             // Mesh Object does not exist at given index
+            rendering_mutex.unlock();
             return;
         }
 
@@ -750,7 +584,9 @@ namespace vOS
                 break;
             }
             // Set new active mesh
-            set_mesh_focus(new_active_mesh);
+            rendering_mutex.unlock();
+            set_mesh_focus(index);
+            rendering_mutex.lock();
         }
 
         // Delete from our Map
@@ -789,6 +625,8 @@ namespace vOS
     {
         if(index < 0)
             return;
+
+        rendering_mutex.lock();
         // Get MeshObject
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
@@ -801,6 +639,7 @@ namespace vOS
         {
             //m_mesh_view->set_zoom_point(mesh_obj->get_mesh_offset());
         }
+        rendering_mutex.unlock();
     }
 
     int Window::get_mesh_focus()
@@ -810,16 +649,7 @@ namespace vOS
 
     MeshObject* Window::get_mesh_obj(int index)
     {
-        // Search MeshObject
-        auto search = m_mesh_objects.find(index);
-        if (search != m_mesh_objects.end())
-        {
-            return search->second;
-        }
-        else
-        {
-            return nullptr;
-        }
+        return m_mesh_objects[index];
     }
 
 

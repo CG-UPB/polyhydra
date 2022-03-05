@@ -10,6 +10,7 @@ layout (location = 6) in float a_isIsolated;
 layout (location = 7) in float a_isTriangle;
 layout (location = 8) in float a_rounded_vertex_type;
 layout (location = 9) in vec3 a_rounded_face_center_or_to_vertex;
+layout (location = 10) in float a_isSelected;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -29,6 +30,7 @@ uniform vec3 u_camPos;
 uniform vec3 u_lightColor;
 uniform vec4 u_objectColor;
 uniform float u_cell_size;
+uniform vec4 u_selection_color;
 
 uniform mat4 u_light_projection;
 uniform mat4 u_light_view;
@@ -119,7 +121,25 @@ void main()
     vec3 pos = a_Center + (position - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(u_Transform))) * -a_Normal;
-    v_Color = a_Color;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
     v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
+
+    v_Color = vec4(mix(u_objectColor, vec3(a_Color.x,a_Color.y,a_Color.z), a_Color.w), 1);
+
+    if(a_isSelected > 0.0)
+    {
+        // Colorness is 0, if all rgb values are the same, and above 1 if they have a color difference
+        float colorness = abs(v_Color.x - v_Color.y) + abs(v_Color.x - v_Color.z);
+
+        vec3 inverse_color = vec3(1 - v_Color.x, 1 - v_Color.y , 1 - v_Color.z);
+
+        vec3 selection_color = colorness * inverse_color + (1-colorness) * vec3(1,0,0);
+
+        selection_color = normalize(selection_color);
+
+        // Override inverse color with preset selection color
+        selection_color = mix(selection_color, u_selection_color.xyz, u_selection_color.w);
+        v_Color =vec4(selection_color, 1);
+
+    }
 }

@@ -145,6 +145,8 @@ namespace vOS
             if (active_mesh != -1) {
                 if (ImGui::CollapsingHeader("Active Mesh Settings")) {
                     if (ImGui::BeginTable("split1", 1)) {
+
+
                         ImGui::TableNextColumn();
                         // Mesh transformations, such as position and scale
                         if (active_mesh >= 0) {
@@ -156,24 +158,22 @@ namespace vOS
                             m_mesh_position[2] = pos.z;
                             m_mesh_scale = scl.x;
                         }
+
+
                         ImGui::Text("Position:");
                         ImGui::SameLine();
                         Tooltips::HelpMarkerWithQuestionMark("Adjust the mesh position");
                         if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -10.0f, 10.0f, "%.1f")) {
                             if (active_mesh >= 0) {
-                                Window::instance().rendering_mutex.unlock();
                                 Window::instance().set_mesh_position(active_mesh, m_mesh_position[0],
                                                                      m_mesh_position[1],
                                                                      m_mesh_position[2]);
-                                Window::instance().rendering_mutex.lock();
                             }
                         }
                         ImGui::SameLine();
                         if (ImGui::Button("Reset")) {
                             if (active_mesh >= 0) {
-                                Window::instance().rendering_mutex.unlock();
                                 Window::instance().set_mesh_position(active_mesh, 0.0f, 0.0f, 0.0f);
-                                Window::instance().rendering_mutex.lock();
                             }
                         }
                         ImGui::Text("Scale:");
@@ -181,9 +181,7 @@ namespace vOS
                         Tooltips::HelpMarkerWithQuestionMark("Adjust the mesh scale");
                         if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f")) {
                             if (active_mesh >= 0) {
-                                Window::instance().rendering_mutex.unlock();
                                 Window::instance().set_mesh_scale(active_mesh, m_mesh_scale);
-                                Window::instance().rendering_mutex.lock();
                             }
                         }
                         ImGui::SameLine();
@@ -192,9 +190,7 @@ namespace vOS
                         ImGui::PushID("ScaleReset");
                         if (ImGui::Button("Reset")) {
                             if (active_mesh >= 0) {
-                                Window::instance().rendering_mutex.unlock();
                                 Window::instance().set_mesh_scale(active_mesh, 1.0f);
-                                Window::instance().rendering_mutex.lock();
                             }
                         }
                         ImGui::PopID();
@@ -216,10 +212,8 @@ namespace vOS
                         ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
                         ImGui::SameLine();
                         ImGui::Checkbox("Lock", &m_slicer_locked);
-                        Window::instance().rendering_mutex.unlock();
                         Window::instance().set_mesh_slice_level(active_mesh, m_slider_slicer);
                         Window::instance().set_mesh_slice_locked(active_mesh, m_slicer_locked);
-                        Window::instance().rendering_mutex.lock();
                         ImGui::Text("Peel:");
                         ImGui::SameLine();
                         Tooltips::HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
@@ -229,17 +223,13 @@ namespace vOS
                             peel_max = Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1;
                         }
                         ImGui::SliderInt(" ", &m_slider_peel, 0, peel_max);
-                        Window::instance().rendering_mutex.unlock();
                         Window::instance().set_mesh_peel_level(active_mesh, m_slider_peel);
-                        Window::instance().rendering_mutex.lock();
                         m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
                         ImGui::Text("Cell Size:");
                         ImGui::SameLine();
                         Tooltips::HelpMarkerWithQuestionMark("This slider will change the size of each cell");
                         if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f)) {
-                            Window::instance().rendering_mutex.unlock();
                             Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
-                            Window::instance().rendering_mutex.lock();
                         }
 
                         static int clicked_digging = 0;
@@ -297,6 +287,7 @@ namespace vOS
                                 clicked++;
                             }
                         }
+
                         ImGui::EndTable();
                     }
                 }

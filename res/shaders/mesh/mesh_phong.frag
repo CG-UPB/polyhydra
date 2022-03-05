@@ -18,6 +18,11 @@ uniform vec4 u_objectColor;
 uniform int u_viewport_width;
 uniform int u_viewport_height;
 
+uniform float u_spec_strength;
+uniform float u_ambient_strength;
+uniform float u_diffuse_strength;
+uniform float u_spec_exponent;
+
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_shadow_texture;
@@ -143,29 +148,25 @@ void main()
     //shadow = 0.0;
 
     //ambient
-    float ambientStrength = 1.0;
     float ao_factor = texture(u_ssao_texture, uv).r;
-    vec3 ambient = ambientStrength * light_color * ao_factor;
+    vec3 ambient = u_ambient_strength * light_color * ao_factor;
 
     // Phong Shading
 
-    vec3 used_color = mix(u_objectColor.rgb, vec3(v_color.x,v_color.y,v_color.z), 0.0);
+    vec3 used_color = mix(u_objectColor.rgb, v_color.rgb, 0.0);
 
     //diffuse
-    float diffuseStrength = 1.0;
     //vec3 l = normalize(u_lightPos - v_pos);
     // constant light direction looks way better than a single point of light
-    vec3 diffuse = diffuseStrength * diff * light_color;
+    vec3 diffuse = u_diffuse_strength * diff * light_color;
 
     //specular
-    float specularStrength = 0.2;
     vec3 v = normalize(u_camPos - v_pos);
     vec3 r = reflect(-l, n);
-    float spec = pow(max(0.0, dot(v, r)), 8);
-    vec3 specular = specularStrength * spec * light_color;
+    float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
+    vec3 specular = u_spec_strength * spec * light_color;
 
-
-    float norm = ambientStrength + diffuseStrength + specularStrength;
+    float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
     vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) / norm * used_color;
 
     FragColor = vec4(result, 1.0);
