@@ -45,24 +45,8 @@ namespace vOS
         m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
         m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
 
-        m_render_data.camera.position = glm::vec3{0.0f, 0.0f, 10.0f};
-
-        // set up the initial camera position, direction and orientation of the mesh
-        m_render_data.camera.world = glm::mat4(1.0f);
-        m_render_data.camera.projection = glm::perspective(
-                glm::radians(m_render_data.camera.fov_deg),
-                (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                m_render_data.camera.near,
-                m_render_data.camera.far
-        );
-        m_render_data.camera.view = glm::lookAt(
-                m_render_data.camera.position,
-                glm::vec3{0.0f, 0.0f, 0.0f},
-                glm::vec3{0.0f, 1.0f, 0.0f}
-        );
-
-        glm::mat4 inverse = glm::inverse(m_render_data.camera.view);
-        glm::vec3 view_dir = {inverse[2][0], inverse[2][1], inverse[2][2]};
+        // Set Camera Viewport Size
+        m_render_data.camera.set_viewport_size(width, height);
 
         // setup light including projection and view for shadow map
         m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
@@ -81,9 +65,6 @@ namespace vOS
             glm::vec3(0.0f, 1.0f, 0.0f)
         );
 
-
-        m_zoom = false;
-        m_zoom_point = glm::vec3(0, 0, 0);
 
         num_passes = 0;
 
@@ -124,12 +105,9 @@ namespace vOS
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
             delete m_pixel_buffer;
             m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
-            m_render_data.camera.projection = glm::perspective(
-                    glm::radians(m_render_data.camera.fov_deg),
-                    (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    m_render_data.camera.near,
-                    m_render_data.camera.far
-            );
+
+            m_render_data.camera.set_viewport_size(width, height);
+
             m_render_data.light.projection = glm::perspective(
                     glm::radians(m_render_data.camera.fov_deg),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
@@ -161,103 +139,6 @@ namespace vOS
     }
 
 
-    void MeshView::handleMouseControl()
-    {
-        // check where the imgui window is inside the main window, and how big it is
-        ImVec2 vMin = ImGui::GetWindowContentRegionMin();
-        ImVec2 vMax = ImGui::GetWindowContentRegionMax();
-        vMin.x += ImGui::GetWindowPos().x;
-        vMin.y += ImGui::GetWindowPos().y;
-        vMax.x += ImGui::GetWindowPos().x;
-        vMax.y += ImGui::GetWindowPos().y;
-        glm::vec2 mousePos = {Input::get_mouse_X(), Input::get_mouse_Y()};
-
-        if (!ImGui::IsWindowHovered() && !m_arcBallOn)
-        {
-            return;
-        }
-
-        bool isDown = Input::mouse_pressed();
-
-        // Move camera in direction of Movement Vector (WASD movement)
-
-        auto movement_vector = glm::vec3 (Input::get_wasd_movement_vector_X(),Input::get_wasd_movement_vector_Y(),Input::get_wasd_movement_vector_Z());
-
-        // Reset Movement speed multiplier whenever we stop moving or when we start moving
-        if((movement_vector[0] == 0 && movement_vector[1] == 0 && movement_vector[2] == 0) || (m_previous_movement_vector[0] == 0 && m_previous_movement_vector[1] == 0 && m_previous_movement_vector[2] == 0))
-            m_movement_speed_multiplier = 1;
-
-        m_previous_movement_vector[0] = movement_vector[0];
-        m_previous_movement_vector[1] = movement_vector[1];
-        m_previous_movement_vector[2] = movement_vector[2];
-
-        float movement_speed = m_movement_speed_multiplier;
-        m_movement_speed_multiplier *= 1.1f; // Gradually speed up movement
-        m_render_data.camera.position += movement_vector * movement_speed;
-        m_render_data.light.position += movement_vector * movement_speed;
-
-        //std::cout << m_render_data.camera.position[0] << " "  << m_render_data.camera.position[1] << " " << m_render_data.camera.position[2] << " " << std::endl;
-
-        // the cursor is inside the mesh viewport, so now we can manipulate the mesh view
-        if (mousePos.x > vMin.x && mousePos.x < vMax.x && mousePos.y > vMin.y && mousePos.y < vMax.y)
-        {
-            // arc ball behavior
-            if (isDown && !m_lastDown)
-            {
-                m_arcBallOn = true;
-                m_lastX = mousePos.x;
-                m_lastY = mousePos.y;
-            }
-
-            if (!isDown)
-            {
-                m_arcBallOn = false;
-            }
-
-            // scroll scaling of the mesh
-            float scaleSpeed = 0.1f;
-            m_render_data.camera.world = glm::scale(
-                    m_render_data.camera.world,
-                    glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
-            );
-            m_render_data.light.world = glm::scale(
-                    m_render_data.light.world,
-                    glm::vec3(1.0f + (float) Input::get_scroll_offset_Y() * scaleSpeed)
-            );
-        }
-        m_lastDown = isDown;
-
-        if (m_arcBallOn)
-        {
-            float speed = 0.04;
-
-            double dx = mousePos.x - m_lastX;
-            double dy = mousePos.y - m_lastY;
-
-            if (std::abs(dx) > 0.0 || std::abs(dy) > 0.0)
-            {
-                glm::vec3 a = get_arc_ball_vector((float) m_lastX, (float) m_lastY);
-                glm::vec3 b = get_arc_ball_vector(mousePos.x, mousePos.y);
-                float angle = (float) std::acos(std::min(1.0f, glm::dot(a, b)));
-                glm::vec3 axis_camera = glm::cross(a, b);
-                glm::mat3 camera_to_object = glm::inverse(
-                        glm::mat3(m_render_data.camera.view) * glm::mat3(m_render_data.camera.world));
-                glm::vec3 axis_object = camera_to_object * axis_camera;
-                m_render_data.camera.world = glm::rotate(m_render_data.camera.world, glm::degrees(angle) * speed,
-                                                         axis_object);
-
-
-                glm::vec3 axis_light = glm::cross(a, b);
-                glm::mat3 light_to_object = glm::inverse(
-                        glm::mat3(m_render_data.light.view) * glm::mat3(m_render_data.light.world));
-                glm::vec3 l_axis_object = light_to_object * axis_light;
-                m_render_data.light.world = glm::rotate(m_render_data.light.world,glm::degrees(angle) * speed,
-                                                         l_axis_object);
-            }
-        }
-        m_lastX = mousePos.x;
-        m_lastY = mousePos.y;
-    }
 
     void MeshView::renderMesh(int mesh_id)
     {
@@ -273,12 +154,6 @@ namespace vOS
         {
             return;
         }
-
-        if(!m_zoom)
-        {
-            m_zoom_point = obj->get_mesh_offset();
-        }
-        mesh_data.m_offset = m_zoom_point;
 
 
         obj->update_vertex_buffer();
@@ -322,12 +197,6 @@ namespace vOS
         auto active_mesh = Window::instance().get_focused_mesh_object();
         if (active_mesh != nullptr)
         {
-            if(!m_zoom)
-            {
-                m_zoom_point = Window::instance().get_focused_mesh_object()->get_mesh_offset();
-            }
-            Window::instance().get_focused_mesh_object()->get_data().m_offset = m_zoom_point;
-
             for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
             {
                 auto mesh = m.second;
@@ -624,11 +493,6 @@ namespace vOS
                 {
                     continue;
                 }
-                if(!m_zoom)
-                {
-                    m_zoom_point = mesh->get_mesh_offset();
-                }
-                mesh_data.m_offset = m_zoom_point;
 
                 mesh->update_vertex_buffer();
 
@@ -829,13 +693,11 @@ namespace vOS
         }
         if(ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
         {
-            m_zoom_point = m_selection_hover_pass.m_zoom_point;
-            m_zoom = true;
+            // TODO Focus
         }
         if(ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
         {
-            std::cout << "ESCAPE" << std::endl;
-            m_zoom = false;
+            // TODO Escape Focus
         }
 
         auto active_mesh = Window::instance().get_focused_mesh_object();
@@ -849,11 +711,6 @@ namespace vOS
     {
 
 
-    }
-
-    void MeshView::set_zoom_point(glm::vec3 zoom_point)
-    {
-        m_zoom_point = zoom_point;
     }
 
 
@@ -873,7 +730,10 @@ namespace vOS
 
         // handle the things related to our mesh rendering canvas
         handleResize();
-        handleMouseControl();
+
+        // Update Camera
+        m_render_data.camera.frame_update();
+
         // Render Meshes
         render_shadow_map();
         render_pre_pass();
