@@ -42,10 +42,10 @@ namespace vOS
             m_slice_level = 0;
             m_cell_size = 1;
 
-            m_ambient_strength = 0.3;
-            m_diffuse_strength = 1;
-            m_specular_strength = 0.5;
-            m_specular_exponent = 8;
+            m_ambient_strength = 1.0f;
+            m_diffuse_strength = 1.0f;
+            m_specular_strength = 0.3f;
+            m_specular_exponent = 8.0f;
         }
 
          [[nodiscard]] nlohmann::json to_json()

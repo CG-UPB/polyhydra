@@ -147,7 +147,7 @@ namespace vOS
 
         void add_cell_rounded(Mesh& mesh, Cell cell);
 
-        unsigned int add_vertex_data_to_cell_data(RoundedCellData& data, float type, const glm::vec3& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv);
+        unsigned int add_vertex_data_to_cell_data(RoundedCellData& data, float type, const glm::vec3& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv, float angle);
 
         void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2);
 

@@ -30,7 +30,7 @@ namespace vOS
         } light;
         struct {
             bool active = true;
-            float size = 0.1f;
+            float size = 0.3f;
         } rounding;
     };
 

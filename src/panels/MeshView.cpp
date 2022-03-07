@@ -863,7 +863,7 @@ namespace vOS
 
         if (ImGui::Begin("Rounding"))
         {
-            ImGui::SliderFloat("Size", &m_render_data.rounding.size, 0.0f, 0.5f);
+            ImGui::SliderFloat("Size", &m_render_data.rounding.size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
         }
         ImGui::End();
 
@@ -875,10 +875,9 @@ namespace vOS
         handleResize();
         handleMouseControl();
         // Render Meshes
-        render_shadow_map();
         render_pre_pass();
-
         render_ssao_pass();
+        render_shadow_map();
 
         // Now render our mesh scene to the framebuffer texture
         // Start with opaque objects

@@ -33,7 +33,7 @@ namespace vOS
         m_vao_rounded->add_attribute(m_is_isolated_rounded, 6, 1);
         m_vao_rounded->add_attribute(m_is_triangle_rounded, 7, 1);
         m_vao_rounded->add_attribute(m_vertex_types_rounded, 8, 1);
-        m_vao_rounded->add_attribute(m_face_center_or_to_vertex_rounded, 9, 3);
+        m_vao_rounded->add_attribute(m_face_center_or_to_vertex_rounded, 9, 4);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -77,8 +77,7 @@ namespace vOS
         }
     }
 
-    unsigned int MeshVertexBuffer::add_vertex_data_to_cell_data(RoundedCellData& data, const float type, const glm::vec3& pos,
-                                                        const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv)
+    unsigned int MeshVertexBuffer::add_vertex_data_to_cell_data(RoundedCellData& data, const float type, const glm::vec3& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv, float angle)
     {
         auto& cell_center = m_cell_centers[data.cell_id];
         auto peel_depth = m_peel_depths[data.cell_id];
@@ -104,6 +103,7 @@ namespace vOS
         data.face_center_or_to_vertex.push_back(fc_or_tv.x);
         data.face_center_or_to_vertex.push_back(fc_or_tv.y);
         data.face_center_or_to_vertex.push_back(fc_or_tv.z);
+        data.face_center_or_to_vertex.push_back(angle);
         return index;
     }
 
@@ -246,26 +246,43 @@ namespace vOS
             const auto& vertex_data = it.second;
             glm::vec3 corner_normal(0.0f);
             glm::vec3 corner_pos = VecUtil::pos_to_vec3(mesh, vertex_id);
+            glm::vec3 corner_move_dir(0.0f);
+            float corner_angle = 0.0f;
             for (size_t i = 0; i < vertex_data.size(); i++)
             {
                 auto& prev_data = vertex_data[(i + 2) % vertex_data.size()];
                 auto& data = vertex_data[(i + 1) % vertex_data.size()];
                 auto& next_data = vertex_data[i];
-                corner_normal += VecUtil::normal_to_vec3(mesh, data.halfface_id);
-                // edge vertex
+
+                glm::vec3 prev_to_vertex_pos = VecUtil::pos_to_vec3(mesh, prev_data.to_vertex_id);
+                glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(mesh, data.to_vertex_id);
+                glm::vec3 next_to_vertex_pos = VecUtil::pos_to_vec3(mesh, next_data.to_vertex_id);
+
+                float inner_angle = VecUtil::get_angle(to_vertex_pos - corner_pos, next_to_vertex_pos - corner_pos);
+                float prev_inner_angle = VecUtil::get_angle(to_vertex_pos - corner_pos, prev_to_vertex_pos - corner_pos);
+                glm::vec3 face_dir = glm::cross(to_vertex_pos - corner_pos, next_to_vertex_pos - corner_pos);
+
+                corner_normal += face_dir;
+                float corner_move_weight = M_PI * 2.0 - inner_angle - prev_inner_angle;
+                corner_move_dir += glm::normalize(to_vertex_pos - corner_pos) * corner_move_weight;
+
                 glm::vec3 face_normal = VecUtil::normal_to_vec3(mesh, data.halfface_id);
                 glm::vec3 prev_face_normal = VecUtil::normal_to_vec3(mesh, prev_data.halfface_id);
-                float face_angle = VecUtil::get_angle(face_normal, prev_face_normal);
+
+                float dihedral_angle = M_PI - VecUtil::get_angle(face_normal, prev_face_normal);
+                corner_angle += dihedral_angle;
+
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
-                glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(mesh, data.to_vertex_id);
                 auto edge = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
+                // edge vertex
                 halfedge_vertex_indices[edge.idx()][data.from_vertex_id] = add_vertex_data_to_cell_data(
                         cell_data,
                         ROUNDED_VERTEX_TYPE_EDGE,
                         corner_pos,
                         edge_normal,
                         color,
-                        to_vertex_pos
+                        to_vertex_pos,
+                        dihedral_angle
                 );
                 // face vertex
                 glm::vec3 face_center = face_centers[data.halfface_id];
@@ -275,7 +292,8 @@ namespace vOS
                         corner_pos,
                         face_normal,
                         color,
-                        face_center
+                        face_center,
+                        0.0f
                 );
                 halfface_vertices_indices[data.halfface_id].push_back({
                     face_vertex_index,
@@ -287,7 +305,9 @@ namespace vOS
                 });
                 corner_vertex_face_vertex_index[vertex_id][data.halfface_id] = face_vertex_index;
             }
+            corner_angle /= (float) vertex_data.size();
             corner_normal = glm::normalize(corner_normal);
+            corner_move_dir = glm::normalize(corner_move_dir);
             // corner vertex
             corner_vertex_indices[vertex_id] = add_vertex_data_to_cell_data(
                     cell_data,
@@ -295,7 +315,8 @@ namespace vOS
                     corner_pos,
                     corner_normal,
                     color,
-                    zero
+                    corner_move_dir,
+                    corner_angle
             );
         }
         for (auto& it : face_centers)
@@ -309,7 +330,8 @@ namespace vOS
                     center_pos,
                     face_normals[halfface_id],
                     color,
-                    zero
+                    zero,
+                    0.0f
             );
         }
 

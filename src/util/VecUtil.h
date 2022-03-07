@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <glm/vec3.hpp>
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
 
@@ -11,6 +12,10 @@ namespace vOS
     class VecUtil
     {
     public:
+
+        [[nodiscard]] static inline std::string to_string(const glm::vec3& vec) {
+            return std::string("[" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " + std::to_string(vec.z) + "]");
+        }
 
         [[nodiscard]] static inline glm::vec3 pos_to_vec3(const Mesh& mesh, OpenVolumeMesh::VertexHandle vertex_handle)
         {
@@ -27,13 +32,13 @@ namespace vOS
         [[nodiscard]] static inline glm::vec3 normal_to_vec3(const Mesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface_handle)
         {
             auto normal = mesh.normal(halfface_handle);
-            return {normal[0], normal[1], normal[2]};
+            return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
         }
 
         [[nodiscard]] static inline glm::vec3 normal_to_vec3(const Mesh& mesh, int halfface_id)
         {
             auto normal = mesh.normal(OpenVolumeMesh::HalfFaceHandle{halfface_id});
-            return {normal[0], normal[1], normal[2]};
+            return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
         }
 
         [[nodiscard]] static inline std::array<glm::vec3, 2> edge_vertices(const Mesh& mesh, OpenVolumeMesh::EdgeHandle edge_handle)
@@ -42,9 +47,16 @@ namespace vOS
             return {pos_to_vec3(mesh, v0), pos_to_vec3(mesh, v1)};
         }
 
+        [[nodiscard]] static inline float get_angle_fast(const glm::vec3& vec0, const glm::vec3& vec1)
+        {
+            float x = glm::dot(vec0, vec1);
+            return glm::acos(glm::max(-1.0f, glm::min(x, 1.0f)));
+        }
+
         [[nodiscard]] static inline float get_angle(const glm::vec3& vec0, const glm::vec3& vec1)
         {
-            return glm::acos(glm::dot(vec0, vec1));
+            float x = glm::dot(vec0, vec1) / glm::length(vec0) * glm::length(vec1);
+            return glm::acos(glm::max(-1.0f, glm::min(x, 1.0f)));
         }
 
         [[nodiscard]] static std::pair<glm::vec3, glm::vec3> get_bounding_box(const std::vector<glm::vec3>& vertices)
