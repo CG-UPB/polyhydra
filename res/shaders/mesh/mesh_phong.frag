@@ -31,6 +31,13 @@ uniform sampler2D u_color_filter_texture;
 
 out vec4 FragColor;
 
+vec2 poisson_disk[4] = vec2[](
+    vec2(-0.94201624, -0.39906216),
+    vec2(0.94558609, -0.76890725),
+    vec2(-0.094184101, -0.92938870),
+    vec2(0.34495938, 0.29387760)
+);
+
 float shadow_calculation(vec4 pos_ls, float bias)
 {
     float shadow = 0.0;
@@ -47,15 +54,24 @@ float shadow_calculation(vec4 pos_ls, float bias)
 
     // sample surrounding values and use average value for smoother shadows
     vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
-    for(int x = -1; x <= 1; ++x)
+//    for(int x = -1; x <= 1; ++x)
+//    {
+//        for(int y = -1; y <= 1; ++y)
+//        {
+//            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
+//            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
+//        }
+//    }
+
+    for(int i = 0; i < 4; i++)
     {
-        for(int y = -1; y <= 1; ++y)
+        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 600.0).r < current_depth - bias)
         {
-            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
-            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
+            shadow += 0.25;
         }
     }
-    shadow /= 9.0;
+
+    //shadow /= 9.0;
 
     if(proj_coords.z > 1.0)
     {
@@ -132,7 +148,11 @@ void main()
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
     // shadow calculation
-    float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
+    //float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
+
+    float theta = clamp(dot(light_dir,n), 0.0, 1.0);
+    float bias = 0.0005 * tan(acos(theta));
+    bias = clamp(bias, 0.0, 0.0005);
     float shadow = shadow_calculation(v_pos_ls, bias);
     float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
     transparent_shadow = 0.0;
@@ -167,8 +187,7 @@ void main()
     vec3 specular = u_spec_strength * spec * light_color;
 
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-    //vec3 result = (ambient + (1.0 - shadow + 0.2) * (diffuse + specular)) / norm * used_color;
-    vec3 result = (ambient + diffuse + specular) / norm * used_color;
+    vec3 result = (ambient + (1.0 - shadow + 0.1) * (diffuse + specular)) / norm * used_color;
 
     FragColor = vec4(result, 1.0);
 }

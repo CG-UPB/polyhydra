@@ -4,6 +4,7 @@
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 #include <map>
+#include <unordered_map>
 
 namespace vOS
 {

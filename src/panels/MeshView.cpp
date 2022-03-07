@@ -31,7 +31,7 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_pre_pass = new PrePass(width, height);
-        m_shadow_pass = new ShadowMapPass(width, height);
+        m_shadow_pass = new ShadowMapPass(this, width, height);
         m_transparent_shadow_pass= new TransparentShadowMapPass(width, height);
         m_shadow_color_filter_pass = new ShadowColorFilterPass(this, width, height);
         m_mesh_pass = new MeshPass(this);
@@ -586,8 +586,8 @@ namespace vOS
 
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
 
         m_meshFrameBuffer->bind();
@@ -879,6 +879,8 @@ namespace vOS
         render_ssao_pass();
         render_shadow_map();
 
+        render_shadow_map();
+
         // Now render our mesh scene to the framebuffer texture
         // Start with opaque objects
 
@@ -1036,7 +1038,7 @@ namespace vOS
         switch (m_viewport_texture)
         {
             case FINAL_IMAGE: return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+            case SELECTION: return m_shadow_pass->get_shadow_map();
             //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();

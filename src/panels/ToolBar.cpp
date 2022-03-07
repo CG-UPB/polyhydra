@@ -55,9 +55,12 @@ namespace vOS
 
                 filename = file_dialog.saveDialog("Open Snapshot File");
 
-                Window::instance().rendering_mutex.unlock();
-                Window::instance().take_screenshot(filename);
-                Window::instance().rendering_mutex.lock();
+                if (filename != NULL)
+                {
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().take_screenshot(filename);
+                    Window::instance().rendering_mutex.lock();
+                }
             }
             ImGui::SameLine();
             Tooltips::HelpMarkerWithQuestionMark(
