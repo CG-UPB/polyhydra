@@ -54,7 +54,7 @@ namespace vOS
         //m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
         m_render_data.light.position = glm::vec3{5.0f, 5.0f, 10.0f};
         m_render_data.light.projection = glm::perspective(
-            glm::radians(m_render_data.camera.fov_deg),
+            glm::radians(m_render_data.camera.m_zoom),
             (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
             m_render_data.camera.near,
             m_render_data.camera.far
@@ -109,35 +109,13 @@ namespace vOS
             m_render_data.camera.set_viewport_size(width, height);
 
             m_render_data.light.projection = glm::perspective(
-                    glm::radians(m_render_data.camera.fov_deg),
+                    glm::radians(m_render_data.camera.m_zoom),
                     (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
                     m_render_data.camera.near,
                     m_render_data.camera.far
             );
         }
     }
-
-    glm::vec3 MeshView::get_arc_ball_vector(float x, float y) const
-    {
-        auto viewport_start = ImGui::GetCursorScreenPos();
-        glm::vec3 res = glm::vec3(
-                (x - viewport_start.x) / (float) m_viewportPanelWidth * 1.5f - 0.75f,
-                (y - viewport_start.y) / (float) m_viewportPanelHeight * 1.5f - 0.75f,
-                0.0f
-        );
-        res.y = -res.y;
-        float squared = res.x * res.x + res.y * res.y;
-        if (squared <= 1.0f)
-        {
-            res.z = (float) sqrt(1.0f - squared);
-        }
-        else
-        {
-            res = glm::normalize(res);
-        }
-        return res;
-    }
-
 
 
     void MeshView::renderMesh(int mesh_id)
@@ -732,7 +710,7 @@ namespace vOS
         handleResize();
 
         // Update Camera
-        m_render_data.camera.frame_update();
+        m_render_data.camera.update();
 
         // Render Meshes
         render_shadow_map();
@@ -890,6 +868,7 @@ namespace vOS
             m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
         }
         ImGui::End();
+
     }
 
     unsigned int MeshView::get_selected_texture()
@@ -897,8 +876,7 @@ namespace vOS
         switch (m_viewport_texture)
         {
             case FINAL_IMAGE: return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return m_transparency_pass_dp->m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
-            //case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR: return m_ssao_pass->get_blur_texture();
             case TRANSPARENCY_ACCUM: return m_transparency_pass_wb->get_accum_texture();

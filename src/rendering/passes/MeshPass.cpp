@@ -68,6 +68,7 @@ namespace vOS
         glm::mat4 view_inv = glm::inverse(data.camera.view);
         glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
         auto slice_direction = obj->get_slice_dir(transform, view_dir);
+        //auto slice_direction = data.camera.m_camera_front;
 
         // Shader uniforms
         m_mesh_shader->set_uniform_mat4f("u_Transform", transform);

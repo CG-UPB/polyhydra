@@ -11,6 +11,13 @@
 
 namespace vOS {
 
+    enum Movement
+    {
+        FORWARD,
+        BACKWARD,
+        LEFT,
+        RIGHT
+    };
 
 /**
  * Camera class responsible for Data concerning the rendering camera. Position direction and other attributes are managed and changable through this class
@@ -20,18 +27,14 @@ namespace vOS {
     public:
         Camera();
 
-        glm::vec3 get_direction();
-
-        void frame_update();
-
         void set_viewport_size(float width, float height);
 
-        void update_matrices();
+        void update();
 
-        void rotate_camera(glm::vec3 target);
-        void rotate_camera(float yaw, float pitch);
-
-        void handle_mouse_control();
+        void handle_input();
+        void handle_mouse_scroll(float y_offset);
+        void handle_mouse_movement(float x_offset, float y_offset);
+        void handle_keyboard(Movement direction, float delta);
 
         // Matrices
         glm::mat4 world;
@@ -40,8 +43,8 @@ namespace vOS {
 
         // Vectors
         glm::vec3 position;
-        glm::vec3 m_previous_position;
         glm::vec3 m_target;
+        glm::vec3 m_previous_position;
         glm::vec3 m_previous_movement_vector;
 
         // Axis
@@ -51,18 +54,27 @@ namespace vOS {
         glm::vec3 m_camera_front;
 
         // Euler Angles
-        float m_yaw = 0;
-        float m_pitch = 0;
+        float m_yaw = -90.0f;
+        float m_pitch = 0.0f;
+        float m_vertical_speed = 5.0f;
+        float m_horizontal_speed = 10.0f;
+        float m_sensitivity = 0.1f;
+        float m_zoom = 55.0f;
 
         // Floats
-        float m_movement_speed_multiplier = 1;
-        float fov_deg = 50.0f;
         float near = 0.1f;
         float far = 100.0f;
         float m_screen_width = 0;
         float m_screen_height = 0;
-        float m_zoom_strength = 0.1;
-        float m_camera_movement_speed = 0.1f;
+        float m_zoom_strength = 1.5;
+
+        // Mouse position
+        float last_x = 0.0f;
+        float last_y = 0.0f;
+        bool first_mouse = true;
+
+        float delta = 0.0f;
+        float last_frame = 0.0f;
     };
 
 }
