@@ -102,11 +102,12 @@ void main()
     ////////////////////////////////////////////////////////
     // Rounding
     ////////////////////////////////////////////////////////
+    mat3 inverse_transform = mat3(transpose(inverse(u_Transform)));
     vec3 position = a_Pos;
     if (u_rounding)
     {
         float type = a_rounded_vertex_type;
-        vec3 diameter = u_max - u_min;
+        vec3 diameter = inverse_transform * (u_max - u_min);
         float r = u_rounding_size * (max(max(diameter.x, diameter.y), diameter.z) / 70.0);
         // this vertex lies on the inner triangle
         if (type == ROUNDED_VERTEX_TYPE_FACE)
@@ -142,7 +143,7 @@ void main()
 
     vec3 pos = a_Center + (position - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(u_Transform))) * -a_Normal;
+    v_Normal = mat3(inverse_transform) * -a_Normal;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
     v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
 
