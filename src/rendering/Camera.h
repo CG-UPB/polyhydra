@@ -58,7 +58,7 @@ namespace vOS {
         float m_pitch = 0.0f;
         float m_vertical_speed = 5.0f;
         float m_horizontal_speed = 10.0f;
-        float m_sensitivity = 0.1f;
+        float m_sensitivity = 0.3f;
         float m_zoom = 55.0f;
 
         // Floats
@@ -66,7 +66,7 @@ namespace vOS {
         float far = 100.0f;
         float m_screen_width = 0;
         float m_screen_height = 0;
-        float m_zoom_strength = 1.5;
+        float m_zoom_strength = 3.5;
 
         // Mouse position
         float last_x = 0.0f;

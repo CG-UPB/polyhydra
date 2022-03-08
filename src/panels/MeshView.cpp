@@ -48,22 +48,18 @@ namespace vOS
         // Set Camera Viewport Size
         m_render_data.camera.set_viewport_size(width, height);
 
-        // setup light including projection and view for shadow map
-        m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
-        m_render_data.light.world = glm::mat4(1.0f);
-        //m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
-        m_render_data.light.position = glm::vec3{5.0f, 5.0f, 10.0f};
-        m_render_data.light.projection = glm::perspective(
-            glm::radians(m_render_data.camera.m_zoom),
-            (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-            m_render_data.camera.near,
-            m_render_data.camera.far
-        );
-        m_render_data.light.view = glm::lookAt(
-            m_render_data.light.position,
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f)
-        );
+//        // setup light including projection and view for shadow map
+//        m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
+//        m_render_data.light.world = glm::mat4(1.0f);
+//        //m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
+//        m_render_data.light.position = glm::vec3{10.0f, 10.0f, 10.0f};
+//        m_render_data.light.projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+//
+//        m_render_data.light.view = glm::lookAt(
+//            m_render_data.light.position,
+//            glm::vec3(0.0f, 0.0f, 0.0f),
+//            glm::vec3(0.0f, 1.0f, 0.0f)
+//        );
 
 
         num_passes = 0;
@@ -108,12 +104,6 @@ namespace vOS
 
             m_render_data.camera.set_viewport_size(width, height);
 
-            m_render_data.light.projection = glm::perspective(
-                    glm::radians(m_render_data.camera.m_zoom),
-                    (float) m_viewportPanelWidth / (float) m_viewportPanelHeight,
-                    m_render_data.camera.near,
-                    m_render_data.camera.far
-            );
         }
     }
 
@@ -765,7 +755,8 @@ namespace vOS
         }
 
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()){
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        {
             renderSelection();
         }
 

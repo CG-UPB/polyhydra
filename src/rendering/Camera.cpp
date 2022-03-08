@@ -64,17 +64,17 @@ namespace vOS
     }
     void Camera::handle_input()
     {
+        if(!ImGui::IsWindowHovered())
+        {
+            return;
+        }
+
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
         ImVec2 vMax = ImGui::GetWindowContentRegionMax();
         vMin.x += ImGui::GetWindowPos().x;
         vMin.y += ImGui::GetWindowPos().y;
         vMax.x += ImGui::GetWindowPos().x;
         vMax.y += ImGui::GetWindowPos().y;
-
-        if(!ImGui::IsWindowHovered())
-        {
-            return;
-        }
 
         // mouse scroll
         handle_mouse_scroll((float)Input::get_scroll_offset_Y());
@@ -98,12 +98,15 @@ namespace vOS
                 float x_offset = xpos - last_x;
                 float y_offset = last_y - ypos;
 
-                std::cout << "X: " << x_offset << ", Y: " << y_offset << std::endl;
-
                 last_x = xpos;
                 last_y = ypos;
 
                 handle_mouse_movement(x_offset, y_offset);
+            }
+            else
+            {
+                last_x = xpos;
+                last_y = ypos;
             }
         }
 

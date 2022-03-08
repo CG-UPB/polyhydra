@@ -65,7 +65,9 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowColorFilterPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp src/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestClass.cpp
-        ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp src/rendering/Camera.cpp src/rendering/Camera.h)
+        ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp
+        ${VOLUMESHOS_SRC}/rendering/Camera.cpp
+        ${VOLUMESHOS_SRC}/rendering/Light.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
