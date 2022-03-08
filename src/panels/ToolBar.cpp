@@ -49,7 +49,7 @@ namespace vOS
             bool activated_modes[8][4] = {
                     // transparency, shadows, ambient occlusion, selection
                     {true,true,true,true}, //Wireframe
-                    {true,true,true,true}, // Only Vertices
+                    {false,false,false,false}, // Only Vertices
                     {true,true,true,true}, // Phong Facenormals
                     {true,true,true,true}, // Phong Vertexnormals
                     {true,false,false,false}, // Transparency

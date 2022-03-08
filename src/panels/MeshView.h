@@ -46,6 +46,9 @@ namespace vOS
         void render_shadow_map();
         void render_ssao_pass();
         void render_debug_menu();
+        void render_background();
+        void render_meshes();
+        void render_transparency();
         void render_transparency_wb();
         void render_transparency_dp();
         [[nodiscard]] unsigned int get_selected_texture();

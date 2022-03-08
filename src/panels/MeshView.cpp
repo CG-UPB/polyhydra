@@ -670,12 +670,41 @@ namespace vOS
         }
     }
 
-    void MeshView::start_isolation()
-    {
 
+    void MeshView::render_background() {
 
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+
+        m_meshFrameBuffer->bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_background_pass.render(nullptr, m_render_data, 0);
+        m_meshFrameBuffer->unbind();
     }
 
+
+    void MeshView::render_meshes() {
+        m_meshFrameBuffer->bind();
+        for (const auto& m: Window::instance().get_mesh_list())
+        {
+            renderMesh(m.first);
+        }
+        m_meshFrameBuffer->unbind();
+    }
+
+
+    void MeshView::render_transparency()
+    {
+        m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
+
+        switch (m_transparency)
+        {
+            case DEPTH_PEELING: render_transparency_dp();break;
+            case WEIGHTED_BLENDED : render_transparency_wb();
+        }
+    }
 
     void MeshView::show()
     {
@@ -696,46 +725,39 @@ namespace vOS
 
         // Render Meshes
         render_pre_pass();
-        render_ssao_pass();
 
-        render_shadow_map();
+        if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
+        {
+            render_ssao_pass();
+        }
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
+        {
+            render_shadow_map();
+        }
+
 
         // Now render our mesh scene to the framebuffer texture
         // Start with opaque objects
+        render_background();
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
+        render_meshes();
 
-        m_meshFrameBuffer->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data, 0);
-        for (const auto& m: Window::instance().get_mesh_list())
-        {
-            renderMesh(m.first);
-        }
-        m_meshFrameBuffer->unbind();
 
         FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // Render transparent objects
-
-        m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
-
-        switch (m_transparency)
+        if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
         {
-            case DEPTH_PEELING: render_transparency_dp();break;
-            case WEIGHTED_BLENDED : render_transparency_wb();
+            render_transparency();
         }
 
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_feature_activated() && GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
         {
             renderSelection();
         }
-
-        //render_transparency_wb();
 
         // set render states
         glDisable(GL_DEPTH_TEST);
@@ -850,4 +872,6 @@ namespace vOS
         }
         return -1;
     }
+
+
 }
