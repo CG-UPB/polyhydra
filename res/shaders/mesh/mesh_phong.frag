@@ -65,7 +65,7 @@ float shadow_calculation(vec4 pos_ls, float bias)
 
     for(int i = 0; i < 4; i++)
     {
-        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 800.0).r < current_depth - bias)
+        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
         {
             shadow += 0.25;
         }

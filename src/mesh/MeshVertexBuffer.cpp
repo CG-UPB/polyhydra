@@ -13,7 +13,9 @@ namespace vOS
     {
         m_original_vertices = get_vertices(*mesh);
         generate_buffer(*mesh);
+        std::vector<VertexArrayObject> vaos;
 
+        vaos = {m_vao_by_face, m_vao_transparent_by_face};
         m_vao_by_face = new VertexArrayObject(m_positions_by_face, m_indices);
         m_vao_by_face->add_attribute(m_normals_by_face, 1, 3);
         m_vao_by_face->add_attribute(m_cell_centers_by_face, 2, 3);
@@ -35,6 +37,27 @@ namespace vOS
         m_vao_rounded->add_attribute(m_is_triangle_rounded, 7, 1);
         m_vao_rounded->add_attribute(m_vertex_types_rounded, 8, 1);
         m_vao_rounded->add_attribute(m_face_center_or_to_vertex_rounded, 9, 4);
+
+        m_vao_transparent_by_face = new VertexArrayObject(m_positions_by_face, m_indices);
+        m_vao_transparent_by_face->add_attribute(m_normals_by_face, 1, 3);
+        m_vao_transparent_by_face->add_attribute(m_cell_centers_by_face, 2, 3);
+        m_vao_transparent_by_face->add_attribute(m_peel_depths_by_face, 3, 1);
+        m_vao_transparent_by_face->add_attribute(m_is_digged_by_face, 4, 1);
+        m_vao_transparent_by_face->add_attribute(m_colors_by_face, 5, 4);
+        m_vao_transparent_by_face->add_attribute(m_is_isolated_by_face, 6, 1);
+        m_vao_transparent_by_face->add_attribute(m_is_triangle_by_face, 7, 1);
+        m_vao_transparent_by_face->add_attribute(m_selections, 10, 1);
+
+        m_vao_transparent_rounded = new VertexArrayObject(m_positions_rounded, m_indices_rounded);
+        m_vao_transparent_rounded->add_attribute(m_normals_rounded, 1, 3);
+        m_vao_transparent_rounded->add_attribute(m_cell_centers_rounded, 2, 3);
+        m_vao_transparent_rounded->add_attribute(m_peel_depths_rounded, 3, 1);
+        m_vao_transparent_rounded->add_attribute(m_is_digged_rounded, 4, 1);
+        m_vao_transparent_rounded->add_attribute(m_colors_rounded, 5, 4);
+        m_vao_transparent_rounded->add_attribute(m_is_isolated_rounded, 6, 1);
+        m_vao_transparent_rounded->add_attribute(m_is_triangle_rounded, 7, 1);
+        m_vao_transparent_rounded->add_attribute(m_vertex_types_rounded, 8, 1);
+        m_vao_transparent_rounded->add_attribute(m_face_center_or_to_vertex_rounded, 9, 4);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());

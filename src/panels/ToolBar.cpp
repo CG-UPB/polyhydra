@@ -42,7 +42,8 @@ namespace vOS
             ImGui::Combo("  ", &mesh_mode, element_mode_types,
                          IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
             ImGui::SameLine();
-            Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use");
+            Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use. For more "
+                                                 "extensive explanations take a look in the documentation");
             GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
 
 
@@ -67,12 +68,12 @@ namespace vOS
             if (mesh_mode == 0)
             {
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+                //Window::instance().set_mesh_rendering_mode("mesh_wireframe");
                 Window::instance().rendering_mutex.lock();
             }else
             {
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_rendering_mode("mesh_phong");
+                //Window::instance().set_mesh_rendering_mode("mesh_phong");
                 Window::instance().rendering_mutex.lock();
             }
 
@@ -82,6 +83,10 @@ namespace vOS
             {
                 ImGui::OpenPopup("transparency Popup");
             }
+            ImGui::SameLine();
+            Tooltips::HelpMarkerWithQuestionMark(
+                "This button will open a Popup where you can switch the transparency mode between Weighted blended and Depth Peeling."
+                "It is also possible to adjust the number of passes used for depth peeling (default-value is 12)");
             if (ImGui::BeginPopup("transparency Popup"))
             {
                 int m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
@@ -197,6 +202,8 @@ namespace vOS
                        m_current_selection_mode = CELL;
                        GlobalViewerSettings::getInstance()->m_set_current_selection_mode(CELL);
                    }
+                   ImGui::SameLine();
+                   Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Cell of your pick");
                }
            }
            Tooltips::ToolTipByHovering("By pushing this button diverse options for Selection of elements where shown. "
@@ -299,6 +306,8 @@ namespace vOS
 
                         ImGui::Checkbox("Rounded Cells?", &rounding_active);
                         GlobalViewerSettings::getInstance()->m_set_current_rounding_active(rounding_active);
+                        ImGui::SameLine();
+                        Tooltips::HelpMarkerWithQuestionMark("This checkbox activates rounded corners for the edges of the meshes");
                         if (rounding_active)
                         {
                             float actual_rounding_size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();

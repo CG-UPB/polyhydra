@@ -18,7 +18,7 @@ namespace vOS
 
         // Init Position etc
         position = glm::vec3{0.0f, 0.0f, 10.0f};
-        m_target = glm::vec3{0, 0, 0};
+        m_target = glm::vec3{0.0f, 0.0f, 0.0f};
         m_camera_front = glm::vec3 {0.0f, 0.0f, -1.0f};
         m_camera_up =glm::vec3 {0.0f, 1.0f, 0.0f};
 
@@ -139,64 +139,98 @@ namespace vOS
 
     void Camera::handle_mouse_scroll(float y_offset)
     {
-        m_zoom -= m_zoom_strength * (float) y_offset;
-        if(m_zoom < 1.0f)
+        if(mode == FLY)
         {
-            m_zoom = 1.0f;
-        }
-        if(m_zoom > 90.0f)
-        {
-            m_zoom = 90.0f;
+            m_zoom -= m_zoom_strength * (float) y_offset;
+            if (m_zoom < 1.0f)
+            {
+                m_zoom = 1.0f;
+            }
+            if (m_zoom > 90.0f)
+            {
+                m_zoom = 90.0f;
+            }
         }
 
     }
 
     void Camera::handle_mouse_movement(float x_offset, float y_offset)
     {
-        x_offset *= m_sensitivity;
-        y_offset *= m_sensitivity;
-
-        m_yaw = std::fmod((m_yaw + x_offset), (float)360.0f);
-        m_pitch += y_offset;
-
-        if(m_pitch > 89.0f)
+        if (mode == FLY)
         {
-            m_pitch = 89.0f;
-        }
-        if(m_pitch < -89.0f)
-        {
-            m_pitch = -89.0f;
-        }
+            x_offset *= m_sensitivity;
+            y_offset *= m_sensitivity;
 
-        glm::vec3 front;
-        front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-        front.y = sin(glm::radians(m_pitch));
-        front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-        m_camera_front = glm::normalize(front);
+            m_yaw = std::fmod((m_yaw + x_offset), (float) 360.0f);
+            m_pitch += y_offset;
+
+            if (m_pitch > 89.0f)
+            {
+                m_pitch = 89.0f;
+            }
+            if (m_pitch < -89.0f)
+            {
+                m_pitch = -89.0f;
+            }
+
+            glm::vec3 front;
+            front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+            front.y = sin(glm::radians(m_pitch));
+            front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+            m_camera_front = glm::normalize(front);
+        }
+        if(mode == ORBIT)
+        {
+
+        }
     }
 
     void Camera::handle_keyboard(Movement direction, float delta)
     {
-        float velocity = 0.0;
-        if(direction == FORWARD)
+        if(mode == FLY)
         {
-            velocity = m_vertical_speed * delta;
-            position += m_camera_front * velocity;
+            float velocity = 0.0;
+            if (direction == FORWARD)
+            {
+                velocity = m_vertical_speed * delta;
+                position += m_camera_front * velocity;
+            }
+            if (direction == BACKWARD)
+            {
+                velocity = m_vertical_speed * delta;
+                position -= m_camera_front * velocity;
+            }
+            if (direction == LEFT)
+            {
+                velocity = m_horizontal_speed * delta;
+                position -= m_camera_right * velocity;
+            }
+            if (direction == RIGHT)
+            {
+                velocity = m_horizontal_speed * delta;
+                position += m_camera_right * velocity;
+            }
         }
-        if(direction == BACKWARD)
+        if(mode == ORBIT)
         {
-            velocity = m_vertical_speed * delta;
-            position -= m_camera_front * velocity;
-        }
-        if(direction == LEFT)
-        {
-            velocity = m_horizontal_speed * delta;
-            position -= m_camera_right * velocity;
-        }
-        if(direction == RIGHT)
-        {
-            velocity = m_horizontal_speed * delta;
-            position += m_camera_right * velocity;
+
+
+            if (direction == FORWARD)
+            {
+                position += m_camera_front;
+            }
+            if (direction == BACKWARD)
+            {
+                position -= m_camera_front;
+            }
+            if (direction == LEFT)
+            {
+                position -= m_camera_right;
+            }
+            if (direction == RIGHT)
+            {
+                position += m_camera_right;
+            }
         }
     }
 }
