@@ -46,6 +46,25 @@ namespace vOS
             GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
 
 
+            bool activated_modes[8][4] = {
+                    // transparency, shadows, ambient occlusion, selection
+                    {true,true,true,true}, //Wireframe
+                    {true,true,true,true}, // Only Vertices
+                    {true,true,true,true}, // Phong Facenormals
+                    {true,true,true,true}, // Phong Vertexnormals
+                    {true,false,false,false}, // Transparency
+                    {true,false,true,true}, // Rounded
+                    {false,false,true,false}, // Ambient Occlusion
+                    {false,true,false,false}  // Shadows
+            };
+
+
+            GlobalViewerSettings::getInstance()->m_set_current_transparency_activated(activated_modes[mesh_mode][0]);
+            GlobalViewerSettings::getInstance()->m_set_current_shadows_activated(activated_modes[mesh_mode][1]);
+            GlobalViewerSettings::getInstance()->m_set_current_ambient_occlusion_activated(activated_modes[mesh_mode][2]);
+            GlobalViewerSettings::getInstance()->m_set_current_selection_feature_activated(activated_modes[mesh_mode][3]);
+
+
             // Transparency Settings
             // TODO: Specify in which modes the transparency Settings are useful and add an if-statement
             if (ImGui::Button("Transparency Settings"))

@@ -21,6 +21,10 @@ namespace vOS
         void m_set_current_rounding_size(float r){m_rounding_size = r;};
         void m_set_current_transparency_mode(int t){m_current_transparency_mode = t;};
         void m_set_current_number_passes(int np){m_current_number_passes = np;};
+        void m_set_current_transparency_activated(bool t){transparency_active = t;};
+        void m_set_current_shadows_activated(bool s){shadows_active = s;};
+        void m_set_current_ambient_occlusion_activated(bool ao){ambient_occlusion_active = ao;};
+        void m_set_current_selection_feature_activated(bool s){selection_active = s;};
 
         [[nodiscard]] bool m_get_current_selection_activated() const{return m_current_selection_activated;};
         [[nodiscard]] bool m_get_current_digging_activated() const{return m_current_digging_active;};
@@ -31,6 +35,10 @@ namespace vOS
         [[nodiscard]] float m_get_current_rounding_size() const{return m_rounding_size;};
         [[nodiscard]] int m_get_current_transparency_mode() const{return m_current_transparency_mode;};
         [[nodiscard]] int m_get_current_number_passes() const{return m_current_number_passes;};
+        [[nodiscard]] bool m_get_current_transparency_activated() const{return transparency_active;};
+        [[nodiscard]] bool m_get_current_shadows_activated() const{return shadows_active;};
+        [[nodiscard]] bool m_get_current_ambient_occlusion_activated() const{return ambient_occlusion_active;};
+        [[nodiscard]] bool m_get_current_selection_feature_activated() const{return selection_active;};
 
 
 
@@ -45,7 +53,13 @@ namespace vOS
         float m_rounding_size = 0.3f;
         bool m_rounding_activated = true;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
-        int m_current_number_passes = 0;
+        int m_current_number_passes = 12;
+
+        // bools for the Renderpasses
+        bool transparency_active = true;
+        bool shadows_active = true;
+        bool ambient_occlusion_active = true;
+        bool selection_active = true;
     };
 
 }

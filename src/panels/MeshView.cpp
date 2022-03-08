@@ -678,7 +678,6 @@ namespace vOS
                 {
                     if (GlobalViewerSettings::getInstance()->m_get_current_isolation_state()){
 
-                        std::cout << "Test\n";
                         auto mvb = mesh->get_mvb();
                         mvb->start_isolation();
 
@@ -708,7 +707,6 @@ namespace vOS
                         if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         {
 
-                            std::cout << "Jier nionm icj \n";
                             isolateProp[cell_handle] = 1.0;
 
                             auto mvb = mesh->get_mvb();
@@ -733,8 +731,6 @@ namespace vOS
                             OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
 
                             cell_handle = mesh->m_mesh->incident_cell(hf1);
-
-                            //std::cout << "Zelle 2: " << cell_handle.idx();
                         } else {
                             if(diggingProp[cell_handle] == 0.0){
                                 OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
@@ -779,7 +775,6 @@ namespace vOS
                         OpenVolumeMesh::FaceHandle face(face_id);
                         if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         {
-                            std::cout << "Jup" << std::endl;
                             // Select element via Window class, to activate Callback function
                             // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                             Window::instance().rendering_mutex.unlock();
@@ -867,8 +862,8 @@ namespace vOS
         handleMouseControl();
         // Render Meshes
         render_pre_pass();
+
         render_ssao_pass();
-        render_shadow_map();
 
         render_shadow_map();
 
