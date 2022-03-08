@@ -65,16 +65,21 @@ namespace vOS
             GlobalViewerSettings::getInstance()->m_set_current_ambient_occlusion_activated(activated_modes[mesh_mode][2]);
             GlobalViewerSettings::getInstance()->m_set_current_selection_feature_activated(activated_modes[mesh_mode][3]);
 
-            if (mesh_mode == 0)
+
+            if (Window::instance().get_mesh_focus() != -1)
             {
-                Window::instance().rendering_mutex.unlock();
-                //Window::instance().set_mesh_rendering_mode("mesh_wireframe");
-                Window::instance().rendering_mutex.lock();
-            }else
-            {
-                Window::instance().rendering_mutex.unlock();
-                //Window::instance().set_mesh_rendering_mode("mesh_phong");
-                Window::instance().rendering_mutex.lock();
+                if (mesh_mode == 0)
+                {
+
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+                    Window::instance().rendering_mutex.lock();
+                }else
+                {
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_rendering_mode("mesh_phong");
+                    Window::instance().rendering_mutex.lock();
+                }
             }
 
             // Transparency Settings
