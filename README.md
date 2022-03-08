@@ -23,9 +23,9 @@
 The mesh list is a built-in feature that lists all existing meshes. Besides listing all the meshes, the mesh list also has the functionality to give the meshes different settings. These can be changed via the buttons and checkboxes next to the name of the meshes, which are each named after their program-internal ID. In addition, the mesh list offers the possibility to set a mesh in focus by double-clicking the corresponding radio button. A single click makes the respective mesh the active mesh, which can then be modified by the [toolbar](#toolbar) operations.
 
 ### Toolbar
-<center>
+<p align="center">
 <img src="res/documentation_images/Toolbar.png" alt="drawing" width="200"/>
-</center>
+</p>
 
 Another integrated feature is the toolbar. Various actions are possible in this toolbar. On the one hand there is the possibility to use the [snapshot](#snapshot) function to save snapshots via a file dialog. Another possibility is the activation of the selection feature, through which the individual elements of the meshes can be selected. It is also possible to specify whether only vertices, edges, faces or cells can be selected. Below this, on the toolbar, is the tab for the [mesh settings](#mesh-settings), which are always displayed and applied to the active mesh.
 
@@ -67,9 +67,9 @@ Every log-message will be given in a buffer, and printed in the next iteration o
 
 ## Modes
 We provide a selection of available modes that are preset and rendered with the optimized settings. You can change the actual mode in the [toolbar](#toolbar):
-<center>
+<p align="center">
 <img src="res/documentation_images/Mode_Selection.png" alt="drawing" width="200"/>
-</center>
+</p>
 The following is a listing and specific explanation of each mode:
 
 - [Wireframe](#wireframe-mode)
