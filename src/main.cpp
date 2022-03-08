@@ -13,8 +13,8 @@ int main()
 //    vOS::TestClass test;
 //    test.initialize();
 //
- //   vOS::Dijkstra dijkstra;
- //   dijkstra.start();
+    vOS::Dijkstra dijkstra;
+    dijkstra.start();
 
 //    TestQuads test;
 //    test.run();

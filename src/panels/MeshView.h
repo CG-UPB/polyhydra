@@ -16,6 +16,7 @@
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
+#include "../util/ModeEnum.h"
 
 namespace vOS
 {
@@ -38,7 +39,6 @@ namespace vOS
     private:
 
         friend class Window;
-        void start_isolation();
         void handleResize();
         void renderMesh(int mesh_id);
         void renderSelection();
@@ -47,6 +47,9 @@ namespace vOS
         void render_shadow_map();
         void render_ssao_pass();
         void render_debug_menu();
+        void render_background();
+        void render_meshes();
+        void render_transparency();
         void render_transparency_wb();
         void render_transparency_dp();
         [[nodiscard]] unsigned int get_selected_texture();
@@ -65,9 +68,6 @@ namespace vOS
         static const int SELECTION_TYPE_VERTEX = 1;
         static const int SELECTION_TYPE_EDGE = 2;
         static const int SELECTION_TYPE_FACE = 3;
-
-        static const int WEIGHTED_BLENDED = 0;
-        static const int DEPTH_PEELING = 1;
 
         int m_hovered_element_id = 0;
         int m_hovered_element_type = 0;

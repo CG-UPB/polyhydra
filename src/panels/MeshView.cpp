@@ -434,7 +434,7 @@ namespace vOS
 
     void MeshView::render_transparency_dp()
     {
-
+        num_passes = GlobalViewerSettings::getInstance()->m_get_current_number_passes();
         for( int i = 0; i < num_passes; i++)
         {
             if(i % 2 == 0)
@@ -514,7 +514,6 @@ namespace vOS
                 {
                     if (GlobalViewerSettings::getInstance()->m_get_current_isolation_state()){
 
-                        std::cout << "Test\n";
                         auto mvb = mesh->get_mvb();
                         mvb->start_isolation();
 
@@ -544,7 +543,6 @@ namespace vOS
                         if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         {
 
-                            std::cout << "Jier nionm icj \n";
                             isolateProp[cell_handle] = 1.0;
 
                             auto mvb = mesh->get_mvb();
@@ -569,8 +567,6 @@ namespace vOS
                             OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
 
                             cell_handle = mesh->m_mesh->incident_cell(hf1);
-
-                            //std::cout << "Zelle 2: " << cell_handle.idx();
                         } else {
                             if(diggingProp[cell_handle] == 0.0){
                                 OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
@@ -615,7 +611,6 @@ namespace vOS
                         OpenVolumeMesh::FaceHandle face(face_id);
                         if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         {
-                            std::cout << "Jup" << std::endl;
                             // Select element via Window class, to activate Callback function
                             // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                             Window::instance().rendering_mutex.unlock();
@@ -684,22 +679,48 @@ namespace vOS
         }
     }
 
-    void MeshView::start_isolation()
-    {
 
+    void MeshView::render_background() {
 
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+
+        m_meshFrameBuffer->bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_background_pass.render(nullptr, m_render_data, 0);
+        m_meshFrameBuffer->unbind();
     }
 
+
+    void MeshView::render_meshes() {
+        m_meshFrameBuffer->bind();
+        for (const auto& m: Window::instance().get_mesh_list())
+        {
+            renderMesh(m.first);
+        }
+        m_meshFrameBuffer->unbind();
+    }
+
+
+    void MeshView::render_transparency()
+    {
+        m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
+
+        switch (m_transparency)
+        {
+            case DEPTH_PEELING: render_transparency_dp();break;
+            case WEIGHTED_BLENDED : render_transparency_wb();
+        }
+    }
 
     void MeshView::show()
     {
         render_debug_menu();
 
-        if (ImGui::Begin("Rounding"))
-        {
-            ImGui::SliderFloat("Size", &m_render_data.rounding.size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
-        }
-        ImGui::End();
+        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
+        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
 
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
@@ -713,63 +734,38 @@ namespace vOS
 
         // Render Meshes
         render_pre_pass();
-        render_ssao_pass();
 
-        render_shadow_map();
+        if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
+        {
+            render_ssao_pass();
+        }
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
+        {
+            render_shadow_map();
+        }
+
 
         // Now render our mesh scene to the framebuffer texture
         // Start with opaque objects
+        render_background();
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
+        render_meshes();
 
-        m_meshFrameBuffer->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data, 0);
-        for (const auto& m: Window::instance().get_mesh_list())
-        {
-            renderMesh(m.first);
-        }
-        m_meshFrameBuffer->unbind();
 
         FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
         // Render transparent objects
-
-        if (ImGui::Begin("Transparency"))
+        if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
         {
-            if (ImGui::RadioButton("Weighted Blended", m_transparency == WEIGHTED_BLENDED))
-            {
-                m_transparency = WEIGHTED_BLENDED;
-            }
-            if (ImGui::RadioButton("Depth Peeling", m_transparency == DEPTH_PEELING))
-            {
-                m_transparency = DEPTH_PEELING;
-
-            }
-
-            if(m_transparency == DEPTH_PEELING)
-            {
-                ImGui::SliderInt("DP_Passes", &num_passes, 0, 50);
-            }
-        }
-        ImGui::End();
-
-        switch (m_transparency)
-        {
-            case DEPTH_PEELING: render_transparency_dp();break;
-            case WEIGHTED_BLENDED : render_transparency_wb();
+            render_transparency();
         }
 
-
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        // Render Selection
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_feature_activated() && GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
         {
             renderSelection();
         }
-
-        //render_transparency_wb();
 
         // set render states
         glDisable(GL_DEPTH_TEST);
@@ -884,4 +880,6 @@ namespace vOS
         }
         return -1;
     }
+
+
 }

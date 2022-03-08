@@ -11,6 +11,12 @@
 
 namespace vOS {
 
+    enum Mode
+    {
+        FLY,
+        ORBIT
+    };
+
 /**
  * Camera class responsible for Data concerning the rendering camera. Position direction and other attributes are managed and changable through this class
  */
@@ -20,6 +26,7 @@ namespace vOS {
         Camera();
 
         void set_viewport_size(float width, float height);
+        void set_mode(Mode mode){m_mode = mode;};
 
         void update();
 
@@ -36,43 +43,49 @@ namespace vOS {
 
         // Vectors
         glm::vec3 position;
-        glm::vec3 m_previous_position;
-        glm::vec3 m_previous_movement_vector;
-
-        // Axis
-        glm::vec3 m_world_up;
-        glm::vec3 m_camera_right;
-        glm::vec3 m_camera_up;
-        glm::vec3 m_camera_front;
-
-        // Euler Angles
-        float m_yaw = -90.0f;
-        float m_pitch = 0.0f;
-        float m_vertical_speed = 5.0f;
-        float m_horizontal_speed = 10.0f;
-        float m_sensitivity = 0.3f;
-        float m_zoom = 55.0f;
 
         // Floats
         float near = 0.1f;
         float far = 100.0f;
-        float m_screen_width = 0;
-        float m_screen_height = 0;
-        float m_zoom_strength = 3.5;
 
         // Mouse position
         float last_x = 0.0f;
         float last_y = 0.0f;
         bool first_mouse = true;
 
+        // Movement
         float delta = 0.0f;
         float last_frame = 0.0f;
+
+        // Orbit
+        float phi;
+        float theta;
+        float radius;
+
     private:
+        Mode m_mode;
+
+        glm::vec3 m_target;
+        glm::vec3 m_previous_position;
+        glm::vec3 m_previous_movement_vector;
+
+        float m_yaw = -90.0f;
+        float m_pitch = 0.0f;
+        float m_vertical_speed = 5.0f;
+        float m_horizontal_speed = 10.0f;
+        float m_sensitivity = 0.3f;
+        float m_zoom = 55.0f;
         /*
          * Moves the Camera one a step closer to a desired focus point with focus viewing direction
          * If timer runs through, the camera will look at the desired object and normal camera movement is allowed again
          */
         void camera_focus_coroutine();
+
+        // Axis
+        glm::vec3 m_world_up;
+        glm::vec3 m_camera_right;
+        glm::vec3 m_camera_up;
+        glm::vec3 m_camera_front;
 
         bool m_in_focus_mode = false;
         float m_target_mode_total_time = 5;
@@ -81,6 +94,10 @@ namespace vOS {
         glm::vec3 m_original_front = {0, 0, 0};
         glm::vec3 m_desired_front = {0, 0, 0};
         glm::vec3 m_desired_position = {0,0,0};
+
+        float m_screen_width = 0;
+        float m_screen_height = 0;
+        float m_zoom_strength = 3.5;
     };
 
 }

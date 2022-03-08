@@ -99,6 +99,10 @@ namespace vOS
 
         [[nodiscard]] float get_average_cell_size() const;
 
+        VertexArrayObject *get_vao_transparent_by_face();
+
+        VertexArrayObject* get_vao_transparent_rounded();
+
         /**
          * Colors the given Face in desired colors
          * The strong a is, the more pronounced the given color is
@@ -179,6 +183,8 @@ namespace vOS
 
         VertexArrayObject* m_vao_by_face = nullptr;
         VertexArrayObject* m_vao_rounded = nullptr;
+        VertexArrayObject* m_vao_transparent_by_face = nullptr;
+        VertexArrayObject* m_vao_transparent_rounded = nullptr;
         VertexArrayObject* m_sphere_vao = nullptr;
         VertexArrayObject* m_cylinder_vao = nullptr;
 

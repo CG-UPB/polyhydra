@@ -6,8 +6,6 @@
 #include "../util/Tooltips.h"
 
 
-//TODO:Set fixed size and position in the window
-
 namespace vOS
 {
 
@@ -44,8 +42,75 @@ namespace vOS
             ImGui::Combo("  ", &mesh_mode, element_mode_types,
                          IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
             ImGui::SameLine();
-            Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use");
+            Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use. For more "
+                                                 "extensive explanations take a look in the documentation");
             GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
+
+
+            bool activated_modes[8][4] = {
+                    // transparency, shadows, ambient occlusion, selection
+                    {false,false,false,false}, //Wireframe
+                    {false,false,false,false}, // Only Vertices
+                    {true,true,true,true}, // Phong Facenormals
+                    {true,true,true,true}, // Phong Vertexnormals
+                    {true,false,false,false}, // Transparency
+                    {true,false,true,true}, // Rounded
+                    {false,false,true,false}, // Ambient Occlusion
+                    {false,true,false,false}  // Shadows
+            };
+
+
+            GlobalViewerSettings::getInstance()->m_set_current_transparency_activated(activated_modes[mesh_mode][0]);
+            GlobalViewerSettings::getInstance()->m_set_current_shadows_activated(activated_modes[mesh_mode][1]);
+            GlobalViewerSettings::getInstance()->m_set_current_ambient_occlusion_activated(activated_modes[mesh_mode][2]);
+            GlobalViewerSettings::getInstance()->m_set_current_selection_feature_activated(activated_modes[mesh_mode][3]);
+
+            if (mesh_mode == 0)
+            {
+                Window::instance().rendering_mutex.unlock();
+                //Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+                Window::instance().rendering_mutex.lock();
+            }else
+            {
+                Window::instance().rendering_mutex.unlock();
+                //Window::instance().set_mesh_rendering_mode("mesh_phong");
+                Window::instance().rendering_mutex.lock();
+            }
+
+            // Transparency Settings
+            // TODO: Specify in which modes the transparency Settings are useful and add an if-statement
+            if (ImGui::Button("Transparency Settings"))
+            {
+                ImGui::OpenPopup("transparency Popup");
+            }
+            ImGui::SameLine();
+            Tooltips::HelpMarkerWithQuestionMark(
+                "This button will open a Popup where you can switch the transparency mode between Weighted blended and Depth Peeling."
+                "It is also possible to adjust the number of passes used for depth peeling (default-value is 12)");
+            if (ImGui::BeginPopup("transparency Popup"))
+            {
+                int m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
+                if (ImGui::RadioButton("Weighted Blended", m_transparency == WEIGHTED_BLENDED))
+                {
+                    GlobalViewerSettings::getInstance()->m_set_current_transparency_mode(WEIGHTED_BLENDED);
+                }
+                if (ImGui::RadioButton("Depth Peeling", m_transparency == DEPTH_PEELING))
+                {
+                    GlobalViewerSettings::getInstance()->m_set_current_transparency_mode(DEPTH_PEELING);
+
+                }
+
+                if(m_transparency == DEPTH_PEELING)
+                {
+                    int num_passes = GlobalViewerSettings::getInstance()->m_get_current_number_passes();
+                    ImGui::SliderInt("DP_Passes", &num_passes, 0, 50);
+                    GlobalViewerSettings::getInstance()->m_set_current_number_passes(num_passes);
+                }
+                ImGui::EndPopup();
+            }
+
+
+
 
             // Snapshot Button uses the class Filedialog to save a screenshot
             if (ImGui::Button("Snapshot")) {
@@ -137,6 +202,8 @@ namespace vOS
                        m_current_selection_mode = CELL;
                        GlobalViewerSettings::getInstance()->m_set_current_selection_mode(CELL);
                    }
+                   ImGui::SameLine();
+                   Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Cell of your pick");
                }
            }
            Tooltips::ToolTipByHovering("By pushing this button diverse options for Selection of elements where shown. "
@@ -233,6 +300,19 @@ namespace vOS
                         Tooltips::HelpMarkerWithQuestionMark("This slider will change the size of each cell");
                         if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f)) {
                             Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
+                        }
+
+                        bool rounding_active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
+
+                        ImGui::Checkbox("Rounded Cells?", &rounding_active);
+                        GlobalViewerSettings::getInstance()->m_set_current_rounding_active(rounding_active);
+                        ImGui::SameLine();
+                        Tooltips::HelpMarkerWithQuestionMark("This checkbox activates rounded corners for the edges of the meshes");
+                        if (rounding_active)
+                        {
+                            float actual_rounding_size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
+                            ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
+                            GlobalViewerSettings::getInstance()->m_set_current_rounding_size(actual_rounding_size);
                         }
 
                         static int clicked_digging = 0;

@@ -16,17 +16,8 @@ namespace vOS
 
     }
 
-    // Destruktor
-    GlobalViewerSettings::~GlobalViewerSettings()
-    {
-        //delete instance;
-    }
-
     GlobalViewerSettings::GlobalViewerSettings() {
-        //m_sel.push_back(false);
+
     }
-
-
-
 
 }

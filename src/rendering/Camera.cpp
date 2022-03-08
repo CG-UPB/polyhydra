@@ -28,8 +28,14 @@ namespace vOS
         // set up the initial camera position, direction and orientation of the mesh
         world = glm::mat4(1.0f);
 
-        // Update Projection and View Matrix
-        //update();
+        // setup for orbit mode
+        radius = 10.0f;
+        theta = 0.0f;
+        phi = 90.0f;
+
+        set_mode(ORBIT);
+
+
     }
 
     void Camera::set_viewport_size(float width, float height)
@@ -53,13 +59,27 @@ namespace vOS
             handle_input();
         }
 
+        // Camera Front Calculation
+        if(m_mode == FLY)
+        {
+            glm::vec3 front;
+            front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+            front.y = sin(glm::radians(m_pitch));
+            front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+            m_camera_front = glm::normalize(front);
+        }
+        if(m_mode == ORBIT)
+        {
+            position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
+            position.y = radius * cos(glm::radians(phi));
+            position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+            m_camera_front = glm::normalize(m_target - position);
+        }
+
         // calculate the new Front vector and concluding right and up-vector
 
         m_camera_right = glm::normalize(glm::cross(m_camera_front, m_world_up));
         m_camera_up = glm::normalize(glm::cross(m_camera_right, m_camera_front));
-
-        static int i = 0;
-        std::cout << (i++) << " " << VecUtil::to_string(m_camera_right) << std::endl;
 
         projection = glm::perspective(
                 glm::radians(m_zoom),
@@ -83,10 +103,6 @@ namespace vOS
     }
     void Camera::handle_input()
     {
-        if(!ImGui::IsWindowHovered())
-        {
-            return;
-        }
 
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
         ImVec2 vMax = ImGui::GetWindowContentRegionMax();
@@ -95,13 +111,23 @@ namespace vOS
         vMax.x += ImGui::GetWindowPos().x;
         vMax.y += ImGui::GetWindowPos().y;
 
-        // mouse scroll
-        handle_mouse_scroll((float)Input::get_scroll_offset_Y());
-
         // mouse movement
         auto xpos = (float)Input::get_mouse_X();
         auto ypos = (float)Input::get_mouse_Y();
         auto is_down = Input::mouse_pressed();
+
+        if(!ImGui::IsWindowHovered() || !ImGui::IsWindowFocused())
+        {
+            if(!is_down)
+            {
+                last_x = xpos;
+                last_y = ypos;
+            }
+            return;
+        }
+
+        // mouse scroll
+        handle_mouse_scroll((float)Input::get_scroll_offset_Y());
 
         if(xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
         {
@@ -148,43 +174,119 @@ namespace vOS
         }
     }
 
+    void Camera::set_mode(Mode mode) {
+
+        if (m_mode == ORBIT) {
+//                front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+//                front.y = sin(glm::radians(m_pitch));
+//                front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+
+            m_pitch = asin(m_camera_front.y);
+            m_yaw = acos((m_camera_front.x / cos(m_pitch)));
+
+            m_pitch = glm::degrees(m_pitch);
+            m_yaw = glm::degrees(m_yaw);
+
+            if (m_pitch > 89.0f) {
+                m_pitch = 89.0f;
+            }
+            if (m_pitch < -89.0f) {
+                m_pitch = -89.0f;
+            }
+
+            set_mode(FLY);
+
+            std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch << std::endl;
+            std::cout << "phi: " << phi << " ,theta: " << theta << std::endl;
+        } else if (m_mode == FLY) {
+//                position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
+//                position.y = radius * cos(glm::radians(phi));
+//                position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+//                m_camera_front = glm::normalize(m_target - position);
+
+            position += m_target;
+
+            phi = acos(position.y / radius);
+            theta = asin((position.x / radius) / sin(phi));
+
+            phi = glm::degrees(phi);
+            theta = glm::degrees(theta);
+
+            set_mode(ORBIT);
+
+            std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch << std::endl;
+            std::cout << "phi: " << phi << " ,theta: " << theta << std::endl;
+        }
+
+
+    }
+
     void Camera::handle_mouse_scroll(float y_offset)
     {
-        m_zoom -= m_zoom_strength * (float) y_offset;
-        if(m_zoom < 1.0f)
+        if(m_mode == FLY)
         {
-            m_zoom = 1.0f;
+            m_zoom -= m_zoom_strength * (float) y_offset;
+            if(m_zoom < 1.0f)
+            {
+                m_zoom = 1.0f;
+            }
+            if(m_zoom > 90.0f)
+            {
+                m_zoom = 90.0f;
+            }
         }
-        if(m_zoom > 90.0f)
+        if(m_mode == ORBIT)
         {
-            m_zoom = 90.0f;
+            radius -= (float) y_offset;
+            if(radius < 1.0f)
+            {
+                radius = 1.0f;
+            }
         }
 
     }
 
     void Camera::handle_mouse_movement(float x_offset, float y_offset)
     {
-        x_offset *= m_sensitivity;
-        y_offset *= m_sensitivity;
-
-        m_yaw = std::fmod((m_yaw + x_offset), (float)360.0f);
-        m_pitch += y_offset;
-
-        if(m_pitch > 89.0f)
+        if(m_mode == FLY)
         {
-            m_pitch = 89.0f;
+            x_offset *= m_sensitivity;
+            y_offset *= m_sensitivity;
+
+            m_yaw = std::fmod((m_yaw + x_offset), (float) 360.0f);
+            m_pitch += y_offset;
+
+            if (m_pitch > 89.0f)
+            {
+                m_pitch = 89.0f;
+            }
+            if (m_pitch < -89.0f)
+            {
+                m_pitch = -89.0f;
+            }
+
         }
-        if(m_pitch < -89.0f)
+        if(m_mode == ORBIT)
         {
-            m_pitch = -89.0f;
+            x_offset *= m_sensitivity;
+            y_offset *= m_sensitivity;
+
+            phi += y_offset;
+            if(phi < 1.0f)
+            {
+                phi = 1.0f;
+            }
+            if(phi > 179.0f)
+            {
+                phi = 179.0f;
+            }
+
+            theta -= x_offset;
+            if(theta < 0.0f)
+            {
+                theta = 360.0f - (x_offset - theta);
+            }
         }
-
-        glm::vec3 front;
-        front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-        front.y = sin(glm::radians(m_pitch));
-        front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-        m_camera_front = glm::normalize(front);
-
     }
 
     void Camera::camera_focus_coroutine()

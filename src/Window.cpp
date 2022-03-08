@@ -157,6 +157,8 @@ namespace vOS
 
         rendering_mutex.unlock();
 
+        //ImGui::ShowDemoWindow();
+
         // Custom UI
         // Custom UI is not guarded with mutex guards, to avoid self-deadlocking in linear threads / when no threads are used
         m_custom_ui->show();
