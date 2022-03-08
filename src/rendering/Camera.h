@@ -19,6 +19,12 @@ namespace vOS {
         RIGHT
     };
 
+    enum Mode
+    {
+        FLY,
+        ORBIT
+    };
+
 /**
  * Camera class responsible for Data concerning the rendering camera. Position direction and other attributes are managed and changable through this class
  */
@@ -35,6 +41,8 @@ namespace vOS {
         void handle_mouse_scroll(float y_offset);
         void handle_mouse_movement(float x_offset, float y_offset);
         void handle_keyboard(Movement direction, float delta);
+
+        Mode mode = FLY;
 
         // Matrices
         glm::mat4 world;
@@ -73,8 +81,12 @@ namespace vOS {
         float last_y = 0.0f;
         bool first_mouse = true;
 
+        // Movement
         float delta = 0.0f;
         float last_frame = 0.0f;
+
+        // Orbit
+        float
     };
 
 }
