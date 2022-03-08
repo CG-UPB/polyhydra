@@ -86,7 +86,8 @@ namespace vOS {
         float last_frame = 0.0f;
 
         // Orbit
-        float
+        float phi;
+        float theta;
     };
 
 }
