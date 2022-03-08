@@ -112,7 +112,6 @@ vec3 color_filter(vec4 pos_ls)
 
 void main()
 {
-
     if (u_draw_wireframe)
     {
         if (v_visible == 0)
@@ -140,15 +139,17 @@ void main()
         discard;
     }
     vec3 light_color = u_lightColor;
-    vec3 n = -normalize(v_normal);
+    vec3 n = normalize(v_normal);
     vec3 l = normalize(vec3(0.0, -1.0, -1.0));
     vec3 light_dir = normalize(u_lightPos - v_pos);
+    l = light_dir;
+
     float diff = max(0.0, dot(l, n));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
     // shadow calculation
-    float bias = max(0.0005 * (1.0 - dot(n, light_dir)), 0.00005);
+    float bias = max(0.005 * (1.0 - max(0.0, dot(n, light_dir))), 0.0005);
 
     //float bias = max(0.005 * (1.0 - dot(-n, light_dir)), 0.0005);
     //bias = 0.1;

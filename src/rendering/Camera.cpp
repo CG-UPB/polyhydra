@@ -169,44 +169,32 @@ namespace vOS
 //                front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
 
                 m_pitch = asin(m_camera_front.y);
-                m_yaw = acos((m_camera_front.x / cos(m_pitch)));
+                m_yaw = asin((m_camera_front.z / cos(m_pitch)));
+
+                auto x = acos((m_camera_front.x / cos(m_pitch)));
+                auto z = asin((m_camera_front.z / cos(m_pitch)));
 
                 m_pitch = glm::degrees(m_pitch);
-                m_yaw = glm::degrees(m_yaw);
-
-                if (m_pitch > 89.0f)
-                {
-                    m_pitch = 89.0f;
-                }
-                if (m_pitch < -89.0f)
-                {
-                    m_pitch = -89.0f;
-                }
+                m_yaw = -(90.0f - theta);
 
                 set_mode(FLY);
 
-                std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch <<std::endl;
-                std::cout << "phi: " << phi << " ,theta: " << theta <<std::endl;
             }
             else if(m_mode == FLY)
             {
-//                position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
-//                position.y = radius * cos(glm::radians(phi));
-//                position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
-//                m_camera_front = glm::normalize(m_target - position);
 
-                position += m_target;
+                m_camera_front = glm::normalize(m_target - position);
 
-                phi = acos(position.y / radius) ;
-                theta = asin( (position.x / radius) / sin(phi)) ;
+                phi =  acos(position.y / radius) ;
+                theta = acos((position.z / radius) / sin(phi)) ;
 
                 phi = glm::degrees(phi);
                 theta = glm::degrees(theta);
 
                 set_mode(ORBIT);
 
-                std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch <<std::endl;
-                std::cout << "phi: " << phi << " ,theta: " << theta <<std::endl;
+//                std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch <<std::endl;
+//                std::cout << "phi: " << phi << " ,theta: " << theta <<std::endl;
             }
 
 
@@ -247,6 +235,8 @@ namespace vOS
             y_offset *= m_sensitivity;
 
             m_yaw = std::fmod((m_yaw + x_offset), (float) 360.0f);
+            std::cout << "Soll yaw: " << m_yaw << std::endl;
+
             m_pitch += y_offset;
 
             if (m_pitch > 89.0f)
