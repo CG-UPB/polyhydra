@@ -42,7 +42,7 @@ namespace vOS {
         void handle_mouse_movement(float x_offset, float y_offset);
         void handle_keyboard(Movement direction, float delta);
 
-        Mode mode = FLY;
+        Mode mode = ORBIT;
 
         // Matrices
         glm::mat4 world;
@@ -88,6 +88,7 @@ namespace vOS {
         // Orbit
         float phi;
         float theta;
+        float radius;
     };
 
 }

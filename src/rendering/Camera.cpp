@@ -28,8 +28,12 @@ namespace vOS
         // set up the initial camera position, direction and orientation of the mesh
         world = glm::mat4(1.0f);
 
-        // Update Projection and View Matrix
-        //update();
+
+        // setup for orbit mode
+        radius = 10.0f;
+        theta = 0.0f;
+        phi = 90.0f;
+
     }
 
     void Camera::set_viewport_size(float width, float height)
@@ -44,6 +48,14 @@ namespace vOS
     {
         //handle input
         handle_input();
+
+        if(mode == ORBIT)
+        {
+            position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
+            position.y = radius * cos(glm::radians(phi));
+            position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+            m_camera_front = glm::normalize(m_target - position);
+        }
 
         // calculate the new Front vector and concluding right and up-vector
 
@@ -64,10 +76,6 @@ namespace vOS
     }
     void Camera::handle_input()
     {
-        if(!ImGui::IsWindowHovered())
-        {
-            return;
-        }
 
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
         ImVec2 vMax = ImGui::GetWindowContentRegionMax();
@@ -83,6 +91,16 @@ namespace vOS
         auto xpos = (float)Input::get_mouse_X();
         auto ypos = (float)Input::get_mouse_Y();
         auto is_down = Input::mouse_pressed();
+
+        if(!ImGui::IsWindowHovered() || !ImGui::IsWindowFocused())
+        {
+            if(!is_down)
+            {
+                last_x = xpos;
+                last_y = ypos;
+            }
+            return;
+        }
 
         if(xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
         {
@@ -115,26 +133,23 @@ namespace vOS
         delta = current_frame - last_frame;
         last_frame = current_frame;
 
-        if(ImGui::IsWindowFocused())
+        if(ImGui::IsKeyDown('W'))
         {
-
-            if(ImGui::IsKeyPressed('W'))
-            {
-                handle_keyboard(FORWARD, delta);
-            }
-            if(ImGui::IsKeyPressed('A'))
-            {
-                handle_keyboard(LEFT, delta);
-            }
-            if(ImGui::IsKeyPressed('S'))
-            {
-                handle_keyboard(BACKWARD, delta);
-            }
-            if(ImGui::IsKeyPressed('D'))
-            {
-                handle_keyboard(RIGHT, delta);
-            }
+            handle_keyboard(FORWARD, delta);
         }
+        if(ImGui::IsKeyDown('A'))
+        {
+            handle_keyboard(LEFT, delta);
+        }
+        if(ImGui::IsKeyDown('S'))
+        {
+            handle_keyboard(BACKWARD, delta);
+        }
+        if(ImGui::IsKeyDown('D'))
+        {
+            handle_keyboard(RIGHT, delta);
+        }
+
     }
 
     void Camera::handle_mouse_scroll(float y_offset)
@@ -142,13 +157,21 @@ namespace vOS
         if(mode == FLY)
         {
             m_zoom -= m_zoom_strength * (float) y_offset;
-            if (m_zoom < 1.0f)
+            if(m_zoom < 1.0f)
             {
                 m_zoom = 1.0f;
             }
-            if (m_zoom > 90.0f)
+            if(m_zoom > 90.0f)
             {
                 m_zoom = 90.0f;
+            }
+        }
+        if(mode == ORBIT)
+        {
+            radius -= (float) y_offset;
+            if(radius < 1.0f)
+            {
+                radius = 1.0f;
             }
         }
 
@@ -181,7 +204,24 @@ namespace vOS
         }
         if(mode == ORBIT)
         {
+            x_offset *= m_sensitivity;
+            y_offset *= m_sensitivity;
 
+            phi += y_offset;
+            if(phi < 1.0f)
+            {
+                phi = 1.0f;
+            }
+            if(phi > 179.0f)
+            {
+                phi = 179.0f;
+            }
+
+            theta -= x_offset;
+            if(theta < 0.0f)
+            {
+                theta = 360.0f - (x_offset - theta);
+            }
         }
     }
 
@@ -213,7 +253,6 @@ namespace vOS
         }
         if(mode == ORBIT)
         {
-
 
             if (direction == FORWARD)
             {
