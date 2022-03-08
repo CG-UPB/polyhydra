@@ -19,8 +19,6 @@ namespace vOS {
     {
         // Get MeshObject
         MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return;
 
         // GL Setup
         glEnable(GL_CULL_FACE);

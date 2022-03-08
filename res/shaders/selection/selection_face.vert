@@ -7,6 +7,7 @@ layout (location = 3) in float a_peelDepth;
 layout (location = 4) in float a_isBoundary;
 layout (location = 5) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
+layout (location = 11) in int a_halfface_id;
 
 uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
@@ -21,6 +22,7 @@ uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 
 flat out int v_visible;
+flat out int v_halfface_id;
 
 void main()
 {
@@ -45,7 +47,8 @@ void main()
     vec3 center =  vec3(u_mesh_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peelDepth < u_peel_depth || angle > 0 || a_is_digged == 0.0 || a_is_isolated == 0.0)
+    // TODO: || angle > 0
+    if (a_peelDepth < u_peel_depth || a_is_digged == 0.0 || a_is_isolated == 0.0)
     {
         v_visible = 0;
     }
@@ -53,4 +56,5 @@ void main()
 
     vec3 pos = a_center + (a_pos - a_center) * u_cell_size;
     gl_Position = u_projection * u_view * u_mesh_transform * vec4(pos, 1.0);
+    v_halfface_id = a_halfface_id;
 }

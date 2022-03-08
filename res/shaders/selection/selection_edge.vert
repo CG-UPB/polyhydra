@@ -9,6 +9,7 @@ layout (location = 3) in vec3 a_center;
 layout (location = 4) in float a_peelDepth;
 layout (location = 5) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
+layout (location = 7) in int a_edge_id;
 
 uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
@@ -23,7 +24,7 @@ uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 
 flat out int v_visible;
-flat out int v_instance_id;
+flat out int v_edge_id;
 
 mat4 get_rotation_matrix(vec3 axis, float angle)
 {
@@ -59,7 +60,8 @@ void main()
     vec3 center =  vec3(u_mesh_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peelDepth < u_peel_depth || angle > 0 || a_is_digged == 0.0 || a_is_isolated == 0.0)
+    // TODO: || angle > 0
+    if (a_peelDepth < u_peel_depth || a_is_digged == 0.0 || a_is_isolated == 0.0)
     {
         v_visible = 0;
     }
@@ -68,7 +70,7 @@ void main()
     vec3 from = a_center + (a_from_vertex - a_center) * u_cell_size;
     vec3 to = a_center + (a_to_vertex - a_center) * u_cell_size;
 
-    v_instance_id = gl_InstanceID;
+    v_edge_id = a_edge_id;
 
     float edge_length = length(to - from);
     vec3 edge_dir = normalize(to - from);

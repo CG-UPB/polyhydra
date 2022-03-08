@@ -180,9 +180,9 @@ namespace vOS
         VertexArrayObject* m_cylinder_vao = nullptr;
 
         // ovm ids, in the order that we render them
-        std::vector<int> m_vertex_ids;
-        std::vector<int> m_edge_ids;
-        std::vector<int> m_face_ids;
+        std::vector<int> m_selection_vertices_ids;
+        std::vector<int> m_selection_edges_ids;
+        std::vector<int> m_selection_halffaces_ids;
 
         // to be used for rounded cells as well, no need to calculate twice
         std::unordered_map<int, glm::vec3> m_cell_centers;
