@@ -6,8 +6,6 @@
 #include "../util/Tooltips.h"
 
 
-//TODO:Set fixed size and position in the window
-
 namespace vOS
 {
 
@@ -233,6 +231,17 @@ namespace vOS
                         Tooltips::HelpMarkerWithQuestionMark("This slider will change the size of each cell");
                         if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f)) {
                             Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
+                        }
+
+                        bool rounding_active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
+
+                        ImGui::Checkbox("Rounded Cells?", &rounding_active);
+                        GlobalViewerSettings::getInstance()->m_set_current_rounding_active(rounding_active);
+                        if (rounding_active)
+                        {
+                            float actual_rounding_size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
+                            ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
+                            GlobalViewerSettings::getInstance()->m_set_current_rounding_size(actual_rounding_size);
                         }
 
                         static int clicked_digging = 0;

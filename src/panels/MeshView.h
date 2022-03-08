@@ -38,7 +38,6 @@ namespace vOS
         void set_zoom_point(glm::vec3 zoom_point);
     private:
 
-        void start_isolation();
         void handleResize();
         void handleMouseControl();
         void renderMesh(int mesh_id);

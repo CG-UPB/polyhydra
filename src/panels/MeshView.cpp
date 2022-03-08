@@ -845,12 +845,6 @@ namespace vOS
         }
     }
 
-    void MeshView::start_isolation()
-    {
-
-
-    }
-
     void MeshView::set_zoom_point(glm::vec3 zoom_point)
     {
         m_zoom_point = zoom_point;
@@ -861,11 +855,8 @@ namespace vOS
     {
         render_debug_menu();
 
-        if (ImGui::Begin("Rounding"))
-        {
-            ImGui::SliderFloat("Size", &m_render_data.rounding.size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
-        }
-        ImGui::End();
+        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
+        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
 
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
