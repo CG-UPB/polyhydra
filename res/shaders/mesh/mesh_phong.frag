@@ -50,7 +50,7 @@ float shadow_calculation(vec4 pos_ls, float bias)
 
     float closest_depth = texture(u_shadow_texture, proj_coords.xy).r;
     float current_depth = proj_coords.z;
-//    float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+    //float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
 
     // sample surrounding values and use average value for smoother shadows
     vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
@@ -148,11 +148,17 @@ void main()
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
     // shadow calculation
-    //float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
+    float bias = max(0.0005 * (1.0 - dot(n, light_dir)), 0.00005);
 
-    float theta = clamp(dot(light_dir,n), 0.0, 1.0);
-    float bias = 0.0005 * tan(acos(theta));
-    bias = clamp(bias, 0.0, 0.0005);
+    //float bias = max(0.005 * (1.0 - dot(-n, light_dir)), 0.0005);
+    //bias = 0.1;
+
+    //float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
+//
+//    float theta = clamp(dot(light_dir,n), 0.0, 1.0);
+//    float bias = 0.0005 * tan(acos(theta));
+//    bias = clamp(bias, 0.0, 0.0005);
+
     float shadow = shadow_calculation(v_pos_ls, bias);
     float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
     transparent_shadow = 0.0;
@@ -165,7 +171,7 @@ void main()
             shadow = 1.0;
         }
     }
-    //shadow = 0.0;
+    //float shadow = 0.0;
 
     //ambient
     float ao_factor = texture(u_ssao_texture, uv).r;

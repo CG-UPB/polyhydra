@@ -24,6 +24,12 @@ namespace vOS
     {
         m_window = window;
 
+        m_movement_vector_x = 0;
+        m_movement_vector_y = 0;
+        m_movement_vector_z = 0;
+
+          m_currentScrollOffsetX = 0;
+          m_currentScrollOffsetY = 0;
         m_mouse_pressed = false;
 
         // Setup
@@ -70,7 +76,7 @@ namespace vOS
     }
 
     void Input::glfw_callback_key(GLFWwindow *window, int key, int scancode, int action, int mods){
-        if(! (action == GLFW_PRESS && m_accept_inputs) || m_ignore_keyboard_commands)
+        if(! ( m_accept_inputs) || m_ignore_keyboard_commands)
             return;
 
         // Rebind if an entry in our rebind map is found
@@ -83,39 +89,38 @@ namespace vOS
         // Camera Movement
         // Occupied Letters: W, A, S, D, SPACE, LEFT_SHIFT
         if(rebind == GLFW_KEY_D)
-            x = 1;
+            x = action;
         else if(rebind == GLFW_KEY_A)
-            x = -1;
+            x = -action;
         if(rebind == GLFW_KEY_SPACE)
-            y = 1;
+            y = action;
         else if(rebind == GLFW_KEY_LEFT_SHIFT)
-            y = -1;
+            y = -action;
         if(rebind == GLFW_KEY_W)
-            z = 1;
+            z = action;
         else if(rebind == GLFW_KEY_S)
-            z = -1;
+            z = -action;
+
+        // Single Action Keys ( only trigger when key is pressed )
+        if(action == GLFW_PRESS ) {
+
+            // Do Action Depending on Input Key
+            // Rendering Mode Switches
+            // Occupied Letters: I, O, P, L
+            if (rebind == GLFW_KEY_I) {
+                Window::instance().set_mesh_rendering_mode("mesh_phong");
+            } else if (rebind == GLFW_KEY_O) {
+                Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+            } else if (rebind == GLFW_KEY_P) {
+                Window::instance().set_mesh_rendering_mode("mesh_flat");
+            } else if (rebind == GLFW_KEY_L) {
+                Window::instance().set_mesh_rendering_mode("mesh_normal");
+            }
+        }
 
         m_movement_vector_x = x;
         m_movement_vector_y = y;
         m_movement_vector_z = z;
-
-        // Do Action Depending on Input Key
-        // Rendering Mode Switches
-        // Occupied Letters: I, O, P, L
-        if(rebind == GLFW_KEY_I)
-        {
-            Window::instance().set_mesh_rendering_mode("mesh_phong");
-        }else if(rebind == GLFW_KEY_O)
-        {
-            Window::instance().set_mesh_rendering_mode("mesh_wireframe");
-        }
-        else if(rebind == GLFW_KEY_P){
-            Window::instance().set_mesh_rendering_mode("mesh_flat");
-        }
-        else if(rebind == GLFW_KEY_L){
-            Window::instance().set_mesh_rendering_mode("mesh_normal");
-        }
-
     }
 
     void Input::glw_callback_mouse_button(GLFWwindow *window, int button, int action, int mods){

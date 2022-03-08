@@ -4,6 +4,8 @@
 #include "../gl/Shader.h"
 #include "../gl/FrameBufferObject.h"
 #include "glm/gtx/transform.hpp"
+#include "../Camera.h"
+#include "../Light.h"
 
 namespace vOS
 {
@@ -12,26 +14,20 @@ namespace vOS
      */
     struct RenderData
     {
-        struct Camera {
-            glm::mat4 world;
-            glm::mat4 view;
-            glm::mat4 projection;
-            glm::vec3 position;
-            float fov_deg = 50.0f;
-            float near = 0.1f;
-            float far = 100.0f;
-        } camera;
-        struct Light {
-            glm::vec3 color;
-            glm::mat4 world;
-            glm::mat4 view;
-            glm::mat4 projection;
-            glm::vec3 position;
-        } light;
+//        struct Light {
+//            glm::vec3 color;
+//            glm::mat4 world;
+//            glm::mat4 view;
+//            glm::mat4 projection;
+//            glm::vec3 position;
+//        } light;
         struct {
             bool active = true;
             float size = 0.3f;
         } rounding;
+
+        Camera camera;
+        Light light;
     };
 
     class RenderPass
