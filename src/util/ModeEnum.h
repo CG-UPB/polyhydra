@@ -13,5 +13,10 @@ namespace vOS
         Shadows = 7
     };
 
+    enum Transparency {
+        WEIGHTED_BLENDED = 0,
+        DEPTH_PEELING = 1
+    };
+
 
 }

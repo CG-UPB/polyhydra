@@ -45,6 +45,38 @@ namespace vOS
             Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use");
             GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
 
+
+            // Transparency Settings
+            // TODO: Specify in which modes the transparency Settings are useful and add an if-statement
+            if (ImGui::Button("Transparency Settings"))
+            {
+                ImGui::OpenPopup("transparency Popup");
+            }
+            if (ImGui::BeginPopup("transparency Popup"))
+            {
+                int m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
+                if (ImGui::RadioButton("Weighted Blended", m_transparency == WEIGHTED_BLENDED))
+                {
+                    GlobalViewerSettings::getInstance()->m_set_current_transparency_mode(WEIGHTED_BLENDED);
+                }
+                if (ImGui::RadioButton("Depth Peeling", m_transparency == DEPTH_PEELING))
+                {
+                    GlobalViewerSettings::getInstance()->m_set_current_transparency_mode(DEPTH_PEELING);
+
+                }
+
+                if(m_transparency == DEPTH_PEELING)
+                {
+                    int num_passes = GlobalViewerSettings::getInstance()->m_get_current_number_passes();
+                    ImGui::SliderInt("DP_Passes", &num_passes, 0, 50);
+                    GlobalViewerSettings::getInstance()->m_set_current_number_passes(num_passes);
+                }
+                ImGui::EndPopup();
+            }
+
+
+
+
             // Snapshot Button uses the class Filedialog to save a screenshot
             if (ImGui::Button("Snapshot")) {
                 NewFileDialog file_dialog;

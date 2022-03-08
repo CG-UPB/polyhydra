@@ -19,6 +19,8 @@ namespace vOS
         void m_set_current_digging_active(bool b){m_current_digging_active = b;};
         void m_set_current_rounding_active(bool r){m_rounding_activated = r;};
         void m_set_current_rounding_size(float r){m_rounding_size = r;};
+        void m_set_current_transparency_mode(int t){m_current_transparency_mode = t;};
+        void m_set_current_number_passes(int np){m_current_number_passes = np;};
 
         [[nodiscard]] bool m_get_current_selection_activated() const{return m_current_selection_activated;};
         [[nodiscard]] bool m_get_current_digging_activated() const{return m_current_digging_active;};
@@ -27,6 +29,8 @@ namespace vOS
         [[nodiscard]] int m_get_current_mesh_mode() const{return mesh_mode;};
         [[nodiscard]] bool m_get_current_rounding_active() const{return m_rounding_activated;};
         [[nodiscard]] float m_get_current_rounding_size() const{return m_rounding_size;};
+        [[nodiscard]] int m_get_current_transparency_mode() const{return m_current_transparency_mode;};
+        [[nodiscard]] int m_get_current_number_passes() const{return m_current_number_passes;};
 
 
 
@@ -40,6 +44,8 @@ namespace vOS
         int mesh_mode = 0;
         float m_rounding_size = 0.3f;
         bool m_rounding_activated = true;
+        int m_current_transparency_mode = WEIGHTED_BLENDED;
+        int m_current_number_passes = 0;
     };
 
 }

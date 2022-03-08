@@ -597,7 +597,7 @@ namespace vOS
 
     void MeshView::render_transparency_dp()
     {
-
+        num_passes = GlobalViewerSettings::getInstance()->m_get_current_number_passes();
         for( int i = 0; i < num_passes; i++)
         {
             if(i % 2 == 0)
@@ -893,24 +893,7 @@ namespace vOS
 
         // Render transparent objects
 
-        if (ImGui::Begin("Transparency"))
-        {
-            if (ImGui::RadioButton("Weighted Blended", m_transparency == WEIGHTED_BLENDED))
-            {
-                m_transparency = WEIGHTED_BLENDED;
-            }
-            if (ImGui::RadioButton("Depth Peeling", m_transparency == DEPTH_PEELING))
-            {
-                m_transparency = DEPTH_PEELING;
-
-            }
-
-            if(m_transparency == DEPTH_PEELING)
-            {
-                ImGui::SliderInt("DP_Passes", &num_passes, 0, 50);
-            }
-        }
-        ImGui::End();
+        m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
 
         switch (m_transparency)
         {
