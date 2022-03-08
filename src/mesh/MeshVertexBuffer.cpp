@@ -495,12 +495,14 @@ namespace vOS
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
             if (original_face_vertices.size() == 3)
             {
+                glm::vec3 barycenter = {0,0,0};
                 // iterate over the halfedges of the halfface
                 for (auto vertex_pos: original_face_vertices)
                 {
                     // get geometry data
                     VertexData v_data;
                     v_data.position = vertex_pos;
+                    barycenter += vertex_pos;
                     v_data.normal = -normal;
                     face_data.vertices.push_back(v_data);
                 }
@@ -510,6 +512,8 @@ namespace vOS
                 add_face_indices(mesh, face_data);
                 m_num_vertices += (int) original_face_vertices.size();
 
+                m_face_centers.emplace(face_id, barycenter / 3.0f);
+                m_face_normals.emplace(face_id, normal);
                 faces.push_back(face_data);
             } else if (original_face_vertices.size() > 3)
             {
@@ -560,6 +564,9 @@ namespace vOS
                 face_normal /= -glm::length(face_normal);
                 face_data.vertices[0].position = midpoint;
                 face_data.vertices[0].normal = face_normal;
+
+                m_face_centers.emplace(face_id, midpoint);
+                m_face_normals.emplace(face_id, face_normal);
 
                 // Add Vertex Data
                 for (auto vertex_pos: original_face_vertices)

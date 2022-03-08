@@ -429,6 +429,12 @@ namespace vOS {
          */
         void camera_set_position(float x, float y, float z);
 
+        /**
+         * Sets the Camera's position and view direction in such a way, that it looks directly at the given mesh face
+         * @param mesh_id
+         * @param ovm_face_id
+         */
+        void camera_focus_on(int mesh_id, int ovm_face_id);
 
         // IO //////////////////////////////////////////////////////////////////////////////////////////////////////////
 

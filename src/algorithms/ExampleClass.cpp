@@ -43,7 +43,7 @@ void ExampleClass::simple_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh);
+    file_manager.readFile("../res/sample_meshes/broken_bullet_MC.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();
@@ -177,7 +177,7 @@ void ExampleClass::selection_demonstration_ui(){
     // Selection Slider
     int pre_level = selection_level;
     int pre_type = selection_type;
-    ImGui::SliderInt("Level", &selection_level, 0, 10000);
+    ImGui::SliderInt("Level", &selection_level, 0, 100);
     ImGui::SliderInt("Type", &selection_type, 0, 3);
 
     if(pre_level != selection_level || pre_type != selection_type) {
@@ -192,10 +192,13 @@ void ExampleClass::selection_run(){
 
     Window& window = Window::instance();
 
-    window.unselect_all_elements();
+
+    /*window.unselect_all_elements();
     for(int i = 0; i < selection_level; i++){
         window.select_element(hand, (i) % 10000,selection_type);
-    }
+    }*/
+
+    window.camera_focus_on(hand, selection_level);
 };
 
 void ExampleClass::bounding_demonstration_ui() {

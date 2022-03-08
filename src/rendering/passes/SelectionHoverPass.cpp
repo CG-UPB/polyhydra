@@ -177,6 +177,7 @@ namespace vOS
                 m_hovered_edge_to.z = v1[2];
 
                 m_zoom_point = glm::vec3(mesh_transform * glm::vec4((m_hovered_edge_from + m_hovered_edge_to) / 2.0f, 1.0f));
+
             }
         }
     }

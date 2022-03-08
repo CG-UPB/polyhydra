@@ -11,14 +11,6 @@
 
 namespace vOS {
 
-    enum Movement
-    {
-        FORWARD,
-        BACKWARD,
-        LEFT,
-        RIGHT
-    };
-
 /**
  * Camera class responsible for Data concerning the rendering camera. Position direction and other attributes are managed and changable through this class
  */
@@ -34,7 +26,8 @@ namespace vOS {
         void handle_input();
         void handle_mouse_scroll(float y_offset);
         void handle_mouse_movement(float x_offset, float y_offset);
-        void handle_keyboard(Movement direction, float delta);
+
+        void focus_spot(glm::vec3 target_position, glm::vec3 target_normal);
 
         // Matrices
         glm::mat4 world;
@@ -43,7 +36,6 @@ namespace vOS {
 
         // Vectors
         glm::vec3 position;
-        glm::vec3 m_target;
         glm::vec3 m_previous_position;
         glm::vec3 m_previous_movement_vector;
 
@@ -75,6 +67,20 @@ namespace vOS {
 
         float delta = 0.0f;
         float last_frame = 0.0f;
+    private:
+        /*
+         * Moves the Camera one a step closer to a desired focus point with focus viewing direction
+         * If timer runs through, the camera will look at the desired object and normal camera movement is allowed again
+         */
+        void camera_focus_coroutine();
+
+        bool m_in_focus_mode = false;
+        float m_target_mode_total_time = 5;
+        float m_target_mode_timer = 0.0f;
+        glm::vec3 m_original_position = {0,0,0};
+        glm::vec3 m_original_front = {0, 0, 0};
+        glm::vec3 m_desired_front = {0, 0, 0};
+        glm::vec3 m_desired_position = {0,0,0};
     };
 
 }

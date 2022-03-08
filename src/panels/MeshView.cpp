@@ -490,6 +490,10 @@ namespace vOS
         // evaluate which in which mesh the color was selected
         bool any_mesh_hovered = false;
 
+        // Remember face id in case of double click
+        int face_id = 0;
+        int face_id_mesh = -1;
+
         for (const auto& m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -500,7 +504,7 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
-
+                int face_id_mesh = m.first;
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
@@ -551,7 +555,7 @@ namespace vOS
 
                     if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL || GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
                     {
-                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+                        face_id = mesh->to_faceID(picked_id - from) - 1;
 
                         m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
 
@@ -602,7 +606,7 @@ namespace vOS
 
                         // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
                         // there is no valid ID (e.g when clicking background)
-                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+                        face_id = mesh->to_faceID(picked_id - from) - 1;
 
                         //std::cout << "hovering face with id: " << face_id << std::endl;
 
@@ -661,7 +665,12 @@ namespace vOS
         }
         if(ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
         {
-            // TODO Focus
+            if(face_id_mesh >= 0) {
+                Window().instance().rendering_mutex.unlock();
+                // Focus
+                Window().instance().camera_focus_on(face_id_mesh, face_id);
+                Window().instance().rendering_mutex.lock();
+            }
         }
         if(ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
         {

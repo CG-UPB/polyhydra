@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "../input/Input.h"
+#include "../util/VecUtil.h"
 #include <iostream>
 
 namespace vOS
@@ -18,7 +19,6 @@ namespace vOS
 
         // Init Position etc
         position = glm::vec3{0.0f, 0.0f, 10.0f};
-        m_target = glm::vec3{0, 0, 0};
         m_camera_front = glm::vec3 {0.0f, 0.0f, -1.0f};
         m_camera_up =glm::vec3 {0.0f, 1.0f, 0.0f};
 
@@ -40,15 +40,26 @@ namespace vOS
         last_y = m_screen_height / 2.0f;
     }
 
-    void Camera::update()
-    {
-        //handle input
-        handle_input();
+    void Camera::update() {
+        // Frame Delta
+        auto current_frame = (float) ImGui::GetTime();
+        delta = current_frame - last_frame;
+        last_frame = current_frame;
+
+
+        // Ignore input, if in focus mode
+        if (!m_in_focus_mode) {
+            //handle input
+            handle_input();
+        }
 
         // calculate the new Front vector and concluding right and up-vector
 
         m_camera_right = glm::normalize(glm::cross(m_camera_front, m_world_up));
         m_camera_up = glm::normalize(glm::cross(m_camera_right, m_camera_front));
+
+        static int i = 0;
+        std::cout << (i++) << " " << VecUtil::to_string(m_camera_right) << std::endl;
 
         projection = glm::perspective(
                 glm::radians(m_zoom),
@@ -56,11 +67,19 @@ namespace vOS
                 near,
                 far
         );
+
+        if (m_in_focus_mode) {
+            // Calculate Coroutine
+            camera_focus_coroutine();
+
+        }
+        // Calculate View Matrix with camera front vector offset as target
         view = glm::lookAt(
                 position,
                 position + m_camera_front,
                 m_camera_up
         );
+
     }
     void Camera::handle_input()
     {
@@ -110,30 +129,22 @@ namespace vOS
             }
         }
 
-        // keyboard
-        auto current_frame = (float)ImGui::GetTime();
-        delta = current_frame - last_frame;
-        last_frame = current_frame;
-
+        // 3 Dimensional Movement
         if(ImGui::IsWindowFocused())
         {
+            // X for Horizontal Movement
+            // Y for Vertical Movement
+            // Z for Forward Movement
+            glm::vec3 input_vector = { Input::get_wasd_movement_vector_X() * m_horizontal_speed,
+                                     Input::get_wasd_movement_vector_Y() * m_vertical_speed,
+                                     Input::get_wasd_movement_vector_Z() * m_vertical_speed};
+            input_vector *= delta;
 
-            if(ImGui::IsKeyPressed('W'))
-            {
-                handle_keyboard(FORWARD, delta);
-            }
-            if(ImGui::IsKeyPressed('A'))
-            {
-                handle_keyboard(LEFT, delta);
-            }
-            if(ImGui::IsKeyPressed('S'))
-            {
-                handle_keyboard(BACKWARD, delta);
-            }
-            if(ImGui::IsKeyPressed('D'))
-            {
-                handle_keyboard(RIGHT, delta);
-            }
+            glm::vec3 mov_vector = input_vector.x * m_camera_right +
+                    input_vector.y * m_camera_up +
+                    input_vector.z * m_camera_front;
+
+            position += mov_vector;
         }
     }
 
@@ -173,30 +184,51 @@ namespace vOS
         front.y = sin(glm::radians(m_pitch));
         front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
         m_camera_front = glm::normalize(front);
+
     }
 
-    void Camera::handle_keyboard(Movement direction, float delta)
+    void Camera::camera_focus_coroutine()
     {
-        float velocity = 0.0;
-        if(direction == FORWARD)
+        float t = (m_target_mode_timer / m_target_mode_total_time);
+        //std::cout << t << std::endl;
+        if(t <= 0)
         {
-            velocity = m_vertical_speed * delta;
-            position += m_camera_front * velocity;
+            // Focusing Coroutine is done
+            m_in_focus_mode = false;
+
+            position = m_desired_position;
+            m_camera_front = m_desired_front;
+
+            // Set Pitch and Yaw
+            m_pitch = glm::degrees( asin(m_desired_front.y));
+
+            m_yaw = glm::degrees( asin(m_desired_front.z) / cos(glm::radians(m_pitch)));
+        }else{
+            // Half Sinus Curve
+            float logistic_t = (glm::sin((t * glm::pi<float>()) - glm::pi<float>()/2) + 1) / 2;
+
+            position = glm::mix(m_desired_position, m_original_position, logistic_t);
+            m_camera_front = glm::mix(m_desired_front, m_original_front, logistic_t);
         }
-        if(direction == BACKWARD)
-        {
-            velocity = m_vertical_speed * delta;
-            position -= m_camera_front * velocity;
-        }
-        if(direction == LEFT)
-        {
-            velocity = m_horizontal_speed * delta;
-            position -= m_camera_right * velocity;
-        }
-        if(direction == RIGHT)
-        {
-            velocity = m_horizontal_speed * delta;
-            position += m_camera_right * velocity;
-        }
+
+        // Reduce Timer
+        m_target_mode_timer -= delta;
+    }
+
+    void Camera::focus_spot(glm::vec3 target_position, glm::vec3 target_normal)
+    {
+        // Set Target Mode to true
+        m_in_focus_mode = true;
+
+        // Remember original data
+        m_original_position = position;
+        m_original_front = m_camera_front;
+        // Set Desired Data
+        m_desired_position = target_position + target_normal * 3.0f;
+        m_desired_front = -target_normal;
+
+        m_target_mode_timer = m_target_mode_total_time;
+        //std::cout << "Org Pos: " << VecUtil::to_string(m_original_position) << " Org Target: " << VecUtil::to_string(m_original_front) << std::endl;
+        //std::cout << "Des Pos: " << VecUtil::to_string(m_desired_position) << " Des Target: " << VecUtil::to_string(m_desired_front) << std::endl;
     }
 }

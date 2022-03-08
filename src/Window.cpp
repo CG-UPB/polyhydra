@@ -705,10 +705,22 @@ namespace vOS
 
         return shape_id;
     }
+
     void Window::camera_set_position(float x, float y, float z)
     {
         rendering_mutex.lock();
-        // TODO
+        m_mesh_view->m_render_data.camera.position = glm::vec3(x,y,z);
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_focus_on(int mesh_id, int ovm_face_id)
+    {
+        rendering_mutex.lock();
+        // Get Face Normal
+        auto face_normal = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_normal(ovm_face_id);
+        auto face_barycenter = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_barycenter(ovm_face_id);
+        // Focus
+        m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal);
         rendering_mutex.unlock();
     }
 
