@@ -34,6 +34,7 @@ namespace vOS {
         Camera();
 
         void set_viewport_size(float width, float height);
+        void set_mode(Mode mode){m_mode = mode;};
 
         void update();
 
@@ -42,8 +43,6 @@ namespace vOS {
         void handle_mouse_movement(float x_offset, float y_offset);
         void handle_keyboard(Movement direction, float delta);
 
-        Mode mode = ORBIT;
-
         // Matrices
         glm::mat4 world;
         glm::mat4 view;
@@ -51,30 +50,10 @@ namespace vOS {
 
         // Vectors
         glm::vec3 position;
-        glm::vec3 m_target;
-        glm::vec3 m_previous_position;
-        glm::vec3 m_previous_movement_vector;
-
-        // Axis
-        glm::vec3 m_world_up;
-        glm::vec3 m_camera_right;
-        glm::vec3 m_camera_up;
-        glm::vec3 m_camera_front;
-
-        // Euler Angles
-        float m_yaw = -90.0f;
-        float m_pitch = 0.0f;
-        float m_vertical_speed = 5.0f;
-        float m_horizontal_speed = 10.0f;
-        float m_sensitivity = 0.3f;
-        float m_zoom = 55.0f;
 
         // Floats
         float near = 0.1f;
         float far = 100.0f;
-        float m_screen_width = 0;
-        float m_screen_height = 0;
-        float m_zoom_strength = 3.5;
 
         // Mouse position
         float last_x = 0.0f;
@@ -89,6 +68,30 @@ namespace vOS {
         float phi;
         float theta;
         float radius;
+
+    private:
+        Mode m_mode;
+
+        glm::vec3 m_target;
+        glm::vec3 m_previous_position;
+        glm::vec3 m_previous_movement_vector;
+
+        float m_yaw = -90.0f;
+        float m_pitch = 0.0f;
+        float m_vertical_speed = 5.0f;
+        float m_horizontal_speed = 10.0f;
+        float m_sensitivity = 0.3f;
+        float m_zoom = 55.0f;
+
+        // Axis
+        glm::vec3 m_world_up;
+        glm::vec3 m_camera_right;
+        glm::vec3 m_camera_up;
+        glm::vec3 m_camera_front;
+
+        float m_screen_width = 0;
+        float m_screen_height = 0;
+        float m_zoom_strength = 3.5;
     };
 
 }
