@@ -23,7 +23,6 @@ namespace vOS
         world = glm::mat4(1.0f);
 
         projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
         view = glm::lookAt(
                 position,
                 m_target,
