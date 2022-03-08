@@ -33,6 +33,7 @@ uniform vec3 u_lightColor;
 uniform vec4 u_objectColor;
 uniform float u_cell_size;
 uniform vec4 u_selection_color;
+uniform float u_average_cell_size;
 
 uniform mat4 u_light_projection;
 uniform mat4 u_light_view;
@@ -107,8 +108,7 @@ void main()
     if (u_rounding)
     {
         float type = a_rounded_vertex_type;
-        vec3 diameter = inverse_transform * (u_max - u_min);
-        float r = u_rounding_size * (max(max(diameter.x, diameter.y), diameter.z) / 70.0);
+        float r = u_rounding_size * u_average_cell_size * 0.3;
         // this vertex lies on the inner triangle
         if (type == ROUNDED_VERTEX_TYPE_FACE)
         {

@@ -97,6 +97,8 @@ namespace vOS
 
         VertexArrayObject* get_vao_rounded();
 
+        [[nodiscard]] float get_average_cell_size() const;
+
         /**
          * Colors the given Face in desired colors
          * The strong a is, the more pronounced the given color is
@@ -168,6 +170,7 @@ namespace vOS
         bool m_update_vao = false;
         int m_face_amount = 0;
         int m_cell_start_face_index = 0;
+        float m_average_cell_size;
 
         std::vector<float> m_original_vertices;
 

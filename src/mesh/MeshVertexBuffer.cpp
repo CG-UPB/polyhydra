@@ -75,6 +75,7 @@ namespace vOS
             add_cell_by_faces(mesh, c_it);
             add_cell_rounded(mesh, c_it);
         }
+        m_average_cell_size /= (float) mesh.n_cells();
     }
 
     unsigned int MeshVertexBuffer::add_vertex_data_to_cell_data(RoundedCellData& data, const float type, const glm::vec3& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv, float angle)
@@ -426,7 +427,11 @@ namespace vOS
         m_selection_sphere_digging_numbers[cell.idx()] = num_selection_vertices;
 
         // get the center, so we can add it as a vertex attribute
-        glm::vec3 cell_center = VecUtil::get_center(vertices);
+        auto [min, max] = VecUtil::get_bounding_box(vertices);
+        glm::vec3 diameter = max - min;
+        float size = std::max(std::max(diameter.x, diameter.y), diameter.z);
+        m_average_cell_size += size;
+        glm::vec3 cell_center = min + (max - min) * 0.5f;
         m_cell_centers[cell.idx()] = cell_center;
 
         // get peel depth of the cell
@@ -936,6 +941,11 @@ namespace vOS
         m_vao_by_face->update_attribute(m_is_isolated_by_face, 7);
         m_sphere_vao->update_attribute(m_sphere_is_isolated, 6);
         m_cylinder_vao->update_attribute(m_cylinder_is_isolated, 6);
+    }
+
+    float MeshVertexBuffer::get_average_cell_size() const
+    {
+        return m_average_cell_size;
     }
 
 }
