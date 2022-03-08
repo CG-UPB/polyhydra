@@ -55,7 +55,7 @@ namespace vOS
         int m_current_transparency_mode = WEIGHTED_BLENDED;
         int m_current_number_passes = 12;
 
-        // bools for the Renderpasses
+        // booleans for the render passes
         bool transparency_active = true;
         bool shadows_active = true;
         bool ambient_occlusion_active = true;

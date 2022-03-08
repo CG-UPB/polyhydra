@@ -48,7 +48,7 @@ namespace vOS
 
             bool activated_modes[8][4] = {
                     // transparency, shadows, ambient occlusion, selection
-                    {true,true,true,true}, //Wireframe
+                    {false,false,false,false}, //Wireframe
                     {false,false,false,false}, // Only Vertices
                     {true,true,true,true}, // Phong Facenormals
                     {true,true,true,true}, // Phong Vertexnormals
@@ -64,6 +64,17 @@ namespace vOS
             GlobalViewerSettings::getInstance()->m_set_current_ambient_occlusion_activated(activated_modes[mesh_mode][2]);
             GlobalViewerSettings::getInstance()->m_set_current_selection_feature_activated(activated_modes[mesh_mode][3]);
 
+            if (mesh_mode == 0)
+            {
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+                Window::instance().rendering_mutex.lock();
+            }else
+            {
+                Window::instance().rendering_mutex.unlock();
+                Window::instance().set_mesh_rendering_mode("mesh_phong");
+                Window::instance().rendering_mutex.lock();
+            }
 
             // Transparency Settings
             // TODO: Specify in which modes the transparency Settings are useful and add an if-statement

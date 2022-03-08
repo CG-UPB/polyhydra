@@ -752,8 +752,7 @@ namespace vOS
             render_transparency();
         }
 
-
-
+        // Render Selection
         if (GlobalViewerSettings::getInstance()->m_get_current_selection_feature_activated() && GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
         {
             renderSelection();

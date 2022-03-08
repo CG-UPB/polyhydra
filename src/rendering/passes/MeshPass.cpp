@@ -41,7 +41,7 @@ namespace vOS
         }
         else
         {
-            //glEnable(GL_BLEND);
+            glDisable(GL_BLEND);
         }
 
 
