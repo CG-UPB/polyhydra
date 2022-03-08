@@ -35,12 +35,10 @@ namespace vOS
         ~MeshView() override;
         void show() override;
         void m_take_screenshot(const std::string& filename);
-        void set_zoom_point(glm::vec3 zoom_point);
     private:
 
         void start_isolation();
         void handleResize();
-        void handleMouseControl();
         void renderMesh(int mesh_id);
         void renderSelection();
         void querySelection(int type, int picked_id);
@@ -94,11 +92,6 @@ namespace vOS
         int m_viewport_texture = FINAL_IMAGE;
         int m_transparency = WEIGHTED_BLENDED;
 
-        // camera variables
-        glm::vec3 m_previous_movement_vector;
-        float m_movement_speed_multiplier = 1;
-        bool m_zoom;
-        glm::vec3 m_zoom_point;
 
         // render passes
         BackgroundPass m_background_pass;
