@@ -68,12 +68,12 @@ namespace vOS
             if (mesh_mode == 0)
             {
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+                //Window::instance().set_mesh_rendering_mode("mesh_wireframe");
                 Window::instance().rendering_mutex.lock();
             }else
             {
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_rendering_mode("mesh_phong");
+                //Window::instance().set_mesh_rendering_mode("mesh_phong");
                 Window::instance().rendering_mutex.lock();
             }
 
