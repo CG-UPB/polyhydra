@@ -436,6 +436,28 @@ namespace vOS {
          */
         void camera_focus_on(int mesh_id, int ovm_face_id);
 
+        /**
+         * Sets the a target for the camera to look at
+         * @param x
+         * @param y
+         * @param z
+         */
+        void camera_look_at(float x, float y, float z);
+        /**
+         * Sets the Orbital Target for the camera. The user can then move around said point
+         * @param x
+         * @param y
+         * @param z
+         * @param radius : Optional radius change
+         */
+        void camera_set_orbital_target(float x, float y, float z, float radius = -1);
+        /**
+         * Determines camera movement mode
+         * @param mode : 0 = 1 Free Movement , 1 = Orbital Movement
+         * @param orbital_radius : Range for Orbital Movement
+         */
+        void camera_mode(int mode, float orbital_radius = 10);
+
         // IO //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         /**

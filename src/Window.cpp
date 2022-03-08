@@ -726,6 +726,31 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
+    void Window::camera_mode(int mode, float orbital_radius)
+    {
+        rendering_mutex.lock();
+
+        m_mesh_view->m_render_data.camera.set_mode(mode, orbital_radius);
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_set_orbital_target(float x, float y, float z, float radius)
+    {
+        rendering_mutex.lock();
+
+        m_mesh_view->m_render_data.camera.m_orbital_origin = {x,y,z};
+        if(radius >= 1)
+            m_mesh_view->m_render_data.camera.radius = radius;
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_look_at(float x, float y, float z)
+    {
+        rendering_mutex.lock();
+        m_mesh_view->m_render_data.camera.look_at({x,y,z});
+        rendering_mutex.unlock();
+    }
+
     void Window::save_mesh_data(int mesh_id, std::string json_file_path)
     {
         rendering_mutex.lock();

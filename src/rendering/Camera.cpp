@@ -33,6 +33,10 @@ namespace vOS
         theta = 0.0f;
         phi = 90.0f;
 
+        m_pitch = 0;
+        m_yaw = 0;
+
+
         set_mode(ORBIT);
 
 
@@ -53,33 +57,32 @@ namespace vOS
         last_frame = current_frame;
 
 
+        // calculate the new Front vector and concluding right and up-vector
         // Ignore input, if in focus mode
         if (!m_in_focus_mode) {
             //handle input
             handle_input();
-        }
 
-        // Camera Front Calculation
-        if(m_mode == FLY)
-        {
-            glm::vec3 front;
-            front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-            front.y = sin(glm::radians(m_pitch));
-            front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-            m_camera_front = glm::normalize(front);
+            // Camera Front Calculation
+            if(m_mode == FLY)
+            {
+                glm::vec3 front;
+                front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+                front.y = sin(glm::radians(m_pitch));
+                front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+                m_camera_front = glm::normalize(front);
+            }
+            else if(m_mode == ORBIT)
+            {
+                position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
+                position.y = radius * cos(glm::radians(phi));
+                position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+                m_camera_front = glm::normalize(m_orbital_origin - position);
+            }
         }
-        if(m_mode == ORBIT)
-        {
-            position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
-            position.y = radius * cos(glm::radians(phi));
-            position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
-            m_camera_front = glm::normalize(m_target - position);
-        }
-
-        // calculate the new Front vector and concluding right and up-vector
-
         m_camera_right = glm::normalize(glm::cross(m_camera_front, m_world_up));
         m_camera_up = glm::normalize(glm::cross(m_camera_right, m_camera_front));
+
 
         projection = glm::perspective(
                 glm::radians(m_zoom),
@@ -91,7 +94,6 @@ namespace vOS
         if (m_in_focus_mode) {
             // Calculate Coroutine
             camera_focus_coroutine();
-
         }
         // Calculate View Matrix with camera front vector offset as target
         view = glm::lookAt(
@@ -174,53 +176,6 @@ namespace vOS
         }
     }
 
-    void Camera::set_mode(Mode mode) {
-
-        if (m_mode == ORBIT) {
-//                front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-//                front.y = sin(glm::radians(m_pitch));
-//                front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-
-            m_pitch = asin(m_camera_front.y);
-            m_yaw = acos((m_camera_front.x / cos(m_pitch)));
-
-            m_pitch = glm::degrees(m_pitch);
-            m_yaw = glm::degrees(m_yaw);
-
-            if (m_pitch > 89.0f) {
-                m_pitch = 89.0f;
-            }
-            if (m_pitch < -89.0f) {
-                m_pitch = -89.0f;
-            }
-
-            set_mode(FLY);
-
-            std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch << std::endl;
-            std::cout << "phi: " << phi << " ,theta: " << theta << std::endl;
-        } else if (m_mode == FLY) {
-//                position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
-//                position.y = radius * cos(glm::radians(phi));
-//                position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
-//                m_camera_front = glm::normalize(m_target - position);
-
-            position += m_target;
-
-            phi = acos(position.y / radius);
-            theta = asin((position.x / radius) / sin(phi));
-
-            phi = glm::degrees(phi);
-            theta = glm::degrees(theta);
-
-            set_mode(ORBIT);
-
-            std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch << std::endl;
-            std::cout << "phi: " << phi << " ,theta: " << theta << std::endl;
-        }
-
-
-    }
-
     void Camera::handle_mouse_scroll(float y_offset)
     {
         if(m_mode == FLY)
@@ -289,6 +244,46 @@ namespace vOS
         }
     }
 
+    void Camera::set_mode(int mode, float orbital_radius)
+    {
+        if(mode == 0)
+        {
+            m_mode = FLY;
+
+            // Flying Mode
+            m_pitch = asin(m_camera_front.y);
+            m_yaw = acos((m_camera_front.x / cos(m_pitch)));
+
+            m_pitch = glm::degrees(m_pitch);
+            m_yaw = glm::degrees(m_yaw);
+
+        }else if(mode == 1)
+        {
+            m_mode = ORBIT;
+
+            // Orbital Mode
+            position += m_orbital_origin;
+
+            radius = orbital_radius;
+
+            phi = acos(position.y / radius);
+            theta = asin((position.x / radius) / sin(phi));
+
+            phi = glm::degrees(phi);
+            theta = glm::degrees(theta);
+
+        }
+    }
+
+    void Camera::look_at(glm::vec3 target)
+    {
+        // Set Camera View Direction
+        m_camera_front = target - position;
+
+        // Change mode to existing mode ( fixes yaw and other angles )
+        set_mode(m_mode, radius);
+    }
+
     void Camera::camera_focus_coroutine()
     {
         float t = (m_target_mode_timer / m_target_mode_total_time);
@@ -301,10 +296,11 @@ namespace vOS
             position = m_desired_position;
             m_camera_front = m_desired_front;
 
-            // Set Pitch and Yaw
-            m_pitch = glm::degrees( asin(m_desired_front.y));
-
-            m_yaw = glm::degrees( asin(m_desired_front.z) / cos(glm::radians(m_pitch)));
+            // Set Variables depending on mode
+            if(m_mode == FLY)
+                set_mode(0);
+            else
+                set_mode(1, radius);
         }else{
             // Half Sinus Curve
             float logistic_t = (glm::sin((t * glm::pi<float>()) - glm::pi<float>()/2) + 1) / 2;
@@ -321,12 +317,13 @@ namespace vOS
     {
         // Set Target Mode to true
         m_in_focus_mode = true;
+        m_orbital_origin = target_position;
 
         // Remember original data
         m_original_position = position;
         m_original_front = m_camera_front;
         // Set Desired Data
-        m_desired_position = target_position + target_normal * 3.0f;
+        m_desired_position = target_position + target_normal * radius;
         m_desired_front = -target_normal;
 
         m_target_mode_timer = m_target_mode_total_time;

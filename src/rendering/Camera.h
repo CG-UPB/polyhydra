@@ -26,7 +26,7 @@ namespace vOS {
         Camera();
 
         void set_viewport_size(float width, float height);
-        void set_mode(Mode mode){m_mode = mode;};
+        void set_mode(int mode, float orbital_radius = 10);
 
         void update();
 
@@ -36,13 +36,16 @@ namespace vOS {
 
         void focus_spot(glm::vec3 target_position, glm::vec3 target_normal);
 
+        void look_at(glm::vec3 target);
+
         // Matrices
         glm::mat4 world;
         glm::mat4 view;
         glm::mat4 projection;
 
         // Vectors
-        glm::vec3 position;
+        glm::vec3 position = {0,0,0};
+        glm::vec3 m_orbital_origin = {0,0,0};
 
         // Floats
         float near = 0.1f;
@@ -58,16 +61,16 @@ namespace vOS {
         float last_frame = 0.0f;
 
         // Orbit
-        float phi;
-        float theta;
-        float radius;
+        float phi = 0;
+        float theta = 0;
+        float radius = 10;
 
     private:
-        Mode m_mode;
 
-        glm::vec3 m_target;
-        glm::vec3 m_previous_position;
-        glm::vec3 m_previous_movement_vector;
+        Mode m_mode = FLY;
+
+        glm::vec3 m_previous_position = {0,0,0};
+        glm::vec3 m_previous_movement_vector = {0,0,0};
 
         float m_yaw = -90.0f;
         float m_pitch = 0.0f;
@@ -82,10 +85,10 @@ namespace vOS {
         void camera_focus_coroutine();
 
         // Axis
-        glm::vec3 m_world_up;
-        glm::vec3 m_camera_right;
-        glm::vec3 m_camera_up;
-        glm::vec3 m_camera_front;
+        glm::vec3 m_world_up = {0,1,0};
+        glm::vec3 m_camera_right = {0,0,0};
+        glm::vec3 m_camera_up = {0,0,0};
+        glm::vec3 m_camera_front= {0,0,0};
 
         bool m_in_focus_mode = false;
         float m_target_mode_total_time = 5;

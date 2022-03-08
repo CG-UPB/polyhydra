@@ -160,6 +160,17 @@ void ExampleClass::selection_demonstration_ui(){
         Window::instance().set_mesh_diffuse_strength(0, diffuse_strength);
     }
 */
+    if(ImGui::Button("Switch Camera Mode"))
+    {
+        static bool mode = false;
+        std::cout << mode << std::endl;
+        if(mode)
+            Window::instance().camera_mode(0);
+        else
+            Window::instance().camera_mode(1,10);
+        mode = !mode;
+    }
+
     // Next Phase
     if (ImGui::Button("Next"))
     {
