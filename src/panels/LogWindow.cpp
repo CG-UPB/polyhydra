@@ -101,7 +101,7 @@ namespace vOS
         bool clear1 = ImGui::Button("Clear");
         ImGui::SameLine();
         bool copy = ImGui::Button("Copy");
-        ImGui::SameLine();
+
         filter.Draw("Filter", -100.0f);
 
         ImGui::Separator();

@@ -108,13 +108,13 @@ namespace vOS
             // Rendering Mode Switches
             // Occupied Letters: I, O, P, L
             if (rebind == GLFW_KEY_I) {
-                Window::instance().set_mesh_rendering_mode("mesh_phong");
+                //Window::instance().set_mesh_rendering_mode("mesh_phong");
             } else if (rebind == GLFW_KEY_O) {
-                Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+//                Window::instance().set_mesh_rendering_mode("mesh_wireframe");
             } else if (rebind == GLFW_KEY_P) {
-                Window::instance().set_mesh_rendering_mode("mesh_flat");
+//                Window::instance().set_mesh_rendering_mode("mesh_flat");
             } else if (rebind == GLFW_KEY_L) {
-                Window::instance().set_mesh_rendering_mode("mesh_normal");
+//                Window::instance().set_mesh_rendering_mode("mesh_normal");
             }
         }
 
