@@ -140,6 +140,9 @@ namespace vOS
 
         void start_isolation();
 
+        glm::vec3 get_face_normal(int ovm_id) {return m_face_normals[ovm_id];}
+        glm::vec3 get_face_barycenter(int ovm_id) {return m_face_centers[ovm_id];}
+
     private:
 
         static constexpr float ROUNDED_VERTEX_TYPE_FACE     = 0.0f;
@@ -256,6 +259,9 @@ namespace vOS
         std::map<int, int> m_selection_cylinder_digging_indices;
         std::map<int, int> m_selection_sphere_digging_numbers;
         std::map<int, int> m_selection_cylinder_digging_numbers;
+
+        std::map<int, glm::vec3> m_face_normals;
+        std::map<int, glm::vec3> m_face_centers;
 
         int m_num_vertices = 0;
     };

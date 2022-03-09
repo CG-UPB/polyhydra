@@ -495,6 +495,10 @@ namespace vOS
         // evaluate which in which mesh the color was selected
         bool any_mesh_hovered = false;
 
+        // Remember face id in case of double click
+        int face_id = 0;
+        int face_id_mesh = -1;
+
         for (const auto& m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
@@ -503,7 +507,7 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
-
+                int face_id_mesh = m.first;
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
@@ -556,7 +560,7 @@ namespace vOS
                     {
                         int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                         OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
+                        face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
 
                         m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
 
@@ -607,7 +611,7 @@ namespace vOS
                         // there is no valid ID (e.g when clicking background)
                         int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                         OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
+                        face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
 
                         //std::cout << "hovering face with id: " << face_id << std::endl;
 
@@ -665,7 +669,12 @@ namespace vOS
         }
         if(ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
         {
-            // TODO Focus
+            if(face_id_mesh >= 0) {
+                Window().instance().rendering_mutex.unlock();
+                // Focus
+                Window().instance().camera_focus_on(face_id_mesh, face_id, 0.4);
+                Window().instance().rendering_mutex.lock();
+            }
         }
         if(ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
         {

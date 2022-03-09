@@ -39,6 +39,7 @@ namespace vOS
         void m_take_screenshot(const std::string& filename);
     private:
 
+        friend class Window;
         void handleResize();
         void renderMesh(int mesh_id);
         void renderSelection();
