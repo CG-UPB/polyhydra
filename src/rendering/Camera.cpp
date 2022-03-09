@@ -37,7 +37,7 @@ namespace vOS
         m_yaw = 0;
 
 
-        set_mode(ORBIT);
+        set_mode(FLY);
 
 
     }
@@ -246,7 +246,7 @@ namespace vOS
             {
                 m_pitch = -89.0f;
             }
-            //std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
+            std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
 
         }
         if(m_mode == ORBIT)
@@ -278,13 +278,20 @@ namespace vOS
         {
             m_mode = FLY;
 
+            m_camera_front = normalize(m_camera_front);
+            std::cout << VecUtil::to_string(m_camera_front) << " to " << std::endl;
             // Flying Mode
-            m_pitch = glm::degrees(asin(m_camera_front.y));
+            m_pitch = asin(m_camera_front.y);
             m_yaw = acos((m_camera_front.x / cos(m_pitch)));
 
             m_pitch = glm::degrees(m_pitch);
             m_yaw = glm::degrees(m_yaw);
 
+            // There is a weird special case when the camera front vector is (0,0,-1)
+            // Here the yaw needs to be rotated another 180 degrees
+            if(m_camera_front.x == 0 && m_camera_front.y == 0)
+                m_yaw += 180;
+            std::cout << m_pitch << " " << m_yaw << std::endl;
         }else if(mode == 1)
         {
             m_mode = ORBIT;
@@ -362,7 +369,7 @@ namespace vOS
 
     void Camera::focus_spot(glm::vec3 target_position, glm::vec3 target_normal, float time)
     {
-        std::cout << VecUtil::to_string(target_position) << " " << VecUtil::to_string(target_normal) << std::endl;
+        //std::cout << VecUtil::to_string(target_position) << " " << VecUtil::to_string(target_normal) << std::endl;
 
         // Switch to Focus Mode
         m_in_focus_mode = true;
