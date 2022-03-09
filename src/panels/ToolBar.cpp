@@ -37,7 +37,7 @@ namespace vOS
                     "Rounded",
                     "Ambient Occlusion",
                     "Shadows",
-                    "Costum Mode"
+                    "Custom Mode"
             };
             ImGui::Text("Manual Mode Selection:");
             ImGui::Combo("##Manual Mode Selection:", &mesh_mode, element_mode_types,
@@ -48,7 +48,7 @@ namespace vOS
             GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
 
 
-            if (mesh_mode == 8)
+            if (mesh_mode == Custom)
             {
                 ImGui::Checkbox("Transparency", &activated_modes[mesh_mode][0]);
                 ImGui::Checkbox("Shadows", &activated_modes[mesh_mode][1]);
@@ -65,7 +65,7 @@ namespace vOS
 
             if (Window::instance().get_mesh_focus() != -1)
             {
-                if (mesh_mode == 0)
+                if (mesh_mode == Wireframe)
                 {
                     Window::instance().rendering_mutex.unlock();
                     Window::instance().set_mesh_rendering_mode("mesh_wireframe");

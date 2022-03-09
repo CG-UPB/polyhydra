@@ -39,7 +39,7 @@ namespace vOS
         void m_set_current_ambient_occlusion_activated(bool ao){ambient_occlusion_active = ao;};
         void m_set_current_selection_feature_activated(bool s){selection_active = s;};
         void m_set_current_ssao_option(int s){ssao_option = s;};
-        void m_set_current_costume_options(SSAOOptions* s){current_costume_options = s;};
+        void m_set_current_costume_options(SSAOOptions* s){ current_custom_options = s;};
 
         [[nodiscard]] bool m_get_current_selection_activated() const{return m_current_selection_activated;};
         [[nodiscard]] bool m_get_current_digging_activated() const{return m_current_digging_active;};
@@ -55,7 +55,7 @@ namespace vOS
         [[nodiscard]] bool m_get_current_ambient_occlusion_activated() const{return ambient_occlusion_active;};
         [[nodiscard]] bool m_get_current_selection_feature_activated() const{return selection_active;};
         [[nodiscard]] int m_get_current_ssao_option() const{return ssao_option;};
-        [[nodiscard]] SSAOOptions* m_get_current_costume_options() const{return current_costume_options;};
+        [[nodiscard]] SSAOOptions* m_get_current_costume_options() const{return current_custom_options;};
 
 
 
@@ -66,7 +66,7 @@ namespace vOS
         int m_current_selection_mode = 0;
         bool m_isolation_started = false;
         bool m_current_digging_active = false;
-        int mesh_mode = 0;
+        int mesh_mode = Wireframe;
         float m_rounding_size = 0.3f;
         bool m_rounding_activated = true;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
@@ -79,8 +79,8 @@ namespace vOS
         bool selection_active = true;
 
         // AO
-        int ssao_option = 1;
-        SSAOOptions *current_costume_options = new SSAOOptions();
+        int ssao_option = QUALITY;
+        SSAOOptions *current_custom_options = new SSAOOptions();
     };
 
 }

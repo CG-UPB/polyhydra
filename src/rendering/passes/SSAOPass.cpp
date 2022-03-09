@@ -140,61 +140,6 @@ namespace vOS
 
     void SSAOPass::render_options(SSAOOptions* options)
     {
-//        // display options
-//        static const char* dropdown_presets[5] = {
-//                "Off", "Quality", "Balanced", "Performance", "Custom"
-//        };
-//        // index of a particular option
-//        static const int OFF = 0;
-//        static const int QUALITY = 1;
-//        static const int BALANCED = 2;
-//        static const int PERFORMANCE = 3;
-//        static const int CUSTOM = 4;
-//
-//        if (ImGui::Begin("Graphics"))
-//        {
-//            ImVec2& padding = ImGui::GetStyle().FramePadding;
-//            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y * 2.0f});
-//            ImGui::Text("Ambient Occlusion");
-//            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-//            if (ImGui::Combo(
-//                    "##Preset",
-//                    &m_selected_preset,
-//                    dropdown_presets,
-//                    IM_ARRAYSIZE(dropdown_presets),
-//                    IM_ARRAYSIZE(dropdown_presets)))
-//            {
-//                switch (m_selected_preset)
-//                {
-//                    case OFF:
-//                        options->active = false;
-//                        break;
-//                    case QUALITY:
-//                        load_options(SSAOPass::QUALITY);
-//                        break;
-//                    case BALANCED:
-//                        load_options(SSAOPass::BALANCED);
-//                        break;
-//                    case PERFORMANCE:
-//                        load_options(SSAOPass::PERFORMANCE);
-//                        break;
-//                }
-//            }
-//            // custom options when users want to tweak the values themselves
-//            if (m_selected_preset == CUSTOM)
-//            {
-//                options->active = true;
-//                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-//                ImGui::SliderInt("Samples", &options->num_samples, 1, SSAOPass::s_max_samples);
-//                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-//                ImGui::SliderFloat("Radius", &options->sample_radius, 0.0f, 3.0f);
-//                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-//                ImGui::SliderFloat("Strength", &options->strength, 0.0, 10.0);
-//                ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
-//                ImGui::SliderFloat("Bias", &options->z_bias, 0.0f, 0.1f);
-//            }
-//        }
-//        ImGui::End();
         int selected_option = GlobalViewerSettings::getInstance()->m_get_current_ssao_option();
         switch (selected_option) {
             case OFF:

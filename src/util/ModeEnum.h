@@ -10,7 +10,8 @@ namespace vOS
         Transparency = 4,
         Rounded = 5,
         Ambient_Occlusion = 6,
-        Shadows = 7
+        Shadows = 7,
+        Custom = 8
     };
 
     enum Transparency {
