@@ -9,6 +9,8 @@
 namespace vOS
 {
 
+    const char* MeshVertexBuffer::PROP_BUFFER_INDEX_AND_SIZE = "BufferIndexAndSize";
+
     MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh)
     {
         m_original_vertices = get_vertices(*mesh);
@@ -55,6 +57,16 @@ namespace vOS
         m_vao_transparent_rounded->add_attribute(m_is_triangle_rounded, 7, 1);
         m_vao_transparent_rounded->add_attribute(m_vertex_types_rounded, 8, 1);
         m_vao_transparent_rounded->add_attribute(m_face_center_or_to_vertex_rounded, 9, 4);
+
+        m_vertex_only_vao = new VertexArrayObject(CommonMeshes::Sphere::vertices(),
+                                                  CommonMeshes::Sphere::indices());
+
+        m_vertex_only_vao->add_attribute(m_normals_by_face, 1, 3, true);
+        m_vertex_only_vao->add_attribute(m_selection_vertices, 2, 3, true);
+        m_vertex_only_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
+        m_vertex_only_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
+        m_vertex_only_vao->add_attribute(m_sphere_is_digged, 5, 1, true);
+        m_vertex_only_vao->add_attribute(m_sphere_is_isolated, 6, 1, true);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -424,6 +436,8 @@ namespace vOS
         OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh.request_cell_property<bool>("DiggingProperty");
         OpenVolumeMesh::CellPropertyT<bool> isolateProp = mesh.request_cell_property<bool>("IsolateProperty");
 
+        OpenVolumeMesh::FacePropertyT<glm::vec2> bufferIndexAndSize = mesh.request_face_property<glm::vec2>(PROP_BUFFER_INDEX_AND_SIZE);
+
         bool isDigged = diggingProp[cell];
         bool isIsolated = isolateProp[cell];
 
@@ -779,11 +793,11 @@ namespace vOS
 
     VertexArrayObject* MeshVertexBuffer::get_vao_rounded()
     {
-        if (m_update_vao)
-        {
-            m_vao_rounded->update_attribute(m_colors_rounded, 6);
-            m_update_vao = false;
-        }
+//        if (m_update_vao)
+//        {
+//            m_vao_rounded->update_attribute(m_colors_rounded, 5);
+//            m_update_vao = false;
+//        }
         return m_vao_rounded;
     }
 
@@ -963,6 +977,11 @@ namespace vOS
     float MeshVertexBuffer::get_average_cell_size() const
     {
         return m_average_cell_size;
+    }
+
+    VertexArrayObject* MeshVertexBuffer::get_vertex_only_vao()
+    {
+        return m_vertex_only_vao;
     }
 
 }

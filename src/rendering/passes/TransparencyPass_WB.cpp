@@ -97,11 +97,13 @@ namespace vOS
         glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
         auto slice_direction = obj->get_slice_dir(transform, view_dir);
 
+        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
+
         // set all of our uniforms
         m_transparency_shader->set_uniform_mat4f("u_Transform", transform);
         m_transparency_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
         m_transparency_shader->set_uniform_mat4f("u_View", data.camera.view);
-        m_transparency_shader->set_uniform_vec3f("u_lightPos", data.light.position);
+        m_transparency_shader->set_uniform_vec3f("u_lightPos", light_pos);
         m_transparency_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         m_transparency_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_transparency_shader->set_uniform_float("u_cell_size", cell_size);

@@ -97,6 +97,8 @@ namespace vOS
 
         VertexArrayObject* get_vao_rounded();
 
+        VertexArrayObject* get_vertex_only_vao();
+
         [[nodiscard]] float get_average_cell_size() const;
 
         VertexArrayObject *get_vao_transparent_by_face();
@@ -145,6 +147,8 @@ namespace vOS
         static constexpr float ROUNDED_VERTEX_TYPE_CORNER   = 2.0f;
         static constexpr float ROUNDED_VERTEX_TYPE_CENTER   = 3.0f;
 
+        static const char* PROP_BUFFER_INDEX_AND_SIZE;
+
         /**
          * adds data to VertexBuffer for each cell
          * uses add_cell()
@@ -184,6 +188,7 @@ namespace vOS
         VertexArrayObject* m_vao_transparent_rounded = nullptr;
         VertexArrayObject* m_sphere_vao = nullptr;
         VertexArrayObject* m_cylinder_vao = nullptr;
+        VertexArrayObject* m_vertex_only_vao = nullptr;
 
         // ovm ids, in the order that we render them
         std::vector<int> m_selection_vertices_ids;

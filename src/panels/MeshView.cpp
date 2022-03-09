@@ -31,7 +31,7 @@ namespace vOS
             m_arcBallOn(false)
     {
         m_pre_pass = new PrePass(width, height);
-        m_shadow_pass = new ShadowMapPass(this, width, height);
+        m_shadow_pass = new ShadowMapPass(this, width * 2, height * 2);
         m_transparent_shadow_pass= new TransparentShadowMapPass(width, height);
         m_shadow_color_filter_pass = new ShadowColorFilterPass(this, width, height);
         m_mesh_pass = new MeshPass(this);
@@ -95,7 +95,7 @@ namespace vOS
             m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
+            m_shadow_pass->resize_buffers(m_viewportPanelWidth * 2, m_viewportPanelHeight * 2);
             m_shadow_color_filter_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_transparent_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
             m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
@@ -300,8 +300,13 @@ namespace vOS
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_pre_pass->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao = mesh->get_vao();
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            if (vao != nullptr) {
+                m_pre_pass->render(vao, m_render_data, m.first);
             }
         }
         // we generate a mipmap for the position, this is used for ssao
@@ -730,36 +735,57 @@ namespace vOS
         // Render Meshes
         render_pre_pass();
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
+        if (GlobalViewerSettings::getInstance()->m_get_current_mesh_mode() == ModeEnum::Only_Vertices)
         {
-            render_ssao_pass();
+            render_background();
+            m_meshFrameBuffer->bind();
+            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            {
+                auto mesh = m.second;
+                if(!mesh->get_data().m_visible)
+                {
+                    continue;
+                }
+                mesh->update_vertex_buffer();
+                if (mesh->get_vao() != nullptr) {
+                    m_vertex_only_pass.render(nullptr, m_render_data, m.first);
+                }
+            }
+            m_meshFrameBuffer->unbind();
         }
-
-        if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
+        else
         {
-            render_shadow_map();
-        }
+            if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
+            {
+                render_ssao_pass();
+            }
+
+            if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
+            {
+                render_shadow_map();
+            }
 
 
-        // Now render our mesh scene to the framebuffer texture
-        // Start with opaque objects
-        render_background();
+            // Now render our mesh scene to the framebuffer texture
+            // Start with opaque objects
+            render_background();
 
-        render_meshes();
+            render_meshes();
 
 
-        FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
+            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
 
-        // Render transparent objects
-        if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
-        {
-            render_transparency();
-        }
+            // Render transparent objects
+            if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
+            {
+                render_transparency();
+            }
 
-        // Render Selection
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_feature_activated() && GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
-        {
-            renderSelection();
+            // Render Selection
+            if (GlobalViewerSettings::getInstance()->m_get_current_selection_feature_activated() && GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+            {
+                renderSelection();
+            }
         }
 
         // set render states

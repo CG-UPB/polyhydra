@@ -14,6 +14,7 @@
 #include "../rendering/passes/TransparentShadowMapPass.h"
 #include "../rendering/passes/TransparencyPass_WB.h"
 #include "../rendering/passes/TransparencyPass_DP.h"
+#include "../rendering/passes/VertexOnlyPass.h"
 #include "../Window.h"
 #include "../rendering/passes/ShapePass.h"
 #include "../util/ModeEnum.h"
@@ -106,6 +107,7 @@ namespace vOS
         SelectionHoverPass m_selection_hover_pass;
         TransparencyPass_WB* m_transparency_pass_wb = nullptr;
         TransparencyPass_DP* m_transparency_pass_dp = nullptr;
+        VertexOnlyPass m_vertex_only_pass;
 
         // render selection every 4th frame
         int m_frame_limit = 4;
