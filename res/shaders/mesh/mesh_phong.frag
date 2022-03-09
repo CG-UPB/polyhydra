@@ -152,8 +152,6 @@ void main()
     float shadow = 0.0;
     if (u_draw_shadows)
     {
-        shadow = shadow_calculation(v_pos_ls, bias);
-
         // shadow calculation
 
         //float bias = max(0.005 * (1.0 - dot(-n, light_dir)), 0.0005);
@@ -166,6 +164,7 @@ void main()
         //    bias = clamp(bias, 0.0, 0.0005);
 
         float bias = max(0.0005 * (1.0 - dot(n, light_dir)), 0.00005);
+        shadow = shadow_calculation(v_pos_ls, bias);
         float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
         transparent_shadow = 0.0;
         if (transparent_shadow != 0.0)
