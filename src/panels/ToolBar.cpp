@@ -26,18 +26,13 @@ namespace vOS
             }
 
             int mesh_mode = GlobalViewerSettings::getInstance()->m_get_current_mesh_mode();
-
+            int old_mode = mesh_mode;
             const char *element_mode_types[] =
             {
                     "Wireframe",
                     "Only Vertices",
                     "Phong Facenormals",
-                    "Phong Vertexnormals",
-                    "Transparency",
-                    "Rounded",
-                    "Ambient Occlusion",
-                    "Shadows",
-                    "Custom Mode"
+                    "Phong Vertexnormals"
             };
             ImGui::Text("Manual Mode Selection:");
             ImGui::Combo("##Manual Mode Selection:", &mesh_mode, element_mode_types,
@@ -48,38 +43,26 @@ namespace vOS
             GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
 
 
-            if (mesh_mode == Custom)
-            {
-                ImGui::Checkbox("Transparency", &activated_modes[mesh_mode][0]);
-                ImGui::Checkbox("Shadows", &activated_modes[mesh_mode][1]);
-                ImGui::Checkbox("Ambient Occlusion", &activated_modes[mesh_mode][2]);
-                ImGui::Checkbox("Selection", &activated_modes[mesh_mode][3]);
-            }
-
-            GlobalViewerSettings::getInstance()->m_set_current_transparency_activated(activated_modes[mesh_mode][0]);
-            GlobalViewerSettings::getInstance()->m_set_current_shadows_activated(activated_modes[mesh_mode][1]);
-            GlobalViewerSettings::getInstance()->m_set_current_ambient_occlusion_activated(activated_modes[mesh_mode][2]);
-            GlobalViewerSettings::getInstance()->m_set_current_selection_feature_activated(activated_modes[mesh_mode][3]);
-
-
-
-            if (Window::instance().get_mesh_focus() != -1)
-            {
-                if (mesh_mode == Wireframe)
+            if (old_mode != mesh_mode){
+                for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
                 {
-                    Window::instance().rendering_mutex.unlock();
-                    Window::instance().set_mesh_rendering_mode("mesh_wireframe");
-                    Window::instance().rendering_mutex.lock();
-                }else
-                {
-                    if (Window::instance().get_mesh_rendering_mode(Window::instance().get_mesh_focus()) == "mesh_wireframe")
+                    if (mesh_mode == Wireframe)
                     {
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().set_mesh_rendering_mode("mesh_phong");
+                        Window::instance().set_mesh_rendering_mode(m.first, "mesh_wireframe");
                         Window::instance().rendering_mutex.lock();
+                    }else
+                    {
+                        if (Window::instance().get_mesh_rendering_mode(Window::instance().get_mesh_focus()) == "mesh_wireframe")
+                        {
+                            Window::instance().rendering_mutex.unlock();
+                            Window::instance().set_mesh_rendering_mode(m.first,"mesh_phong");
+                            Window::instance().rendering_mutex.lock();
+                        }
                     }
                 }
             }
+
 
 
 

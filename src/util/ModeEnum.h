@@ -7,11 +7,6 @@ namespace vOS
         Only_Vertices = 1,
         Phong_Facenormals = 2,
         Phong_Vertexnormals = 3,
-        Transparency = 4,
-        Rounded = 5,
-        Ambient_Occlusion = 6,
-        Shadows = 7,
-        Custom = 8
     };
 
     enum Transparency {
@@ -26,6 +21,4 @@ namespace vOS
         PERFORMANCE = 3,
         CUSTOM = 4
     };
-
-
 }
