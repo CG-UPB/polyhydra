@@ -74,10 +74,12 @@ namespace vOS
             }
             else if(m_mode == ORBIT)
             {
+                std::cout << phi << " " << theta << std::endl;
                 // Orbit changes the position directly
                 position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
                 position.y = radius * cos(glm::radians(phi));
                 position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+                position += m_orbital_origin;
                 m_camera_front = glm::normalize(m_orbital_origin - position);
             }
         }
@@ -102,7 +104,6 @@ namespace vOS
                 position + m_camera_front,
                 m_camera_up
         );
-
     }
     void Camera::handle_input()
     {
@@ -182,16 +183,18 @@ namespace vOS
             {
                 // Add the input vector to phi and theta coordinates
                 float velocity = 2.0;
-                phi = input_vector.z * velocity;
-                if(phi < 1.0f)
-                    phi = 1.0f;
-                else if(phi > 179.0f)
-                    phi = 179.0f;
-
-                theta = input_vector.x * velocity;
-                if(theta < 0.0f)
-                    theta = 360.0f - (velocity - theta);
-
+                if(input_vector.z != 0) {
+                    phi += input_vector.z * velocity;
+                    if (phi < 1.0f)
+                        phi = 1.0f;
+                    else if (phi > 179.0f)
+                        phi = 179.0f;
+                }
+                if(input_vector.x != 0) {
+                    theta += input_vector.x * velocity;
+                    if (theta < 0.0f)
+                        theta = 360.0f - (velocity - theta);
+                }
             }
         }
     }
@@ -271,12 +274,10 @@ namespace vOS
 
     void Camera::set_mode(int mode, float orbital_radius)
     {
-        std::cout << mode <<std::endl;
         if(mode == 0)
         {
             m_mode = FLY;
 
-            std::cout << "Im flying" << std::endl;
             // Flying Mode
             m_pitch = asin(m_camera_front.y);
             m_yaw = acos((m_camera_front.x / cos(m_pitch)));
@@ -289,16 +290,29 @@ namespace vOS
             m_mode = ORBIT;
 
             // Orbital Mode
-            position += m_orbital_origin;
+            //position += m_orbital_origin;
+
+
+            glm::vec3 sphere_direction = position - m_orbital_origin;
+            if(m_orbital_origin == position)
+                sphere_direction = {0,0,-1};
+            else
+                sphere_direction = glm::normalize(sphere_direction);
 
             radius = orbital_radius;
 
-            phi = acos(position.y / radius);
-            theta = asin((position.x / radius) / sin(phi));
+            phi = acos(sphere_direction.y);
+            theta = asin((sphere_direction.x) / sin(phi));
 
             phi = glm::degrees(phi);
             theta = glm::degrees(theta);
 
+            // Orbit changes the position directly
+            position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
+            position.y = radius * cos(glm::radians(phi));
+            position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+            position += m_orbital_origin;
+            m_camera_front = glm::normalize(m_orbital_origin - position);
         }
     }
 
@@ -314,7 +328,7 @@ namespace vOS
     void Camera::camera_focus_coroutine()
     {
         float t = (m_target_mode_timer / m_target_mode_total_time);
-        //std::cout << t << std::endl;
+        std::cout << t << std::endl;
         if(t <= 0)
         {
             // Focusing Coroutine is done
