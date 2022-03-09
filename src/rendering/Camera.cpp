@@ -279,7 +279,7 @@ namespace vOS
             m_mode = FLY;
 
             m_camera_front = normalize(m_camera_front);
-            std::cout << VecUtil::to_string(m_camera_front) << " to " << std::endl;
+            std::cout << VecUtil::to_string(m_camera_front) << " initial " << std::endl;
             // Flying Mode
             m_pitch = asin(m_camera_front.y);
             m_yaw = acos((m_camera_front.x / cos(m_pitch)));
@@ -287,10 +287,23 @@ namespace vOS
             m_pitch = glm::degrees(m_pitch);
             m_yaw = glm::degrees(m_yaw);
 
+            // Test the yaw and pitch
+            glm::vec3 front;
+            front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+            front.y = sin(glm::radians(m_pitch));
+            front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+
+
+            // If the resulting test direction is not like the initial direction, we rotate by 180 yaw
+            if(glm::length(front - m_camera_front) > 0.01f) {
+                std::cout << "deploying change" << std::endl;
+                m_yaw += 180;
+            }
+            std::cout << VecUtil::to_string(front) << " test " << std::endl;
             // There is a weird special case when the camera front vector is (0,0,-1)
             // Here the yaw needs to be rotated another 180 degrees
-            if(m_camera_front.x == 0 && m_camera_front.y == 0)
-                m_yaw += 180;
+           // if(m_camera_front.x == 0 && m_camera_front.y == 0)
+            //    m_yaw += 180;
             std::cout << m_pitch << " " << m_yaw << std::endl;
         }else if(mode == 1)
         {
