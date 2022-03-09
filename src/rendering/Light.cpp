@@ -42,14 +42,4 @@ namespace vOS
                 glm::vec3(0.0f, 1.0f, 0.0f)
         );
     }
-
-    void Light::set_position(glm::vec3 pos)
-    {
-        position = pos;
-    }
-
-    void Light::set_target(glm::vec3 target)
-    {
-        m_target = target;
-    }
 }
