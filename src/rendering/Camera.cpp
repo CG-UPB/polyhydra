@@ -74,7 +74,7 @@ namespace vOS
             }
             else if(m_mode == ORBIT)
             {
-                std::cout << phi << " " << theta << std::endl;
+                //std::cout << phi << " " << theta << std::endl;
                 // Orbit changes the position directly
                 position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
                 position.y = radius * cos(glm::radians(phi));
@@ -182,7 +182,7 @@ namespace vOS
             }else if (m_mode == ORBIT)
             {
                 // Add the input vector to phi and theta coordinates
-                float velocity = 2.0;
+                float velocity = 20.0;
                 if(input_vector.z != 0) {
                     phi += input_vector.z * velocity;
                     if (phi < 1.0f)
@@ -246,7 +246,7 @@ namespace vOS
             {
                 m_pitch = -89.0f;
             }
-            std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
+            //std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
 
         }
         if(m_mode == ORBIT)
@@ -279,7 +279,7 @@ namespace vOS
             m_mode = FLY;
 
             // Flying Mode
-            m_pitch = asin(m_camera_front.y);
+            m_pitch = glm::degrees(asin(m_camera_front.y));
             m_yaw = acos((m_camera_front.x / cos(m_pitch)));
 
             m_pitch = glm::degrees(m_pitch);
@@ -302,10 +302,16 @@ namespace vOS
             radius = orbital_radius;
 
             phi = acos(sphere_direction.y);
-            theta = asin((sphere_direction.x) / sin(phi));
-
             phi = glm::degrees(phi);
+            if (phi < 1.0f)
+                phi = 1.0f;
+            else if (phi > 179.0f)
+                phi = 179.0f;
+            theta = asin((sphere_direction.x) / sin(glm::radians(phi)));
+
             theta = glm::degrees(theta);
+            if (theta < 0.0f)
+                theta = 360.0f - theta;
 
             // Orbit changes the position directly
             position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
@@ -327,8 +333,8 @@ namespace vOS
 
     void Camera::camera_focus_coroutine()
     {
-        float t = (m_target_mode_timer / m_target_mode_total_time);
-        std::cout << t << std::endl;
+        float t = (m_focus_mode_timer / m_focus_mode_total_time);
+
         if(t <= 0)
         {
             // Focusing Coroutine is done
@@ -351,14 +357,17 @@ namespace vOS
         }
 
         // Reduce Timer
-        m_target_mode_timer -= delta;
+        m_focus_mode_timer -= delta;
     }
 
-    void Camera::focus_spot(glm::vec3 target_position, glm::vec3 target_normal)
+    void Camera::focus_spot(glm::vec3 target_position, glm::vec3 target_normal, float time)
     {
-        // Set Target Mode to true
+        std::cout << VecUtil::to_string(target_position) << " " << VecUtil::to_string(target_normal) << std::endl;
+
+        // Switch to Focus Mode
         m_in_focus_mode = true;
         m_orbital_origin = target_position;
+        m_focus_mode_total_time = time;
 
         // Remember original data
         m_original_position = position;
@@ -367,7 +376,7 @@ namespace vOS
         m_desired_position = target_position + target_normal * radius;
         m_desired_front = -target_normal;
 
-        m_target_mode_timer = m_target_mode_total_time;
+        m_focus_mode_timer = m_focus_mode_total_time;
         //std::cout << "Org Pos: " << VecUtil::to_string(m_original_position) << " Org Target: " << VecUtil::to_string(m_original_front) << std::endl;
         //std::cout << "Des Pos: " << VecUtil::to_string(m_desired_position) << " Des Target: " << VecUtil::to_string(m_desired_front) << std::endl;
     }

@@ -34,7 +34,7 @@ namespace vOS {
         void handle_mouse_scroll(float y_offset);
         void handle_mouse_movement(float x_offset, float y_offset);
 
-        void focus_spot(glm::vec3 target_position, glm::vec3 target_normal);
+        void focus_spot(glm::vec3 target_position, glm::vec3 target_normal, float time);
 
         void look_at(glm::vec3 target);
 
@@ -91,8 +91,8 @@ namespace vOS {
         glm::vec3 m_camera_front= {0,0,0};
 
         bool m_in_focus_mode = false;
-        float m_target_mode_total_time = 5;
-        float m_target_mode_timer = 0.0f;
+        float m_focus_mode_total_time = 2;
+        float m_focus_mode_timer = 0.0f;
         glm::vec3 m_original_position = {0,0,0};
         glm::vec3 m_original_front = {0, 0, 0};
         glm::vec3 m_desired_front = {0, 0, 0};

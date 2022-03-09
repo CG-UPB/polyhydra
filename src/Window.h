@@ -432,10 +432,22 @@ namespace vOS {
 
         /**
          * Sets the Camera's position and view direction in such a way, that it looks directly at the given mesh face
+         * Smoothly moves towards given position
          * @param mesh_id
          * @param ovm_face_id
+         * @param time : time it takes for this process to finish
          */
-        void camera_focus_on(int mesh_id, int ovm_face_id);
+        void camera_focus_on(int mesh_id, int ovm_face_id, float time = 0.25);
+
+        /**
+         * Sets the Camera's position and view direction manually
+         * Smoothly moves towards given position
+         * @param mesh_id
+         * @param ovm_face_id
+         * @param time : time it takes for this process to finish
+         */
+        void camera_focus_on(float target_x, float target_y, float target_z, float pos_x, float pos_y, float pos_z, float time = 0.25);
+
 
         /**
          * Sets the a target for the camera to look at
@@ -444,6 +456,8 @@ namespace vOS {
          * @param z
          */
         void camera_look_at(float x, float y, float z);
+
+
         /**
          * Sets the Orbital Target for the camera. The user can then move around said point
          * @param x

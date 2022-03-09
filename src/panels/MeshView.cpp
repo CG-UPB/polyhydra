@@ -663,7 +663,7 @@ namespace vOS
             if(face_id_mesh >= 0) {
                 Window().instance().rendering_mutex.unlock();
                 // Focus
-                Window().instance().camera_focus_on(face_id_mesh, face_id);
+                Window().instance().camera_focus_on(face_id_mesh, face_id, 0.4);
                 Window().instance().rendering_mutex.lock();
             }
         }

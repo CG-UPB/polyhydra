@@ -209,7 +209,7 @@ void ExampleClass::selection_run(){
         window.select_element(hand, (i) % 10000,selection_type);
     }*/
 
-    window.camera_focus_on(hand, selection_level);
+    window.camera_focus_on(hand, selection_level, 2);
 };
 
 void ExampleClass::bounding_demonstration_ui() {

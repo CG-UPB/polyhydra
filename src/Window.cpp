@@ -718,14 +718,22 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::camera_focus_on(int mesh_id, int ovm_face_id)
+    void Window::camera_focus_on(int mesh_id, int ovm_face_id, float time)
     {
         rendering_mutex.lock();
         // Get Face Normal
         auto face_normal = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_normal(ovm_face_id);
         auto face_barycenter = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_barycenter(ovm_face_id);
         // Focus
-        m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal);
+        m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal, time);
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_focus_on(float target_x, float target_y, float target_z, float pos_x, float pos_y,
+                                 float pos_z, float time)
+    {
+        rendering_mutex.lock();
+        m_mesh_view->m_render_data.camera.focus_spot({target_x,target_y,target_z}, {pos_x,pos_y,pos_z}, time);
         rendering_mutex.unlock();
     }
 
