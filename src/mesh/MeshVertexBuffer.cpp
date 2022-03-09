@@ -25,7 +25,6 @@ namespace vOS
         m_vao_by_face->add_attribute(m_is_isolated_by_face, 6, 1);
         m_vao_by_face->add_attribute(m_is_triangle_by_face, 7, 1);
         m_vao_by_face->add_attribute(m_selections, 10, 1);
-        m_vao_by_face->add_attribute(m_selection_halffaces_ids, 11, 1);
 
         m_vao_rounded = new VertexArrayObject(m_positions_rounded, m_indices_rounded);
         m_vao_rounded->add_attribute(m_normals_rounded, 1, 3);
@@ -68,7 +67,6 @@ namespace vOS
         m_sphere_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
         m_sphere_vao->add_attribute(m_sphere_is_digged, 5, 1, true);
         m_sphere_vao->add_attribute(m_sphere_is_isolated, 6, 1, true);
-        m_sphere_vao->add_attribute(m_selection_vertices_ids, 7, 1, true);
 
         m_cylinder_vao = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                CommonMeshes::Cylinder::edge_cylinder().indices());
@@ -79,7 +77,6 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_cylinder_peel_depths, 4, 1, true);
         m_cylinder_vao->add_attribute(m_cylinder_is_digged, 5, 1, true);
         m_cylinder_vao->add_attribute(m_cylinder_is_isolated, 6, 1, true);
-        m_cylinder_vao->add_attribute(m_selection_edges_ids, 7, 1, true);
     }
 
     MeshVertexBuffer::~MeshVertexBuffer()
@@ -792,34 +789,31 @@ namespace vOS
         return m_vao_rounded;
     }
 
-    int MeshVertexBuffer::to_vertexID(int value)
+    int MeshVertexBuffer::to_vertex_id(int value)
     {
-//        if (m_selection_vertices_ids.size() > value)
-//        {
-//            return m_selection_vertices_ids[value] + 1;
-//        }
-//        return 0;
-        return value;
+        if (m_selection_vertices_ids.size() > value)
+        {
+            return m_selection_vertices_ids[value] + 1;
+        }
+        return 0;
     }
 
-    int MeshVertexBuffer::to_edgeID(int value)
+    int MeshVertexBuffer::to_edge_id(int value)
     {
-//        if (m_selection_edges_ids.size() > value)
-//        {
-//            return m_selection_edges_ids[value] + 1;
-//        }
-//        return 0;
-        return value;
+        if (m_selection_edges_ids.size() > value)
+        {
+            return m_selection_edges_ids[value] + 1;
+        }
+        return 0;
     }
 
-    int MeshVertexBuffer::to_faceID(int value)
+    int MeshVertexBuffer::to_halfface_id(int value)
     {
-//        if (m_selection_halffaces_ids.size() > value)
-//        {
-//            return m_selection_halffaces_ids[value] + 1;
-//        }
-//        return 0;
-        return value;
+        if (m_selection_halffaces_ids.size() > value)
+        {
+            return m_selection_halffaces_ids[value] + 1;
+        }
+        return 0;
     }
 
     std::vector<float>& MeshVertexBuffer::get_original_vertices()

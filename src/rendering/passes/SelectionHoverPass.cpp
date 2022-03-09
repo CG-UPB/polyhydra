@@ -80,7 +80,7 @@ namespace vOS
                 m_quad_circle_shader->set_uniform_mat4f("u_view", data.camera.view);
                 m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
                 m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
-                m_quad_circle_shader->set_uniform_float("u_scale", 0.015f);
+                m_quad_circle_shader->set_uniform_float("u_scale", 0.005f);
                 m_quad_vao->draw();
                 m_quad_circle_shader->unbind();
             }
@@ -100,6 +100,7 @@ namespace vOS
                 m_edge_hover_shader->set_uniform_vec4f("u_color", color);
                 m_edge_hover_shader->set_uniform_vec3f("u_from_vertex", m_hovered_edge_from);
                 m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
+                m_edge_hover_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
                 m_edge_vao->draw();
                 m_edge_hover_shader->unbind();
             }

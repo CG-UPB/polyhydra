@@ -1,7 +1,6 @@
 #version 330 core
 
 flat in int v_visible;
-flat in int v_halfface_id;
 
 uniform int u_selection_offset;
 uniform bool u_debug_mode;
@@ -27,7 +26,7 @@ void main()
         discard;
     }
 
-    int id = u_selection_offset + v_halfface_id;
+    int id = u_selection_offset + gl_PrimitiveID;
     ivec4 id_color = get_id_bits(id);
     fragment_color = vec4(float(id_color.r) / 255.0, float(id_color.g) / 255.0, float(id_color.b) / 255.0, float(id_color.a) / 255.0);
     if (u_debug_mode)

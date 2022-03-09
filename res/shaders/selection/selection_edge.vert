@@ -9,12 +9,12 @@ layout (location = 3) in vec3 a_center;
 layout (location = 4) in float a_peelDepth;
 layout (location = 5) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
-layout (location = 7) in int a_edge_id;
 
 uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform float u_cell_size;
+uniform float u_average_cell_size;
 
 uniform int u_peel_depth;
 uniform float u_slice_depth;
@@ -70,7 +70,7 @@ void main()
     vec3 from = a_center + (a_from_vertex - a_center) * u_cell_size;
     vec3 to = a_center + (a_to_vertex - a_center) * u_cell_size;
 
-    v_edge_id = a_edge_id;
+    v_edge_id = gl_InstanceID;
 
     float edge_length = length(to - from);
     vec3 edge_dir = normalize(to - from);
@@ -79,7 +79,9 @@ void main()
     mat4 rotation = inverse(get_rotation_matrix(rot_axis, rot_angle));
 
     vec3 offset = from + (to - from) * 0.5;
-    float width = 0.07 * (1.0 / length(u_mesh_transform[0]));
+    vec4 normalization = vec4(1.0, 0.0, 0.0, 1.0);
+    normalization = u_view * u_mesh_transform * normalization;
+    float width = 0.15 * u_average_cell_size;
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,
         0.0, edge_length, 0.0, 0.0,

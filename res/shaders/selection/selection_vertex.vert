@@ -7,13 +7,13 @@ layout (location = 3) in vec3 a_center;
 layout (location = 4) in float a_peelDepth;
 layout (location = 5) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
-layout (location = 7) in int a_verted_id;
 
 uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform vec3 u_cam_pos;
 uniform float u_cell_size;
+uniform float u_average_cell_size;
 
 uniform int u_peel_depth;
 uniform float u_slice_depth;
@@ -59,7 +59,7 @@ void main()
 
     vec3 off = a_center + (a_offset - a_center) * u_cell_size;
 
-    v_vertex_id = a_verted_id;
+    v_vertex_id = gl_InstanceID;
 
     vec3 view_dir = normalize(off - u_cam_pos);
     vec3 normal = mat3(transpose(inverse(u_mesh_transform))) * a_normal;
@@ -69,7 +69,7 @@ void main()
     //v_discard = dot(view_dir, normal) > 0.01 ? 1 : 0;
 
     vec3 offset = off;
-    float width = 0.2 * (1.0 / length(u_mesh_transform[0]));
+    float width = 0.25 * u_average_cell_size;
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,
         0.0, width, 0.0, 0.0,

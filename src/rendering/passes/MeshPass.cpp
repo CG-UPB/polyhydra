@@ -3,6 +3,7 @@
 #include "glad/glad.h"
 #include "../../Window.h"
 #include "MeshPass.h"
+#include "../../util/VecUtil.h"
 
 namespace vOS
 {

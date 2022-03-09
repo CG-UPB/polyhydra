@@ -435,19 +435,19 @@ namespace vOS
         m_max_peel_depth = max_depth;
     }
 
-    int MeshObject::to_vertexID(int value)
+    int MeshObject::to_vertex_id(int value)
     {
-        return m_mvb->to_vertexID(value);
+        return m_mvb->to_vertex_id(value);
     }
 
-    int MeshObject::to_edgeID(int value)
+    int MeshObject::to_edge_id(int value)
     {
-        return m_mvb->to_edgeID(value);
+        return m_mvb->to_edge_id(value);
     }
 
-    int MeshObject::to_faceID(int value)
+    int MeshObject::to_halfface_id(int value)
     {
-        return m_mvb->to_faceID(value);
+        return m_mvb->to_halfface_id(value);
     }
 
 

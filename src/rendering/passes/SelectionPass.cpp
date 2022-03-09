@@ -102,6 +102,7 @@ namespace vOS {
             m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
             m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+            m_selection_cylinder_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
 
             m_cylinder_vao->draw_instanced(m_num_edges);
 
@@ -130,6 +131,9 @@ namespace vOS {
             m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
             m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_selection_sphere_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+            m_selection_sphere_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+
+
 
             m_sphere_vao->draw_instanced(m_num_vertices);
 

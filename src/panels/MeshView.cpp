@@ -239,14 +239,14 @@ namespace vOS
         glGetIntegerv(GL_VIEWPORT, viewport);
 
         // read Pixel data/color from framebuffer
-        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+        ImVec2 mouse_pos_in_window = {
+                ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
+                ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()
+        };
+        int x = (int) mouse_pos_in_window.x / 2;
+        int y = (int) (viewport[3] * 2 - (int) mouse_pos_in_window.y) / 2;
 
-        GLubyte* data = m_pixel_buffer->start_read(
-                (int) (m_lastX - screen_pos.x) / 2,
-                (int) (viewport[3] * 2 - (m_lastY - screen_pos.y)) / 2,
-                1,
-                1
-        );
+        GLubyte* data = m_pixel_buffer->start_read(x, y,1,1);
 
         if (data != nullptr)
         {
@@ -496,8 +496,6 @@ namespace vOS
             int from = std::get<0>(mesh->selection_offset());
             int to = std::get<1>(mesh->selection_offset());
 
-            //std::cout << "from: " << from << ", to: " << to << " picked_id: " << picked_id << std::endl;
-
             if (picked_id >= from && picked_id <= to)
             {
 
@@ -513,7 +511,9 @@ namespace vOS
                         auto mvb = mesh->get_mvb();
                         mvb->start_isolation();
 
-                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
+                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
+                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
 
                         m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
 
@@ -549,7 +549,9 @@ namespace vOS
 
                     if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL || GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
                     {
-                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
+                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
+                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
 
                         m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
 
@@ -596,9 +598,11 @@ namespace vOS
 
                     }else {
 
-                        // because of unsigned int as return value mesh.to_faceID(pickedID) returns the id + 1 and 0 means
+                        // because of unsigned int as return value mesh.to_halfface_id(pickedID) returns the id + 1 and 0 means
                         // there is no valid ID (e.g when clicking background)
-                        int face_id = mesh->to_faceID(picked_id - from) - 1;
+                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
+                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
+                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
 
                         //std::cout << "hovering face with id: " << face_id << std::endl;
 
@@ -619,7 +623,7 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_VERTEX)
                 {
-                    int vertex_id = mesh->to_vertexID(picked_id - from) - 1;
+                    int vertex_id = mesh->to_vertex_id(picked_id - from) - 1;
 
                     m_selection_hover_pass.hover( m_render_data, m.first, type, vertex_id);
 
@@ -635,7 +639,7 @@ namespace vOS
                 }
                 else if (type == SELECTION_TYPE_EDGE)
                 {
-                    int edge_id = mesh->to_edgeID(picked_id - from) - 1;
+                    int edge_id = mesh->to_edge_id(picked_id - from) - 1;
 
                     m_selection_hover_pass.hover(m_render_data, m.first, type, edge_id);
 
@@ -852,10 +856,9 @@ namespace vOS
             {
                 m_viewport_texture = TRANSPARENCY_REVEAL;
             }
-            m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
         }
         ImGui::End();
-
+        m_selection_pass.set_debug_mode(true);
     }
 
     unsigned int MeshView::get_selected_texture()
