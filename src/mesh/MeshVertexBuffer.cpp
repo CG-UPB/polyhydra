@@ -541,8 +541,8 @@ namespace vOS
                 add_face_indices(mesh, face_data);
                 m_num_vertices += (int) original_face_vertices.size();
 
-                m_face_centers.emplace(face_id, barycenter / 3.0f);
-                m_face_normals.emplace(face_id, normal);
+                m_face_centers.emplace(halfface_id, barycenter / 3.0f);
+                m_face_normals.emplace(halfface_id, normal);
                 faces.push_back(face_data);
             }
             else if (original_face_vertices.size() > 3)
@@ -594,8 +594,8 @@ namespace vOS
                 face_data.vertices[0].position = midpoint;
                 face_data.vertices[0].normal = face_normal;
 
-                m_face_centers.emplace(face_id, midpoint);
-                m_face_normals.emplace(face_id, face_normal);
+                m_face_centers.emplace(halfface_id, midpoint);
+                m_face_normals.emplace(halfface_id, face_normal);
 
                 // Add Vertex Data
                 for (auto vertex_pos: original_face_vertices)
