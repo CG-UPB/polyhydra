@@ -34,7 +34,6 @@ namespace vOS
 
 
         glm::vec3 m_zoom_point;
-
     private:
 
         /**

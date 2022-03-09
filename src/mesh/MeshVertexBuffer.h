@@ -71,21 +71,21 @@ namespace vOS
          * @param value id value
          * @return
          */
-        int to_vertexID(int value);
+        int to_vertex_id(int value);
 
         /**
          * converts selection id of edges to OVM id
          * @param value id value
          * @return
          */
-        int to_edgeID(int value);
+        int to_edge_id(int value);
 
         /**
          * converts selection id of faces to OVM id
          * @param value id value
          * @return
          */
-         int to_faceID(int value);
+         int to_halfface_id(int value);
 
         [[nodiscard]] int get_num_selection_vertices() const;
 
@@ -96,6 +96,8 @@ namespace vOS
         VertexArrayObject *get_vao_by_face();
 
         VertexArrayObject* get_vao_rounded();
+
+        VertexArrayObject* get_vertex_only_vao();
 
         [[nodiscard]] float get_average_cell_size() const;
 
@@ -138,12 +140,17 @@ namespace vOS
 
         void start_isolation();
 
+        glm::vec3 get_face_normal(int ovm_id) {return m_face_normals[ovm_id];}
+        glm::vec3 get_face_barycenter(int ovm_id) {return m_face_centers[ovm_id];}
+
     private:
 
         static constexpr float ROUNDED_VERTEX_TYPE_FACE     = 0.0f;
         static constexpr float ROUNDED_VERTEX_TYPE_EDGE     = 1.0f;
         static constexpr float ROUNDED_VERTEX_TYPE_CORNER   = 2.0f;
         static constexpr float ROUNDED_VERTEX_TYPE_CENTER   = 3.0f;
+
+        static const char* PROP_BUFFER_INDEX_AND_SIZE;
 
         /**
          * adds data to VertexBuffer for each cell
@@ -184,11 +191,12 @@ namespace vOS
         VertexArrayObject* m_vao_transparent_rounded = nullptr;
         VertexArrayObject* m_sphere_vao = nullptr;
         VertexArrayObject* m_cylinder_vao = nullptr;
+        VertexArrayObject* m_vertex_only_vao = nullptr;
 
         // ovm ids, in the order that we render them
-        std::vector<int> m_vertex_ids;
-        std::vector<int> m_edge_ids;
-        std::vector<int> m_face_ids;
+        std::vector<int> m_selection_vertices_ids;
+        std::vector<int> m_selection_edges_ids;
+        std::vector<int> m_selection_halffaces_ids;
 
         // to be used for rounded cells as well, no need to calculate twice
         std::unordered_map<int, glm::vec3> m_cell_centers;
@@ -251,6 +259,9 @@ namespace vOS
         std::map<int, int> m_selection_cylinder_digging_indices;
         std::map<int, int> m_selection_sphere_digging_numbers;
         std::map<int, int> m_selection_cylinder_digging_numbers;
+
+        std::map<int, glm::vec3> m_face_normals;
+        std::map<int, glm::vec3> m_face_centers;
 
         int m_num_vertices = 0;
     };

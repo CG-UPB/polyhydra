@@ -37,6 +37,7 @@ namespace vOS
         static Shader* basic_shape_shader() { return get("basic_shape"); }
         static Shader* quad_circle_shader() { return get("quad_circle"); }
         static Shader* flat_color_shader() { return get("flat_color"); }
+        static Shader* vertex_only_shader() { return get("vertex_only"); };
 
         /**
          * Selection shaders.

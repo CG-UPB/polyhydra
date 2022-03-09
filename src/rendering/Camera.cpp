@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "../input/Input.h"
+#include "../util/VecUtil.h"
 #include <iostream>
 
 namespace vOS
@@ -18,7 +19,6 @@ namespace vOS
 
         // Init Position etc
         position = glm::vec3{0.0f, 0.0f, 10.0f};
-        m_target = glm::vec3{0.0f, 0.0f, 0.0f};
         m_camera_front = glm::vec3 {0.0f, 0.0f, -1.0f};
         m_camera_up =glm::vec3 {0.0f, 1.0f, 0.0f};
 
@@ -33,7 +33,11 @@ namespace vOS
         theta = 0.0f;
         phi = 90.0f;
 
-        set_mode(ORBIT);
+        m_pitch = 0;
+        m_yaw = 0;
+
+
+        set_mode(FLY);
 
 
     }
@@ -46,31 +50,42 @@ namespace vOS
         last_y = m_screen_height / 2.0f;
     }
 
-    void Camera::update()
-    {
-        //handle input
-        handle_input();
+    void Camera::update() {
+        // Frame Delta
+        auto current_frame = (float) ImGui::GetTime();
+        delta = current_frame - last_frame;
+        last_frame = current_frame;
 
-        if(m_mode == FLY)
-        {
-            glm::vec3 front;
-            front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-            front.y = sin(glm::radians(m_pitch));
-            front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-            m_camera_front = glm::normalize(front);
-        }
-        if(m_mode == ORBIT)
-        {
-            position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
-            position.y = radius * cos(glm::radians(phi));
-            position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
-            m_camera_front = glm::normalize(m_target - position);
-        }
 
         // calculate the new Front vector and concluding right and up-vector
+        // Ignore input, if in focus mode
+        if (!m_in_focus_mode) {
+            //handle input
+            handle_input();
 
+            // Camera Front Calculation
+            if(m_mode == FLY)
+            {
+                glm::vec3 front;
+                front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+                front.y = sin(glm::radians(m_pitch));
+                front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+                m_camera_front = glm::normalize(front);
+            }
+            else if(m_mode == ORBIT)
+            {
+                //std::cout << phi << " " << theta << std::endl;
+                // Orbit changes the position directly
+                position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
+                position.y = radius * cos(glm::radians(phi));
+                position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+                position += m_orbital_origin;
+                m_camera_front = glm::normalize(m_orbital_origin - position);
+            }
+        }
         m_camera_right = glm::normalize(glm::cross(m_camera_front, m_world_up));
         m_camera_up = glm::normalize(glm::cross(m_camera_right, m_camera_front));
+
 
         projection = glm::perspective(
                 glm::radians(m_zoom),
@@ -78,6 +93,12 @@ namespace vOS
                 near,
                 far
         );
+
+        if (m_in_focus_mode) {
+            // Calculate Coroutine
+            camera_focus_coroutine();
+        }
+        // Calculate View Matrix with camera front vector offset as target
         view = glm::lookAt(
                 position,
                 position + m_camera_front,
@@ -138,58 +159,42 @@ namespace vOS
             }
         }
 
-        // keyboard
-        auto current_frame = (float)ImGui::GetTime();
-        delta = current_frame - last_frame;
-        last_frame = current_frame;
+        // 3 Dimensional Movement
+        if(ImGui::IsWindowFocused())
+        {
 
-        if(ImGui::IsKeyDown('W'))
-        {
-            handle_keyboard(FORWARD, delta);
-        }
-        if(ImGui::IsKeyDown('A'))
-        {
-            handle_keyboard(LEFT, delta);
-        }
-        if(ImGui::IsKeyDown('S'))
-        {
-            handle_keyboard(BACKWARD, delta);
-        }
-        if(ImGui::IsKeyDown('D'))
-        {
-            handle_keyboard(RIGHT, delta);
-        }
-
-        if(ImGui::IsKeyPressed('M'))
-        {
-            if(m_mode == ORBIT)
+            // X for Horizontal Movement
+            // Y for Vertical Movement
+            // Z for Forward Movement
+            glm::vec3 input_vector = { Input::get_wasd_movement_vector_X() * m_horizontal_speed,
+                                       Input::get_wasd_movement_vector_Y() * m_vertical_speed,
+                                       Input::get_wasd_movement_vector_Z() * m_vertical_speed};
+            input_vector *= delta;
+            if(m_mode == FLY)
             {
-                m_pitch = asin(m_camera_front.y);
-                m_pitch = glm::degrees(m_pitch);
-                m_yaw = 270.0f - theta;
+                // Add the movement vector to the position
+                glm::vec3 mov_vector = input_vector.x * m_camera_right +
+                                       input_vector.y * m_camera_up +
+                                       input_vector.z * m_camera_front;
 
-                if (m_pitch > 89.0f)
-                {
-                    m_pitch = 89.0f;
-                }
-                if (m_pitch < -89.0f)
-                {
-                    m_pitch = -89.0f;
-                }
-
-                set_mode(FLY);
-            }
-            else if(m_mode == FLY)
+                position += mov_vector;
+                //std::cout <<  "moving" << VecUtil::to_string(mov_vector) << std::endl;
+            }else if (m_mode == ORBIT)
             {
-                phi = acos(position.y / radius) ;
-                theta = acos( (position.z / radius) / sin(phi)) ;
-                phi = glm::degrees(phi);
-                theta = glm::degrees(theta);
-                theta = 360.0f - (m_yaw - 270.0f);
-
-                radius = glm::length(position - m_target);
-
-                set_mode(ORBIT);
+                // Add the input vector to phi and theta coordinates
+                float velocity = 20.0;
+                if(input_vector.z != 0) {
+                    phi += input_vector.z * velocity;
+                    if (phi < 1.0f)
+                        phi = 1.0f;
+                    else if (phi > 179.0f)
+                        phi = 179.0f;
+                }
+                if(input_vector.x != 0) {
+                    theta += input_vector.x * velocity;
+                    if (theta < 0.0f)
+                        theta = 360.0f - (velocity - theta);
+                }
             }
         }
     }
@@ -267,64 +272,119 @@ namespace vOS
         }
     }
 
-    void Camera::handle_keyboard(Movement direction, float delta)
+    void Camera::set_mode(int mode, float orbital_radius)
     {
-        if(m_mode == FLY)
+        if(mode == 0)
         {
-            float velocity = 0.0;
-            if (direction == FORWARD)
-            {
-                velocity = m_vertical_speed * delta;
-                position += m_camera_front * velocity;
-            }
-            if (direction == BACKWARD)
-            {
-                velocity = m_vertical_speed * delta;
-                position -= m_camera_front * velocity;
-            }
-            if (direction == LEFT)
-            {
-                velocity = m_horizontal_speed * delta;
-                position -= m_camera_right * velocity;
-            }
-            if (direction == RIGHT)
-            {
-                velocity = m_horizontal_speed * delta;
-                position += m_camera_right * velocity;
-            }
-        }
-        if(m_mode == ORBIT)
-        {
-            float velocity = 2.0;
-            if (direction == FORWARD)
-            {
-                phi += velocity;
-            }
-            if (direction == BACKWARD)
-            {
-                phi -= velocity;
-            }
-            if(phi < 1.0f)
-            {
-                phi = 1.0f;
-            }
-            if(phi > 179.0f)
-            {
-                phi = 179.0f;
-            }
+            m_mode = FLY;
 
-            if (direction == LEFT)
-            {
-                theta -= velocity;
-            }
-            if (direction == RIGHT)
-            {
-                theta += velocity;
-            }
-            if(theta < 0.0f)
-            {
-                theta = 360.0f - (velocity - theta);
-            }
+            m_camera_front = normalize(m_camera_front);
+            std::cout << VecUtil::to_string(m_camera_front) << " to " << std::endl;
+            // Flying Mode
+            m_pitch = asin(m_camera_front.y);
+            m_yaw = acos((m_camera_front.x / cos(m_pitch)));
+
+            m_pitch = glm::degrees(m_pitch);
+            m_yaw = glm::degrees(m_yaw);
+
+            // There is a weird special case when the camera front vector is (0,0,-1)
+            // Here the yaw needs to be rotated another 180 degrees
+            if(m_camera_front.x == 0 && m_camera_front.y == 0)
+                m_yaw += 180;
+            std::cout << m_pitch << " " << m_yaw << std::endl;
+        }else if(mode == 1)
+        {
+            m_mode = ORBIT;
+
+            // Orbital Mode
+            //position += m_orbital_origin;
+
+
+            glm::vec3 sphere_direction = position - m_orbital_origin;
+            if(m_orbital_origin == position)
+                sphere_direction = {0,0,-1};
+            else
+                sphere_direction = glm::normalize(sphere_direction);
+
+            radius = orbital_radius;
+
+            phi = acos(sphere_direction.y);
+            phi = glm::degrees(phi);
+            if (phi < 1.0f)
+                phi = 1.0f;
+            else if (phi > 179.0f)
+                phi = 179.0f;
+            theta = asin((sphere_direction.x) / sin(glm::radians(phi)));
+
+            theta = glm::degrees(theta);
+            if (theta < 0.0f)
+                theta = 360.0f - theta;
+
+            // Orbit changes the position directly
+            position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
+            position.y = radius * cos(glm::radians(phi));
+            position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
+            position += m_orbital_origin;
+            m_camera_front = glm::normalize(m_orbital_origin - position);
         }
+    }
+
+    void Camera::look_at(glm::vec3 target)
+    {
+        // Set Camera View Direction
+        m_camera_front = target - position;
+
+        // Change mode to existing mode ( fixes yaw and other angles )
+        set_mode(m_mode, radius);
+    }
+
+    void Camera::camera_focus_coroutine()
+    {
+        float t = (m_focus_mode_timer / m_focus_mode_total_time);
+
+        if(t <= 0)
+        {
+            // Focusing Coroutine is done
+            m_in_focus_mode = false;
+
+            position = m_desired_position;
+            m_camera_front = m_desired_front;
+
+            // Set Variables depending on mode
+            if(m_mode == FLY)
+                set_mode(0);
+            else
+                set_mode(1, radius);
+        }else{
+            // Half Sinus Curve
+            float logistic_t = (glm::sin((t * glm::pi<float>()) - glm::pi<float>()/2) + 1) / 2;
+
+            position = glm::mix(m_desired_position, m_original_position, logistic_t);
+            m_camera_front = glm::mix(m_desired_front, m_original_front, logistic_t);
+        }
+
+        // Reduce Timer
+        m_focus_mode_timer -= delta;
+    }
+
+    void Camera::focus_spot(glm::vec3 target_position, glm::vec3 target_normal, float time)
+    {
+        //std::cout << VecUtil::to_string(target_position) << " " << VecUtil::to_string(target_normal) << std::endl;
+
+        // Switch to Focus Mode
+        m_in_focus_mode = true;
+        m_orbital_origin = target_position;
+        m_focus_mode_total_time = time;
+
+        // Remember original data
+        m_original_position = position;
+        m_original_front = m_camera_front;
+        // Set Desired Data
+        m_desired_position = target_position + target_normal * radius;
+        m_desired_front = -target_normal;
+
+        m_focus_mode_timer = m_focus_mode_total_time;
+        //std::cout << "Org Pos: " << VecUtil::to_string(m_original_position) << " Org Target: " << VecUtil::to_string(m_original_front) << std::endl;
+        //std::cout << "Des Pos: " << VecUtil::to_string(m_desired_position) << " Des Target: " << VecUtil::to_string(m_desired_front) << std::endl;
     }
 }

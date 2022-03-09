@@ -13,6 +13,7 @@ uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform vec3 u_cam_pos;
 uniform float u_cell_size;
+uniform float u_average_cell_size;
 
 uniform int u_peel_depth;
 uniform float u_slice_depth;
@@ -23,7 +24,7 @@ uniform bool u_slice_locked;
 
 flat out int v_visible;
 flat out int v_discard;
-flat out int v_instance_id;
+flat out int v_vertex_id;
 
 void main()
 {
@@ -48,7 +49,8 @@ void main()
     vec3 center =  vec3(u_mesh_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peelDepth < u_peel_depth || angle > 0 || a_is_digged == 0.0 || a_is_isolated == 0.0)
+    // TODO: || angle > 0
+    if (a_peelDepth < u_peel_depth || a_is_digged == 0.0 || a_is_isolated == 0.0)
     {
         v_visible = 0;
     }
@@ -57,7 +59,7 @@ void main()
 
     vec3 off = a_center + (a_offset - a_center) * u_cell_size;
 
-    v_instance_id = gl_InstanceID;
+    v_vertex_id = gl_InstanceID;
 
     vec3 view_dir = normalize(off - u_cam_pos);
     vec3 normal = mat3(transpose(inverse(u_mesh_transform))) * a_normal;
@@ -67,7 +69,7 @@ void main()
     //v_discard = dot(view_dir, normal) > 0.01 ? 1 : 0;
 
     vec3 offset = off;
-    float width = 0.2 * (1.0 / length(u_mesh_transform[0]));
+    float width = 0.25 * u_average_cell_size;
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,
         0.0, width, 0.0, 0.0,

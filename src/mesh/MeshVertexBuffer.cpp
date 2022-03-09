@@ -9,6 +9,8 @@
 namespace vOS
 {
 
+    const char* MeshVertexBuffer::PROP_BUFFER_INDEX_AND_SIZE = "BufferIndexAndSize";
+
     MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh)
     {
         m_original_vertices = get_vertices(*mesh);
@@ -55,6 +57,16 @@ namespace vOS
         m_vao_transparent_rounded->add_attribute(m_is_triangle_rounded, 7, 1);
         m_vao_transparent_rounded->add_attribute(m_vertex_types_rounded, 8, 1);
         m_vao_transparent_rounded->add_attribute(m_face_center_or_to_vertex_rounded, 9, 4);
+
+        m_vertex_only_vao = new VertexArrayObject(CommonMeshes::Sphere::vertices(),
+                                                  CommonMeshes::Sphere::indices());
+
+        m_vertex_only_vao->add_attribute(m_normals_by_face, 1, 3, true);
+        m_vertex_only_vao->add_attribute(m_selection_vertices, 2, 3, true);
+        m_vertex_only_vao->add_attribute(m_sphere_cell_centers, 3, 3, true);
+        m_vertex_only_vao->add_attribute(m_sphere_peel_depths, 4, 1, true);
+        m_vertex_only_vao->add_attribute(m_sphere_is_digged, 5, 1, true);
+        m_vertex_only_vao->add_attribute(m_sphere_is_isolated, 6, 1, true);
 
         m_sphere_vao = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
                                              CommonMeshes::Sphere::selection_sphere().indices());
@@ -424,10 +436,10 @@ namespace vOS
         OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh.request_cell_property<bool>("DiggingProperty");
         OpenVolumeMesh::CellPropertyT<bool> isolateProp = mesh.request_cell_property<bool>("IsolateProperty");
 
+        OpenVolumeMesh::FacePropertyT<glm::vec2> bufferIndexAndSize = mesh.request_face_property<glm::vec2>(PROP_BUFFER_INDEX_AND_SIZE);
 
         bool isDigged = diggingProp[cell];
         bool isIsolated = isolateProp[cell];
-
 
         std::vector<FaceData> faces;
         std::vector<glm::vec3> vertices;
@@ -441,7 +453,7 @@ namespace vOS
             m_selection_vertices.push_back(v_pos[0]);
             m_selection_vertices.push_back(v_pos[1]);
             m_selection_vertices.push_back(v_pos[2]);
-            m_vertex_ids.push_back(cv_it.idx());
+            m_selection_vertices_ids.push_back(cv_it.idx());
             num_selection_vertices++;
         }
 
@@ -465,11 +477,8 @@ namespace vOS
             m_sphere_cell_centers.push_back(cell_center.x);
             m_sphere_cell_centers.push_back(cell_center.y);
             m_sphere_cell_centers.push_back(cell_center.z);
-
             m_sphere_peel_depths.push_back((float) peel_depth);
-
             m_sphere_is_digged.push_back(1.0f);
-
             m_sphere_is_isolated.push_back(1.0f);
         }
 
@@ -480,7 +489,7 @@ namespace vOS
         {
             auto[v0, v1] = mesh.edge_vertices(ce_it);
             add_from_to_vertex(mesh, v0, v1);
-            m_edge_ids.push_back(ce_it.idx());
+            m_selection_edges_ids.push_back(ce_it.idx());
 
             m_cylinder_cell_centers.push_back(cell_center.x);
             m_cylinder_cell_centers.push_back(cell_center.y);
@@ -497,8 +506,7 @@ namespace vOS
         for (auto chf_it: mesh.cell_halffaces(cell))
         {
             FaceData face_data;
-            auto face_handle = mesh.face_handle(chf_it);
-            int face_id = face_handle.idx();
+            int halfface_id = chf_it.idx();
 
             auto hf_normal = mesh.normal(chf_it);
             auto normal = glm::vec3(hf_normal[0], hf_normal[1], hf_normal[2]);
@@ -516,23 +524,28 @@ namespace vOS
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
             if (original_face_vertices.size() == 3)
             {
+                glm::vec3 barycenter = {0,0,0};
                 // iterate over the halfedges of the halfface
                 for (auto vertex_pos: original_face_vertices)
                 {
                     // get geometry data
                     VertexData v_data;
                     v_data.position = vertex_pos;
+                    barycenter += vertex_pos;
                     v_data.normal = -normal;
                     face_data.vertices.push_back(v_data);
+                    face_data.face_ids.push_back(halfface_id);
                 }
 
                 // Add face data
-                face_data.face_ids.push_back(face_id);
                 add_face_indices(mesh, face_data);
                 m_num_vertices += (int) original_face_vertices.size();
 
+                m_face_centers.emplace(halfface_id, barycenter / 3.0f);
+                m_face_normals.emplace(halfface_id, normal);
                 faces.push_back(face_data);
-            } else if (original_face_vertices.size() > 3)
+            }
+            else if (original_face_vertices.size() > 3)
             {
                 bool first_edge = true;
                 glm::vec3 previous_position(0.0f);
@@ -571,16 +584,18 @@ namespace vOS
 
                         // Add to Face Normal and multiply by triangle area
                         face_normal += n * area;
-                        previous_position = vertex_pos;
                     } else
                     {
                         first_edge = false;
-                        previous_position = vertex_pos;
                     }
+                    previous_position = vertex_pos;
                 }
                 face_normal /= -glm::length(face_normal);
                 face_data.vertices[0].position = midpoint;
                 face_data.vertices[0].normal = face_normal;
+
+                m_face_centers.emplace(halfface_id, midpoint);
+                m_face_normals.emplace(halfface_id, face_normal);
 
                 // Add Vertex Data
                 for (auto vertex_pos: original_face_vertices)
@@ -589,22 +604,24 @@ namespace vOS
                     v_data.position = vertex_pos;
                     v_data.normal = face_normal;
                     face_data.vertices.push_back(v_data);
-                    // Add face data as many times as we have vertices - 1
-                    face_data.face_ids.push_back(face_id);
+                    face_data.face_ids.push_back(halfface_id);
                 }
+                // one more for the middle vertex
+                face_data.face_ids.push_back(halfface_id);
                 add_face_indices(mesh, face_data);
                 m_num_vertices += (int) face_data.vertices.size();
                 faces.push_back(face_data);
-            } else
+            }
+            else
             {
-                std::cout << "Face " << face_id << " has less than 3 vertices" << std::endl;
+                std::cout << "Face " << halfface_id << " has less than 3 vertices" << std::endl;
                 continue;
             }
-            if (m_ovm_to_gl_face_indizes.find(face_id) == m_ovm_to_gl_face_indizes.end())
-                m_ovm_to_gl_face_indizes.emplace(face_id, m_face_amount++);
+            if (m_ovm_to_gl_face_indizes.find(halfface_id) == m_ovm_to_gl_face_indizes.end())
+                m_ovm_to_gl_face_indizes.emplace(halfface_id, m_face_amount++);
 
-            if (m_start_of_cell_vertices.find(face_id) == m_start_of_cell_vertices.end())
-                m_start_of_cell_vertices.emplace(face_id, m_cell_start_face_index++);
+            if (m_start_of_cell_vertices.find(halfface_id) == m_start_of_cell_vertices.end())
+                m_start_of_cell_vertices.emplace(halfface_id, m_cell_start_face_index++);
 
             // Add this Face to the Face Offset Array
             m_face_offset_array.push_back(m_total_vertex_count);
@@ -664,7 +681,7 @@ namespace vOS
 
             // add ids, depending on how many triangles we actually render, we need to put the id twice or more,
             // since those triangles share the same face
-            m_face_ids.insert(m_face_ids.end(), face.face_ids.begin(), face.face_ids.end());
+            m_selection_halffaces_ids.insert(m_selection_halffaces_ids.end(), face.face_ids.begin(), face.face_ids.end());
         }
         m_size_of_cell_vertices[cell.idx()] = nbr_vertices_of_cell;
 
@@ -783,37 +800,37 @@ namespace vOS
 
     VertexArrayObject* MeshVertexBuffer::get_vao_rounded()
     {
-        if (m_update_vao)
-        {
-            m_vao_rounded->update_attribute(m_colors_rounded, 6);
-            m_update_vao = false;
-        }
+//        if (m_update_vao)
+//        {
+//            m_vao_rounded->update_attribute(m_colors_rounded, 5);
+//            m_update_vao = false;
+//        }
         return m_vao_rounded;
     }
 
-    int MeshVertexBuffer::to_vertexID(int value)
+    int MeshVertexBuffer::to_vertex_id(int value)
     {
-        if (m_vertex_ids.size() > value)
+        if (m_selection_vertices_ids.size() > value)
         {
-            return m_vertex_ids[value] + 1;
+            return m_selection_vertices_ids[value] + 1;
         }
         return 0;
     }
 
-    int MeshVertexBuffer::to_edgeID(int value)
+    int MeshVertexBuffer::to_edge_id(int value)
     {
-        if (m_edge_ids.size() > value)
+        if (m_selection_edges_ids.size() > value)
         {
-            return m_edge_ids[value] + 1;
+            return m_selection_edges_ids[value] + 1;
         }
         return 0;
     }
 
-    int MeshVertexBuffer::to_faceID(int value)
+    int MeshVertexBuffer::to_halfface_id(int value)
     {
-        if (m_face_ids.size() > value)
+        if (m_selection_halffaces_ids.size() > value)
         {
-            return m_face_ids[value] + 1;
+            return m_selection_halffaces_ids[value] + 1;
         }
         return 0;
     }
@@ -835,12 +852,12 @@ namespace vOS
 
     int MeshVertexBuffer::get_num_selection_vertices() const
     {
-        return (int) m_vertex_ids.size();
+        return (int) m_selection_vertices_ids.size();
     }
 
     int MeshVertexBuffer::get_num_selection_edges() const
     {
-        return (int) m_edge_ids.size();
+        return (int) m_selection_edges_ids.size();
     }
 
     void MeshVertexBuffer::update_digging_buffer(int id, float newValue)
@@ -967,6 +984,11 @@ namespace vOS
     float MeshVertexBuffer::get_average_cell_size() const
     {
         return m_average_cell_size;
+    }
+
+    VertexArrayObject* MeshVertexBuffer::get_vertex_only_vao()
+    {
+        return m_vertex_only_vao;
     }
 
 }

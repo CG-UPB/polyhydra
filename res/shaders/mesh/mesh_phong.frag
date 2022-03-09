@@ -143,9 +143,8 @@ void main()
     }
     vec3 light_color = u_lightColor;
     vec3 n = -normalize(v_normal);
-    vec3 l = normalize(vec3(0.0, -1.0, -1.0));
-    vec3 light_dir = normalize(u_lightPos - v_pos);
-    float diff = max(0.0, dot(l, n));
+    vec3 light_dir = -normalize(u_lightPos - v_pos);
+    float diff = max(0.0, dot(light_dir, n));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
@@ -197,7 +196,7 @@ void main()
 
     //specular
     vec3 v = normalize(u_camPos - v_pos);
-    vec3 r = reflect(-l, n);
+    vec3 r = reflect(-light_dir, n);
     float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
     vec3 specular = u_spec_strength * spec * light_color;
 

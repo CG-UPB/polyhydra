@@ -13,6 +13,20 @@ namespace vOS
     {
     public:
 
+        static void print_mat(const glm::mat4& mat)
+        {
+            std::cout << "[";
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    std::cout << mat[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << "]" << std::endl;
+        }
+
         [[nodiscard]] static inline std::string to_string(const glm::vec3& vec) {
             return std::string("[" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " + std::to_string(vec.z) + "]");
         }
