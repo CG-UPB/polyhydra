@@ -9,6 +9,7 @@ namespace vOS
 {
     // best image quality, but also most demanding on the gpu
     const SSAOOptions SSAOPass::QUALITY_SSAO = {
+            .active         = true,
             .num_samples    = 64,
             .sample_radius  = 0.5,
             .strength       = 1.5,
@@ -17,6 +18,7 @@ namespace vOS
 
     // balance between image quality and performance
     const SSAOOptions SSAOPass::BALANCED_SSAO = {
+            .active         = true,
             .num_samples    = 32,
             .sample_radius  = 0.5,
             .strength       = 1.5,
@@ -25,6 +27,7 @@ namespace vOS
 
     // lowest image quality, but least performance impact
     const SSAOOptions SSAOPass::PERFORMANCE_SSAO = {
+            .active         = true,
             .num_samples    = 16,
             .sample_radius  = 0.5,
             .strength       = 1.5,

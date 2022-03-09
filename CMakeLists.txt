@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(volumeshOS)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
@@ -76,7 +78,10 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 add_subdirectory(ext/json-develop)
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json ImGuiFileDialog stb)
+find_package(Filesystem REQUIRED Experimental Final)
+
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json ImGuiFileDialog stb std::filesystem)
+target_compile_definitions(volumeshOS PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
 
 # copy our resources to the build dir
 if(MSVC)
