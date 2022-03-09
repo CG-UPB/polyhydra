@@ -13,9 +13,7 @@ namespace vOS
     {
         m_original_vertices = get_vertices(*mesh);
         generate_buffer(*mesh);
-        std::vector<VertexArrayObject> vaos;
 
-        vaos = {m_vao_by_face, m_vao_transparent_by_face};
         m_vao_by_face = new VertexArrayObject(m_positions_by_face, m_indices);
         m_vao_by_face->add_attribute(m_normals_by_face, 1, 3);
         m_vao_by_face->add_attribute(m_cell_centers_by_face, 2, 3);

@@ -164,15 +164,9 @@ namespace vOS
         {
             if(m_mode == ORBIT)
             {
-//                front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-//                front.y = sin(glm::radians(m_pitch));
-//                front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-
                 m_pitch = asin(m_camera_front.y);
-                m_yaw = acos((m_camera_front.x / cos(m_pitch)));
-
                 m_pitch = glm::degrees(m_pitch);
-                m_yaw = glm::degrees(m_yaw);
+                m_yaw = 270.0f - theta;
 
                 if (m_pitch > 89.0f)
                 {
@@ -184,34 +178,20 @@ namespace vOS
                 }
 
                 set_mode(FLY);
-
-                std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch <<std::endl;
-                std::cout << "phi: " << phi << " ,theta: " << theta <<std::endl;
             }
             else if(m_mode == FLY)
             {
-//                position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
-//                position.y = radius * cos(glm::radians(phi));
-//                position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
-//                m_camera_front = glm::normalize(m_target - position);
-
-                position += m_target;
-
                 phi = acos(position.y / radius) ;
-                theta = asin( (position.x / radius) / sin(phi)) ;
-
+                theta = acos( (position.z / radius) / sin(phi)) ;
                 phi = glm::degrees(phi);
                 theta = glm::degrees(theta);
+                theta = 360.0f - (m_yaw - 270.0f);
+
+                radius = glm::length(position - m_target);
 
                 set_mode(ORBIT);
-
-                std::cout << "yaw: " << m_yaw << " ,pitch: " << m_pitch <<std::endl;
-                std::cout << "phi: " << phi << " ,theta: " << theta <<std::endl;
             }
-
-
         }
-
     }
 
     void Camera::handle_mouse_scroll(float y_offset)
@@ -236,7 +216,6 @@ namespace vOS
                 radius = 1.0f;
             }
         }
-
     }
 
     void Camera::handle_mouse_movement(float x_offset, float y_offset)
@@ -245,6 +224,11 @@ namespace vOS
         {
             x_offset *= m_sensitivity;
             y_offset *= m_sensitivity;
+
+            if(m_yaw < 0.0f)
+            {
+                m_yaw = 360.0f - (x_offset -  m_yaw);
+            }
 
             m_yaw = std::fmod((m_yaw + x_offset), (float) 360.0f);
             m_pitch += y_offset;
@@ -257,6 +241,7 @@ namespace vOS
             {
                 m_pitch = -89.0f;
             }
+            std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
 
         }
         if(m_mode == ORBIT)
@@ -310,22 +295,35 @@ namespace vOS
         }
         if(m_mode == ORBIT)
         {
-
+            float velocity = 2.0;
             if (direction == FORWARD)
             {
-                position += m_camera_front;
+                phi += velocity;
             }
             if (direction == BACKWARD)
             {
-                position -= m_camera_front;
+                phi -= velocity;
             }
+            if(phi < 1.0f)
+            {
+                phi = 1.0f;
+            }
+            if(phi > 179.0f)
+            {
+                phi = 179.0f;
+            }
+
             if (direction == LEFT)
             {
-                position -= m_camera_right;
+                theta -= velocity;
             }
             if (direction == RIGHT)
             {
-                position += m_camera_right;
+                theta += velocity;
+            }
+            if(theta < 0.0f)
+            {
+                theta = 360.0f - (velocity - theta);
             }
         }
     }
