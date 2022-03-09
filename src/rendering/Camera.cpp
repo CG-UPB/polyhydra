@@ -169,7 +169,6 @@ namespace vOS
                                        Input::get_wasd_movement_vector_Y() * m_vertical_speed,
                                        Input::get_wasd_movement_vector_Z() * m_vertical_speed};
             input_vector *= delta;
-
             if(m_mode == FLY)
             {
                 // Add the movement vector to the position
@@ -178,6 +177,7 @@ namespace vOS
                                        input_vector.z * m_camera_front;
 
                 position += mov_vector;
+                //std::cout <<  "moving" << VecUtil::to_string(mov_vector) << std::endl;
             }else if (m_mode == ORBIT)
             {
                 // Add the input vector to phi and theta coordinates
@@ -271,10 +271,12 @@ namespace vOS
 
     void Camera::set_mode(int mode, float orbital_radius)
     {
+        std::cout << mode <<std::endl;
         if(mode == 0)
         {
             m_mode = FLY;
 
+            std::cout << "Im flying" << std::endl;
             // Flying Mode
             m_pitch = asin(m_camera_front.y);
             m_yaw = acos((m_camera_front.x / cos(m_pitch)));

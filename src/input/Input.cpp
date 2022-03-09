@@ -82,9 +82,11 @@ namespace vOS
         // Rebind if an entry in our rebind map is found
         int rebind = m_keybinds.find(key) != m_keybinds.end() ? m_keybinds[key] : key;
 
-        float x = 0;
-        float y = 0;
-        float z = 0;
+        action = action > 1 ? 1: action;
+
+        float x = m_movement_vector_x;
+        float y = m_movement_vector_y;
+        float z = m_movement_vector_z;
 
         // Camera Movement
         // Occupied Letters: W, A, S, D, SPACE, LEFT_SHIFT
@@ -118,9 +120,14 @@ namespace vOS
             }
         }
 
-        m_movement_vector_x = x;
-        m_movement_vector_y = y;
-        m_movement_vector_z = z;
+        glm::vec3 mov = {x, y, z};
+
+        if(mov.x != 0 || mov.y != 0 || mov.z != 0) {
+            mov = glm::normalize(mov);
+        }
+        m_movement_vector_x = mov.x;
+        m_movement_vector_y = mov.y;
+        m_movement_vector_z = mov.z;
     }
 
     void Input::glw_callback_mouse_button(GLFWwindow *window, int button, int action, int mods){
