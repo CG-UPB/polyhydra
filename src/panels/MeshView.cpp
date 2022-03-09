@@ -724,8 +724,7 @@ namespace vOS
         }
     }
 
-    void MeshView::show()
-    {
+    void MeshView::show() {
         render_debug_menu();
 
         m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
@@ -744,15 +743,12 @@ namespace vOS
         // Render Meshes
         render_pre_pass();
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_mesh_mode() == ModeEnum::Only_Vertices)
-        {
+        if (GlobalViewerSettings::getInstance()->m_get_current_mesh_mode() == ModeEnum::Only_Vertices) {
             render_background();
             m_meshFrameBuffer->bind();
-            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
-            {
+            for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
                 auto mesh = m.second;
-                if(!mesh->get_data().m_visible)
-                {
+                if (!mesh->get_data().m_visible) {
                     continue;
                 }
                 mesh->update_vertex_buffer();
@@ -761,16 +757,12 @@ namespace vOS
                 }
             }
             m_meshFrameBuffer->unbind();
-        }
-        else
-        {
-            if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
-            {
+        } else {
+            if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated()) {
                 render_ssao_pass();
             }
 
-            if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
-            {
+            if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated()) {
                 render_shadow_map();
             }
 
@@ -782,82 +774,83 @@ namespace vOS
             render_meshes();
 
 
-            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
+            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer,
+                                    m_screen_quad_frameBuffer);
 
             // Render transparent objects
-            if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
-            {
+            if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated()) {
                 render_transparency();
             }
 
-        // Render Selection
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
-        {
-            renderSelection();
+            // Render Selection
+            if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()) {
+                renderSelection();
+            }
+
+            // set render states
+            glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
+            glDisable(GL_BLEND);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+            // copy multisampled framebuffer that we rendered on to the imgui texture for display
+            FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer,
+                                    m_screen_quad_frameBuffer);
+
+            // store the current top left position, so we can draw text here later on top of our canvas
+            auto topLeft = ImGui::GetCursorPos();
+            topLeft.x += padding.x;
+            topLeft.y += padding.y;
+
+            // finally, add the framebuffer texture as an image to the imgui window
+            ImGui::GetWindowDrawList()->AddImage
+                    (
+                            reinterpret_cast<ImTextureID>(get_selected_texture()),
+                            ImGui::GetCursorScreenPos(),
+                            {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
+                             ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
+                            {0.0f, 1.0f},
+                            {1.0f, 0.0f}
+                    );
+
+            // show frame time and fps
+            ImGui::SetCursorPos(topLeft);
+            ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.1f fps", ImGui::GetIO().Framerate);
+
+            // Show hovered element type and id
+
+            if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()) {
+                std::string hovered_element_name =
+                        m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
+                                                                (m_hovered_element_type == 2 ? "Edge" : "Cell"));
+                hovered_element_name += " : ";
+                hovered_element_name += std::to_string(m_hovered_element_id);
+
+                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+                ImGui::TextColored(ImVec4(0, 0, 0, 1), "%s", hovered_element_name.c_str());
+            }
+
+            /*
+            if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
+            {
+                auto mesh = Window::instance().get_focused_mesh_object()->m_mesh;
+
+                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+                ImGui::Text("vertices: %zu", mesh->n_vertices());
+                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+                ImGui::Text("edges: %zu",mesh->n_edges());
+                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+                ImGui::Text("faces: %zu", mesh->n_faces());
+            }*/
+
+            ImGui::End();
+            ImGui::PopStyleVar();
         }
-
-        // set render states
-        glDisable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
-        glDisable(GL_BLEND);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-        // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer, m_screen_quad_frameBuffer);
-
-        // store the current top left position, so we can draw text here later on top of our canvas
-        auto topLeft = ImGui::GetCursorPos();
-        topLeft.x += padding.x;
-        topLeft.y += padding.y;
-
-        // finally, add the framebuffer texture as an image to the imgui window
-        ImGui::GetWindowDrawList()->AddImage
-        (
-                reinterpret_cast<ImTextureID>(get_selected_texture()),
-                ImGui::GetCursorScreenPos(),
-                {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
-                 ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
-                {0.0f, 1.0f},
-                {1.0f, 0.0f}
-        );
-
-        // show frame time and fps
-        ImGui::SetCursorPos(topLeft);
-        ImGui::TextColored(ImVec4(0,0,0,1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
-        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::TextColored(ImVec4(0,0,0,1), "%.1f fps", ImGui::GetIO().Framerate);
-
-        // Show hovered element type and id
-
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
-        {
-            std::string hovered_element_name = m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
-                                                                                       (m_hovered_element_type == 2 ? "Edge" : "Cell"));
-            hovered_element_name += " : ";
-            hovered_element_name += std::to_string(m_hovered_element_id);
-
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::TextColored(ImVec4(0,0,0,1), "%s", hovered_element_name.c_str());
-        }
-
-        /*
-        if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
-        {
-            auto mesh = Window::instance().get_focused_mesh_object()->m_mesh;
-
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("vertices: %zu", mesh->n_vertices());
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu",mesh->n_edges());
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", mesh->n_faces());
-        }*/
-
-        ImGui::End();
-        ImGui::PopStyleVar();
     }
 
     void MeshView::render_debug_menu()

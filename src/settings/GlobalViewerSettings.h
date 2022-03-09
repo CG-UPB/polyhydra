@@ -39,7 +39,6 @@ namespace vOS
         void m_set_current_ambient_occlusion_activated(bool ao){ambient_occlusion_active = ao;};
         void m_set_current_ssao_option(int s){ssao_option = s;};
         void m_set_current_costume_options(const SSAOOptions& s){current_costume_options = s;};
-        void m_set_current_costume_options(SSAOOptions* s){ current_custom_options = s;};
 
         [[nodiscard]] bool m_get_current_selection_activated() const{return m_current_selection_activated;};
         [[nodiscard]] bool m_get_current_digging_activated() const{return m_current_digging_active;};
@@ -55,7 +54,6 @@ namespace vOS
         [[nodiscard]] bool m_get_current_ambient_occlusion_activated() const{return ambient_occlusion_active;};
         [[nodiscard]] int m_get_current_ssao_option() const{return ssao_option;};
         [[nodiscard]] SSAOOptions m_get_current_costume_options() const{return current_costume_options;};
-        [[nodiscard]] SSAOOptions* m_get_current_costume_options() const{return current_custom_options;};
 
 
 
@@ -79,7 +77,7 @@ namespace vOS
 
         // AO
         int ssao_option = QUALITY;
-        SSAOOptions *current_custom_options = new SSAOOptions();
+        SSAOOptions current_costume_options;
     };
 
 }
