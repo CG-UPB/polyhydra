@@ -125,10 +125,18 @@ namespace vOS
 
 
         obj->update_vertex_buffer();
-
+        VertexArrayObject* vao;
+        if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+        {
+            vao = obj->get_mvb()->get_vao_rounded();
+        }
+        else
+        {
+            vao = obj->get_vao();
+        }
         // render all passes
-        if (obj->get_vao() != nullptr) {
-            m_mesh_pass->render(obj->get_vao(), m_render_data, mesh_id);
+        if (vao != nullptr) {
+            m_mesh_pass->render(vao, m_render_data, mesh_id);
             //m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
@@ -174,10 +182,18 @@ namespace vOS
                 }
 
                 mesh->update_vertex_buffer();
-
+                VertexArrayObject* vao;
+                if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+                {
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
+                else
+                {
+                    vao = mesh->get_vao();
+                }
                 // render all passes
-                if (mesh->get_vao() != nullptr) {
-                    m_mesh_pass->render(mesh->get_vao(), m_render_data, m.first);
+                if (vao != nullptr) {
+                    m_mesh_pass->render(vao, m_render_data, m.first);
                     m_shape_pass.render(nullptr, m_render_data, m.first);
                 }
             }
@@ -300,8 +316,17 @@ namespace vOS
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_pre_pass->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao;
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            else
+            {
+                vao = mesh->get_vao();
+            }
+            if (vao != nullptr) {
+                m_pre_pass->render(vao, m_render_data, m.first);
             }
         }
         // we generate a mipmap for the position, this is used for ssao
@@ -327,8 +352,17 @@ namespace vOS
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_shadow_pass->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao;
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            else
+            {
+                vao = mesh->get_vao();
+            }
+            if (vao != nullptr) {
+                m_shadow_pass->render(vao, m_render_data, m.first);
             }
         }
         m_shadow_color_filter_pass->get_framebuffer()->unbind();
@@ -345,8 +379,18 @@ namespace vOS
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_transparent_shadow_pass->render(mesh->get_vao(), m_render_data, m.first);
+
+            VertexArrayObject* vao;
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            else
+            {
+                vao = mesh->get_vao();
+            }
+            if (vao != nullptr) {
+                m_transparent_shadow_pass->render(vao, m_render_data, m.first);
             }
         }
         m_transparent_shadow_pass->get_framebuffer()->unbind();
@@ -367,8 +411,17 @@ namespace vOS
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_shadow_color_filter_pass->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao;
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            else
+            {
+                vao = mesh->get_vao();
+            }
+            if (vao != nullptr) {
+                m_shadow_color_filter_pass->render(vao, m_render_data, m.first);
             }
         }
         m_shadow_color_filter_pass->get_framebuffer()->unbind();
@@ -406,17 +459,18 @@ namespace vOS
             {
                 continue;
             }
-
-//            if(!m_zoom)
-//            {
-//                m_zoom_point = mesh->get_mesh_offset();
-//            }
-//            mesh_data.offset = m_zoom_point;
-
             mesh->update_vertex_buffer();
-
-            if (mesh->get_vao() != nullptr) {
-                m_transparency_pass_wb->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao;
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            else
+            {
+                vao = mesh->get_vao();
+            }
+            if (vao != nullptr) {
+                m_transparency_pass_wb->render(vao, m_render_data, m.first);
             }
         }
         m_transparency_pass_wb->unbind_transparent_buffer();
@@ -463,10 +517,18 @@ namespace vOS
                 }
 
                 mesh->update_vertex_buffer();
-
-                if (mesh->get_vao() != nullptr)
+                VertexArrayObject* vao;
+                if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
                 {
-                    m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first, i);
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
+                else
+                {
+                    vao = mesh->get_vao();
+                }
+                if (vao != nullptr)
+                {
+                    m_transparency_pass_dp->render(vao, m_render_data, m.first, i);
                 }
             }
             if(i % 2 == 0)

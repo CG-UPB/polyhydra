@@ -44,7 +44,6 @@ namespace vOS
             glDisable(GL_BLEND);
         }
 
-
         // Get shader
         auto m_mesh_shader = Shader::get(rendering_mode);
 

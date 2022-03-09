@@ -171,10 +171,27 @@ namespace vOS
         m_transparency_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
         m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
 
+        m_transparency_shader->set_uniform_float("u_spec_strength", obj->get_data().m_specular_strength);
+        m_transparency_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
+        m_transparency_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
+        m_transparency_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
+        m_transparency_shader->set_uniform_bool("u_rounding", data.rounding.active);
+        m_transparency_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        m_transparency_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+
+
         //m_transparency_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE0, m_depth_texture);
         m_transparency_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1, m_mesh_view->m_ssao_pass->get_blur_texture());
 
-        vao->draw();
+        if (data.rounding.active)
+        {
+            obj->get_mvb()->get_vao_rounded()->draw();
+        }
+        else
+        {
+            vao->draw();
+        }
+
 
     }
 

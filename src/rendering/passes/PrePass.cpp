@@ -56,6 +56,8 @@ namespace vOS
         pre_phong_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
         pre_phong_shader->set_uniform_bool("u_rounding", data.rounding.active);
         pre_phong_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        pre_phong_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+
 
         if (data.rounding.active)
         {

@@ -103,6 +103,8 @@ namespace vOS
         m_shadow_shader->set_uniform_bool("u_draw_wireframe", render_in_wireframe_mode);
         m_shadow_shader->set_uniform_bool("u_rounding", data.rounding.active);
         m_shadow_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        m_shadow_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+
 
         m_shadow_shader->set_uniform_mat4f("u_light_projection", light_projection);
         m_shadow_shader->set_uniform_mat4f("u_light_view", light_view);
@@ -119,8 +121,6 @@ namespace vOS
         {
             vao->draw();
         }
-
-
 
 
         vao->draw();
