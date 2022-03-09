@@ -74,6 +74,7 @@ namespace vOS
             }
             else if(m_mode == ORBIT)
             {
+                // Orbit changes the position directly
                 position.x = radius * sin(glm::radians(phi)) * sin(glm::radians(theta));
                 position.y = radius * cos(glm::radians(phi));
                 position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
@@ -160,19 +161,38 @@ namespace vOS
         // 3 Dimensional Movement
         if(ImGui::IsWindowFocused())
         {
+
             // X for Horizontal Movement
             // Y for Vertical Movement
             // Z for Forward Movement
             glm::vec3 input_vector = { Input::get_wasd_movement_vector_X() * m_horizontal_speed,
-                                     Input::get_wasd_movement_vector_Y() * m_vertical_speed,
-                                     Input::get_wasd_movement_vector_Z() * m_vertical_speed};
+                                       Input::get_wasd_movement_vector_Y() * m_vertical_speed,
+                                       Input::get_wasd_movement_vector_Z() * m_vertical_speed};
             input_vector *= delta;
 
-            glm::vec3 mov_vector = input_vector.x * m_camera_right +
-                    input_vector.y * m_camera_up +
-                    input_vector.z * m_camera_front;
+            if(m_mode == FLY)
+            {
+                // Add the movement vector to the position
+                glm::vec3 mov_vector = input_vector.x * m_camera_right +
+                                       input_vector.y * m_camera_up +
+                                       input_vector.z * m_camera_front;
 
-            position += mov_vector;
+                position += mov_vector;
+            }else if (m_mode == ORBIT)
+            {
+                // Add the input vector to phi and theta coordinates
+                float velocity = 2.0;
+                phi = input_vector.z * velocity;
+                if(phi < 1.0f)
+                    phi = 1.0f;
+                else if(phi > 179.0f)
+                    phi = 179.0f;
+
+                theta = input_vector.x * velocity;
+                if(theta < 0.0f)
+                    theta = 360.0f - (velocity - theta);
+
+            }
         }
     }
 
@@ -198,7 +218,6 @@ namespace vOS
                 radius = 1.0f;
             }
         }
-
     }
 
     void Camera::handle_mouse_movement(float x_offset, float y_offset)
@@ -207,6 +226,11 @@ namespace vOS
         {
             x_offset *= m_sensitivity;
             y_offset *= m_sensitivity;
+
+            if(m_yaw < 0.0f)
+            {
+                m_yaw = 360.0f - (x_offset -  m_yaw);
+            }
 
             m_yaw = std::fmod((m_yaw + x_offset), (float) 360.0f);
             m_pitch += y_offset;
@@ -219,6 +243,7 @@ namespace vOS
             {
                 m_pitch = -89.0f;
             }
+            std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
 
         }
         if(m_mode == ORBIT)

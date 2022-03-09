@@ -2,22 +2,13 @@
 
 #include "../../panels/MeshView.h"
 #include "RenderPass.h"
+#include "../../settings/GlobalViewerSettings.h"
 
 namespace vOS
 {
     class MeshView;
 
-    /**
-     * Use this to configure the ssao effect.
-     */
-    struct SSAOOptions
-    {
-        bool active         = true;
-        int num_samples     = 64;
-        float sample_radius = 0.5;
-        float strength      = 1.0;
-        float z_bias        = 0.01;
-    };
+
 
     /**
      * Screen-Space Ambient Occlusion rendering pass.
@@ -89,9 +80,9 @@ namespace vOS
         [[nodiscard]] unsigned int get_blur_texture() const;
 
         // different presets to choose from
-        static const SSAOOptions QUALITY;
-        static const SSAOOptions BALANCED;
-        static const SSAOOptions PERFORMANCE;
+        static const SSAOOptions QUALITY_SSAO;
+        static const SSAOOptions BALANCED_SSAO;
+        static const SSAOOptions PERFORMANCE_SSAO;
 
     private:
 

@@ -36,10 +36,11 @@ namespace vOS
                     "Transparency",
                     "Rounded",
                     "Ambient Occlusion",
-                    "Shadows"
+                    "Shadows",
+                    "Costum Mode"
             };
             ImGui::Text("Manual Mode Selection:");
-            ImGui::Combo("  ", &mesh_mode, element_mode_types,
+            ImGui::Combo("##Manual Mode Selection:", &mesh_mode, element_mode_types,
                          IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
             ImGui::SameLine();
             Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use. For more "
@@ -47,34 +48,35 @@ namespace vOS
             GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
 
 
-            bool activated_modes[8][4] = {
-                    // transparency, shadows, ambient occlusion, selection
-                    {false,false,false,false}, //Wireframe
-                    {false,false,false,false}, // Only Vertices
-                    {true,true,true,true}, // Phong Facenormals
-                    {true,true,true,true}, // Phong Vertexnormals
-                    {true,false,false,false}, // Transparency
-                    {true,false,true,true}, // Rounded
-                    {false,false,true,false}, // Ambient Occlusion
-                    {false,true,false,false}  // Shadows
-            };
-
+            if (mesh_mode == 8)
+            {
+                ImGui::Checkbox("Transparency", &activated_modes[mesh_mode][0]);
+                ImGui::Checkbox("Shadows", &activated_modes[mesh_mode][1]);
+                ImGui::Checkbox("Ambient Occlusion", &activated_modes[mesh_mode][2]);
+                ImGui::Checkbox("Selection", &activated_modes[mesh_mode][3]);
+            }
 
             GlobalViewerSettings::getInstance()->m_set_current_transparency_activated(activated_modes[mesh_mode][0]);
             GlobalViewerSettings::getInstance()->m_set_current_shadows_activated(activated_modes[mesh_mode][1]);
             GlobalViewerSettings::getInstance()->m_set_current_ambient_occlusion_activated(activated_modes[mesh_mode][2]);
             GlobalViewerSettings::getInstance()->m_set_current_selection_feature_activated(activated_modes[mesh_mode][3]);
 
-            if (mesh_mode == 0)
+
+
+            if (Window::instance().get_mesh_focus() != -1)
             {
-                Window::instance().rendering_mutex.unlock();
-                //Window::instance().set_mesh_rendering_mode("mesh_wireframe");
-                Window::instance().rendering_mutex.lock();
-            }else
-            {
-                Window::instance().rendering_mutex.unlock();
-                //Window::instance().set_mesh_rendering_mode("mesh_phong");
-                Window::instance().rendering_mutex.lock();
+                if (mesh_mode == 0)
+                {
+
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_rendering_mode("mesh_wireframe");
+                    Window::instance().rendering_mutex.lock();
+                }else
+                {
+                    Window::instance().rendering_mutex.unlock();
+                    Window::instance().set_mesh_rendering_mode("mesh_phong");
+                    Window::instance().rendering_mutex.lock();
+                }
             }
 
             // Transparency Settings

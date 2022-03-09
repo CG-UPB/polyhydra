@@ -51,6 +51,7 @@ namespace vOS
         m_log_window = LogWindow::getInstance();
         m_mesh_layer_view = new MeshLayerView();
         m_toolbar = new ToolBar();
+        m_quality_panel = new QualityPanel();
     }
 
     void Window::setup()
@@ -149,6 +150,9 @@ namespace vOS
         // Log Window
         m_log_window->show();
 
+        // QualityPanel
+        m_quality_panel->show();
+
         // ToolBar
         m_toolbar->show();
 
@@ -159,7 +163,6 @@ namespace vOS
 
         //ImGui::ShowDemoWindow();
 
-        // Custom UI
         // Custom UI is not guarded with mutex guards, to avoid self-deadlocking in linear threads / when no threads are used
         m_custom_ui->show();
 

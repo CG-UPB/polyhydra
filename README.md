@@ -82,17 +82,27 @@ The following is a listing and specific explanation of each mode:
 - [Shadows](#shadows-mode)
 
 ### Wireframe Mode
+In this mode, the meshes are rendered in wireframe only. 
+The possible features transparency, shadows and ambient occlusion are deactivated, because they are not considered useful in connection with wireframe. 
+Cell rounding is enabled by default, but can be disabled via the corresponding checkbox. 
+It is also possible to select the individual objects.
 
 ### Only Vertices Mode
+In this mode, the mesh is rendered only in terms of vertices. All features are deactivated, as they would not be very useful in connection with the display of vertices.
 
 ### Phong Facenormals Mode
 
 ### Phong Vertexnormals Mode
 
 ### Transparency Mode
+In this mode, only the meshes are rendered. Only the transparent feature is activated, so that individual meshes can appear transparent (the value can be set as alpha in the mesh list). 
+The other features are not enabled in this mode.
 
 ### Rounded Mode
+In this mode, the meshes should be rendered rounded. The other features are not active, so the individual meshes have no shadows, transparency or ambient occlusion. More detailed information about rounding the meshes can be found in the wiki.
 
 ### Ambient Occlusion Mode
+In this mode, Ambient Occlusion is the only feature enabled. The meshes can be neither transparent nor drawn with shadows.
 
 ### Shadows Mode
+In this mode, Shadows are the only feature enabled. The meshes can be neither transparent nor drawn with ambient occlusion.

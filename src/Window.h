@@ -24,6 +24,7 @@
 #include <mutex>
 #include "panels/ToolBar.h"
 #include "panels/MeshLayerView.h"
+#include "panels/QualityPanel.h"
 #include "settings/GlobalViewerSettings.h"
 
 namespace vOS {
@@ -533,6 +534,7 @@ namespace vOS {
         friend class MeshView;
         friend class MeshObject;
         friend class ToolBar;
+        friend class QualityPanel;
         friend class Input;
 
         // Variables //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -565,6 +567,8 @@ namespace vOS {
         ToolBar* m_toolbar;
         // UI for Meshes
         MeshLayerView* m_mesh_layer_view;
+        // UI for Quality-settings
+        QualityPanel* m_quality_panel;
         // Responsible for Imgui Communication
         ImguiRenderer *m_imgui_renderer;
 
