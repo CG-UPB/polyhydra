@@ -142,8 +142,8 @@ void main()
         discard;
     }
     vec3 light_color = u_lightColor;
-    vec3 n = -normalize(v_normal);
-    vec3 light_dir = -normalize(u_lightPos - v_pos);
+    vec3 n = normalize(v_normal);
+    vec3 light_dir = normalize(u_lightPos - v_pos);
     float diff = max(0.0, dot(light_dir, n));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);

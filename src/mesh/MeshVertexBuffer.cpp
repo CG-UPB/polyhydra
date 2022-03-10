@@ -313,7 +313,7 @@ namespace vOS
                         cell_data,
                         ROUNDED_VERTEX_TYPE_EDGE,
                         corner_pos,
-                        edge_normal,
+                        -edge_normal,
                         color,
                         to_vertex_pos,
                         dihedral_angle
@@ -324,7 +324,7 @@ namespace vOS
                         cell_data,
                         ROUNDED_VERTEX_TYPE_FACE,
                         corner_pos,
-                        face_normal,
+                        -face_normal,
                         color,
                         face_center,
                         0.0f
@@ -347,7 +347,7 @@ namespace vOS
                     cell_data,
                     ROUNDED_VERTEX_TYPE_CORNER,
                     corner_pos,
-                    corner_normal,
+                    -corner_normal,
                     color,
                     corner_move_dir,
                     corner_angle
@@ -362,7 +362,7 @@ namespace vOS
                     cell_data,
                     ROUNDED_VERTEX_TYPE_CENTER,
                     center_pos,
-                    face_normals[halfface_id],
+                    -face_normals[halfface_id],
                     color,
                     zero,
                     0.0f
