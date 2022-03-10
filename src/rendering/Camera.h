@@ -72,7 +72,7 @@ namespace vOS {
         glm::vec3 m_previous_position = {0,0,0};
         glm::vec3 m_previous_movement_vector = {0,0,0};
 
-        float m_yaw = -90.0f;
+        float m_yaw = 0.0f;
         float m_pitch = 0.0f;
         float m_vertical_speed = 5.0f;
         float m_horizontal_speed = 10.0f;
