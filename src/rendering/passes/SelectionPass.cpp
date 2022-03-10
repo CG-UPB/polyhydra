@@ -30,8 +30,7 @@ namespace vOS {
         glDisable(GL_BLEND);
 
         // Transform Data
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations

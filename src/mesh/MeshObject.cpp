@@ -295,9 +295,6 @@ namespace vOS
 
     void MeshObject::update_vertex_buffer()
     {
-        int current_peel_level = m_data.m_peel_level;
-        int current_slice_level = m_data.m_slice_level;
-
         if (m_should_update)
         {
             delete m_mvb;
@@ -309,47 +306,14 @@ namespace vOS
 
     void MeshObject::calculate_mesh_offset()
     {
-
-        std::vector<float> vertices;
+        std::vector<glm::vec3> vertices;
         for (auto v_it: m_mesh->vertices())
         {
-            auto v_pos = m_mesh->vertex(v_it);
-            vertices.push_back(v_pos[0]);
-            vertices.push_back(v_pos[1]);
-            vertices.push_back(v_pos[2]);
+            vertices.push_back(VecUtil::pos_to_vec3(*m_mesh, v_it));
         }
-
-        glm::vec3 min(vertices[0], vertices[1], vertices[2]);
-        glm::vec3 max(vertices[0], vertices[1], vertices[2]);
-        for (int i = 0; i < vertices.size(); i += 3)
-        {
-            glm::vec3 vertex(vertices[i], vertices[i + 1], vertices[i + 2]);
-            if (vertex.x < min.x)
-            {
-                min.x = vertex.x;
-            } else if (vertex.x > max.x)
-            {
-                max.x = vertex.x;
-            }
-            if (vertex.y < min.y)
-            {
-                min.y = vertex.y;
-            } else if (vertex.y > max.y)
-            {
-                max.y = vertex.y;
-            }
-            if (vertex.z < min.z)
-            {
-                min.z = vertex.z;
-            } else if (vertex.z > max.z)
-            {
-                max.z = vertex.z;
-            }
-        }
-        m_min = min;
-        m_max = max;
+        auto [min, max] = VecUtil::get_bounding_box(vertices);
         glm::vec3 diameter = max - min;
-        m_mesh_offset_from_center = min + diameter * 0.5f;
+        m_data.m_offset = min + (diameter * 0.5f);
         // all meshes should have the same screen size, regardless of their actual size
         m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
     }

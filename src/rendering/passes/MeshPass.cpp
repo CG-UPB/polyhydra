@@ -52,10 +52,11 @@ namespace vOS
         m_mesh_shader->bind();
 
         // Transform
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
-        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
+
+        std::cout << VecUtil::to_string(obj->get_data().m_offset) << std::endl;
 
         // Cell operations
         float cell_size = obj->get_data().m_cell_size;
