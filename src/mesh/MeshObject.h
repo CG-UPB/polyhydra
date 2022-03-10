@@ -274,11 +274,11 @@ namespace vOS
 
         /**
          * Calculates the direction the camera points to
-         * @param transform Transformation matrix
+         * @param view_transform Transformation matrix
          * @param view_dir camera direction
          * @return direction vector
          */
-        glm::vec3 &get_slice_dir(const glm::mat4 &transform, const glm::vec3 &view_dir);
+        glm::vec3 &get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir);
 
         MeshData &get_data()
         { return m_data; }

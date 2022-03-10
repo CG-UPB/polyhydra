@@ -17,6 +17,7 @@
 #include "../rendering/meshes/CommonMeshes.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include "stb_image_write.h"
 
 
@@ -32,7 +33,7 @@ namespace vOS
     {
         m_pre_pass = new PrePass(width, height);
         m_shadow_pass = new ShadowMapPass(this, width * 2, height * 2);
-        m_transparent_shadow_pass= new TransparentShadowMapPass(width, height);
+        m_transparent_shadow_pass = new TransparentShadowMapPass(width, height);
         m_shadow_color_filter_pass = new ShadowColorFilterPass(this, width, height);
         m_mesh_pass = new MeshPass(this);
         m_ssao_pass = new SSAOPass(this, width, height);
@@ -112,13 +113,13 @@ namespace vOS
     {
 
         // Get Mesh
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
         if (obj == nullptr)
             return;
 
         MeshData& mesh_data = obj->get_data();
 
-        if(!mesh_data.m_visible)
+        if (!mesh_data.m_visible)
         {
             return;
         }
@@ -126,9 +127,16 @@ namespace vOS
 
         obj->update_vertex_buffer();
 
+        VertexArrayObject* vao = obj->get_vao();
+        if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+        {
+            vao = obj->get_mvb()->get_vao_rounded();
+        }
+
         // render all passes
-        if (obj->get_vao() != nullptr) {
-            m_mesh_pass->render(obj->get_vao(), m_render_data, mesh_id);
+        if (vao != nullptr)
+        {
+            m_mesh_pass->render(vao, m_render_data, mesh_id);
             //m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
@@ -148,7 +156,8 @@ namespace vOS
         m_viewportPanelWidth = export_width;
         m_viewportPanelHeight = export_height;
 
-        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height,
+                                                           FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         auto export_framebuffer = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
 
         m_pre_pass->resize_buffers(export_width, export_height);
@@ -165,10 +174,10 @@ namespace vOS
         auto active_mesh = Window::instance().get_focused_mesh_object();
         if (active_mesh != nullptr)
         {
-            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
             {
                 auto mesh = m.second;
-                if(!mesh->get_data().m_visible)
+                if (!mesh->get_data().m_visible)
                 {
                     continue;
                 }
@@ -176,7 +185,8 @@ namespace vOS
                 mesh->update_vertex_buffer();
 
                 // render all passes
-                if (mesh->get_vao() != nullptr) {
+                if (mesh->get_vao() != nullptr)
+                {
                     m_mesh_pass->render(mesh->get_vao(), m_render_data, m.first);
                     m_shape_pass.render(nullptr, m_render_data, m.first);
                 }
@@ -246,7 +256,7 @@ namespace vOS
         int x = (int) mouse_pos_in_window.x / 2;
         int y = (int) (viewport[3] * 2 - (int) mouse_pos_in_window.y) / 2;
 
-        GLubyte* data = m_pixel_buffer->start_read(x, y,1,1);
+        GLubyte* data = m_pixel_buffer->start_read(x, y, 1, 1);
 
         if (data != nullptr)
         {
@@ -261,18 +271,20 @@ namespace vOS
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
             }
-            querySelection(type,id);
+            querySelection(type, id);
         }
 
         m_pixel_buffer->finish_read();
 
         m_current_frame = (m_current_frame + 1) % m_frame_limit;
-        if (m_current_frame == 0) {
+        if (m_current_frame == 0)
+        {
             // we need to clear our framebuffer as well
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
+            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            {
                 auto mesh = m.second;
                 m_selection_pass.render_mesh(mesh, m_render_data, m.first);
             }
@@ -280,7 +292,8 @@ namespace vOS
         m_selectionFrameBuffer->unbind();
 
         m_meshFrameBuffer->bind();
-        for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+        {
             m_selection_hover_pass.render(nullptr, m_render_data, m.first);
         }
         m_meshFrameBuffer->unbind();
@@ -292,10 +305,10 @@ namespace vOS
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_pre_pass->clear_position_buffer(m_render_data);
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-            if(!mesh->get_data().m_visible)
+            if (!mesh->get_data().m_visible)
             {
                 continue;
             }
@@ -305,7 +318,8 @@ namespace vOS
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
-            if (vao != nullptr) {
+            if (vao != nullptr)
+            {
                 m_pre_pass->render(vao, m_render_data, m.first);
             }
         }
@@ -324,16 +338,22 @@ namespace vOS
         glClearColor(0.0, 0.0, 0.0, 0.0);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-            if(!mesh->get_data().m_visible)
+            if (!mesh->get_data().m_visible)
             {
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_shadow_pass->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao = mesh->get_vao();
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            if (vao != nullptr)
+            {
+                m_shadow_pass->render(vao, m_render_data, m.first);
             }
         }
         m_shadow_color_filter_pass->get_framebuffer()->unbind();
@@ -342,16 +362,22 @@ namespace vOS
         m_transparent_shadow_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-            if(!mesh->get_data().m_visible)
+            if (!mesh->get_data().m_visible)
             {
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_transparent_shadow_pass->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao = mesh->get_vao();
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            if (vao != nullptr)
+            {
+                m_transparent_shadow_pass->render(vao, m_render_data, m.first);
             }
         }
         m_transparent_shadow_pass->get_framebuffer()->unbind();
@@ -364,16 +390,22 @@ namespace vOS
         glClearColor(0.0, 0.0, 0.0, 0.0);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
-            if(!mesh->get_data().m_visible)
+            if (!mesh->get_data().m_visible)
             {
                 continue;
             }
             mesh->update_vertex_buffer();
-            if (mesh->get_vao() != nullptr) {
-                m_shadow_color_filter_pass->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao = mesh->get_vao();
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            if (vao != nullptr)
+            {
+                m_shadow_color_filter_pass->render(vao, m_render_data, m.first);
             }
         }
         m_shadow_color_filter_pass->get_framebuffer()->unbind();
@@ -401,13 +433,13 @@ namespace vOS
         glBlendEquation(GL_FUNC_ADD);
         //glDisable(GL_CULL_FACE);
 
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
 
             MeshData& mesh_data = mesh->get_data();
 
-            if(!mesh->get_data().m_visible)
+            if (!mesh->get_data().m_visible)
             {
                 continue;
             }
@@ -420,8 +452,14 @@ namespace vOS
 
             mesh->update_vertex_buffer();
 
-            if (mesh->get_vao() != nullptr) {
-                m_transparency_pass_wb->render(mesh->get_vao(), m_render_data, m.first);
+            VertexArrayObject* vao = mesh->get_vao();
+            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            if (vao != nullptr)
+            {
+                m_transparency_pass_wb->render(vao, m_render_data, m.first);
             }
         }
         m_transparency_pass_wb->unbind_transparent_buffer();
@@ -440,9 +478,9 @@ namespace vOS
     void MeshView::render_transparency_dp()
     {
         num_passes = GlobalViewerSettings::getInstance()->m_get_current_number_passes();
-        for( int i = 0; i < num_passes; i++)
+        for (int i = 0; i < num_passes; i++)
         {
-            if(i % 2 == 0)
+            if (i % 2 == 0)
             {
                 m_transparency_pass_dp->m_transparent_framebuffer0->bind();
                 dp_layer = m_transparency_pass_dp->m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
@@ -458,23 +496,28 @@ namespace vOS
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             // first render all meshes
-            for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
             {
                 auto mesh = m.second;
                 MeshData& mesh_data = mesh->get_data();
-                if(!mesh->get_data().m_visible)
+                if (!mesh->get_data().m_visible)
                 {
                     continue;
                 }
 
                 mesh->update_vertex_buffer();
-
-                if (mesh->get_vao() != nullptr)
+                VertexArrayObject* vao = mesh->get_vao();
+                if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
                 {
-                    m_transparency_pass_dp->render(mesh->get_vao(), m_render_data, m.first, i);
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
+
+                if (vao != nullptr)
+                {
+                    m_transparency_pass_dp->render(vao, m_render_data, m.first, i);
                 }
             }
-            if(i % 2 == 0)
+            if (i % 2 == 0)
             {
                 m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
             }
@@ -515,32 +558,39 @@ namespace vOS
 
                 if (type == SELECTION_TYPE_FACE)
                 {
-                    if (GlobalViewerSettings::getInstance()->m_get_current_isolation_state()){
+                    if (GlobalViewerSettings::getInstance()->m_get_current_isolation_state())
+                    {
 
                         auto mvb = mesh->get_mvb();
                         mvb->start_isolation();
 
                         int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                         OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
+                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(
+                                halfface).idx();
 
-                        m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
+                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
-                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face,0);
+                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face, 0);
 
                         OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
-                        OpenVolumeMesh::CellPropertyT<bool> isolateProp = mesh->m_mesh->request_cell_property<bool>("IsolateProperty");
+                        OpenVolumeMesh::CellPropertyT<bool> isolateProp = mesh->m_mesh->request_cell_property<bool>(
+                                "IsolateProperty");
 
-                        if(cell_handle.idx() == -1){
-                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
+                        if (cell_handle.idx() == -1)
+                        {
+                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
 
                             cell_handle = mesh->m_mesh->incident_cell(hf1);
 
                             //std::cout << "Zelle 2: " << cell_handle.idx();
-                        } else {
-                            if(isolateProp[cell_handle] == 0.0){
-                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
+                        }
+                        else
+                        {
+                            if (isolateProp[cell_handle] == 0.0)
+                            {
+                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
 
                                 cell_handle = mesh->m_mesh->incident_cell(hf1);
                             }
@@ -551,32 +601,38 @@ namespace vOS
                             isolateProp[cell_handle] = 1.0;
 
                             auto mvb = mesh->get_mvb();
-                            mvb->update_isolate_buffer(cell_handle.idx(),1.0f);
+                            mvb->update_isolate_buffer(cell_handle.idx(), 1.0f);
                         }
 
                     }
 
-                    if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL || GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
+                    if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL ||
+                        GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
                     {
                         int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                         OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
                         face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
 
-                        m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
+                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
-                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face,0);
+                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face, 0);
 
                         OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
-                        OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>("DiggingProperty");
+                        OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>(
+                                "DiggingProperty");
 
-                        if(cell_handle.idx() == -1){
-                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
+                        if (cell_handle.idx() == -1)
+                        {
+                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
 
                             cell_handle = mesh->m_mesh->incident_cell(hf1);
-                        } else {
-                            if(diggingProp[cell_handle] == 0.0){
-                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face,1);
+                        }
+                        else
+                        {
+                            if (diggingProp[cell_handle] == 0.0)
+                            {
+                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
 
                                 cell_handle = mesh->m_mesh->incident_cell(hf1);
                             }
@@ -589,9 +645,10 @@ namespace vOS
                                 diggingProp[cell_handle] = 0.0;
 
                                 auto mvb = mesh->get_mvb();
-                                mvb->update_digging_buffer(cell_handle.idx(),0.0f);
+                                mvb->update_digging_buffer(cell_handle.idx(), 0.0f);
                             }
-                        }else
+                        }
+                        else
                         {
                             // cell_handle beinhaltet cell
                             if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -605,7 +662,9 @@ namespace vOS
                         }
 
 
-                    }else {
+                    }
+                    else
+                    {
 
                         // because of unsigned int as return value mesh.to_halfface_id(pickedID) returns the id + 1 and 0 means
                         // there is no valid ID (e.g when clicking background)
@@ -615,7 +674,7 @@ namespace vOS
 
                         //std::cout << "hovering face with id: " << face_id << std::endl;
 
-                        m_selection_hover_pass.hover( m_render_data, m.first, type, face_id);
+                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
                         if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -634,7 +693,7 @@ namespace vOS
                 {
                     int vertex_id = mesh->to_vertex_id(picked_id - from) - 1;
 
-                    m_selection_hover_pass.hover( m_render_data, m.first, type, vertex_id);
+                    m_selection_hover_pass.hover(m_render_data, m.first, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -667,16 +726,17 @@ namespace vOS
             }
 
         }
-        if(ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
+        if (ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
         {
-            if(face_id_mesh >= 0) {
+            if (face_id_mesh >= 0)
+            {
                 Window().instance().rendering_mutex.unlock();
                 // Focus
                 Window().instance().camera_focus_on(face_id_mesh, face_id, 0.4);
                 Window().instance().rendering_mutex.lock();
             }
         }
-        if(ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+        if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
         {
             // TODO Escape Focus
         }
@@ -684,12 +744,13 @@ namespace vOS
         auto active_mesh = Window::instance().get_focused_mesh_object();
         if (!any_mesh_hovered && active_mesh != nullptr)
         {
-            m_selection_hover_pass.hover( m_render_data, 0, 0, 0);
+            m_selection_hover_pass.hover(m_render_data, 0, 0, 0);
         }
     }
 
 
-    void MeshView::render_background() {
+    void MeshView::render_background()
+    {
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -703,7 +764,8 @@ namespace vOS
     }
 
 
-    void MeshView::render_meshes() {
+    void MeshView::render_meshes()
+    {
         m_meshFrameBuffer->bind();
         for (const auto& m: Window::instance().get_mesh_list())
         {
@@ -719,12 +781,16 @@ namespace vOS
 
         switch (m_transparency)
         {
-            case DEPTH_PEELING: render_transparency_dp();break;
-            case WEIGHTED_BLENDED : render_transparency_wb();
+            case DEPTH_PEELING:
+                render_transparency_dp();
+                break;
+            case WEIGHTED_BLENDED :
+                render_transparency_wb();
         }
     }
 
-    void MeshView::show() {
+    void MeshView::show()
+    {
         render_debug_menu();
 
         m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
@@ -743,26 +809,34 @@ namespace vOS
         // Render Meshes
         render_pre_pass();
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_mesh_mode() == ModeEnum::Only_Vertices) {
+        if (GlobalViewerSettings::getInstance()->m_get_current_mesh_mode() == ModeEnum::Only_Vertices)
+        {
             render_background();
             m_meshFrameBuffer->bind();
-            for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list()) {
+            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            {
                 auto mesh = m.second;
-                if (!mesh->get_data().m_visible) {
+                if (!mesh->get_data().m_visible)
+                {
                     continue;
                 }
                 mesh->update_vertex_buffer();
-                if (mesh->get_vao() != nullptr) {
+                if (mesh->get_vao() != nullptr)
+                {
                     m_vertex_only_pass.render(nullptr, m_render_data, m.first);
                 }
             }
             m_meshFrameBuffer->unbind();
-        } else {
-            if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated()) {
+        }
+        else
+        {
+            if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
+            {
                 render_ssao_pass();
             }
 
-            if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated()) {
+            if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
+            {
                 render_shadow_map();
             }
 
@@ -778,79 +852,82 @@ namespace vOS
                                     m_screen_quad_frameBuffer);
 
             // Render transparent objects
-            if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated()) {
+            if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
+            {
                 render_transparency();
             }
 
             // Render Selection
-            if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()) {
+            if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+            {
                 renderSelection();
             }
-
-            // set render states
-            glDisable(GL_DEPTH_TEST);
-            glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
-            glDisable(GL_BLEND);
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-            // copy multisampled framebuffer that we rendered on to the imgui texture for display
-            FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer,
-                                    m_screen_quad_frameBuffer);
-
-            // store the current top left position, so we can draw text here later on top of our canvas
-            auto topLeft = ImGui::GetCursorPos();
-            topLeft.x += padding.x;
-            topLeft.y += padding.y;
-
-            // finally, add the framebuffer texture as an image to the imgui window
-            ImGui::GetWindowDrawList()->AddImage
-                    (
-                            reinterpret_cast<ImTextureID>(get_selected_texture()),
-                            ImGui::GetCursorScreenPos(),
-                            {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
-                             ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
-                            {0.0f, 1.0f},
-                            {1.0f, 0.0f}
-                    );
-
-            // show frame time and fps
-            ImGui::SetCursorPos(topLeft);
-            ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.1f fps", ImGui::GetIO().Framerate);
-
-            // Show hovered element type and id
-
-            if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated()) {
-                std::string hovered_element_name =
-                        m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
-                                                                (m_hovered_element_type == 2 ? "Edge" : "Cell"));
-                hovered_element_name += " : ";
-                hovered_element_name += std::to_string(m_hovered_element_id);
-
-                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-                ImGui::TextColored(ImVec4(0, 0, 0, 1), "%s", hovered_element_name.c_str());
-            }
-
-            /*
-            if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
-            {
-                auto mesh = Window::instance().get_focused_mesh_object()->m_mesh;
-
-                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-                ImGui::Text("vertices: %zu", mesh->n_vertices());
-                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-                ImGui::Text("edges: %zu",mesh->n_edges());
-                ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-                ImGui::Text("faces: %zu", mesh->n_faces());
-            }*/
-
-            ImGui::End();
-            ImGui::PopStyleVar();
         }
+
+        // set render states
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
+        glDisable(GL_BLEND);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+        // copy multisampled framebuffer that we rendered on to the imgui texture for display
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer,
+                                m_screen_quad_frameBuffer);
+
+        // store the current top left position, so we can draw text here later on top of our canvas
+        auto topLeft = ImGui::GetCursorPos();
+        topLeft.x += padding.x;
+        topLeft.y += padding.y;
+
+        // finally, add the framebuffer texture as an image to the imgui window
+        ImGui::GetWindowDrawList()->AddImage
+                (
+                        reinterpret_cast<ImTextureID>(get_selected_texture()),
+                        ImGui::GetCursorScreenPos(),
+                        {ImGui::GetCursorScreenPos().x + (float) m_viewportPanelWidth,
+                         ImGui::GetCursorScreenPos().y + (float) m_viewportPanelHeight},
+                        {0.0f, 1.0f},
+                        {1.0f, 0.0f}
+                );
+
+        // show frame time and fps
+        ImGui::SetCursorPos(topLeft);
+        ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+        ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.1f fps", ImGui::GetIO().Framerate);
+
+        // Show hovered element type and id
+
+        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        {
+            std::string hovered_element_name =
+                    m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
+                                                            (m_hovered_element_type == 2 ? "Edge" : "Cell"));
+            hovered_element_name += " : ";
+            hovered_element_name += std::to_string(m_hovered_element_id);
+
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::TextColored(ImVec4(0, 0, 0, 1), "%s", hovered_element_name.c_str());
+        }
+
+        /*
+        if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
+        {
+            auto mesh = Window::instance().get_focused_mesh_object()->m_mesh;
+
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("vertices: %zu", mesh->n_vertices());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("edges: %zu",mesh->n_edges());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("faces: %zu", mesh->n_faces());
+        }*/
+
+        ImGui::End();
+        ImGui::PopStyleVar();
     }
 
     void MeshView::render_debug_menu()
@@ -892,12 +969,18 @@ namespace vOS
     {
         switch (m_viewport_texture)
         {
-            case FINAL_IMAGE: return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SELECTION: return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-            case SSAO_PRE: return m_ssao_pass->get_ssao_texture();
-            case SSAO_BLUR: return m_ssao_pass->get_blur_texture();
-            case TRANSPARENCY_ACCUM: return m_transparency_pass_wb->get_accum_texture();
-            case TRANSPARENCY_REVEAL: return m_transparency_pass_wb->get_reveal_texture();
+            case FINAL_IMAGE:
+                return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case SELECTION:
+                return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+            case SSAO_PRE:
+                return m_ssao_pass->get_ssao_texture();
+            case SSAO_BLUR:
+                return m_ssao_pass->get_blur_texture();
+            case TRANSPARENCY_ACCUM:
+                return m_transparency_pass_wb->get_accum_texture();
+            case TRANSPARENCY_REVEAL:
+                return m_transparency_pass_wb->get_reveal_texture();
         }
         return -1;
     }

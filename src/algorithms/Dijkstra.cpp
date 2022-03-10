@@ -88,13 +88,13 @@ namespace vOS
         {
             // Run Dijkstra linearly
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
-            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            //Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
             Window::instance().open();
         }else{
             // Run Dijkstra parallel
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_parallel, this));
             std::cout << " Parallel approach " << std::endl;
-            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            //Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
             std::thread* vos_thread = new std::thread(&Window::open, &Window::instance());
 
             parallel_run();

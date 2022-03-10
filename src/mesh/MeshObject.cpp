@@ -550,7 +550,7 @@ namespace vOS
     }
 
 
-    glm::vec3 &MeshObject::get_slice_dir(const glm::mat4 &transform, const glm::vec3 &view_dir)
+    glm::vec3 &MeshObject::get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir)
     {
         if (!m_data.m_slice_locked)
         {
@@ -561,7 +561,7 @@ namespace vOS
             if (m_just_locked)
             {
                 m_just_locked = false;
-                m_slice_dir = glm::vec3{glm::inverse(transform) * glm::vec4(view_dir, 0.0)};
+                m_slice_dir = view_dir;
             }
         }
         return m_slice_dir;

@@ -75,23 +75,20 @@ void main()
         v_Visible = 0;
     }
 
-    vec3 min_slice = vec3(u_Transform * vec4(u_min, 1.0));
-    vec3 max_slice = vec3(u_Transform * vec4(u_max, 1.0));
+    mat4 view_transform = u_View * u_Transform;
 
-    vec4 temp_dir = vec4(normalize(u_slice_direction), 0.0);
-    if (u_slice_locked)
-    {
-        temp_dir = u_Transform * temp_dir;
-    }
+    vec3 min_slice = vec3(view_transform * vec4(u_min, 1.0));
+    vec3 max_slice = vec3(view_transform * vec4(u_max, 1.0));
 
+    vec4 temp_dir = view_transform * vec4(normalize(u_slice_direction), 0.0);
     vec3 slice_dir = temp_dir.xyz;
 
     vec3 slice_point = max_slice + u_slice_depth * (min_slice - max_slice);
     vec3 dir = slice_dir;
-    vec3 center = vec3(u_Transform * vec4(a_Center, 1.0));
+    vec3 center = vec3(view_transform * vec4(a_Center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peel_depth < u_peel_depth) //|| angle > 0)
+    if (a_peel_depth < u_peel_depth || angle > 0)
     {
         v_Visible = 0;
     }
@@ -126,12 +123,12 @@ void main()
     }
     ////////////////////////////////////////////////////////
 
-    mat4 cam_space_mat = u_Projection * u_View * u_Transform;
+    mat4 cam_space_mat = u_Projection * view_transform;
     mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
 
     vec3 pos = a_Center + (position - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(u_View * u_Transform))) * a_Normal;
+    v_Normal = mat3(transpose(inverse(view_transform))) * a_Normal;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
     v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
 

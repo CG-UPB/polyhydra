@@ -1,6 +1,8 @@
 #include <map>
 #include <functional>
 
+#include "glm/gtx/transform.hpp"
+
 class GLFWwindow;
 
 namespace vOS {
@@ -81,6 +83,9 @@ namespace vOS {
 
         // reset the current scroll offset for the next frame
         static void reset_offset();
+
+        static void update();
+
     private:
         // Variables
 
@@ -90,21 +95,10 @@ namespace vOS {
         static bool m_ignore_mouse_commands;
 
         // Movement Vector
-        static float m_movement_vector_x;
-        static float m_movement_vector_y;
-        static float m_movement_vector_z;
-
-
-        // Mouse Position
-        static double m_currentMouseX;
-        static double m_currentMouseY;
-
-        // Mouse Button presses
-        static bool m_mouse_pressed;
+        static glm::vec3 m_movement_vector;
 
         // Mouse Scroll Offset
-        static double m_currentScrollOffsetX;
-        static double m_currentScrollOffsetY;
+        static glm::vec2 m_scroll_offset;
 
         // Bindings
         static std::map<int,int> m_keybinds;
@@ -115,64 +109,8 @@ namespace vOS {
         // Callback Functions
         static void call_function(int key);
 
-        static void glfw_callback_key(GLFWwindow *window, int key, int scancode, int action, int mods);
-        static void glw_callback_mouse_button(GLFWwindow *window, int button, int action, int mods);
-        static void glw_callback_mouse_position(GLFWwindow *window, double xpos, double ypos);
         static void glw_callback_mouse_scroll(GLFWwindow *window, double xoffset, double yoffset);
+
+        static int get_key_bind(int key);
     };
 }
-
-/*
-#pragma once
-
-class GLFWwindow;
-
-namespace vOS
-{
-    class Input
-    {
-    public:
-
-        // glfw callbacks
-        static void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
-
-        static void glfwMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-
-        static void glfwMouseCursorPosCallback(GLFWwindow *window, double xpos, double ypos);
-
-        static void glfwScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
-
-        // reset the current scroll offset for the next frame
-        static void resetOffset();
-
-        // should be self explanatory
-        static bool isKeyDown(int key);
-
-        static bool isKeyReleased(int key);
-
-        static double getMouseX();
-
-        static double getMouseY();
-
-        static double getScrollOffsetX();
-
-        static double getScrollOffsetY();
-
-    private:
-        Input();
-
-        ~Input();
-
-        static Input &getInstance();
-
-        // map for each key code as index, true if currently pressed
-        bool *m_keyMap;
-        bool *m_keyReleaseMap;
-
-        double m_currentMouseX;
-        double m_currentMouseY;
-
-        double m_currentScrollOffsetX;
-        double m_currentScrollOffsetY;
-    };
-}*/

@@ -28,26 +28,29 @@ namespace vOS
         // Transform Data
         glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 view_transform = data.camera.view * transform;
 
-        // Cell Data
-        float cell_size = Window::instance().get_mesh_cell_size(mesh_id);
-        int peel_depth = Window::instance().get_mesh_peel_level(mesh_id);
-        float slice_depth = Window::instance().get_mesh_slice_level(mesh_id);
-        auto bb = obj->get_transformed_bb(transform);
+        // Cell operations
+        float cell_size = obj->get_data().m_cell_size;
+        int peel_depth = obj->get_data().m_peel_level;
+        float slice_depth = obj->get_data().m_slice_level;
+
+        auto bb = obj->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
-        // View Data
-        glm::mat4 view_inv = glm::inverse(data.camera.view);
-        glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
-        auto slice_direction = obj->get_slice_dir(transform, view_dir);
+        // View Operations
+        glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
+        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
+
+        glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
 
         m_vertex_only_shader->bind();
 
         m_vertex_only_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_vertex_only_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_vertex_only_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_vertex_only_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
+        m_vertex_only_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_vertex_only_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
         m_vertex_only_shader->set_uniform_float("u_cell_size", cell_size);
         m_vertex_only_shader->set_uniform_int("u_peel_depth", peel_depth);

@@ -49,6 +49,8 @@ namespace vOS
 
     void Camera::update()
     {
+        Input::update();
+
         // Frame Delta
         auto current_frame = (float) ImGui::GetTime();
         delta = current_frame - last_frame;
@@ -388,5 +390,10 @@ namespace vOS
         m_focus_mode_timer = m_focus_mode_total_time;
         //std::cout << "Org Pos: " << VecUtil::to_string(m_original_position) << " Org Target: " << VecUtil::to_string(m_original_front) << std::endl;
         //std::cout << "Des Pos: " << VecUtil::to_string(m_desired_position) << " Des Target: " << VecUtil::to_string(m_desired_front) << std::endl;
+    }
+
+    const glm::vec3& Camera::get_front() const
+    {
+        return m_camera_front;
     }
 }
