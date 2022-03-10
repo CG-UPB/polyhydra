@@ -418,10 +418,8 @@ namespace vOS
                 add_cell_triangle_indices(cell_data, face_center_index, face_corner_vertex_index, face_to_corner_vertex_index);
 
                 // corner triangle
-                add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, next_to_corner_vertex_halfedge_index, corner_vertex_index);
-
-                // opposite of corner triangle
-                add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, face_corner_vertex_index, next_to_corner_vertex_halfedge_index);
+                add_cell_triangle_indices(cell_data, corner_vertex_index, face_corner_vertex_index, next_to_corner_vertex_halfedge_index);
+                add_cell_triangle_indices(cell_data, corner_vertex_index, to_corner_vertex_halfedge_index, face_corner_vertex_index);
 
                 add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, face_to_corner_vertex_index, face_corner_vertex_index);
                 add_cell_triangle_indices(cell_data, to_corner_vertex_halfedge_index, to_vertex_halfedge_index, face_to_corner_vertex_index);
@@ -479,7 +477,6 @@ namespace vOS
         glm::vec3 diameter = max - min;
         float size = std::max(std::max(diameter.x, diameter.y), diameter.z);
         m_average_cell_size += size;
-        glm::vec3 bb_center = min + (max - min) * 0.5f;
         glm::vec3 cell_center = VecUtil::get_center(vertices);
         m_cell_centers[cell.idx()] = cell_center;
 
