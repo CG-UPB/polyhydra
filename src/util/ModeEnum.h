@@ -7,10 +7,6 @@ namespace vOS
         Only_Vertices = 1,
         Phong_Facenormals = 2,
         Phong_Vertexnormals = 3,
-        Transparency = 4,
-        Rounded = 5,
-        Ambient_Occlusion = 6,
-        Shadows = 7
     };
 
     enum Transparency {
@@ -18,5 +14,11 @@ namespace vOS
         DEPTH_PEELING = 1
     };
 
-
+    enum SSAO_Mode {
+        OFF = 0,
+        QUALITY = 1,
+        BALANCED = 2,
+        PERFORMANCE = 3,
+        CUSTOM = 4
+    };
 }

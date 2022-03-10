@@ -64,5 +64,20 @@ namespace vOS
         float m_mesh_scale = 1.0f;
 
         bool test_selected[3] = {false,true,false};
+
+
+        bool activated_modes[9][4] = {
+                // transparency, shadows, ambient occlusion, selection
+                {false,false,false,false}, //Wireframe
+                {false,false,false,false}, // Only Vertices
+                {true,true,true,true}, // Phong Facenormals
+                {true,true,true,true}, // Phong Vertexnormals
+                {true,false,false,false}, // Transparency
+                {true,true,true,true}, // Rounded
+                {false,false,true,false}, // Ambient Occlusion
+                {false,true,false,false},  // Shadows
+                {false,false,false,false}
+        };
+
     };
 }

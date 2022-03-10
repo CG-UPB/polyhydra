@@ -61,7 +61,6 @@ float get_shrink_factor(float angle, float dist) {
 
 float get_dist(float inner_angle, float r) {
     return r;
-    return cos(inner_angle * 0.5) * r;
 }
 
 void main()
@@ -103,7 +102,6 @@ void main()
     ////////////////////////////////////////////////////////
     // Rounding
     ////////////////////////////////////////////////////////
-    mat3 inverse_transform = mat3(transpose(inverse(u_Transform)));
     vec3 position = a_Pos;
     if (u_rounding)
     {
@@ -143,7 +141,7 @@ void main()
 
     vec3 pos = a_Center + (position - a_Center) * u_cell_size;
     v_Pos = vec3(u_Transform * vec4(pos, 1.0));
-    v_Normal = mat3(inverse_transform) * -a_Normal;
+    v_Normal = mat3(transpose(inverse(u_View * u_Transform))) * -a_Normal;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
     v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
 

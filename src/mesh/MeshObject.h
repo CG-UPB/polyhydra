@@ -233,21 +233,21 @@ namespace vOS
          * @param value id value
          * @return
          */
-        int to_vertexID(int value);
+        int to_vertex_id(int value);
 
         /**
          * converts selection id of edges to OVM id
          * @param value id value
          * @return
          */
-        int to_edgeID(int value);
+        int to_edge_id(int value);
 
         /**
          * converts selection id of faces to OVM id
          * @param value id value
          * @return
          */
-        int to_faceID(int value);
+        int to_halfface_id(int value);
 
 
         int get_max_peel_depth() const;

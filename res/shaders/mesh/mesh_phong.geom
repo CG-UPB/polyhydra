@@ -47,9 +47,13 @@ void main()
     vec3 pos1 = v_Pos[1];
     vec3 pos2 = v_Pos[2];
 
-    vec4 screen_pos0 = u_Projection * u_View * vec4(pos0, 1.0);
-    vec4 screen_pos1 = u_Projection * u_View * vec4(pos1, 1.0);
-    vec4 screen_pos2 = u_Projection * u_View * vec4(pos2, 1.0);
+    vec4 viewspace_pos0 = u_View * vec4(pos0, 1.0);
+    vec4 viewspace_pos1 = u_View * vec4(pos1, 1.0);
+    vec4 viewspace_pos2 = u_View * vec4(pos2, 1.0);
+
+    vec4 screen_pos0 = u_Projection * viewspace_pos0;
+    vec4 screen_pos1 = u_Projection * viewspace_pos1;
+    vec4 screen_pos2 = u_Projection * viewspace_pos2;
 
     vec3 view_pos0 = screen_pos0.xyz / screen_pos0.w;
     vec3 view_pos1 = screen_pos1.xyz / screen_pos1.w;
@@ -59,13 +63,13 @@ void main()
     float dist2 = (v_isTriangle[2] == 0) ? FLT_MAX : dist_to_edge(view_pos0, view_pos1, view_pos2);
 
     v_tri_dist = vec3(0.0, dist_to_edge(view_pos1, view_pos2, view_pos0), 0.0);
-    vertex(screen_pos0, pos0, v_Normal[0], v_Color[0], v_Visible[0], v_LightSpacePos[0]);
+    vertex(screen_pos0, viewspace_pos0.xyz, v_Normal[0], v_Color[0], v_Visible[0], v_LightSpacePos[0]);
 
     v_tri_dist = vec3(0.0, 0.0, dist1);
-    vertex(screen_pos1, pos1, v_Normal[1], v_Color[1], v_Visible[1], v_LightSpacePos[1]);
+    vertex(screen_pos1, viewspace_pos1.xyz, v_Normal[1], v_Color[1], v_Visible[1], v_LightSpacePos[1]);
 
     v_tri_dist = vec3(dist2, 0.0, 0.0);
-    vertex(screen_pos2, pos2, v_Normal[2], v_Color[2], v_Visible[2], v_LightSpacePos[2]);
+    vertex(screen_pos2, viewspace_pos2.xyz, v_Normal[2], v_Color[2], v_Visible[2], v_LightSpacePos[2]);
 
     EndPrimitive();
 }

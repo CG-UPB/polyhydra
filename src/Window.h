@@ -24,6 +24,7 @@
 #include <mutex>
 #include "panels/ToolBar.h"
 #include "panels/MeshLayerView.h"
+#include "panels/QualityPanel.h"
 #include "settings/GlobalViewerSettings.h"
 
 namespace vOS {
@@ -429,6 +430,48 @@ namespace vOS {
          */
         void camera_set_position(float x, float y, float z);
 
+        /**
+         * Sets the Camera's position and view direction in such a way, that it looks directly at the given mesh face
+         * Smoothly moves towards given position
+         * @param mesh_id
+         * @param ovm_face_id
+         * @param time : time it takes for this process to finish
+         */
+        void camera_focus_on(int mesh_id, int ovm_face_id, float time = 0.25);
+
+        /**
+         * Sets the Camera's position and view direction manually
+         * Smoothly moves towards given position
+         * @param mesh_id
+         * @param ovm_face_id
+         * @param time : time it takes for this process to finish
+         */
+        void camera_focus_on(float target_x, float target_y, float target_z, float pos_x, float pos_y, float pos_z, float time = 0.25);
+
+
+        /**
+         * Sets the a target for the camera to look at
+         * @param x
+         * @param y
+         * @param z
+         */
+        void camera_look_at(float x, float y, float z);
+
+
+        /**
+         * Sets the Orbital Target for the camera. The user can then move around said point
+         * @param x
+         * @param y
+         * @param z
+         * @param radius : Optional radius change
+         */
+        void camera_set_orbital_target(float x, float y, float z, float radius = -1);
+        /**
+         * Determines camera movement mode
+         * @param mode : 0 = 1 Free Movement , 1 = Orbital Movement
+         * @param orbital_radius : Range for Orbital Movement
+         */
+        void camera_mode(int mode, float orbital_radius = 10);
 
         // IO //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -505,6 +548,7 @@ namespace vOS {
         friend class MeshView;
         friend class MeshObject;
         friend class ToolBar;
+        friend class QualityPanel;
         friend class Input;
 
         // Variables //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -537,6 +581,8 @@ namespace vOS {
         ToolBar* m_toolbar;
         // UI for Meshes
         MeshLayerView* m_mesh_layer_view;
+        // UI for Quality-settings
+        QualityPanel* m_quality_panel;
         // Responsible for Imgui Communication
         ImguiRenderer *m_imgui_renderer;
 

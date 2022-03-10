@@ -39,11 +39,13 @@ namespace vOS
         glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
         auto slice_direction = obj->get_slice_dir(transform, view_dir);
 
+        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
+
         // set all of our uniforms
         pre_phong_shader->set_uniform_mat4f("u_Transform", transform);
         pre_phong_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
         pre_phong_shader->set_uniform_mat4f("u_View", data.camera.view);
-        pre_phong_shader->set_uniform_vec3f("u_lightPos", data.light.position);
+        pre_phong_shader->set_uniform_vec3f("u_lightPos", light_pos);
         pre_phong_shader->set_uniform_vec3f("u_camPos", data.camera.position);
         pre_phong_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         pre_phong_shader->set_uniform_float("u_cell_size", cell_size);
@@ -56,6 +58,7 @@ namespace vOS
         pre_phong_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
         pre_phong_shader->set_uniform_bool("u_rounding", data.rounding.active);
         pre_phong_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        pre_phong_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
 
         if (data.rounding.active)
         {

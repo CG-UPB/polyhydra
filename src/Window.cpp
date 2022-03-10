@@ -51,6 +51,7 @@ namespace vOS
         m_log_window = LogWindow::getInstance();
         m_mesh_layer_view = new MeshLayerView();
         m_toolbar = new ToolBar();
+        m_quality_panel = new QualityPanel();
     }
 
     void Window::setup()
@@ -149,6 +150,9 @@ namespace vOS
         // Log Window
         m_log_window->show();
 
+        // QualityPanel
+        m_quality_panel->show();
+
         // ToolBar
         m_toolbar->show();
 
@@ -159,7 +163,6 @@ namespace vOS
 
         //ImGui::ShowDemoWindow();
 
-        // Custom UI
         // Custom UI is not guarded with mutex guards, to avoid self-deadlocking in linear threads / when no threads are used
         m_custom_ui->show();
 
@@ -707,10 +710,55 @@ namespace vOS
 
         return shape_id;
     }
+
     void Window::camera_set_position(float x, float y, float z)
     {
         rendering_mutex.lock();
-        // TODO
+        m_mesh_view->m_render_data.camera.position = glm::vec3(x,y,z);
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_focus_on(int mesh_id, int ovm_face_id, float time)
+    {
+        rendering_mutex.lock();
+        // Get Face Normal
+        auto face_normal = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_normal(ovm_face_id);
+        auto face_barycenter = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_barycenter(ovm_face_id);
+        // Focus
+        m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal, time);
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_focus_on(float target_x, float target_y, float target_z, float pos_x, float pos_y,
+                                 float pos_z, float time)
+    {
+        rendering_mutex.lock();
+        m_mesh_view->m_render_data.camera.focus_spot({target_x,target_y,target_z}, {pos_x,pos_y,pos_z}, time);
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_mode(int mode, float orbital_radius)
+    {
+        rendering_mutex.lock();
+
+        m_mesh_view->m_render_data.camera.set_mode(mode, orbital_radius);
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_set_orbital_target(float x, float y, float z, float radius)
+    {
+        rendering_mutex.lock();
+
+        m_mesh_view->m_render_data.camera.m_orbital_origin = {x,y,z};
+        if(radius >= 1)
+            m_mesh_view->m_render_data.camera.radius = radius;
+        rendering_mutex.unlock();
+    }
+
+    void Window::camera_look_at(float x, float y, float z)
+    {
+        rendering_mutex.lock();
+        m_mesh_view->m_render_data.camera.look_at({x,y,z});
         rendering_mutex.unlock();
     }
 

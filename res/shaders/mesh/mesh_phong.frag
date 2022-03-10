@@ -9,6 +9,8 @@ flat in int v_visible;
 in vec3 v_tri_dist;
 
 uniform bool u_draw_wireframe;
+uniform bool u_draw_shadows;
+uniform bool u_draw_ao;
 
 uniform vec3 u_lightPos;
 uniform vec3 u_camPos;
@@ -112,6 +114,7 @@ vec3 color_filter(vec4 pos_ls)
 
 void main()
 {
+
     if (u_draw_wireframe)
     {
         if (v_visible == 0)
@@ -139,43 +142,47 @@ void main()
         discard;
     }
     vec3 light_color = u_lightColor;
-    vec3 n = normalize(v_normal);
-    vec3 l = normalize(vec3(0.0, -1.0, -1.0));
-    vec3 light_dir = normalize(u_lightPos - v_pos);
-    l = light_dir;
-
-    float diff = max(0.0, dot(l, n));
+    vec3 n = -normalize(v_normal);
+    vec3 light_dir = -normalize(u_lightPos - v_pos);
+    float diff = max(0.0, dot(light_dir, n));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
-    // shadow calculation
-    float bias = max(0.005 * (1.0 - max(0.0, dot(n, light_dir))), 0.0005);
-
-    //float bias = max(0.005 * (1.0 - dot(-n, light_dir)), 0.0005);
-    //bias = 0.1;
-
-    //float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
-//
-//    float theta = clamp(dot(light_dir,n), 0.0, 1.0);
-//    float bias = 0.0005 * tan(acos(theta));
-//    bias = clamp(bias, 0.0, 0.0005);
-
-    float shadow = shadow_calculation(v_pos_ls, bias);
-    float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
-    transparent_shadow = 0.0;
-    if(transparent_shadow != 0.0)
+    float shadow = 0.0;
+    if (u_draw_shadows)
     {
-        if(shadow == 0.0)
+        // shadow calculation
+
+        //float bias = max(0.005 * (1.0 - dot(-n, light_dir)), 0.0005);
+        //bias = 0.1;
+
+        //float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
+        //
+        //    float theta = clamp(dot(light_dir,n), 0.0, 1.0);
+        //    float bias = 0.0005 * tan(acos(theta));
+        //    bias = clamp(bias, 0.0, 0.0005);
+
+        float bias = max(0.0005 * (1.0 - dot(n, light_dir)), 0.00005);
+        shadow = shadow_calculation(v_pos_ls, bias);
+        float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
+        transparent_shadow = 0.0;
+        if (transparent_shadow != 0.0)
         {
-            // if pixel only lays in transparent shadow, then apply color filter
-            light_color = light_color * color_filter(v_pos_ls);
-            shadow = 1.0;
+            if (shadow == 0.0)
+            {
+                // if pixel only lays in transparent shadow, then apply color filter
+                light_color = light_color * color_filter(v_pos_ls);
+                shadow = 1.0;
+            }
         }
     }
-    //float shadow = 0.0;
 
     //ambient
-    float ao_factor = texture(u_ssao_texture, uv).r;
+    float ao_factor = 1.0;
+    if(u_draw_ao)
+    {
+        ao_factor = texture(u_ssao_texture, uv).r;
+    }
     vec3 ambient = u_ambient_strength * light_color * ao_factor;
 
     // Phong Shading
@@ -189,7 +196,7 @@ void main()
 
     //specular
     vec3 v = normalize(u_camPos - v_pos);
-    vec3 r = reflect(-l, n);
+    vec3 r = reflect(-light_dir, n);
     float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
     vec3 specular = u_spec_strength * spec * light_color;
 

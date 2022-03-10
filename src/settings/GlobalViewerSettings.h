@@ -6,6 +6,19 @@
 
 namespace vOS
 {
+
+    /**
+     * Use this to configure the ssao effect.
+     */
+    struct SSAOOptions
+    {
+        bool active         = true;
+        int num_samples     = 64;
+        float sample_radius = 0.5;
+        float strength      = 1.5;
+        float z_bias        = 0.01;
+    };
+
     class GlobalViewerSettings
     {
     public:
@@ -24,7 +37,8 @@ namespace vOS
         void m_set_current_transparency_activated(bool t){transparency_active = t;};
         void m_set_current_shadows_activated(bool s){shadows_active = s;};
         void m_set_current_ambient_occlusion_activated(bool ao){ambient_occlusion_active = ao;};
-        void m_set_current_selection_feature_activated(bool s){selection_active = s;};
+        void m_set_current_ssao_option(int s){ssao_option = s;};
+        void m_set_current_costume_options(const SSAOOptions& s){current_costume_options = s;};
 
         [[nodiscard]] bool m_get_current_selection_activated() const{return m_current_selection_activated;};
         [[nodiscard]] bool m_get_current_digging_activated() const{return m_current_digging_active;};
@@ -38,7 +52,8 @@ namespace vOS
         [[nodiscard]] bool m_get_current_transparency_activated() const{return transparency_active;};
         [[nodiscard]] bool m_get_current_shadows_activated() const{return shadows_active;};
         [[nodiscard]] bool m_get_current_ambient_occlusion_activated() const{return ambient_occlusion_active;};
-        [[nodiscard]] bool m_get_current_selection_feature_activated() const{return selection_active;};
+        [[nodiscard]] int m_get_current_ssao_option() const{return ssao_option;};
+        [[nodiscard]] SSAOOptions m_get_current_costume_options() const{return current_costume_options;};
 
 
 
@@ -49,17 +64,20 @@ namespace vOS
         int m_current_selection_mode = 0;
         bool m_isolation_started = false;
         bool m_current_digging_active = false;
-        int mesh_mode = 0;
+        int mesh_mode = Phong_Facenormals;
         float m_rounding_size = 0.3f;
-        bool m_rounding_activated = true;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
         int m_current_number_passes = 12;
 
         // booleans for the render passes
-        bool transparency_active = true;
-        bool shadows_active = true;
-        bool ambient_occlusion_active = true;
-        bool selection_active = true;
+        bool transparency_active = false;
+        bool shadows_active = false;
+        bool ambient_occlusion_active = false;
+        bool m_rounding_activated = false;
+
+        // AO
+        int ssao_option = QUALITY;
+        SSAOOptions current_costume_options;
     };
 
 }
