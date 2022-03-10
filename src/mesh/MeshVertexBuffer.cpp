@@ -11,11 +11,24 @@ namespace vOS
 
     const char* MeshVertexBuffer::PROP_BUFFER_INDEX_AND_SIZE = "BufferIndexAndSize";
 
-    MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh)
+    MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh): m_mesh(*mesh), m_current_loading_cell(mesh->cells_begin())
     {
-        m_original_vertices = get_vertices(*mesh);
-        generate_buffer(*mesh);
+        // first update the normal face attribute for all faces
+        OpenVolumeMesh::NormalAttrib normals(m_mesh);
+        normals.update_face_normals();
+        m_original_vertices = get_vertices(m_mesh);
+    }
 
+    MeshVertexBuffer::~MeshVertexBuffer()
+    {
+        delete m_vao_by_face;
+        delete m_vao_rounded;
+        delete m_sphere_vao;
+        delete m_cylinder_vao;
+    }
+
+    void MeshVertexBuffer::build_vertex_arrays()
+    {
         m_vao_by_face = new VertexArrayObject(m_positions_by_face, m_indices);
         m_vao_by_face->add_attribute(m_normals_by_face, 1, 3);
         m_vao_by_face->add_attribute(m_cell_centers_by_face, 2, 3);
@@ -91,26 +104,35 @@ namespace vOS
         m_cylinder_vao->add_attribute(m_cylinder_is_isolated, 6, 1, true);
     }
 
-    MeshVertexBuffer::~MeshVertexBuffer()
+    void MeshVertexBuffer::load_next_cell()
     {
-        delete m_vao_by_face;
-        delete m_vao_rounded;
-        delete m_sphere_vao;
-        delete m_cylinder_vao;
+        if (m_is_loading_finished)
+        {
+            return;
+        }
+        if (m_current_loading_cell->is_valid() && m_current_loading_cell != m_mesh.cells_end())
+        {
+            add_cell_by_faces(m_mesh, *m_current_loading_cell);
+            add_cell_rounded(m_mesh, *m_current_loading_cell);
+            m_current_loading_cell++;
+            m_num_loaded_cells++;
+        }
+        else
+        {
+            m_is_loading_finished = true;
+            m_average_cell_size /= (float) m_mesh.n_cells();
+            build_vertex_arrays();
+        }
     }
 
-    void MeshVertexBuffer::generate_buffer(Mesh& mesh)
+    bool MeshVertexBuffer::is_loading_finished() const
     {
-        // first update the normal face attribute for all faces
-        OpenVolumeMesh::NormalAttrib normals(mesh);
-        normals.update_face_normals();
-        // add every cell to the vertex buffer
-        for (auto c_it: mesh.cells())
-        {
-            add_cell_by_faces(mesh, c_it);
-            add_cell_rounded(mesh, c_it);
-        }
-        m_average_cell_size /= (float) mesh.n_cells();
+        return m_is_loading_finished;
+    }
+
+    float MeshVertexBuffer::get_loading_percentage()
+    {
+        return ((float) m_num_loaded_cells / (float) m_mesh.n_cells()) * 100.0f;
     }
 
     unsigned int MeshVertexBuffer::add_vertex_data_to_cell_data(
@@ -813,11 +835,11 @@ namespace vOS
 
     VertexArrayObject* MeshVertexBuffer::get_vao_rounded()
     {
-//        if (m_update_vao)
-//        {
-//            m_vao_rounded->update_attribute(m_colors_rounded, 5);
-//            m_update_vao = false;
-//        }
+        if (m_update_vao)
+        {
+            m_vao_rounded->update_attribute(m_colors_rounded, 5);
+            m_update_vao = false;
+        }
         return m_vao_rounded;
     }
 

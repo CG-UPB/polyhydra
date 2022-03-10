@@ -913,6 +913,24 @@ namespace vOS
             ImGui::TextColored(ImVec4(0, 0, 0, 1), "%s", hovered_element_name.c_str());
         }
 
+        // display mesh loading percentage
+        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+        {
+            auto mvb = m.second->get_mvb();
+            if (mvb != nullptr && !mvb->is_loading_finished())
+            {
+                ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
+                float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
+                ImGui::SetCursorPos({middle_x, topLeft.y});
+                ImGui::TextColored(
+                        ImVec4(0, 0, 0, 1),
+                        "%s",
+                        std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
+                );
+                break;
+            }
+        }
+
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
         {

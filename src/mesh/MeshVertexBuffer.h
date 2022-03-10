@@ -145,6 +145,12 @@ namespace vOS
         glm::vec3 get_face_normal(int ovm_id) {return m_face_normals[ovm_id];}
         glm::vec3 get_face_barycenter(int ovm_id) {return m_face_centers[ovm_id];}
 
+        void load_next_cell();
+
+        bool is_loading_finished() const;
+
+        float get_loading_percentage();
+
     private:
 
         static constexpr float ROUNDED_VERTEX_TYPE_FACE     = 0.0f;
@@ -154,12 +160,7 @@ namespace vOS
 
         static const char* PROP_BUFFER_INDEX_AND_SIZE;
 
-        /**
-         * adds data to VertexBuffer for each cell
-         * uses add_cell()
-         * @param mesh
-         */
-        void generate_buffer(Mesh &mesh);
+        void build_vertex_arrays();
 
         void add_cell_rounded(Mesh& mesh, Cell cell);
 
@@ -193,6 +194,11 @@ namespace vOS
         int m_face_amount = 0;
         int m_cell_start_face_index = 0;
         float m_average_cell_size;
+
+        int m_num_loaded_cells = 0;
+        OpenVolumeMesh::CellIter m_current_loading_cell;
+        bool m_is_loading_finished = false;
+        Mesh& m_mesh;
 
         std::vector<float> m_original_vertices;
 

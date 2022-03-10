@@ -302,6 +302,14 @@ namespace vOS
             m_mvb = new MeshVertexBuffer(m_mesh);
         }
         m_should_update = false;
+        if (m_mvb != nullptr && !m_mvb->is_loading_finished())
+        {
+            int load_cells_per_frame = 42;
+            for (size_t i = 0; i < load_cells_per_frame; i++)
+            {
+                m_mvb->load_next_cell();
+            }
+        }
     }
 
     void MeshObject::calculate_mesh_offset()
