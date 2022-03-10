@@ -71,6 +71,7 @@ namespace vOS
         auto slice_direction = obj->get_slice_dir(transform, view_dir);
         //auto slice_direction = data.camera.m_camera_front;
 
+        glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
         glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
 
         // Shader uniforms
@@ -78,7 +79,7 @@ namespace vOS
         m_mesh_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
         m_mesh_shader->set_uniform_mat4f("u_View", data.camera.view);
         m_mesh_shader->set_uniform_vec3f("u_lightPos", light_pos);
-        m_mesh_shader->set_uniform_vec3f("u_camPos", data.camera.position);
+        m_mesh_shader->set_uniform_vec3f("u_camPos", cam_pos);
         m_mesh_shader->set_uniform_vec3f("u_lightColor", data.light.color);
         m_mesh_shader->set_uniform_float("u_cell_size", cell_size);
         m_mesh_shader->set_uniform_vec4f("u_objectColor", obj->get_data().m_color.get_rgba());

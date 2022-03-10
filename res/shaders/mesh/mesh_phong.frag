@@ -201,7 +201,7 @@ void main()
     vec3 specular = u_spec_strength * spec * light_color;
 
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-    vec3 result = (ambient + (1.0 - shadow + 0.1) * (diffuse + specular)) / norm * used_color;
+    vec3 result = (ambient + (1.0 - shadow + 0.2) * (diffuse + specular)) / norm * used_color;
 
     FragColor = vec4(result, 1.0);
 }

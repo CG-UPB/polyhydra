@@ -126,6 +126,7 @@ void main()
     }
     ////////////////////////////////////////////////////////
 
+    mat4 cam_space_mat = u_Projection * u_View * u_Transform;
     mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
 
     vec3 pos = a_Center + (position - a_Center) * u_cell_size;
