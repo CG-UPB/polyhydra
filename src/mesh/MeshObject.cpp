@@ -153,7 +153,7 @@ namespace vOS
                 vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
             }
 
-            glm::vec3 pick_pos = VecUtil::get_center(vertices);
+            glm::vec3 pick_pos = VecUtil::get_bb_center(vertices);
 
             auto* shape = new Sphere();
             shape->set_scale(0.82f, 0.82f, 0.82f);

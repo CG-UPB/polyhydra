@@ -55,7 +55,9 @@ namespace vOS
         std::vector<float> vertex_is_triangle;
         std::vector<float> vertex_is_digged;
         std::vector<float> vertex_is_isolated;
-        std::vector<float> face_center_or_to_vertex;
+        std::vector<float> face_center;
+        std::vector<float> to_vertex;
+        std::vector<float> dihedral_angle;
         std::vector<unsigned int> indices;
     };
 
@@ -161,9 +163,18 @@ namespace vOS
 
         void add_cell_rounded(Mesh& mesh, Cell cell);
 
-        unsigned int add_vertex_data_to_cell_data(RoundedCellData& data, float type, const glm::vec3& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv, float angle);
+        unsigned int add_vertex_data_to_cell_data(
+                RoundedCellData& data,
+                float type,
+                const glm::vec3& pos,
+                const glm::vec3& norm,
+                const glm::vec4& col,
+                const glm::vec3& face_center,
+                const glm::vec3& to_vertex,
+                float dihedral_angle
+                );
 
-        void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2);
+        void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2) const;
 
         void add_cell_by_faces(Mesh& mesh, Cell cell);
 
@@ -223,7 +234,9 @@ namespace vOS
         std::vector<float> m_is_digged_rounded;
         std::vector<float> m_is_isolated_rounded;
         std::vector<float> m_vertex_types_rounded;
-        std::vector<float> m_face_center_or_to_vertex_rounded;
+        std::vector<float> m_face_center_rounded;
+        std::vector<float> m_to_vertex_rounded;
+        std::vector<float> m_dihedral_angle_rounded;
         int m_current_rounded_index = 0;
 
         // selection
