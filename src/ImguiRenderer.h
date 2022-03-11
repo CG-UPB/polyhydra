@@ -65,6 +65,10 @@ namespace vOS
          * Renders UI
          */
         void post_render_step();
+
+        void load_dark_mode();
+        void load_light_mode();
+
         /**
          * @return GLFW Window pointer
          */
@@ -85,9 +89,6 @@ namespace vOS
          * The UI style choices are made here
          */
         void initImGuiStyle();
-
-        void load_dark_mode();
-        void load_light_mode();
 
         /**
          * Window width

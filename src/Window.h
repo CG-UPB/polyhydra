@@ -527,6 +527,10 @@ namespace vOS {
          */
         void unselect_all_elements();
 
+        void load_light_mode();
+
+        void load_dark_mode();
+
         // Generally Called when the User does anything to the Mesh (debug)
         void_callback m_on_general_update = default_callback_function;
 
@@ -552,6 +556,12 @@ namespace vOS {
         friend class Input;
 
         // Variables //////////////////////////////////////////////////////////////////////////////////////////////////
+
+        const int UI_COLOR_MODE_LIGHT = 0;
+        const int UI_COLOR_MODE_DARK = 1;
+
+        int m_ui_color_mode = UI_COLOR_MODE_LIGHT;
+        bool m_update_ui_color_mode = false;
 
         // Counter to ensure every new Shape has a new ID
         unsigned int shape_id_counter = 0;

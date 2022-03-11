@@ -142,6 +142,23 @@ namespace vOS
         m_imgui_renderer->pre_render_step();
 
         rendering_mutex.lock();
+
+        // Update ui color mode if necessary
+        if (m_update_ui_color_mode)
+        {
+            if (m_ui_color_mode == UI_COLOR_MODE_LIGHT)
+            {
+                m_imgui_renderer->load_light_mode();
+                m_mesh_view->m_background_pass.set_background_color({1.0f, 1.0f, 1.0f, 1.0f});
+            }
+            else if (m_ui_color_mode == UI_COLOR_MODE_DARK)
+            {
+                m_imgui_renderer->load_dark_mode();
+                m_mesh_view->m_background_pass.set_background_color({0.2f, 0.2f, 0.2f, 1.0f});
+            }
+            m_update_ui_color_mode = false;
+        }
+
         // Draw all of our panels and renderers
 
         // Mesh View
@@ -862,6 +879,18 @@ namespace vOS
         }
 
         rendering_mutex.unlock();
+    }
+
+    void Window::load_light_mode()
+    {
+        m_ui_color_mode = UI_COLOR_MODE_LIGHT;
+        m_update_ui_color_mode = true;
+    }
+
+    void Window::load_dark_mode()
+    {
+        m_ui_color_mode = UI_COLOR_MODE_DARK;
+        m_update_ui_color_mode = true;
     }
 
     // Read Methods ///////////////////////////////////////////////////////////////////////////////

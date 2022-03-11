@@ -895,9 +895,9 @@ namespace vOS
 
         // show frame time and fps
         ImGui::SetCursorPos(topLeft);
-        ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+        ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-        ImGui::TextColored(ImVec4(0, 0, 0, 1), "%.1f fps", ImGui::GetIO().Framerate);
+        ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 
         // Show hovered element type and id
 
@@ -910,7 +910,7 @@ namespace vOS
             hovered_element_name += std::to_string(m_hovered_element_id);
 
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::TextColored(ImVec4(0, 0, 0, 1), "%s", hovered_element_name.c_str());
+            ImGui::Text( "%s", hovered_element_name.c_str());
         }
 
         // display mesh loading percentage
@@ -922,8 +922,7 @@ namespace vOS
                 ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
                 float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
                 ImGui::SetCursorPos({middle_x, topLeft.y});
-                ImGui::TextColored(
-                        ImVec4(0, 0, 0, 1),
+                ImGui::Text(
                         "%s",
                         std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
                 );
