@@ -3,9 +3,8 @@
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
-layout (location = 3) in float a_peelDepth;
-layout (location = 4) in float a_isBoundary;
-layout (location = 5) in float a_is_digged;
+layout (location = 3) in float a_peel_depth;
+layout (location = 4) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
 
 uniform mat4 u_mesh_transform;
@@ -29,23 +28,29 @@ void main()
     ////////////////////////////////////////////////////////
     v_visible = 1;
 
-    vec3 min = vec3(u_mesh_transform * vec4(u_min, 1.0));
-    vec3 max = vec3(u_mesh_transform * vec4(u_max, 1.0));
-
-    vec4 temp_dir = vec4(normalize(u_slice_direction), 0.0);
-    if (u_slice_locked)
+    if (a_is_digged == 0.0)
     {
-        temp_dir = u_mesh_transform * temp_dir;
+        v_visible = 0;
+    }
+    if (a_is_isolated == 0.0)
+    {
+        v_visible = 0;
     }
 
+    mat4 view_transform = u_view * u_mesh_transform;
+
+    vec3 min_slice = vec3(view_transform * vec4(u_min, 1.0));
+    vec3 max_slice = vec3(view_transform * vec4(u_max, 1.0));
+
+    vec4 temp_dir = view_transform * vec4(normalize(u_slice_direction), 0.0);
     vec3 slice_dir = temp_dir.xyz;
 
-    vec3 slice_point = max + u_slice_depth * (min - max);
+    vec3 slice_point = max_slice + u_slice_depth * (min_slice - max_slice);
     vec3 dir = slice_dir;
-    vec3 center =  vec3(u_mesh_transform * vec4(a_center, 1.0));
+    vec3 center = vec3(view_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peelDepth < u_peel_depth || angle > 0 || a_is_digged == 0.0 || a_is_isolated == 0.0)
+    if (a_peel_depth < u_peel_depth || angle > 0)
     {
         v_visible = 0;
     }

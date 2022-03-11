@@ -71,26 +71,24 @@ namespace vOS
 
 
         // Transform
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 light_projection = data.light.projection;
         glm::mat4 light_view = data.light.view;
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
-        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform() * positionOffset;
-
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform();
+        glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations
         float cell_size = obj->get_data().m_cell_size;
         int peel_depth = obj->get_data().m_peel_level;
         float slice_depth = obj->get_data().m_slice_level;
 
-        auto bb = obj->get_transformed_bb(transform);
+        auto bb = obj->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
         // View Operations
-        glm::mat4 view_inv = glm::inverse(data.camera.view);
-        glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
-        auto slice_direction = obj->get_slice_dir(transform, view_dir);
+        glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
+        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
 
         // Shader uniforms
         m_shadow_shader->set_uniform_float("u_cell_size", cell_size);

@@ -55,7 +55,9 @@ namespace vOS
         std::vector<float> vertex_is_triangle;
         std::vector<float> vertex_is_digged;
         std::vector<float> vertex_is_isolated;
-        std::vector<float> face_center_or_to_vertex;
+        std::vector<float> face_center;
+        std::vector<float> to_vertex;
+        std::vector<float> dihedral_angle;
         std::vector<unsigned int> indices;
     };
 
@@ -71,21 +73,21 @@ namespace vOS
          * @param value id value
          * @return
          */
-        int to_vertexID(int value);
+        int to_vertex_id(int value);
 
         /**
          * converts selection id of edges to OVM id
          * @param value id value
          * @return
          */
-        int to_edgeID(int value);
+        int to_edge_id(int value);
 
         /**
          * converts selection id of faces to OVM id
          * @param value id value
          * @return
          */
-         int to_faceID(int value);
+         int to_halfface_id(int value);
 
         [[nodiscard]] int get_num_selection_vertices() const;
 
@@ -96,6 +98,8 @@ namespace vOS
         VertexArrayObject *get_vao_by_face();
 
         VertexArrayObject* get_vao_rounded();
+
+        VertexArrayObject* get_vertex_only_vao();
 
         [[nodiscard]] float get_average_cell_size() const;
 
@@ -141,6 +145,12 @@ namespace vOS
         glm::vec3 get_face_normal(int ovm_id) {return m_face_normals[ovm_id];}
         glm::vec3 get_face_barycenter(int ovm_id) {return m_face_centers[ovm_id];}
 
+        void load_next_cell();
+
+        bool is_loading_finished() const;
+
+        float get_loading_percentage();
+
     private:
 
         static constexpr float ROUNDED_VERTEX_TYPE_FACE     = 0.0f;
@@ -148,18 +158,24 @@ namespace vOS
         static constexpr float ROUNDED_VERTEX_TYPE_CORNER   = 2.0f;
         static constexpr float ROUNDED_VERTEX_TYPE_CENTER   = 3.0f;
 
-        /**
-         * adds data to VertexBuffer for each cell
-         * uses add_cell()
-         * @param mesh
-         */
-        void generate_buffer(Mesh &mesh);
+        static const char* PROP_BUFFER_INDEX_AND_SIZE;
+
+        void build_vertex_arrays();
 
         void add_cell_rounded(Mesh& mesh, Cell cell);
 
-        unsigned int add_vertex_data_to_cell_data(RoundedCellData& data, float type, const glm::vec3& pos, const glm::vec3& norm, const glm::vec4& col, const glm::vec3& fc_or_tv, float angle);
+        unsigned int add_vertex_data_to_cell_data(
+                RoundedCellData& data,
+                float type,
+                const glm::vec3& pos,
+                const glm::vec3& norm,
+                const glm::vec4& col,
+                const glm::vec3& face_center,
+                const glm::vec3& to_vertex,
+                float dihedral_angle
+                );
 
-        void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2);
+        void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2) const;
 
         void add_cell_by_faces(Mesh& mesh, Cell cell);
 
@@ -179,6 +195,11 @@ namespace vOS
         int m_cell_start_face_index = 0;
         float m_average_cell_size;
 
+        int m_num_loaded_cells = 0;
+        OpenVolumeMesh::CellIter m_current_loading_cell;
+        bool m_is_loading_finished = false;
+        Mesh& m_mesh;
+
         std::vector<float> m_original_vertices;
 
         VertexArrayObject* m_vao_by_face = nullptr;
@@ -187,11 +208,12 @@ namespace vOS
         VertexArrayObject* m_vao_transparent_rounded = nullptr;
         VertexArrayObject* m_sphere_vao = nullptr;
         VertexArrayObject* m_cylinder_vao = nullptr;
+        VertexArrayObject* m_vertex_only_vao = nullptr;
 
         // ovm ids, in the order that we render them
-        std::vector<int> m_vertex_ids;
-        std::vector<int> m_edge_ids;
-        std::vector<int> m_face_ids;
+        std::vector<int> m_selection_vertices_ids;
+        std::vector<int> m_selection_edges_ids;
+        std::vector<int> m_selection_halffaces_ids;
 
         // to be used for rounded cells as well, no need to calculate twice
         std::unordered_map<int, glm::vec3> m_cell_centers;
@@ -218,7 +240,9 @@ namespace vOS
         std::vector<float> m_is_digged_rounded;
         std::vector<float> m_is_isolated_rounded;
         std::vector<float> m_vertex_types_rounded;
-        std::vector<float> m_face_center_or_to_vertex_rounded;
+        std::vector<float> m_face_center_rounded;
+        std::vector<float> m_to_vertex_rounded;
+        std::vector<float> m_dihedral_angle_rounded;
         int m_current_rounded_index = 0;
 
         // selection

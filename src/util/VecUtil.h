@@ -13,6 +13,20 @@ namespace vOS
     {
     public:
 
+        static void print_mat(const glm::mat4& mat)
+        {
+            std::cout << "[";
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    std::cout << mat[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << "]" << std::endl;
+        }
+
         [[nodiscard]] static inline std::string to_string(const glm::vec3& vec) {
             return std::string("[" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " + std::to_string(vec.z) + "]");
         }
@@ -63,7 +77,7 @@ namespace vOS
         {
             glm::vec3 min = vertices[0];
             glm::vec3 max = vertices[0];
-            for (int i = 1; i < vertices.size(); i++)
+            for (size_t i = 1; i < vertices.size(); i++)
             {
                 const glm::vec3& vertex = vertices[i];
                 if (vertex.x < min.x)
@@ -91,12 +105,22 @@ namespace vOS
             return std::make_pair(min, max);
         }
 
-        [[nodiscard]] static inline glm::vec3 get_center(const std::vector<glm::vec3>& vertices)
+        [[nodiscard]] static inline glm::vec3 get_bb_center(const std::vector<glm::vec3>& vertices)
         {
             auto bb = get_bounding_box(vertices);
             auto min = bb.first;
             auto max = bb.second;
             return min + (max - min) * 0.5f;
+        }
+
+        [[nodiscard]] static inline glm::vec3 get_center(const std::vector<glm::vec3>& vertices)
+        {
+            glm::vec3 average(0.0f);
+            for (auto& vertex : vertices)
+            {
+                average += vertex;
+            }
+            return average /= (float) vertices.size();
         }
     };
 }

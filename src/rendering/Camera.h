@@ -38,6 +38,8 @@ namespace vOS {
 
         void look_at(glm::vec3 target);
 
+        [[nodiscard]] const glm::vec3& get_front() const;
+
         // Matrices
         glm::mat4 world;
         glm::mat4 view;
@@ -72,11 +74,11 @@ namespace vOS {
         glm::vec3 m_previous_position = {0,0,0};
         glm::vec3 m_previous_movement_vector = {0,0,0};
 
-        float m_yaw = -90.0f;
+        float m_yaw = 0.0f;
         float m_pitch = 0.0f;
-        float m_vertical_speed = 5.0f;
-        float m_horizontal_speed = 10.0f;
-        float m_sensitivity = 0.3f;
+        float m_vertical_speed = 6.0f;
+        float m_horizontal_speed = 7.0f;
+        float m_sensitivity = 0.2f;
         float m_zoom = 55.0f;
         /*
          * Moves the Camera one a step closer to a desired focus point with focus viewing direction

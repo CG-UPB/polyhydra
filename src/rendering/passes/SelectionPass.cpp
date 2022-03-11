@@ -19,8 +19,6 @@ namespace vOS {
     {
         // Get MeshObject
         MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return;
 
         // GL Setup
         glEnable(GL_CULL_FACE);
@@ -32,21 +30,21 @@ namespace vOS {
         glDisable(GL_BLEND);
 
         // Transform Data
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 view_transform = data.camera.view * transform;
 
-        // Cell Data
-        float cell_size = Window::instance().get_mesh_cell_size(mesh_id);
-        int peel_depth = Window::instance().get_mesh_peel_level(mesh_id);
-        float slice_depth = Window::instance().get_mesh_slice_level(mesh_id);
-        auto bb = obj->get_transformed_bb(transform);
+        // Cell operations
+        float cell_size = obj->get_data().m_cell_size;
+        int peel_depth = obj->get_data().m_peel_level;
+        float slice_depth = obj->get_data().m_slice_level;
+
+        auto bb = obj->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
-        // View Data
-        glm::mat4 view_inv = glm::inverse(data.camera.view);
-        glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
-        auto slice_direction = obj->get_slice_dir(transform, view_dir);
+        // View Operations
+        glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
+        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
 
         // Get Selection Mode
         // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
@@ -104,6 +102,7 @@ namespace vOS {
             m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
             m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+            m_selection_cylinder_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
 
             m_cylinder_vao->draw_instanced(m_num_edges);
 
@@ -132,6 +131,9 @@ namespace vOS {
             m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
             m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_selection_sphere_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+            m_selection_sphere_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+
+
 
             m_sphere_vao->draw_instanced(m_num_vertices);
 

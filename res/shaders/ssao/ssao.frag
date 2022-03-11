@@ -80,7 +80,7 @@ void main()
 
         // the exponent changes the aggressivenes of the mip-mapping
         // the higher the exponent, the earlier we sample from lower mips, the less cache misses we have
-        float level = floor(pow(1.0 + sample_dist, 6.0));
+        float level = floor(pow(1.0 + sample_dist, 10.0));
 
         // now get the depth value of our sample
         vec3 sample_xyz = get_position(offset.xy, level);

@@ -1,6 +1,6 @@
 #version 330 core
 
-flat in int v_instance_id;
+flat in int v_edge_id;
 flat in int v_visible;
 
 uniform int u_selection_offset;
@@ -26,7 +26,7 @@ void main()
         discard;
     }
 
-    ivec4 id_color = get_id_bits(v_instance_id + u_selection_offset);
+    ivec4 id_color = get_id_bits(v_edge_id + u_selection_offset);
     fragment_color = vec4(float(id_color.r) / 255.0, float(id_color.g) / 255.0, float(id_color.b) / 255.0, float(id_color.a) / 255.0);
     if (u_debug_mode)
     {
