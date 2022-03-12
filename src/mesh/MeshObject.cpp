@@ -414,7 +414,17 @@ namespace vOS
     int MeshObject::calculate_selection_size() const
     {
         // make sure that we choose the biggest possible vertex, edge or face id as the offset
-        return (int) m_mesh->n_cells() * 12;
+        int size = 0;
+        for (auto hf_it : m_mesh->halffaces())
+        {
+            int num_halfface_vertices = 0;
+            for (auto vhf_it : m_mesh->halfface_vertices(hf_it))
+            {
+                num_halfface_vertices++;
+            }
+            size += num_halfface_vertices + 1;
+        }
+        return size;
     }
 
     int MeshObject::get_num_visible_vertices() const
