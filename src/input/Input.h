@@ -22,6 +22,13 @@ namespace vOS {
         static void cleanup();
 
         /**
+         * Returns true if given imgui key is pressed
+         * Takes rebinds into consideration
+         * @param imgui_key_id
+         * @return
+         */
+        static bool key_pressed(int imgui_key_id);
+        /**
          * Everytime <from> is pressed, <to> will be called
          */
         static void set_keybind(int from, int to);
@@ -80,6 +87,8 @@ namespace vOS {
          * Movement vector Z direction
          */
         static float get_wasd_movement_vector_Z();
+
+        static bool controll_pressed();
 
         // reset the current scroll offset for the next frame
         static void reset_offset();

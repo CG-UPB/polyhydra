@@ -109,6 +109,10 @@ namespace vOS
 
     void Camera::handle_input()
     {
+        // If left ctrl key is pressed, the object move mode is activbe which requires the camera stand still
+        bool ignore_input = Input::controll_pressed();
+        if(ignore_input)
+            return;
 
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
         ImVec2 vMax = ImGui::GetWindowContentRegionMax();
@@ -412,8 +416,23 @@ namespace vOS
         //std::cout << "Des Pos: " << VecUtil::to_string(m_desired_position) << " Des Target: " << VecUtil::to_string(m_desired_front) << std::endl;
     }
 
+    glm::vec3 Camera::get_viewport_size()
+    {
+        return {m_screen_width, m_screen_height, 1};
+    }
+
     const glm::vec3& Camera::get_front() const
     {
         return m_camera_front;
+    }
+
+    const glm::vec3& Camera::get_up() const
+    {
+        return m_camera_up;
+    }
+
+    const glm::vec3& Camera::get_right() const
+    {
+        return m_camera_right;
     }
 }

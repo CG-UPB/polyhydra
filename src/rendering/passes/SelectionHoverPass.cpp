@@ -108,7 +108,6 @@ namespace vOS
 
     void SelectionHoverPass::hover(const RenderData& data, int mesh_id, int type, int id)
     {
-
         // Get MeshObject
         MeshObject* mesh = Window::instance().get_mesh_obj(mesh_id);
         if(mesh == nullptr)
@@ -124,6 +123,7 @@ namespace vOS
         m_hovered_type = type;
         m_hovered_id = id;
         m_hovered_mesh = mesh_id;
+
 
         auto mesh_transform = mesh->get_data().get_transform();
 
