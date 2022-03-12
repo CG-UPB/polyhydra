@@ -49,6 +49,7 @@ namespace vOS
         // Set Camera Viewport Size
         m_render_data.camera.set_viewport_size(width, height);
 
+        m_mover.set_references(&m_render_data.camera, &m_selection_hover_pass);
 //        // setup light including projection and view for shadow map
 //        m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
 //        m_render_data.light.world = glm::mat4(1.0f);
@@ -308,6 +309,7 @@ namespace vOS
         for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
             auto mesh = m.second;
+
             if (!mesh->get_data().m_visible)
             {
                 continue;
@@ -753,7 +755,7 @@ namespace vOS
             {
                 m.second->get_mvb()->reset_hover();
             }
-            m_selection_hover_pass.hover(m_render_data, 0, 0, 0);
+            m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
         }
     }
 
@@ -814,6 +816,9 @@ namespace vOS
 
         // Update Camera
         m_render_data.camera.update();
+
+        // Update Mesh Mover
+        m_mover.update();
 
         // Render Meshes
         render_pre_pass();

@@ -25,6 +25,8 @@ namespace vOS {
     public:
         Camera();
 
+        glm::vec3 get_viewport_size();
+
         void set_viewport_size(float width, float height);
         void set_mode(int mode, float orbital_radius = 10);
 
@@ -39,6 +41,8 @@ namespace vOS {
         void look_at(glm::vec3 target);
 
         [[nodiscard]] const glm::vec3& get_front() const;
+        [[nodiscard]] const glm::vec3& get_up() const;
+        [[nodiscard]] const glm::vec3& get_right() const;
 
         // Matrices
         glm::mat4 world;

@@ -72,6 +72,11 @@ namespace vOS
         return m_keybinds.find(key) != m_keybinds.end() ? m_keybinds[key] : key;
     }
 
+    bool Input::key_pressed(int imgui_key_id)
+    {
+        return ImGui::IsKeyDown(get_key_bind(imgui_key_id));
+    }
+
     void Input::update()
     {
         if (!(m_accept_inputs) || m_ignore_keyboard_commands)
@@ -131,6 +136,7 @@ namespace vOS
         m_scroll_offset = {0.0f, 0.0f};
     }
 
+
     // use the ImGui methods for this, since the glfw callback is not called every frame, which causes lags while moving the mouse
     bool Input::mouse_pressed()
     { return ImGui::IsMouseDown(ImGuiMouseButton_Left); }
@@ -140,6 +146,11 @@ namespace vOS
 
     double Input::get_mouse_Y()
     { return ImGui::GetMousePos().y; }
+
+    bool Input::controll_pressed()
+    {
+        return key_pressed(GLFW_KEY_LEFT_CONTROL);
+    }
 
     float Input::get_wasd_movement_vector_X()
     { return m_movement_vector.x; }

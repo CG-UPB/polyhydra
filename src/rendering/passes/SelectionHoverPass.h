@@ -32,6 +32,7 @@ namespace vOS
          */
         void hover(const RenderData& data, int mesh_id, int type, int id);
 
+        int get_hovered_mesh_object() {return m_hovered_mesh;};
 
         glm::vec3 m_zoom_point;
     private:

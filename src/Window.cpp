@@ -671,7 +671,7 @@ namespace vOS
 
     MeshObject* Window::get_mesh_obj(int index)
     {
-        return m_mesh_objects[index];
+        return m_mesh_objects.find(index) != m_mesh_objects.end() ? m_mesh_objects[index] : nullptr;
     }
 
 

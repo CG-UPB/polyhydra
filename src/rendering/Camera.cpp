@@ -109,6 +109,10 @@ namespace vOS
 
     void Camera::handle_input()
     {
+        // If left ctrl key is pressed, the object move mode is activbe which requires the camera stand still
+        bool ignore_input = Input::controll_pressed();
+        if(ignore_input)
+            return;
 
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
         ImVec2 vMax = ImGui::GetWindowContentRegionMax();
@@ -281,21 +285,34 @@ namespace vOS
         {
             m_mode = FLY;
 
-            m_camera_front = normalize(m_camera_front);
-            std::cout << VecUtil::to_string(m_camera_front) << " to " << std::endl;
+            m_camera_front = glm::normalize(m_camera_front);
+            //std::cout << VecUtil::to_string(m_camera_front) << " initial " << std::endl;
             // Flying Mode
             m_pitch = asin(m_camera_front.y);
-            m_yaw = acos((m_camera_front.x / cos(m_pitch)));
+            float acos_product = (m_camera_front.x / cos(m_pitch));
+            acos_product = (acos_product <= -1 ? -0.999f : (acos_product >= 1 ? 0.999f : acos_product));
+            m_yaw = acos(acos_product);
 
             m_pitch = glm::degrees(m_pitch);
             m_yaw = glm::degrees(m_yaw);
 
-            // There is a weird special case when the camera front vector is (0,0,-1)
-            // Here the yaw needs to be rotated another 180 degrees
-            if (m_camera_front.x == 0 && m_camera_front.y == 0)
+            // Test the yaw and pitch
+            glm::vec3 front;
+            front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+            front.y = sin(glm::radians(m_pitch));
+            front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+
+
+            // If the resulting test direction is not like the initial direction, we rotate yaw by 180
+            if(glm::length(front - m_camera_front) > 0.1f) {
+                //std::cout << "deploying change" << std::endl;
                 m_yaw += 180;
-            std::cout << m_pitch << " " << m_yaw << std::endl;
-        } else if (mode == 1)
+            }
+            //std::cout << VecUtil::to_string(front) << " test " << std::endl;
+            // Another problem occus when both pitch is 90 degress, in which case rotation would screw up because of the missing roll variable
+            m_pitch = glm::clamp(m_pitch, -89.0f, 89.0f);
+            // std::cout << m_pitch << " " << m_yaw << std::endl;
+        }else if(mode == 1)
         {
             m_mode = ORBIT;
 
@@ -384,16 +401,38 @@ namespace vOS
         m_original_position = position;
         m_original_front = m_camera_front;
         // Set Desired Data
-        m_desired_position = target_position + target_normal * radius;
         m_desired_front = -target_normal;
 
+        // We must avoid situations where the  pitch will be outside of a 89 degree bound
+        if(abs(m_desired_front.y) > 0.9)
+        {
+            m_desired_front.x = 0.12;
+        }
+        m_desired_front = glm::normalize(m_desired_front);
+
+        m_desired_position = target_position + -m_desired_front * radius;
         m_focus_mode_timer = m_focus_mode_total_time;
         //std::cout << "Org Pos: " << VecUtil::to_string(m_original_position) << " Org Target: " << VecUtil::to_string(m_original_front) << std::endl;
         //std::cout << "Des Pos: " << VecUtil::to_string(m_desired_position) << " Des Target: " << VecUtil::to_string(m_desired_front) << std::endl;
     }
 
+    glm::vec3 Camera::get_viewport_size()
+    {
+        return {m_screen_width, m_screen_height, 1};
+    }
+
     const glm::vec3& Camera::get_front() const
     {
         return m_camera_front;
+    }
+
+    const glm::vec3& Camera::get_up() const
+    {
+        return m_camera_up;
+    }
+
+    const glm::vec3& Camera::get_right() const
+    {
+        return m_camera_right;
     }
 }
