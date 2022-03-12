@@ -61,19 +61,13 @@ void main()
     }
     ////////////////////////////////////////////////////////
 
-
-    vec3 off = a_center + (a_offset - a_center) * u_cell_size;
-
     v_vertex_id = gl_InstanceID;
-
-    vec3 view_dir = normalize(off - u_cam_pos);
-    vec3 normal = mat3(transpose(inverse(u_mesh_transform))) * a_normal;
 
     // currently, no spheres are discarded, but we could discard those whose vertex is invisible
     v_discard = 0;
     //v_discard = dot(view_dir, normal) > 0.01 ? 1 : 0;
 
-    vec3 offset = off;
+    vec3 offset = a_center + (a_offset - a_center) * u_cell_size;
     float width = 0.25 * u_average_cell_size;
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,

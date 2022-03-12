@@ -88,6 +88,7 @@ namespace vOS
         {
             // Run Dijkstra linearly
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
+            Window::instance().load_dark_mode();
             //Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
             Window::instance().open();
         }else{
@@ -302,7 +303,8 @@ namespace vOS
                     box->set_base_color(1.0f, 0.2f, 0.2f);
                 }
                 window.add_shape(box);*/
-                window.select_element(0, res[i], 1);
+                auto vf = m_mesh.vertex_faces(vertex).first;
+                window.select_element(0, vf->idx(), 0);
                 first = false;
 
                 std::cout << "Vertex: " << vertex.idx() << std::endl;

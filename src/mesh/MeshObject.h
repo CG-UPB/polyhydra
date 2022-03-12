@@ -203,7 +203,7 @@ namespace vOS
          * Uses OVM FileManager to load Mesh from file
          * @param file_path path to file
          */
-        void load_from_file(std::string file_path);
+        void load_from_file(const std::string& file_path);
 
         /**
          * Uses OVM FileManager to save Mesh to file

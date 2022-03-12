@@ -187,7 +187,7 @@ void main()
 
     // Phong Shading
 
-    vec3 used_color = mix(u_objectColor.rgb, v_color.rgb, 0.0);
+    vec3 used_color = mix(u_objectColor.rgb, v_color.rgb, v_color.a);
 
     //diffuse
     //vec3 l = normalize(u_lightPos - v_pos);

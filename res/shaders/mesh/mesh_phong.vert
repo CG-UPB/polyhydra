@@ -13,6 +13,7 @@ layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 12) in float a_isSelected;
+layout (location = 13) in float a_hovered;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -148,6 +149,11 @@ void main()
         // Override inverse color with preset selection color
         selection_color = mix(selection_color, u_selection_color.xyz, u_selection_color.w);
         v_Color =vec4(selection_color, 1);
+    }
 
+    if (a_hovered != 0.0)
+    {
+        v_Color += vec4(0.45, 0.1, 0.1, 0.0);
+        return;
     }
 }

@@ -31,6 +31,8 @@ void main()
     mat4 rotation = inverse(get_rotation_matrix(rot_axis, rot_angle));
 
     vec3 offset = u_from_vertex + (u_to_vertex - u_from_vertex) * 0.5;
+    vec4 normalization = vec4(1.0, 0.0, 0.0, 1.0);
+    normalization = u_view * u_mesh_transform * normalization;
     float width = 0.1 * u_average_cell_size;
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,

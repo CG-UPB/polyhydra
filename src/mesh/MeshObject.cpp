@@ -6,13 +6,10 @@
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include "../panels/LogWindow.h"
 #include <array>
-#include <string>
+#include <utility>
 #include "../Window.h"
 #include "../rendering/meshes/CommonMeshes.h"
-#include "../rendering/shapes/Sphere.h"
-#include "../rendering/shapes/Cylinder.h"
-#include "../settings/GlobalViewerSettings.h"
-#include "../util/VecUtil.h"
+#include "MeshProperties.h"
 
 namespace vOS
 {
@@ -21,40 +18,21 @@ namespace vOS
     {
         // empty mesh
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
-
         m_should_update = false;
-
-        OpenVolumeMesh::CellPropertyT<bool> diggingProp = m_mesh->request_cell_property<bool>("DiggingProperty");
-        diggingProp->set_persistent(true);
-
-        for(auto cell : m_mesh->cells())
-        {
-            diggingProp[cell] = true;
-        }
-
-        OpenVolumeMesh::VertexPropertyT<bool> highlightProp = m_mesh->request_vertex_property<bool>("VertexHighlight");
-        highlightProp->set_persistent(true);
-        OpenVolumeMesh::VertexPropertyT <OpenVolumeMesh::Vec3f> highlightColProp = m_mesh->request_vertex_property<OpenVolumeMesh::Vec3f>(
-                "VertexHighlightColor");
-        highlightColProp->set_persistent(true);
-
     }
 
     MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, std::string name) : MeshObject()
     {
         set_mesh(mesh);
-
-        mesh_name = name;
+        mesh_name = std::move(name);
     }
 
-    void MeshObject::load_from_file(std::string file_path)
+    void MeshObject::load_from_file(const std::string& file_path)
     {
         // open OVM FileManager
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
-
         m_should_update = true;
-
     }
 
     void MeshObject::write_to_file(const std::string &file_path) const
@@ -278,11 +256,7 @@ namespace vOS
         // copy given mesh
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
         m_mesh->assign(mesh);
-
-        OpenVolumeMesh::CellPropertyT<int> cell_peel_property = m_mesh->request_cell_property<int>("PeelDepth");
-        cell_peel_property->set_persistent(true);
-        OpenVolumeMesh::VertexPropertyT<int> vertex_peel_property = m_mesh->request_vertex_property<int>("PeelDepth");
-        vertex_peel_property->set_persistent(true);
+        MeshProperties::setup_mesh_properties(*m_mesh);
 
         // calculates the depth of vertices and cells (saved in peel_property for cells)
         calculate_peel_depth();
@@ -290,18 +264,12 @@ namespace vOS
         // calculates the amount of ids the mesh needs
         calculate_mesh_offset();
 
-        m_should_update = true;
+        delete m_mvb;
+        m_mvb = new MeshVertexBuffer(m_mesh);
     }
 
     void MeshObject::update_vertex_buffer()
     {
-        if (m_should_update)
-        {
-            delete m_mvb;
-            // creates new MeshVertexBuffer that extracts each Cell from OVM mesh and get them ready for rendering pipeline
-            m_mvb = new MeshVertexBuffer(m_mesh);
-        }
-        m_should_update = false;
         if (m_mvb != nullptr && !m_mvb->is_loading_finished())
         {
             int load_cells_per_frame = 42;
