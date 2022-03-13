@@ -561,10 +561,12 @@ namespace vOS
 
                 if (type == SELECTION_TYPE_FACE)
                 {
+                    face_id_mesh = m.first;
                     int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                     auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
                     auto ch = mesh->m_mesh->incident_cell(chf);
                     mesh->get_mvb()->hover_halfface(halfface_id);
+                    face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(OpenVolumeMesh::HalfFaceHandle(halfface_id)).idx();
 
                     if (settings.m_get_current_isolation_state())
                     {
@@ -604,6 +606,7 @@ namespace vOS
                     }
                     else
                     {
+
                         m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
