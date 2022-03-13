@@ -177,10 +177,18 @@ void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
         main_face_iter += element_id;
 
         int main_halfface_id = ovm_mesh->face_halffaces(*main_face_iter)[0].idx();
-        auto center_point = mesh_object->get_mvb()->get_halfface_barycenter(main_halfface_id);
+        int second_halfface_id = ovm_mesh->face_halffaces(*main_face_iter)[1].idx();
+        //std::cout << "First: " << main_halfface_id << " Second: " << second_halfface_id <<std::endl;
+        auto center_point_a = mesh_object->get_mvb()->get_halfface_barycenter(main_halfface_id);
+        auto center_point_b = mesh_object->get_mvb()->get_halfface_barycenter(second_halfface_id);
+        auto center_point = center_point_a;
 
+        if(glm::length(center_point) <= 0.001f)
+            center_point = center_point_b;
+
+        //std::cout << "First: " <<  VecUtil::to_string(mesh_object->get_mvb()->get_halfface_barycenter(main_halfface_id)) << " Second: " <<   VecUtil::to_string(mesh_object->get_mvb()->get_halfface_barycenter(second_halfface_id)) <<std::endl;
         // Go through all triangles
-        // If their distance is near enough, then chances increase that they get colored
+        // If their distance is near enough to the selected element, then chances increase that they get colored
         for(auto face_iter : ovm_mesh->halffaces())
         {
             int id = face_iter.idx();
@@ -189,12 +197,12 @@ void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
             auto distance = glm::length(barycenter - center_point);
 
             float chance = (m_splash_size* m_mesh_scalar_value - distance);
-            std::cout << distance << " chance: " << chance << std::endl;
+            //std::cout << distance << " chance: " << chance << std::endl;
             if(chance < 0)
                 chance = 0;
 
             bool do_color = (rand()%100)/100.0f < chance;
-            if(do_color)
+            if(chance > 0)
             {
                 int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(face_iter).idx();
                 window->set_face_color(mesh_id, face_id, splash_color);
