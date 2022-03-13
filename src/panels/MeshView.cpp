@@ -560,13 +560,15 @@ namespace vOS
 
                 if (type == SELECTION_TYPE_FACE)
                 {
+                    int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
+                    mesh->get_mvb()->hover_halfface(halfface_id);
+
                     if (GlobalViewerSettings::getInstance()->m_get_current_isolation_state())
                     {
 
                         auto mvb = mesh->get_mvb();
                         mvb->start_isolation();
 
-                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                         OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
                         int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(
                                 halfface).idx();
@@ -706,6 +708,8 @@ namespace vOS
                         Window::instance().select_element(m.first, vertex_id, type);
                         Window::instance().rendering_mutex.lock();
                     }
+
+                    mesh->get_mvb()->reset_hover();
                 }
                 else if (type == SELECTION_TYPE_EDGE)
                 {
@@ -722,6 +726,7 @@ namespace vOS
                         Window::instance().select_element(m.first, edge_id, type);
                         Window::instance().rendering_mutex.lock();
                     }
+                    mesh->get_mvb()->reset_hover();
                 }
 
                 break;
@@ -746,6 +751,10 @@ namespace vOS
         auto active_mesh = Window::instance().get_focused_mesh_object();
         if (!any_mesh_hovered && active_mesh != nullptr)
         {
+            for (const auto& m: Window::instance().get_mesh_list())
+            {
+                m.second->get_mvb()->reset_hover();
+            }
             m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
         }
     }
@@ -808,8 +817,8 @@ namespace vOS
         // Update Camera
         m_render_data.camera.update();
 
-        // Update Mesh Mover
-        m_mover.update();
+//        // Update Mesh Mover
+//        m_mover.update();
 
         // Render Meshes
         render_pre_pass();
@@ -875,8 +884,6 @@ namespace vOS
         glDisable(GL_BLEND);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer,

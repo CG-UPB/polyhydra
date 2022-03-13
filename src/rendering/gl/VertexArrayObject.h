@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 namespace vOS
 {
@@ -100,5 +101,6 @@ namespace vOS
 
         // optional additional buffers
         std::vector<unsigned int> m_buffers;
+        std::unordered_map<int, int> m_location_buffer_index;
     };
 }

@@ -203,7 +203,7 @@ namespace vOS
          * Uses OVM FileManager to load Mesh from file
          * @param file_path path to file
          */
-        void load_from_file(std::string file_path);
+        void load_from_file(const std::string& file_path);
 
         /**
          * Uses OVM FileManager to save Mesh to file
@@ -257,11 +257,9 @@ namespace vOS
 
         [[nodiscard]] VertexArrayObject* get_vao() const;
 
-        glm::vec3& get_min()
-        { return m_min; };
+        glm::vec3 get_min();
 
-        glm::vec3& get_max()
-        { return m_max; };
+        glm::vec3 get_max();
 
         /**
          * Calculates bounding box of transformed vertices. Used for slicing into camera direction.
@@ -350,10 +348,6 @@ namespace vOS
         std::pair<glm::vec3, glm::vec3> m_transformed_bb;
 
         glm::vec3 m_mesh_offset_from_center;
-
-        glm::vec3 m_min;
-
-        glm::vec3 m_max;
 
         glm::vec3 m_slice_dir;
 

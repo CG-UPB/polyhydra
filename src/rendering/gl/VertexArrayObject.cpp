@@ -105,6 +105,8 @@ namespace vOS
         { gl_type = GL_UNSIGNED_INT; }
         else
         { throw std::invalid_argument("Invalid data type for gl buffer"); }
+
+        m_location_buffer_index[location] = (int) m_buffers.size();
         m_buffers.push_back(-1);
 
         glBindVertexArray(m_vao);
@@ -131,8 +133,9 @@ namespace vOS
     template<typename T>
     void VertexArrayObject::update_attribute(const std::vector<T>& data, int location)
     {
+        int buffer_index = m_location_buffer_index[location];
         glBindVertexArray(m_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[location - 1]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[buffer_index]);
         glBufferData(GL_ARRAY_BUFFER, (int) data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -141,9 +144,10 @@ namespace vOS
     template<typename T>
     void VertexArrayObject::update_attribute(const std::vector<T>& data, int location, int offset, int size)
     {
+        int buffer_index = m_location_buffer_index[location];
         glBindVertexArray(m_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[location - 1]);
-        glBufferSubData(GL_ARRAY_BUFFER, offset, (int) size * sizeof(T), &data[offset]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[buffer_index]);
+        glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(T), (int) size * sizeof(T), &data[offset]);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }

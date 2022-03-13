@@ -7,7 +7,7 @@ in vec3 v_pos;
 in vec3 v_normal;
 flat in int v_visible;
 
-uniform mat4 u_View;
+uniform mat4 u_view;
 
 void main()
 {
@@ -16,5 +16,5 @@ void main()
         discard;
     }
     normal = normalize(v_normal);
-    position = vec3(inverse(u_View) * vec4(v_pos, 1.0));
+    position = vec3(inverse(u_view) * vec4(v_pos, 1.0));
 }

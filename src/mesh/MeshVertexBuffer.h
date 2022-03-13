@@ -1,10 +1,12 @@
 #pragma once
 
 #include <OpenVolumeMesh/Core/GeometryKernel.hh>
+#include <OpenVolumeMesh/Attribs/NormalAttrib.hh>
 #include "../rendering/gl/VertexArrayObject.h"
 #include "glm/gtx/transform.hpp"
 #include <map>
 #include <unordered_map>
+#include <chrono>
 
 namespace vOS
 {
@@ -18,11 +20,11 @@ namespace vOS
         glm::vec3 color{};
     };
 
-    struct FaceData
+    struct HalffaceData
     {
         std::vector<VertexData> vertices;
         std::vector<unsigned int> indices;
-        std::vector<unsigned int> face_ids;
+        std::vector<int> halfface_ids;
     };
 
     struct RoundedVertexData
@@ -43,6 +45,13 @@ namespace vOS
         int next_to_vertex_halfedge_id = -1;
     };
 
+    struct VertexType {
+        static constexpr const float FACE    = 0.0f;
+        static constexpr const float EDGE    = 1.0f;
+        static constexpr const float CORNER  = 2.0f;
+        static constexpr const float CENTER  = 3.0f;
+    };
+
     struct RoundedCellData
     {
         int cell_id = -1;
@@ -58,14 +67,66 @@ namespace vOS
         std::vector<float> face_center;
         std::vector<float> to_vertex;
         std::vector<float> dihedral_angle;
+        std::vector<float> selection;
+        std::vector<float> hovered;
         std::vector<unsigned int> indices;
+    };
+
+    struct AttributeData
+    {
+        int location = -1;
+        int element_count = -1;
+        bool per_instance = false;
+    };
+
+    enum class VAO
+    {
+        MESH_FACE, MESH_ROUNDED, SPHERE, CYLINDER,
+        NUM_VALUES
+    };
+
+    enum class Attribute
+    {
+        POSITION, NORMAL, CELL_CENTER, PEEL_DEPTH, IS_DIGGED, COLOR, IS_ISOLATED, IS_TRIANGLE, VERTEX_TYPE,
+        FACE_CENTER, TO_VERTEX, DIHEDRAL_ANGLE, SELECTION, SELECTION_VERTEX_POSITION, SELECTION_FROM_VERTEX,
+        SELECTION_TO_VERTEX, HOVERED,
+        NUM_VALUES
+    };
+
+    struct AttributeDefinitions
+    {
+        AttributeDefinitions();
+        std::unordered_map<int, AttributeData>& of(const VAO vao)
+        {
+            return m_locations[static_cast<int>(vao)];
+        }
+    private:
+        void define_attribute(Attribute attribute, const AttributeData& data, std::initializer_list<VAO> vaos)
+        {
+            for (const VAO& vao : vaos)
+            {
+                m_locations[static_cast<int>(vao)][static_cast<int>(attribute)] = data;
+            }
+        }
+        std::unordered_map<int, std::unordered_map<int, AttributeData>> m_locations{};
+    };
+
+    struct AttributeUpdateData
+    {
+        VAO vao;
+        Attribute attribute;
+        glm::vec4 value;
+        int value_size;
+        int halfface_id;
+        int cell_id;
     };
 
     class MeshVertexBuffer
     {
     public:
 
-        explicit MeshVertexBuffer(Mesh *mesh);
+        explicit MeshVertexBuffer(Mesh* mesh);
+
         ~MeshVertexBuffer();
 
         /**
@@ -87,15 +148,15 @@ namespace vOS
          * @param value id value
          * @return
          */
-         int to_halfface_id(int value);
+        int to_halfface_id(int value);
 
         [[nodiscard]] int get_num_selection_vertices() const;
 
         [[nodiscard]] int get_num_selection_edges() const;
 
-        std::vector<float> &get_original_vertices();
+        std::vector<float>& get_original_vertices();
 
-        VertexArrayObject *get_vao_by_face();
+        VertexArrayObject* get_vao_by_face();
 
         VertexArrayObject* get_vao_rounded();
 
@@ -103,28 +164,36 @@ namespace vOS
 
         [[nodiscard]] float get_average_cell_size() const;
 
-        VertexArrayObject *get_vao_transparent_by_face();
-
-        VertexArrayObject* get_vao_transparent_rounded();
-
         /**
          * Colors the given Face in desired colors
          * The strong a is, the more pronounced the given color is
          * An Alpha value of 0 will have no visible effect, 1 will completely override the object default color
-         * @param ovm_id
+         * @param face_id
          * @param r
          * @param g
          * @param b
          * @param a
          */
-        void set_face_color(int ovm_id, float r, float g, float b, float a);
+        void set_face_color(int face_id, float r, float g, float b, float a);
 
         /**
          * Select or unselect the given Face
-         * @param ovm_id
+         * @param face_id
          * @param selected
          */
-        void set_face_selection(int ovm_id, bool selected);
+        void set_face_selection(int face_id, bool selected);
+
+        void set_halfface_color(int halfface_id, float r, float g, float b, float a);
+
+        void set_halfface_selection(int halfface_id, bool selected);
+
+        void hover_halfface(int halfface_id);
+
+        void set_cell_color(int cell_id, float r, float g, float b, float a);
+
+        void set_cell_selection(int cell_id, bool selected);
+
+        void hover_cell(int cell_id);
 
         VertexArrayObject* get_sphere_vao();
 
@@ -142,23 +211,26 @@ namespace vOS
 
         void start_isolation();
 
-        glm::vec3 get_face_normal(int ovm_id) {return m_face_normals[ovm_id];}
-        glm::vec3 get_face_barycenter(int ovm_id) {return m_face_centers[ovm_id];}
+        glm::vec3 get_face_normal(int ovm_id)
+        { return m_face_normals[ovm_id]; }
 
+        glm::vec3 get_halfface_barycenter(int ovm_id)
+        { return m_face_centers[ovm_id]; }
+
+        glm::vec3 get_min_bounding_box(){return min_bounding_box;}
+        glm::vec3 get_max_bounding_box(){return max_bounding_box;}
         void load_next_cell();
 
         bool is_loading_finished() const;
 
         float get_loading_percentage();
 
+        void reset_hover();
+
     private:
 
-        static constexpr float ROUNDED_VERTEX_TYPE_FACE     = 0.0f;
-        static constexpr float ROUNDED_VERTEX_TYPE_EDGE     = 1.0f;
-        static constexpr float ROUNDED_VERTEX_TYPE_CORNER   = 2.0f;
-        static constexpr float ROUNDED_VERTEX_TYPE_CENTER   = 3.0f;
-
-        static const char* PROP_BUFFER_INDEX_AND_SIZE;
+        // vertex attributes
+        static AttributeDefinitions s_attribute_definitions;
 
         void build_vertex_arrays();
 
@@ -173,115 +245,111 @@ namespace vOS
                 const glm::vec3& face_center,
                 const glm::vec3& to_vertex,
                 float dihedral_angle
-                );
+        );
 
         void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2) const;
 
         void add_cell_by_faces(Mesh& mesh, Cell cell);
 
-        void add_face_indices(Mesh &mesh, FaceData &face) const;
+        void add_face_indices(Mesh& mesh, HalffaceData& face) const;
 
-        void add_from_to_vertex(Mesh &mesh, const OpenVolumeMesh::VertexHandle &from,
-                                const OpenVolumeMesh::VertexHandle &to);
+        void add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from,
+                                const OpenVolumeMesh::VertexHandle& to);
 
-        static std::vector<float> get_vertices(Mesh &mesh);
+        static std::vector<float> get_vertices(Mesh& mesh);
 
-        /**
-         * Set to true, if some update has been made to the vao buffers (like face color)
-         * To reduce overhead we do not update the vao immediatly, but only before it has been requested by some other class
-         */
-        bool m_update_vao = false;
-        int m_face_amount = 0;
-        int m_cell_start_face_index = 0;
-        float m_average_cell_size;
+        [[nodiscard]] inline glm::vec3 normal_to_vec3(int halfface_id);
 
-        int m_num_loaded_cells = 0;
-        OpenVolumeMesh::CellIter m_current_loading_cell;
-        bool m_is_loading_finished = false;
+        void add_attribute_data(VAO vao, Attribute attribute, const std::vector<float>& data);
+
+        std::vector<float>& get_attrib_array(VAO vao, Attribute attribute);
+
+        void add_vao_attributes(VertexArrayObject* vao, VAO vao_id);
+
+        std::pair<int, int>& get_halfface_index_and_count(VAO vao, int halfface_id);
+
+        void add_halfface_index_and_count(VAO vao, int halfface_id, int index, int count);
+
+        std::pair<int, int>& get_cell_index_and_count(VAO vao, int cell_id);
+
+        void add_cell_index_and_count(VAO vao, int cell_id, int index, int count);
+
+        template<typename T>
+        void update_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id, T data);
+
+        template<typename T>
+        void update_cell_attribute(VAO vao_id, Attribute attribute, int cell_id, T data);
+
+        void set_attribute_buffer(std::vector<float>& buffer, size_t offset, int value_size, const glm::vec4& value);
+
+        template<typename T>
+        void update_attribute(VAO vao_id, Attribute attribute, T value, int halfface_id = -1, int cell_id = -1);
+
+        template<typename T>
+        std::pair<glm::vec4, int> get_value_and_size(T value);
+
+        void update_vertex_arrays();
+
+        // ovm references
         Mesh& m_mesh;
+        OpenVolumeMesh::NormalAttrib<Mesh> m_normals;
 
-        std::vector<float> m_original_vertices;
+        // loading stats
+        int m_num_loaded_cells = 0;
+        bool m_is_loading_finished = false;
+        OpenVolumeMesh::CellIter m_current_loading_cell_it;
+        std::chrono::steady_clock::time_point m_loading_start;
 
-        VertexArrayObject* m_vao_by_face = nullptr;
-        VertexArrayObject* m_vao_rounded = nullptr;
-        VertexArrayObject* m_vao_transparent_by_face = nullptr;
-        VertexArrayObject* m_vao_transparent_rounded = nullptr;
-        VertexArrayObject* m_sphere_vao = nullptr;
-        VertexArrayObject* m_cylinder_vao = nullptr;
-        VertexArrayObject* m_vertex_only_vao = nullptr;
+        // vertex arrays
+        struct
+        {
+            VertexArrayObject* face = nullptr;
+            VertexArrayObject* rounded = nullptr;
+            VertexArrayObject* selection_sphere = nullptr;
+            VertexArrayObject* selection_cylinder = nullptr;
+            VertexArrayObject* vertex_only = nullptr;
+        } m_vao;
 
         // ovm ids, in the order that we render them
-        std::vector<int> m_selection_vertices_ids;
-        std::vector<int> m_selection_edges_ids;
-        std::vector<int> m_selection_halffaces_ids;
+        struct
+        {
+            std::vector<int> vertex_ids;
+            std::vector<int> edge_ids;
+            std::vector<int> halfface_ids;
+        } m_selection_map;
 
         // to be used for rounded cells as well, no need to calculate twice
         std::unordered_map<int, glm::vec3> m_cell_centers;
         std::unordered_map<int, float> m_peel_depths;
 
-        // vertex attributes for cells by face
-        std::vector<float> m_positions_by_face;
-        std::vector<float> m_normals_by_face;
-        std::vector<float> m_cell_centers_by_face;
-        std::vector<float> m_colors_by_face;
-        std::vector<float> m_selections;
-        std::vector<float> m_peel_depths_by_face;
-        std::vector<float> m_is_triangle_by_face;
-        std::vector<float> m_is_digged_by_face;
-        std::vector<float> m_is_isolated_by_face;
+        struct VertexAttributeMap
+        {
+            std::unordered_map<int, std::vector<float>> data;
+            std::unordered_map<int, std::pair<int, int>> halfface_index_and_count;
+            std::unordered_map<int, std::pair<int, int>> cell_index_and_count;
+        };
 
-        // vertex attributes for rounded cells
-        std::vector<float> m_positions_rounded;
-        std::vector<float> m_normals_rounded;
-        std::vector<float> m_cell_centers_rounded;
-        std::vector<float> m_colors_rounded;
-        std::vector<float> m_peel_depths_rounded;
-        std::vector<float> m_is_triangle_rounded;
-        std::vector<float> m_is_digged_rounded;
-        std::vector<float> m_is_isolated_rounded;
-        std::vector<float> m_vertex_types_rounded;
-        std::vector<float> m_face_center_rounded;
-        std::vector<float> m_to_vertex_rounded;
-        std::vector<float> m_dihedral_angle_rounded;
-        int m_current_rounded_index = 0;
+        std::vector<AttributeUpdateData> m_vao_update_data;
+        std::unordered_map<int, VertexAttributeMap> m_attributes{};
+        std::unordered_map<int, std::vector<VertexArrayObject*>> m_vertex_arrays{};
 
-        // selection
-        std::vector<float> m_sphere_cell_centers;
-        std::vector<float> m_cylinder_cell_centers;
-        std::vector<float> m_sphere_peel_depths;
-        std::vector<float> m_cylinder_peel_depths;
-
-        std::vector<float> m_sphere_is_digged;
-        std::vector<float> m_cylinder_is_digged;
-
-        std::vector<float> m_sphere_is_isolated;
-        std::vector<float> m_cylinder_is_isolated;
-
-        std::vector<unsigned int> m_indices;
+        std::vector<float> m_original_vertices;
+        std::vector<unsigned int> m_indices_face;
         std::vector<unsigned int> m_indices_rounded;
-        std::vector<float> m_from_vertices;
-        std::vector<float> m_to_vertices;
-        std::vector<float> m_selection_vertices;
 
-        /**
-         * Maps OVM Ids to face buffer locations
-         */
-        std::map<int,int> m_ovm_to_gl_face_indizes;
-        std::vector<int> m_face_offset_array;
-        std::vector<int> m_face_vertex_count;
-        int m_total_vertex_count = 0;
+        int m_current_rounded_index = 0;
+        int m_num_vertices_face = 0;
+        int m_vertex_offset_face = 0;
+        int m_vertex_offset_rounded = 0;
+        float m_average_cell_size = 0.0f;
 
-        std::map<int, int> m_start_of_cell_vertices;
+        int m_current_hovered_halfface_id = -1;
+        int m_current_hovered_cell_id = -1;
 
-        std::map<int, int> m_size_of_cell_vertices;
-        std::map<int, int> m_selection_sphere_digging_indices;
-        std::map<int, int> m_selection_cylinder_digging_indices;
-        std::map<int, int> m_selection_sphere_digging_numbers;
-        std::map<int, int> m_selection_cylinder_digging_numbers;
-
+        // Saved Data
         std::map<int, glm::vec3> m_face_normals;
         std::map<int, glm::vec3> m_face_centers;
-
-        int m_num_vertices = 0;
+        glm::vec3 min_bounding_box;
+        glm::vec3 max_bounding_box;
     };
 }

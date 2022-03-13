@@ -64,19 +64,6 @@ namespace vOS
 
     void TransparencyPass_WB::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
     {
-//        if (ImGui::Begin("Transparency"))
-//        {
-//            ImGui::SliderFloat("Alpha Pow", &m_alpha_pow, 1.0f, 10.0f);
-//            ImGui::SliderFloat("Pow", &m_pow, 1.0f, 10.0f);
-//            ImGui::SliderFloat("Range", &m_range, 0.0f, 10.0f);
-//            ImGui::SliderFloat("Depth Range", &m_depth_range, 1.0f, 1000.0f);
-//            ImGui::SliderFloat("Ordering Strength", &m_ordering_strength, 0.0f, 20.0f);
-//            ImGui::SliderFloat("Min", &m_min, 0.0f, 1.0f);
-//            ImGui::SliderFloat("Max", &m_max, 1.0f, 1000.0f);
-//        }
-//        ImGui::End();
-
-        // Get Mesh
         MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
         if(obj == nullptr)
             return;
@@ -103,12 +90,12 @@ namespace vOS
         glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
 
         // set all of our uniforms
-        m_transparency_shader->set_uniform_mat4f("u_Transform", transform);
-        m_transparency_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
-        m_transparency_shader->set_uniform_mat4f("u_View", data.camera.view);
-        m_transparency_shader->set_uniform_vec3f("u_lightPos", light_pos);
-        m_transparency_shader->set_uniform_vec3f("u_camPos", cam_pos);
-        m_transparency_shader->set_uniform_vec3f("u_lightColor", data.light.color);
+        m_transparency_shader->set_uniform_mat4f("u_transform", transform);
+        m_transparency_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+        m_transparency_shader->set_uniform_mat4f("u_view", data.camera.view);
+        m_transparency_shader->set_uniform_vec3f("u_light_pos", light_pos);
+        m_transparency_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
+        m_transparency_shader->set_uniform_vec3f("u_light_color", data.light.color);
         m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
         m_transparency_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
         m_transparency_shader->set_uniform_int("u_peel_depth", peel_depth);
@@ -127,12 +114,12 @@ namespace vOS
         m_transparency_shader->set_uniform_bool("u_rounding", data.rounding.active);
         m_transparency_shader->set_uniform_float("u_rounding_size", data.rounding.size);
         m_transparency_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
-
         m_transparency_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
         m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
-
-        //m_transparency_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE0, m_depth_texture);
-        m_transparency_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE0, m_mesh_view->m_ssao_pass->get_blur_texture());
+        m_transparency_shader->set_uniform_float("u_spec_strength", obj->get_data().m_specular_strength);
+        m_transparency_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
+        m_transparency_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
+        m_transparency_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
 
         vao->draw();
         m_transparency_shader->unbind();

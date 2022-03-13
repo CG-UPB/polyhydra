@@ -27,6 +27,33 @@ namespace vOS
             std::cout << "]" << std::endl;
         }
 
+        template<typename T>
+        static inline void push_buffer(const std::vector<T>& src, std::vector<T>& dest)
+        {
+            dest.insert(dest.end(), src.begin(), src.end());
+        }
+
+        static inline void push_vec2(std::vector<float>& buffer, const glm::vec2& value)
+        {
+            buffer.push_back(value.x);
+            buffer.push_back(value.y);
+        }
+
+        static inline void push_vec3(std::vector<float>& buffer, const glm::vec3& value)
+        {
+            buffer.push_back(value.x);
+            buffer.push_back(value.y);
+            buffer.push_back(value.z);
+        }
+
+        static inline void push_vec4(std::vector<float>& buffer, const glm::vec4& value)
+        {
+            buffer.push_back(value.x);
+            buffer.push_back(value.y);
+            buffer.push_back(value.z);
+            buffer.push_back(value.w);
+        }
+
         [[nodiscard]] static inline std::string to_string(const glm::vec3& vec) {
             return std::string("[" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " + std::to_string(vec.z) + "]");
         }
