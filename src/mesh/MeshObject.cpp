@@ -535,5 +535,8 @@ namespace vOS
     MeshVertexBuffer *MeshObject::get_mvb() const {
         return m_mvb;
     }
+
+    glm::vec3 MeshObject::get_min() {return m_mvb->get_min_bounding_box();}
+    glm::vec3 MeshObject::get_max() {return m_mvb->get_max_bounding_box();}
 }
 

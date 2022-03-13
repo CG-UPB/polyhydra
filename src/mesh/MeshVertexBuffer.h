@@ -214,9 +214,11 @@ namespace vOS
         glm::vec3 get_face_normal(int ovm_id)
         { return m_face_normals[ovm_id]; }
 
-        glm::vec3 get_face_barycenter(int ovm_id)
+        glm::vec3 get_halfface_barycenter(int ovm_id)
         { return m_face_centers[ovm_id]; }
 
+        glm::vec3 get_min_bounding_box(){return min_bounding_box;}
+        glm::vec3 get_max_bounding_box(){return max_bounding_box;}
         void load_next_cell();
 
         bool is_loading_finished() const;
@@ -344,7 +346,10 @@ namespace vOS
         int m_current_hovered_halfface_id = -1;
         int m_current_hovered_cell_id = -1;
 
+        // Saved Data
         std::map<int, glm::vec3> m_face_normals;
         std::map<int, glm::vec3> m_face_centers;
+        glm::vec3 min_bounding_box;
+        glm::vec3 max_bounding_box;
     };
 }

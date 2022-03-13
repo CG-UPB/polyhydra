@@ -207,6 +207,9 @@ namespace vOS
         glm::vec3 cell_center = VecUtil::get_center(vertices);
         m_cell_centers[cell.idx()] = cell_center;
 
+        max_bounding_box = max;
+        min_bounding_box = min;
+
         // get peel depth of the cell
         int peel_depth = peel_property[cell];
         m_peel_depths[cell.idx()] = (float) peel_depth;
