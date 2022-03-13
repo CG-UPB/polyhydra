@@ -8,7 +8,6 @@
 #include <thread>
 #include <math.h>
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
-#include "ImGuiFileDialog.h"
 #include "../panels/NewFileDialog.h"
 
 typedef std::pair<float, OpenVolumeMesh::VertexHandle> Node;

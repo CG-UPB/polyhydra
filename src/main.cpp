@@ -7,7 +7,7 @@
 
 int main()
 {
-    Demo demo;
+    //Demo demo;
 
     //ExampleClass cl;
     //cl.initialize();
@@ -16,8 +16,8 @@ int main()
 //    vOS::TestClass test;
 //    test.initialize();
 
-   // vOS::Dijkstra dijkstra;
-   // dijkstra.start();
+    vOS::Dijkstra dijkstra;
+    dijkstra.start();
 
 //    TestQuads test;
 //    test.run();

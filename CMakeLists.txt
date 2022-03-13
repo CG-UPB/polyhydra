@@ -69,7 +69,11 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/algorithms/TestClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp
         ${VOLUMESHOS_SRC}/rendering/Camera.cpp
-        ${VOLUMESHOS_SRC}/rendering/Light.cpp src/panels/QualityPanel.cpp src/panels/QualityPanel.h src/rendering/passes/VertexOnlyPass.cpp src/rendering/MeshMover.cpp src/rendering/MeshMover.h src/algorithms/Demo.cpp src/algorithms/Demo.h)
+        ${VOLUMESHOS_SRC}/rendering/Light.cpp
+        ${VOLUMESHOS_SRC}/panels/QualityPanel.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/MeshMover.cpp
+        ${VOLUMESHOS_SRC}/algorithms/Demo.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
@@ -80,7 +84,7 @@ add_subdirectory(ext/json-develop)
 
 find_package(Filesystem REQUIRED Experimental Final)
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json ImGuiFileDialog stb std::filesystem)
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem)
 target_compile_definitions(volumeshOS PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
 
 # copy our resources to the build dir
