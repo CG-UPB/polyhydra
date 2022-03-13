@@ -20,6 +20,7 @@ public:
     void color_splash_init() ;
     void color_splash_ui();
     void color_splash_hit(int mesh_id, int element_id, bool selected);
+    void color_splash_hit_threaded(int mesh_id, int element_id, bool selected);
 private:
     Window* window;
 

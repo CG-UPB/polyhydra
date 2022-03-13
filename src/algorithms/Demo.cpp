@@ -129,7 +129,7 @@ void Demo::color_splash_init()
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh);
+    file_manager.readFile("../res/sample_meshes/guy2500.1.ovm", m_mesh);
 
     // Add Mesh
     m_hand_mesh = window->add_mesh(&m_mesh);
@@ -150,10 +150,16 @@ void Demo::color_splash_ui()
 
 void Demo::color_splash_hit(int mesh_id, int element_id, bool selected)
 {
+    std::thread* s_run_thread = new std::thread(&Demo::color_splash_hit_threaded, this, mesh_id, element_id, selected);
+    s_run_thread.join();
+}
+
+void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
+{
 
     Color splash_color = Color((rand()%1000)/1000.0f, (rand()%1000)/1000.0f, (rand()%1000)/1000.0f, 1.0f);
 
-    std::cout << "Selection Callback: " << mesh_id << " " << element_id << " " << selected << std::endl;
+    //std::cout << "Selection Callback: " << mesh_id << " " << element_id << " " << selected << std::endl;
     //std::cout << "Color: " << splash_color.r << " " << splash_color.g << " " << splash_color.b << std::endl;
     if(selected)
     {
