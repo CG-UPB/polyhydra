@@ -124,7 +124,7 @@ namespace vOS
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         // we have to create a new string here, otherwise it would be deallocated from the stack before imgui uses it
-        std::filesystem::path iniPath = FileManager::get_resource_path() / "config.ini";
+        FS_NAMESPACE::path iniPath = FileManager::get_resource_path() / "config.ini";
         io.IniFilename = (new std::string(iniPath.string()))->c_str();
 
         // Setup Dear ImGui style
@@ -139,7 +139,7 @@ namespace vOS
     void ImguiRenderer::initImGuiStyle()
     {
         // Font
-        std::filesystem::path fontPath = FileManager::get_resource_path() / "fonts" / "Roboto-Regular.ttf";
+        FS_NAMESPACE::path fontPath = FileManager::get_resource_path() / "fonts" / "Roboto-Regular.ttf";
         ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 18.0f);
         ImGuiStyle& style = ImGui::GetStyle();
 
@@ -362,4 +362,3 @@ namespace vOS
     }
 
 }
-

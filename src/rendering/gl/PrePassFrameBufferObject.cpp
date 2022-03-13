@@ -32,6 +32,11 @@ namespace vOS
                             .format             = GL_RGBA,
                             .type               = GL_FLOAT,
                             .attachment         = GL_COLOR_ATTACHMENT1,
+                            .texture_filter     = -1,
+                            .texture_wrap       = -1,
+                            .texture_comp_func  = -1,
+                            .texture_comp_mode  = -1,
+                            .border_color       = -1,
                             .generate_mipmap    = true
                     }
             })

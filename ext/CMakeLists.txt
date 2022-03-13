@@ -18,13 +18,13 @@ if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
     endif()
 endif()
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/ImGuiFileDialog.h"
-        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/OpenVolumeMesh/CMakeLists.txt"
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/OpenVolumeMesh/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/glfw/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/glm/CMakeLists.txt"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h"
         OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/json-develop/CMakeLists.txt"
-        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_image_write.h")
+        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_image_write.h"
+        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tinyfiledialogs/tinyfiledialogs.h")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
@@ -74,20 +74,6 @@ target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})
 target_link_libraries(imgui PUBLIC glad glfw)
 
 ###########################
-# ImGuiFileDialog
-###########################
-
-# add ImGuiFileDialog library
-set(ImGuiFileDialog_DIR ImGuiFileDialog )
-set(ImGuiFileDialog_Headers ${ImGuiFileDialog_DIR}/ImGuiFileDialog.h)
-set(ImGuiFileDialog_Sources ${ImGuiFileDialog_DIR}/ImGuiFileDialog.cpp)
-
-add_library(ImGuiFileDialog ${ImGuiFileDialog_Headers} ${ImGuiFileDialog_Sources})
-target_include_directories(ImGuiFileDialog PUBLIC ${ImGuiFileDialog_DIR})
-
-target_link_libraries(ImGuiFileDialog PUBLIC imgui)
-
-###########################
 # stb
 ###########################
 
@@ -118,3 +104,15 @@ set(stb_Sources ${stb_DIR}/stb_vorbis.c)
 
 add_library(stb STATIC ${stb_Headers} ${stb_Sources})
 target_include_directories(stb PUBLIC ${stb_DIR})
+
+###########################
+# tinyfiledialogs
+###########################
+
+# add tinyfiledialogs library
+set(tinyfiledialogs_DIR tinyfiledialogs)
+set(tinyfiledialogs_Headers ${tinyfiledialogs_DIR}/tinyfiledialogs.h)
+set(tinyfiledialogs_Sources ${tinyfiledialogs_DIR}/tinyfiledialogs.c)
+
+add_library(tinyfiledialogs STATIC ${tinyfiledialogs_Headers} ${tinyfiledialogs_Sources})
+target_include_directories(tinyfiledialogs PUBLIC ${tinyfiledialogs_DIR})

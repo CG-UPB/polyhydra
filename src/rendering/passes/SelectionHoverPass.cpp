@@ -79,7 +79,8 @@ namespace vOS
                 m_quad_circle_shader->set_uniform_mat4f("u_view", data.camera.view);
                 m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
                 m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
-                m_quad_circle_shader->set_uniform_float("u_scale", 0.1f);
+                m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
+                m_quad_circle_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
                 m_quad_vao->draw();
                 m_quad_circle_shader->unbind();
             }
