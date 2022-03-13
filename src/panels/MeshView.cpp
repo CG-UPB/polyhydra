@@ -817,8 +817,8 @@ namespace vOS
         // Update Camera
         m_render_data.camera.update();
 
-        // Update Mesh Mover
-        m_mover.update();
+//        // Update Mesh Mover
+//        m_mover.update();
 
         // Render Meshes
         render_pre_pass();
@@ -884,8 +884,6 @@ namespace vOS
         glDisable(GL_BLEND);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer,

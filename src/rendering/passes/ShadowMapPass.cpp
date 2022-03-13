@@ -38,33 +38,12 @@ namespace vOS
         MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
         if(obj == nullptr)
             return;
-
-        // Activate Wireframe mode if desired
-        std::string rendering_mode = obj->get_data().m_rendering_mode;
-        bool render_in_wireframe_mode = false;
-        if(rendering_mode == "mesh_wireframe") {
-            rendering_mode = "mesh_phong";
-            render_in_wireframe_mode = true;
-        }
-
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
-
-        // Additonal Setup necessary if in wireframe mode
-        if (render_in_wireframe_mode)
-        {
-            glDisable(GL_CULL_FACE);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        else
-        {
-            //glEnable(GL_BLEND);
-        }
 
         m_shadow_framebuffer->bind();
         m_shadow_shader->bind();
@@ -90,6 +69,8 @@ namespace vOS
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
         auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
 
+        auto settings = GlobalViewerSettings::getInstance();
+
         // Shader uniforms
         m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
         m_shadow_shader->set_uniform_int("u_peel_depth", peel_depth);
@@ -98,7 +79,7 @@ namespace vOS
         m_shadow_shader->set_uniform_vec3f("u_max", max);
         m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_shadow_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-        m_shadow_shader->set_uniform_bool("u_draw_wireframe", render_in_wireframe_mode);
+        m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->m_get_current_mesh_mode() == Wireframe);
         m_shadow_shader->set_uniform_bool("u_rounding", data.rounding.active);
         m_shadow_shader->set_uniform_float("u_rounding_size", data.rounding.size);
 
@@ -108,18 +89,6 @@ namespace vOS
 
         m_shadow_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_shadow_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
-
-        if (data.rounding.active)
-        {
-            obj->get_mvb()->get_vao_rounded()->draw();
-        }
-        else
-        {
-            vao->draw();
-        }
-
-
-
 
         vao->draw();
 

@@ -25,8 +25,5 @@ namespace vOS
     private:
 
         MeshView* m_mesh_view;
-
-        bool m_rounding = true;
-        float m_rounding_size = 0.1f;
     };
 }

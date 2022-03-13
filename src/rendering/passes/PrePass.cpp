@@ -45,14 +45,14 @@ namespace vOS
         glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
 
         // set all of our uniforms
-        pre_phong_shader->set_uniform_mat4f("u_Transform", transform);
-        pre_phong_shader->set_uniform_mat4f("u_Projection", data.camera.projection);
-        pre_phong_shader->set_uniform_mat4f("u_View", data.camera.view);
-        pre_phong_shader->set_uniform_vec3f("u_lightPos", light_pos);
-        pre_phong_shader->set_uniform_vec3f("u_camPos", cam_pos);
-        pre_phong_shader->set_uniform_vec3f("u_lightColor", data.light.color);
+        pre_phong_shader->set_uniform_mat4f("u_transform", transform);
+        pre_phong_shader->set_uniform_mat4f("u_projection", data.camera.projection);
+        pre_phong_shader->set_uniform_mat4f("u_view", data.camera.view);
+        pre_phong_shader->set_uniform_vec3f("u_light_pos", light_pos);
+        pre_phong_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
+        pre_phong_shader->set_uniform_vec3f("u_light_color", data.light.color);
         pre_phong_shader->set_uniform_float("u_cell_size", cell_size);
-        pre_phong_shader->set_uniform_vec3f("u_objectColor", obj->get_data().m_color.get_rgba());
+        pre_phong_shader->set_uniform_vec3f("u_object_color", obj->get_data().m_color.get_rgba());
         pre_phong_shader->set_uniform_int("u_peel_depth", peel_depth);
         pre_phong_shader->set_uniform_float("u_slice_depth", slice_depth);
         pre_phong_shader->set_uniform_vec3f("u_min", min);
@@ -63,15 +63,8 @@ namespace vOS
         pre_phong_shader->set_uniform_float("u_rounding_size", data.rounding.size);
         pre_phong_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
 
-        if (data.rounding.active)
-        {
-            obj->get_mvb()->get_vao_rounded()->draw();
-        }
-        else
-        {
-            vao->draw();
-        }
-
+        vao->draw();
+        
         pre_phong_shader->unbind();
     }
 

@@ -1,18 +1,18 @@
 #version 330 core
 
-layout (location = 0) in vec3 a_Pos;
-layout (location = 1) in vec3 a_Normal;
-layout (location = 2) in vec3 a_Center;
+layout (location = 0) in vec3 a_pos;
+layout (location = 1) in vec3 a_normal;
+layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
-layout (location = 4) in float a_isDigged;
-layout (location = 5) in vec4 a_Color;
-layout (location = 6) in float a_isIsolated;
-layout (location = 7) in float a_isTriangle;
+layout (location = 4) in float a_is_digged;
+layout (location = 5) in vec4 a_color;
+layout (location = 6) in float a_is_isolated;
+layout (location = 7) in float a_is_triangle;
 layout (location = 8) in float a_vertex_type_rounded;
 layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
-layout (location = 12) in float a_isSelected;
+layout (location = 12) in float a_is_selected;
 layout (location = 13) in float a_hovered;
 
 out vec3 v_Pos;
@@ -22,30 +22,29 @@ out vec4 v_LightSpacePos;
 flat out int v_Visible;
 flat out int v_isTriangle;
 
-uniform bool u_rounding;
-uniform float u_rounding_size;
-
-uniform mat4 u_Transform;
-uniform mat4 u_Projection;
-uniform mat4 u_View;
-uniform vec3 u_lightPos;
-uniform vec3 u_camPos;
-uniform vec3 u_lightColor;
-uniform vec4 u_objectColor;
-uniform float u_cell_size;
-uniform vec4 u_selection_color;
-uniform float u_average_cell_size;
-
+uniform mat4 u_transform;
+uniform mat4 u_projection;
+uniform mat4 u_view;
 uniform mat4 u_light_projection;
 uniform mat4 u_light_view;
 uniform mat4 u_light_transform;
 
+uniform vec3 u_light_pos;
+uniform vec3 u_cam_pos;
+uniform vec3 u_light_color;
+uniform vec4 u_object_color;
+uniform float u_cell_size;
+uniform vec4 u_selection_color;
+uniform float u_average_cell_size;
 uniform int u_peel_depth;
 uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;
 uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
+uniform bool u_rounding;
+uniform float u_rounding_size;
+
 
 const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
 const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
@@ -62,41 +61,27 @@ float get_shrink_factor(float angle, float dist) {
 
 void main()
 {
-    ////////////////////////////////////////////////////////
-    // Slicing and Peeling
-    ////////////////////////////////////////////////////////
+    // Visibility
     v_Visible = 1;
 
-    if (a_isDigged == 0.0)
-    {
-        v_Visible = 0;
-    }
-    if (a_isIsolated == 0.0)
-    {
-        v_Visible = 0;
-    }
-
-    mat4 view_transform = u_View * u_Transform;
+    mat4 view_transform = u_view * u_transform;
 
     vec3 min_slice = vec3(view_transform * vec4(u_min, 1.0));
     vec3 max_slice = vec3(view_transform * vec4(u_max, 1.0));
-
-    vec4 temp_dir = view_transform * vec4(normalize(u_slice_direction), 0.0);
-    vec3 slice_dir = temp_dir.xyz;
-
+    vec3 slice_dir = (view_transform * vec4(normalize(u_slice_direction), 0.0)).xyz;
     vec3 slice_point = max_slice + u_slice_depth * (min_slice - max_slice);
-    vec3 dir = slice_dir;
-    vec3 center = vec3(view_transform * vec4(a_Center, 1.0));
-    float angle = dot(normalize(dir), normalize(center - slice_point));
+    vec3 center = vec3(view_transform * vec4(a_center, 1.0));
+    float angle = dot(normalize(slice_dir), normalize(center - slice_point));
 
-    if (a_peel_depth < u_peel_depth || angle > 0)
+    // criteria for beeing invisible:
+    // peeled, sliced, isolated or digged
+    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 0.0 || a_is_digged == 0.0)
     {
         v_Visible = 0;
     }
-    ////////////////////////////////////////////////////////
-    // Rounding
-    ////////////////////////////////////////////////////////
-    vec3 position = a_Pos;
+
+    // Roundings
+    vec3 position = a_pos;
     if (u_rounding_size > 0.0)
     {
         float type = a_vertex_type_rounded;
@@ -122,27 +107,26 @@ void main()
             position += shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
         }
     }
-    ////////////////////////////////////////////////////////
 
-    mat4 cam_space_mat = u_Projection * view_transform;
+    mat4 cam_space_mat = u_projection * view_transform;
     mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
+    vec3 pos = a_center + (position - a_center) * u_cell_size;
 
-    vec3 pos = a_Center + (position - a_Center) * u_cell_size;
-    v_Pos = vec3(u_Transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(view_transform))) * a_Normal;
+    v_Pos = vec3(u_transform * vec4(pos, 1.0));
+    v_Normal = mat3(transpose(inverse(view_transform))) * a_normal;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
-    v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
+    v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
+    v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), 1.0);
 
-    v_Color = vec4(mix(u_objectColor.rgb, a_Color.rgb, a_Color.a), 1.0);
-
-    if(a_isSelected > 0.0)
+    // Selection
+    if (a_is_selected > 0.0)
     {
         // Colorness is 0, if all rgb values are the same, and above 1 if they have a color difference
         float colorness = abs(v_Color.x - v_Color.y) + abs(v_Color.x - v_Color.z);
 
-        vec3 inverse_color = vec3(1 - v_Color.x, 1 - v_Color.y , 1 - v_Color.z);
+        vec3 inverse_color = vec3(1 - v_Color.x, 1 - v_Color.y, 1 - v_Color.z);
 
-        vec3 selection_color = colorness * inverse_color + (1-colorness) * vec3(1,0,0);
+        vec3 selection_color = colorness * inverse_color + (1-colorness) * vec3(1, 0, 0);
 
         selection_color = normalize(selection_color);
 

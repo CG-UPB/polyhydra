@@ -13,9 +13,9 @@ in vec4 v_LightSpacePos[3];
 flat in int v_Visible[3];
 flat in int v_isTriangle[3];
 
-uniform mat4 u_Transform;
-uniform mat4 u_Projection;
-uniform mat4 u_View;
+uniform mat4 u_transform;
+uniform mat4 u_projection;
+uniform mat4 u_view;
 
 out vec3 v_pos;
 out vec3 v_normal;
@@ -47,13 +47,13 @@ void main()
     vec3 pos1 = v_Pos[1];
     vec3 pos2 = v_Pos[2];
 
-    vec4 viewspace_pos0 = u_View * vec4(pos0, 1.0);
-    vec4 viewspace_pos1 = u_View * vec4(pos1, 1.0);
-    vec4 viewspace_pos2 = u_View * vec4(pos2, 1.0);
+    vec4 viewspace_pos0 = u_view * vec4(pos0, 1.0);
+    vec4 viewspace_pos1 = u_view * vec4(pos1, 1.0);
+    vec4 viewspace_pos2 = u_view * vec4(pos2, 1.0);
 
-    vec4 screen_pos0 = u_Projection * viewspace_pos0;
-    vec4 screen_pos1 = u_Projection * viewspace_pos1;
-    vec4 screen_pos2 = u_Projection * viewspace_pos2;
+    vec4 screen_pos0 = u_projection * viewspace_pos0;
+    vec4 screen_pos1 = u_projection * viewspace_pos1;
+    vec4 screen_pos2 = u_projection * viewspace_pos2;
 
     vec3 view_pos0 = screen_pos0.xyz / screen_pos0.w;
     vec3 view_pos1 = screen_pos1.xyz / screen_pos1.w;

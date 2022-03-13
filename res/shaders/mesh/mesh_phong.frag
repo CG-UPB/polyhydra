@@ -5,17 +5,16 @@ in vec3 v_normal;
 in vec4 v_color;
 in vec4 v_pos_ls;
 flat in int v_visible;
-
 in vec3 v_tri_dist;
 
 uniform bool u_draw_wireframe;
 uniform bool u_draw_shadows;
 uniform bool u_draw_ao;
 
-uniform vec3 u_lightPos;
-uniform vec3 u_camPos;
-uniform vec3 u_lightColor;
-uniform vec4 u_objectColor;
+uniform vec3 u_light_pos;
+uniform vec3 u_cam_pos;
+uniform vec3 u_light_color;
+uniform vec4 u_object_color;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
@@ -131,20 +130,19 @@ void main()
         {
             discard;
         }
-        FragColor = vec4(u_objectColor.rgb, 1.0);
+        FragColor = vec4(u_object_color.rgb, 1.0);
         return;
     }
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
-    if (v_visible == 0 || u_objectColor.a < 1.0 - 0.001)
+    if (v_visible == 0 || u_object_color.a < 1.0)
     {
         discard;
     }
-    vec3 light_color = u_lightColor;
+    vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
-    vec3 light_dir = normalize(u_lightPos - v_pos);
-    float diff = max(0.0, dot(light_dir, n));
+    vec3 l = normalize(u_light_pos - v_pos);
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
@@ -152,17 +150,7 @@ void main()
     if (u_draw_shadows)
     {
         // shadow calculation
-
-        //float bias = max(0.005 * (1.0 - dot(-n, light_dir)), 0.0005);
-        //bias = 0.1;
-
-        //float bias = max(0.00005 * (1.0 - dot(n, light_dir)), 0.000005);
-        //
-        //    float theta = clamp(dot(light_dir,n), 0.0, 1.0);
-        //    float bias = 0.0005 * tan(acos(theta));
-        //    bias = clamp(bias, 0.0, 0.0005);
-
-        float bias = max(0.0005 * (1.0 - dot(n, light_dir)), 0.00005);
+        float bias = max(0.0005 * (1.0 - dot(n, l)), 0.00005);
         shadow = shadow_calculation(v_pos_ls, bias);
         float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
         transparent_shadow = 0.0;
@@ -177,6 +165,9 @@ void main()
         }
     }
 
+    // Phong Shading
+    vec3 used_color = mix(u_object_color.rgb, v_color.rgb, v_color.a);
+
     //ambient
     float ao_factor = 1.0;
     if(u_draw_ao)
@@ -185,18 +176,13 @@ void main()
     }
     vec3 ambient = u_ambient_strength * light_color * ao_factor;
 
-    // Phong Shading
-
-    vec3 used_color = mix(u_objectColor.rgb, v_color.rgb, v_color.a);
-
     //diffuse
-    //vec3 l = normalize(u_lightPos - v_pos);
-    // constant light direction looks way better than a single point of light
+    float diff = max(0.0, dot(l, n));
     vec3 diffuse = u_diffuse_strength * diff * light_color;
 
     //specular
-    vec3 v = normalize(u_camPos - v_pos);
-    vec3 r = reflect(-light_dir, n);
+    vec3 v = normalize(u_cam_pos - v_pos);
+    vec3 r = reflect(-l, n);
     float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
     vec3 specular = u_spec_strength * spec * light_color;
 
