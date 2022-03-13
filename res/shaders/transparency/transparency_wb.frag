@@ -9,9 +9,9 @@ in vec3 v_normal;
 in vec4 v_color;
 flat in int v_visible;
 
-uniform vec3 u_lightPos;
-uniform vec3 u_camPos;
-uniform vec3 u_lightColor;
+uniform vec3 u_light_pos;
+uniform vec3 u_cam_pos;
+uniform vec3 u_light_color;
 uniform vec4 u_object_color;
 uniform int u_viewport_width;
 uniform int u_viewport_height;
@@ -24,7 +24,10 @@ uniform float u_ordering_strenth;
 uniform float u_t_min;
 uniform float u_t_max;
 
-uniform sampler2D u_ssao_texture;
+uniform float u_spec_strength;
+uniform float u_ambient_strength;
+uniform float u_diffuse_strength;
+uniform float u_spec_exponent;
 
 float near = 0.1f;
 float far = 100.0f;
@@ -39,41 +42,34 @@ void main()
 {
     vec4 color = u_object_color;
 
-    if(color.a == 1.0 || v_visible == 0)
+    if(color.a >= 1.0 || v_visible == 0)
     {
         discard;
     }
+    vec3 light_color = u_light_color;
+    vec3 n = normalize(v_normal);
+    vec3 l = normalize(u_light_pos - v_pos);
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
-    //ambient
-    float ambientStrength = 1.0;
-    float ao_factor = texture(u_ssao_texture, uv).r;
-    vec3 ambient = ambientStrength * u_lightColor;
-
     // Phong Shading
+    vec3 used_color = mix(u_object_color.rgb, v_color.rgb, v_color.a);
 
-    vec3 used_color = mix(u_object_color.rgb, v_color.rgb, 0.0);
+    //ambient
+    vec3 ambient = u_ambient_strength * light_color;
 
     //diffuse
-    float diffuseStrength = 1.0;
-    vec3 n = -normalize(v_normal);
-    //vec3 l = normalize(u_lightPos - v_pos);
-    // constant light direction looks way better than a single point of light
-    vec3 l = normalize(vec3(0.0, -1.0, -1.0));
     float diff = max(0.0, dot(l, n));
-    vec3 diffuse = diffuseStrength * diff * u_lightColor;
+    vec3 diffuse = u_diffuse_strength * diff * light_color;
 
     //specular
-    float specularStrength = 0.2;
-    vec3 v = normalize(u_camPos - v_pos);
+    vec3 v = normalize(u_cam_pos - v_pos);
     vec3 r = reflect(-l, n);
-    float spec = pow(max(0.0, dot(v, r)), 8);
-    vec3 specular = specularStrength * spec * u_lightColor;
+    float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
+    vec3 specular = u_spec_strength * spec * light_color;
 
-    float norm = ambientStrength + diffuseStrength + specularStrength;
-    color.rgb = (ambient + diffuse + specular) / norm * used_color;
-
+    float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
+    color.rgb = (ambient + (diffuse + specular)) / norm * used_color;
 
     float depth = gl_FragCoord.z;
     //float depth = LinearizeDepth(gl_FragCoord.z) / far;
