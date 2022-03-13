@@ -46,6 +46,8 @@ namespace vOS
 
         m_vertex_only_shader->bind();
 
+        float size = GlobalViewerSettings::getInstance()->get_vertex_only_size();
+
         m_vertex_only_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_vertex_only_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_vertex_only_shader->set_uniform_mat4f("u_view", data.camera.view);
@@ -60,6 +62,7 @@ namespace vOS
         m_vertex_only_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
         m_vertex_only_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
         m_vertex_only_shader->set_uniform_vec4f("u_color", obj->get_data().m_color.get_rgba());
+        m_vertex_only_shader->set_uniform_float("u_size", size);
 
         obj->get_mvb()->get_vertex_only_vao()->draw_instanced(obj->get_num_visible_vertices());
 

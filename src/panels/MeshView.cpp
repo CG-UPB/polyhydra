@@ -129,7 +129,7 @@ namespace vOS
         obj->update_vertex_buffer();
 
         VertexArrayObject* vao = obj->get_vao();
-        if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+        if (GlobalViewerSettings::getInstance()->get_rounding_active())
         {
             vao = obj->get_mvb()->get_vao_rounded();
         }
@@ -316,7 +316,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -349,7 +349,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -373,7 +373,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -401,7 +401,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -455,7 +455,7 @@ namespace vOS
             mesh->update_vertex_buffer();
 
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -479,7 +479,7 @@ namespace vOS
 
     void MeshView::render_transparency_dp()
     {
-        num_passes = GlobalViewerSettings::getInstance()->m_get_current_number_passes();
+        num_passes = GlobalViewerSettings::getInstance()->get_number_passes();
         for (int i = 0; i < num_passes; i++)
         {
             if (i % 2 == 0)
@@ -509,7 +509,7 @@ namespace vOS
 
                 mesh->update_vertex_buffer();
                 VertexArrayObject* vao = mesh->get_vao();
-                if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+                if (GlobalViewerSettings::getInstance()->get_rounding_active())
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
@@ -568,7 +568,7 @@ namespace vOS
                     mesh->get_mvb()->hover_halfface(halfface_id);
                     face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(OpenVolumeMesh::HalfFaceHandle(halfface_id)).idx();
 
-                    if (settings.m_get_current_isolation_state())
+                    if (settings.get_isolation_state())
                     {
                         if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         {
@@ -576,7 +576,7 @@ namespace vOS
                         }
                     }
 
-                    if (settings.m_get_current_selection_mode() == CELL || settings.m_get_current_digging_activated())
+                    if (settings.get_selection_mode() == CELL || settings.get_digging_activated())
                     {
                         if (chf.is_valid())
                         {
@@ -584,7 +584,7 @@ namespace vOS
                             mesh->get_mvb()->hover_cell(cell.idx());
                         }
 
-                        if (settings.m_get_current_digging_activated() && !settings.m_get_current_isolation_state())
+                        if (settings.get_digging_activated() && !settings.get_isolation_state())
                         {
                             if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                             {
@@ -717,7 +717,7 @@ namespace vOS
 
     void MeshView::render_transparency()
     {
-        m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
+        m_transparency = GlobalViewerSettings::getInstance()->get_transparency_mode();
 
         switch (m_transparency)
         {
@@ -733,8 +733,8 @@ namespace vOS
     {
         render_debug_menu();
 
-        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
-        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
+        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->get_rounding_active();
+        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->get_rounding_size();
 
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
@@ -752,7 +752,7 @@ namespace vOS
         // Render Meshes
         render_pre_pass();
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_mesh_mode() == ModeEnum::Only_Vertices)
+        if (GlobalViewerSettings::getInstance()->get_mesh_mode() == ModeEnum::Only_Vertices)
         {
             render_background();
             m_meshFrameBuffer->bind();
@@ -773,12 +773,12 @@ namespace vOS
         }
         else
         {
-            if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
+            if (GlobalViewerSettings::getInstance()->get_ambient_occlusion_activated())
             {
                 render_ssao_pass();
             }
 
-            if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
+            if (GlobalViewerSettings::getInstance()->get_shadows_activated())
             {
                 render_shadow_map();
             }
@@ -795,13 +795,13 @@ namespace vOS
                                     m_screen_quad_frameBuffer);
 
             // Render transparent objects
-            if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
+            if (GlobalViewerSettings::getInstance()->get_transparency_activated())
             {
                 render_transparency();
             }
 
             // Render Selection
-            if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+            if (GlobalViewerSettings::getInstance()->get_selection_activated())
             {
                 renderSelection();
             }
@@ -842,7 +842,7 @@ namespace vOS
 
         // Show hovered element type and id
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        if (GlobalViewerSettings::getInstance()->get_selection_activated())
         {
             std::string hovered_element_name =
                     m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
@@ -900,7 +900,7 @@ namespace vOS
             if (ImGui::RadioButton("Selection", m_viewport_texture == SELECTION))
             {
                 m_viewport_texture = SELECTION;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_activated(true);
+                GlobalViewerSettings::getInstance()->set_selection_activated(true);
             }
             if (ImGui::RadioButton("SSAO Pre", m_viewport_texture == SSAO_PRE))
             {

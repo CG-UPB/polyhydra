@@ -14,6 +14,7 @@ uniform mat4 u_view;
 uniform vec3 u_cam_pos;
 uniform float u_cell_size;
 uniform float u_average_cell_size;
+uniform float u_size;
 
 uniform int u_peel_depth;
 uniform float u_slice_depth;
@@ -61,7 +62,7 @@ void main()
     //v_discard = dot(view_dir, normal) > 0.01 ? 1 : 0;
 
     vec3 offset = a_center + (a_offset - a_center) * u_cell_size;
-    float width = 0.15 * u_average_cell_size;
+    float width = 0.15 * u_average_cell_size * u_size;
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,
         0.0, width, 0.0, 0.0,

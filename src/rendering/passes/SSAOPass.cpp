@@ -143,7 +143,7 @@ namespace vOS
 
     void SSAOPass::render_options(SSAOOptions* options)
     {
-        int selected_option = GlobalViewerSettings::getInstance()->m_get_current_ssao_option();
+        int selected_option = GlobalViewerSettings::getInstance()->get_ssao_options();
         switch (selected_option) {
             case OFF:
                 m_options.active = false;
@@ -158,7 +158,7 @@ namespace vOS
                 load_options(SSAOPass::PERFORMANCE_SSAO);
                 break;
             case CUSTOM:
-                load_options(GlobalViewerSettings::getInstance()->m_get_current_costume_options());
+                load_options(GlobalViewerSettings::getInstance()->get_custom_options());
                 break;
         }
     }

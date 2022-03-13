@@ -29,7 +29,7 @@ namespace vOS
             return;
         }
 
-        int mesh_mode = GlobalViewerSettings::getInstance()->m_get_current_mesh_mode();
+        int mesh_mode = GlobalViewerSettings::getInstance()->get_mesh_mode();
         int old_mode = mesh_mode;
         const char *element_mode_types[] =
                 {
@@ -44,7 +44,7 @@ namespace vOS
         ImGui::SameLine();
         Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use. For more "
                                              "extensive explanations take a look in the documentation");
-        GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
+        GlobalViewerSettings::getInstance()->set_mesh_mode(mesh_mode);
 
 
         if (old_mode != mesh_mode)
@@ -135,13 +135,13 @@ namespace vOS
             ImGui::Checkbox("Activate Click Selection", &m_selection_activated);
             ImGui::SameLine();
             Tooltips::HelpMarkerWithQuestionMark("With this checkbox you can activate the click selection");
-            GlobalViewerSettings::getInstance()->m_set_current_selection_activated(m_selection_activated);
+            GlobalViewerSettings::getInstance()->set_selection_activated(m_selection_activated);
             if (m_selection_activated)
             {
                 if (ImGui::RadioButton("All-Selection", m_current_selection_mode == 0))
                 {
                     m_current_selection_mode = 0;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(0);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(0);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark(
@@ -149,28 +149,28 @@ namespace vOS
                 if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
                 {
                     m_current_selection_mode = Vertex;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Vertex);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Vertex);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
                 if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
                 {
                     m_current_selection_mode = Edge;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Edge);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Edge);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
                 if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
                 {
                     m_current_selection_mode = Face;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Face);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Face);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
                 if (ImGui::RadioButton("Cell-Selection", m_current_selection_mode == CELL))
                 {
                     m_current_selection_mode = CELL;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(CELL);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(CELL);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Cell of your pick");
@@ -308,14 +308,14 @@ namespace vOS
                             m_digging_activated = true;
                             m_selection_activated = true;
                             m_current_selection_mode = Selection::CELL;
-                            GlobalViewerSettings::getInstance()->m_set_current_selection_activated(true);
-                            GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Selection::CELL);
+                            GlobalViewerSettings::getInstance()->set_selection_activated(true);
+                            GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
                         }
                         else
                         {
                             m_digging_activated = false;
                         }
-                        GlobalViewerSettings::getInstance()->m_set_current_digging_active(m_digging_activated);
+                        GlobalViewerSettings::getInstance()->set_digging_active(m_digging_activated);
                         clicked_digging++;
                     }
                     if (clicked_digging & 1)
@@ -338,8 +338,8 @@ namespace vOS
                             m_isolation_started = true;
                             m_selection_activated = true;
                             m_current_selection_mode = Selection::CELL;
-                            GlobalViewerSettings::getInstance()->m_set_current_selection_activated(true);
-                            GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Selection::CELL);
+                            GlobalViewerSettings::getInstance()->set_selection_activated(true);
+                            GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
                         }
                         else
                         {
@@ -350,7 +350,7 @@ namespace vOS
                                 mesh->get_mvb()->reset_isolation();
                             }
                         }
-                        GlobalViewerSettings::getInstance()->m_set_current_isolation_state(m_isolation_started);
+                        GlobalViewerSettings::getInstance()->set_isolation_state(m_isolation_started);
                         clicked++;
                     }
                     if (clicked & 1)
