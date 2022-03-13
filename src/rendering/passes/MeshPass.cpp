@@ -63,8 +63,8 @@ namespace vOS
         m_mesh_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
         m_mesh_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
         m_mesh_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
-        m_mesh_shader->set_uniform_bool("u_rounding", data.rounding.active);
-        m_mesh_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        m_mesh_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
+        m_mesh_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         m_mesh_shader->set_uniform_vec4f("u_selection_color", obj->get_data().m_selection_color.get_rgba());
         m_mesh_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
         m_mesh_shader->set_uniform_mat4f("u_light_projection", data.light.projection);

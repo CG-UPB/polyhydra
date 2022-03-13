@@ -286,6 +286,19 @@ namespace vOS
                         Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
                     }
 
+                    bool rounding_active = Window::instance().get_mesh_rounding_activated(active_mesh);
+                    ImGui::Checkbox("Rounded Cells?", &rounding_active);
+                    Window::instance().set_mesh_rounding_activated(active_mesh,rounding_active);
+                    ImGui::SameLine();
+                    Tooltips::HelpMarkerWithQuestionMark("This checkbox activates rounded corners for the edges of the meshes");
+
+                    if (rounding_active)
+                    {
+                        float actual_rounding_size = Window::instance().get_mesh_rounding_size(active_mesh);;
+                        ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
+                        Window::instance().set_mesh_rounding_size(active_mesh, actual_rounding_size);
+                    }
+
                     ImGui::Text("Digging");
                     ImGui::SameLine();
                     Tooltips::HelpMarkerWithQuestionMark("Dig into the mesh by clicking cells to remove");

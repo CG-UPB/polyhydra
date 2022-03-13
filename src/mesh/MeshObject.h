@@ -140,6 +140,10 @@ namespace vOS
         glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 m_scale = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 m_offset = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        //Rounding Variables
+        bool m_rounding_activated = false;
+        float m_rounding_size = 0.3f;
     };
 
     class MeshObject

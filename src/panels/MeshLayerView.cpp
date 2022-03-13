@@ -100,67 +100,137 @@ namespace vOS
 
             // Advanced Settings
             //ImGui::SameLine();
-            if (ImGui::CollapsingHeader("Advanced Settings")) {
-                if (ImGui::BeginTable("split1", 1)) {
-                    ImGui::TableNextColumn();
-                    // Save Mesh Settings to File
-                    if (ImGui::Button("Save")) {
-                        NewFileDialog file_dialog;
 
-                        char const *filename;
+            if (ImGui::Button("Advanced Settings"))
+            {
+                ImGui::OpenPopup("Advanced Settings Popup");
+            }
 
-                        filename = file_dialog.saveMeshSettings("Save Mesh Settings File");
+            if (ImGui::BeginPopup("Advanced Settings Popup"))
+            {
+                if (ImGui::Button("Save")) {
+                    NewFileDialog file_dialog;
 
+                    char const *filename;
+
+                    filename = file_dialog.saveMeshSettings("Save Mesh Settings File");
+
+                    if (filename != NULL)
+                    {
                         Window::instance().rendering_mutex.unlock();
                         Window::instance().save_mesh_data(m.first, filename);
                         Window::instance().rendering_mutex.lock();
                     }
-                    // Load Mesh Settings to File
-                    if (ImGui::Button("Load")) {
-                        NewFileDialog file_dialog;
+                }
+                // Load Mesh Settings to File
+                if (ImGui::Button("Load")) {
+                    NewFileDialog file_dialog;
 
-                        char const *filename;
+                    char const *filename;
 
-                        filename = file_dialog.loadMeshSettings("Save Mesh Settings File");
-
+                    filename = file_dialog.loadMeshSettings("Save Mesh Settings File");
+                    if (filename != NULL)
+                    {
                         Window::instance().rendering_mutex.unlock();
                         Window::instance().load_mesh_data(m.first, filename);
                         Window::instance().rendering_mutex.lock();
                     }
-
-                    // Phong Settings
-
-                    int active_mesh = m.first;
-                    // Ambient
-                    ImGui::Text("Ambient:");
-                    ImGui::SameLine();
-                    float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
-                    ImGui::SliderFloat("Ambient", &ambient_value, 0.0f, 1.0f);
-                    Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
-
-                    // Diffuse
-                    ImGui::Text("Diffuse:");
-                    ImGui::SameLine();
-                    float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
-                    ImGui::SliderFloat("Diffuse", &diffuse_value, 0.0f, 1.0f);
-                    Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
-
-                    // Specular
-                    ImGui::Text("Specular:");
-                    ImGui::SameLine();
-                    float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
-                    ImGui::SliderFloat("Specular", &specular_value, 0.0f, 1.0f);
-                    Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
-
-                    // Specular Exponent
-                    ImGui::Text("Specular Exponent:");
-                    ImGui::SameLine();
-                    float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
-                    ImGui::SliderFloat("Specular Exponent", &specular_exp, 0.0f, 10.0f);
-                    Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
-                    ImGui::EndTable();
                 }
+
+                // Phong Settings
+
+                int active_mesh = m.first;
+                // Ambient
+                ImGui::Text("Ambient:");
+                ImGui::SameLine();
+                float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
+                ImGui::SliderFloat("Ambient", &ambient_value, 0.0f, 1.0f);
+                Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
+
+                // Diffuse
+                ImGui::Text("Diffuse:");
+                ImGui::SameLine();
+                float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
+                ImGui::SliderFloat("Diffuse", &diffuse_value, 0.0f, 1.0f);
+                Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
+
+                // Specular
+                ImGui::Text("Specular:");
+                ImGui::SameLine();
+                float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
+                ImGui::SliderFloat("Specular", &specular_value, 0.0f, 1.0f);
+                Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
+
+                // Specular Exponent
+                ImGui::Text("Specular Exponent:");
+                ImGui::SameLine();
+                float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
+                ImGui::SliderFloat("Specular Exponent", &specular_exp, 0.0f, 10.0f);
+                Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
+                ImGui::EndPopup();
             }
+//
+//            if (ImGui::CollapsingHeader("Advanced Settings")) {
+//                if (ImGui::BeginTable("split1", 1)) {
+//                    ImGui::TableNextColumn();
+//                    // Save Mesh Settings to File
+//                    if (ImGui::Button("Save")) {
+//                        NewFileDialog file_dialog;
+//
+//                        char const *filename;
+//
+//                        filename = file_dialog.saveMeshSettings("Save Mesh Settings File");
+//
+//                        Window::instance().rendering_mutex.unlock();
+//                        Window::instance().save_mesh_data(m.first, filename);
+//                        Window::instance().rendering_mutex.lock();
+//                    }
+//                    // Load Mesh Settings to File
+//                    if (ImGui::Button("Load")) {
+//                        NewFileDialog file_dialog;
+//
+//                        char const *filename;
+//
+//                        filename = file_dialog.loadMeshSettings("Save Mesh Settings File");
+//
+//                        Window::instance().rendering_mutex.unlock();
+//                        Window::instance().load_mesh_data(m.first, filename);
+//                        Window::instance().rendering_mutex.lock();
+//                    }
+//
+//                    // Phong Settings
+//
+//                    int active_mesh = m.first;
+//                    // Ambient
+//                    ImGui::Text("Ambient:");
+//                    ImGui::SameLine();
+//                    float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
+//                    ImGui::SliderFloat("Ambient", &ambient_value, 0.0f, 1.0f);
+//                    Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
+//
+//                    // Diffuse
+//                    ImGui::Text("Diffuse:");
+//                    ImGui::SameLine();
+//                    float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
+//                    ImGui::SliderFloat("Diffuse", &diffuse_value, 0.0f, 1.0f);
+//                    Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
+//
+//                    // Specular
+//                    ImGui::Text("Specular:");
+//                    ImGui::SameLine();
+//                    float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
+//                    ImGui::SliderFloat("Specular", &specular_value, 0.0f, 1.0f);
+//                    Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
+//
+//                    // Specular Exponent
+//                    ImGui::Text("Specular Exponent:");
+//                    ImGui::SameLine();
+//                    float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
+//                    ImGui::SliderFloat("Specular Exponent", &specular_exp, 0.0f, 10.0f);
+//                    Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
+//                    ImGui::EndTable();
+//                }
+//            }
 
         }
         Window::instance().rendering_mutex.unlock();

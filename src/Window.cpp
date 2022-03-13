@@ -512,6 +512,29 @@ namespace vOS
         get_mesh_obj(mesh_id)->get_data().m_scale = glm::vec3(scale, scale, scale);
     }
 
+    void Window::set_mesh_rounding_size(int mesh_id, float r_size)
+    {
+        // Change MeshObject Data
+        get_mesh_obj(mesh_id)->get_data().m_rounding_size = r_size;
+    }
+
+    void Window::set_mesh_rounding_activated(int mesh_id, bool r_active)
+    {
+        // Change MeshObject Data
+        get_mesh_obj(mesh_id)->get_data().m_rounding_activated = r_active;
+    }
+
+
+    float Window::get_mesh_rounding_size(int mesh_id)
+    {
+        return get_mesh_obj(mesh_id)->get_data().m_rounding_size;
+    }
+
+
+    bool Window::get_mesh_rounding_activated(int mesh_id)
+    {
+        return get_mesh_obj(mesh_id)->get_data().m_rounding_activated;
+    }
 
     void Window::set_custom_imgui(void_callback vc)
     {
