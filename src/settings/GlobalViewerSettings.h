@@ -73,7 +73,7 @@ namespace vOS
         bool transparency_active = false;
         bool shadows_active = false;
         bool ambient_occlusion_active = false;
-        bool m_rounding_activated = false;
+        bool m_rounding_activated = true;
 
         // AO
         int ssao_option = QUALITY;

@@ -129,7 +129,7 @@ namespace vOS
         obj->update_vertex_buffer();
 
         VertexArrayObject* vao = obj->get_vao();
-        if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+        if (mesh_data.m_rounding_activated)
         {
             vao = obj->get_mvb()->get_vao_rounded();
         }
@@ -316,7 +316,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (mesh->get_data().m_rounding_activated)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -349,7 +349,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (mesh->get_data().m_rounding_activated)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -373,7 +373,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (mesh->get_data().m_rounding_activated)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -401,7 +401,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (mesh->get_data().m_rounding_activated)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -455,7 +455,7 @@ namespace vOS
             mesh->update_vertex_buffer();
 
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (mesh_data.m_rounding_activated)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -509,7 +509,7 @@ namespace vOS
 
                 mesh->update_vertex_buffer();
                 VertexArrayObject* vao = mesh->get_vao();
-                if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+                if (mesh_data.m_rounding_activated)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
@@ -730,8 +730,8 @@ namespace vOS
     {
         render_debug_menu();
 
-        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
-        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
+//        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
+//        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
 
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
