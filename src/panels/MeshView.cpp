@@ -730,9 +730,6 @@ namespace vOS
     {
         render_debug_menu();
 
-//        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
-//        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
-
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
