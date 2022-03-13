@@ -202,6 +202,12 @@ namespace vOS
                     if (theta < 0.0f)
                         theta = 360.0f - (velocity - theta);
                 }
+            } else if(m_mode == SET)
+            {
+                // Switch to Fly mode on keyboard input
+                float input_magnitude = glm::length(input_vector);
+                if(input_magnitude > 0.01f)
+                    set_mode(FLY);
             }
         }
     }
@@ -256,7 +262,7 @@ namespace vOS
             std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
 
         }
-        if (m_mode == ORBIT)
+        else if (m_mode == ORBIT)
         {
             x_offset *= m_sensitivity;
             y_offset *= m_sensitivity;
@@ -276,6 +282,10 @@ namespace vOS
             {
                 theta = 360.0f - (x_offset - theta);
             }
+        }
+        else if(m_mode == SET)
+        {
+            set_mode(FLY);
         }
     }
 
@@ -346,6 +356,9 @@ namespace vOS
             position.z = radius * sin(glm::radians(phi)) * cos(glm::radians(theta));
             position += m_orbital_origin;
             m_camera_front = glm::normalize(m_orbital_origin - position);
+        }else if (m_mode == 2)
+        {
+            m_mode = SET;
         }
     }
 
@@ -353,6 +366,8 @@ namespace vOS
     {
         // Set Camera View Direction
         m_camera_front = target - position;
+
+        m_mode = SET;
 
         // Change mode to existing mode ( fixes yaw and other angles )
         set_mode(m_mode, radius);
@@ -370,11 +385,11 @@ namespace vOS
             position = m_desired_position;
             m_camera_front = m_desired_front;
 
-            // Set Variables depending on mode
-            if (m_mode == FLY)
-                set_mode(0);
-            else
+            // Enter Orbit mode, if preset, otherwise have the position be SET
+            if (m_mode == ORBIT)
                 set_mode(1, radius);
+            else
+                set_mode(2);
         } else
         {
             // Half Sinus Curve

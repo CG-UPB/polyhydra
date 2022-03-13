@@ -375,6 +375,11 @@ namespace vOS
         m_max_peel_depth = max_depth;
     }
 
+    void MeshObject::set_face_color(int ovm_id, Color color)
+    {
+        m_mvb->set_face_color(ovm_id, color.r, color.g, color.b, color.a);
+    }
+
     int MeshObject::to_vertex_id(int value)
     {
         return m_mvb->to_vertex_id(value);

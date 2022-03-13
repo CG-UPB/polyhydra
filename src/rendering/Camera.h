@@ -14,7 +14,8 @@ namespace vOS {
     enum Mode
     {
         FLY,
-        ORBIT
+        ORBIT,
+        SET
     };
 
 /**
