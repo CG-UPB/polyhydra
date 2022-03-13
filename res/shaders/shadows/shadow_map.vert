@@ -55,11 +55,7 @@ void main()
     ////////////////////////////////////////////////////////
     v_Visible = 1;
 
-    if (a_isDigged == 0.0)
-    {
-        v_Visible = 0;
-    }
-    if (a_isIsolated == 0.0)
+    if (a_isDigged == 1.0 || a_isIsolated == 1.0)
     {
         v_Visible = 0;
     }

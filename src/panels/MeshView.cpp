@@ -552,132 +552,58 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
-                int face_id_mesh = m.first;
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
                 any_mesh_hovered = true;
 
+                auto& settings = *GlobalViewerSettings::getInstance();
+
                 if (type == SELECTION_TYPE_FACE)
                 {
                     int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
+                    auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
+                    auto ch = mesh->m_mesh->incident_cell(chf);
                     mesh->get_mvb()->hover_halfface(halfface_id);
 
-                    if (GlobalViewerSettings::getInstance()->m_get_current_isolation_state())
+                    if (settings.m_get_current_isolation_state())
                     {
-
-                        auto mvb = mesh->get_mvb();
-                        mvb->start_isolation();
-
-                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(
-                                halfface).idx();
-
-                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
-
-                        OpenVolumeMesh::FaceHandle face(face_id);
-                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face, 0);
-
-                        OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
-                        OpenVolumeMesh::CellPropertyT<bool> isolateProp = mesh->m_mesh->request_cell_property<bool>(
-                                "IsolateProperty");
-
-                        if (cell_handle.idx() == -1)
+                        if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         {
-                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                            cell_handle = mesh->m_mesh->incident_cell(hf1);
-
-                            //std::cout << "Zelle 2: " << cell_handle.idx();
+                            mesh->get_mvb()->set_cell_isolated(ch.idx());
                         }
-                        else
-                        {
-                            if (isolateProp[cell_handle] == 0.0)
-                            {
-                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                                cell_handle = mesh->m_mesh->incident_cell(hf1);
-                            }
-                        }
-                        if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                        {
-
-                            isolateProp[cell_handle] = 1.0;
-
-                            auto mvb = mesh->get_mvb();
-                            mvb->update_isolate_buffer(cell_handle.idx(), 1.0f);
-                        }
-
                     }
 
-                    if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL ||
-                        GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
+                    if (settings.m_get_current_selection_mode() == CELL || settings.m_get_current_digging_activated())
                     {
-                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
-                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
-
-                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
-
-                        OpenVolumeMesh::FaceHandle face(face_id);
-                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face, 0);
-
-                        OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
-                        OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>(
-                                "DiggingProperty");
-
-                        if (cell_handle.idx() == -1)
+                        if (chf.is_valid())
                         {
-                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                            cell_handle = mesh->m_mesh->incident_cell(hf1);
-                        }
-                        else
-                        {
-                            if (diggingProp[cell_handle] == 0.0)
-                            {
-                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                                cell_handle = mesh->m_mesh->incident_cell(hf1);
-                            }
+                            auto cell = mesh->m_mesh->incident_cell(chf);
+                            mesh->get_mvb()->hover_cell(cell.idx());
                         }
 
-                        if (GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
+                        if (settings.m_get_current_digging_activated() && !settings.m_get_current_isolation_state())
                         {
-                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                             {
-                                diggingProp[cell_handle] = 0.0;
-
-                                auto mvb = mesh->get_mvb();
-                                mvb->update_digging_buffer(cell_handle.idx(), 0.0f);
+                                mesh->get_mvb()->set_cell_digged(ch.idx(), true);
                             }
                         }
                         else
                         {
                             // cell_handle beinhaltet cell
-                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                             {
                                 // Select element via Window class, to activate Callback function
                                 // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                                 Window::instance().rendering_mutex.unlock();
-                                Window::instance().select_element(m.first, cell_handle.idx(), 6);
+                                Window::instance().select_element(m.first, ch.idx(), 6);
                                 Window::instance().rendering_mutex.lock();
                             }
                         }
-
-
                     }
                     else
                     {
-
-                        // because of unsigned int as return value mesh.to_halfface_id(pickedID) returns the id + 1 and 0 means
-                        // there is no valid ID (e.g when clicking background)
-                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
-                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
-
-                        //std::cout << "hovering face with id: " << face_id << std::endl;
-
                         m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
@@ -737,10 +663,10 @@ namespace vOS
         {
             if (face_id_mesh >= 0)
             {
-                Window().instance().rendering_mutex.unlock();
+                Window::instance().rendering_mutex.unlock();
                 // Focus
-                Window().instance().camera_focus_on(face_id_mesh, face_id, 0.4);
-                Window().instance().rendering_mutex.lock();
+                Window::instance().camera_focus_on(face_id_mesh, face_id, 0.4);
+                Window::instance().rendering_mutex.lock();
             }
         }
         if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
@@ -749,7 +675,7 @@ namespace vOS
         }
 
         auto active_mesh = Window::instance().get_focused_mesh_object();
-        if (!any_mesh_hovered && active_mesh != nullptr)
+        if ((!any_mesh_hovered && active_mesh != nullptr) || !ImGui::IsWindowHovered())
         {
             for (const auto& m: Window::instance().get_mesh_list())
             {
@@ -817,8 +743,8 @@ namespace vOS
         // Update Camera
         m_render_data.camera.update();
 
-//        // Update Mesh Mover
-//        m_mover.update();
+        // Update Mesh Mover
+        m_mover.update();
 
         // Render Meshes
         render_pre_pass();
@@ -991,7 +917,7 @@ namespace vOS
             }
         }
         ImGui::End();
-        m_selection_pass.set_debug_mode(true);
+        m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
     }
 
     unsigned int MeshView::get_selected_texture()

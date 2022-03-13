@@ -44,11 +44,7 @@ void main()
     ////////////////////////////////////////////////////////
     v_visible = 1;
 
-    if (a_is_digged == 0.0)
-    {
-        v_visible = 0;
-    }
-    if (a_is_isolated == 0.0)
+    if (a_is_digged == 1.0 || a_is_isolated == 1.0)
     {
         v_visible = 0;
     }

@@ -73,11 +73,12 @@ namespace vOS
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
 
+        bool draw_wireframe = settings->m_get_current_mesh_mode() == Wireframe;
+
         // settings
-        m_mesh_shader->set_uniform_bool("u_draw_wireframe", settings->m_get_current_mesh_mode() == Wireframe);
+        m_mesh_shader->set_uniform_bool("u_draw_wireframe", draw_wireframe);
         m_mesh_shader->set_uniform_bool("u_draw_shadows", settings->m_get_current_shadows_activated());
         m_mesh_shader->set_uniform_bool("u_draw_ao", settings->m_get_current_ambient_occlusion_activated());
-
 
         // input textures
         m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
@@ -86,7 +87,15 @@ namespace vOS
         m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE3,m_mesh_view->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
         m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4,m_mesh_view->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
 
-        vao->draw();
+        // wireframe mode should always be non-rounded
+        if (draw_wireframe)
+        {
+               obj->get_mvb()->get_vao_by_face()->draw();
+        }
+        else
+        {
+            vao->draw();
+        }
 
         m_mesh_shader->unbind();
     }

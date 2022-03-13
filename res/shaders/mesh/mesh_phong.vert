@@ -75,14 +75,14 @@ void main()
 
     // criteria for beeing invisible:
     // peeled, sliced, isolated or digged
-    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 0.0 || a_is_digged == 0.0)
+    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
     {
         v_Visible = 0;
     }
 
     // Roundings
     vec3 position = a_pos;
-    if (u_rounding_size > 0.0)
+    if (u_rounding)
     {
         float type = a_vertex_type_rounded;
         float r = u_rounding_size * u_average_cell_size * 0.3;
@@ -137,7 +137,8 @@ void main()
 
     if (a_hovered != 0.0)
     {
-        v_Color += vec4(0.45, 0.1, 0.1, 0.0);
-        return;
+        float hover_strength = 0.5;
+        vec3 hover_color = vec3(0.9, 0.1, 0.1);
+        v_Color = vec4(mix(v_Color.rgb, hover_color, 0.3), 1.0) + vec4(hover_color * hover_strength, 0.0);
     }
 }

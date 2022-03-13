@@ -413,7 +413,6 @@ namespace vOS
 
     int MeshObject::calculate_selection_size() const
     {
-        // make sure that we choose the biggest possible vertex, edge or face id as the offset
         int size = 0;
         for (auto hf_it : m_mesh->halffaces())
         {
@@ -422,7 +421,8 @@ namespace vOS
             {
                 num_halfface_vertices++;
             }
-            size += num_halfface_vertices + 1;
+            // number of halfface edges, if we put a vertex at the center and connect it to all other vertices
+            size += num_halfface_vertices * 2;
         }
         return size;
     }

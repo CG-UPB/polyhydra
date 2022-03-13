@@ -119,6 +119,7 @@ namespace vOS
         int value_size;
         int halfface_id;
         int cell_id;
+        bool fill_all;
     };
 
     class MeshVertexBuffer
@@ -199,17 +200,13 @@ namespace vOS
 
         VertexArrayObject* get_cylinder_vao();
 
-        void update_digging_buffer(int id, float newValue);
+        void set_cell_digged(int cell_id, bool digged);
 
-        void update_isolate_buffer(int id, float newValue);
+        void set_cell_isolated(int cell_id);
 
         void reset_isolation();
 
         void reset_digging();
-
-        void activate_isolation();
-
-        void start_isolation();
 
         glm::vec3 get_face_normal(int ovm_id)
         { return m_face_normals[ovm_id]; }
@@ -281,7 +278,10 @@ namespace vOS
         void set_attribute_buffer(std::vector<float>& buffer, size_t offset, int value_size, const glm::vec4& value);
 
         template<typename T>
-        void update_attribute(VAO vao_id, Attribute attribute, T value, int halfface_id = -1, int cell_id = -1);
+        void update_attribute(VAO vao_id, Attribute attribute, T value, int halfface_id, int cell_id);
+
+        template<typename T>
+        void update_attribute(VAO vao_id, Attribute attribute, T value);
 
         template<typename T>
         std::pair<glm::vec4, int> get_value_and_size(T value);
@@ -339,10 +339,13 @@ namespace vOS
         int m_num_vertices_face = 0;
         int m_vertex_offset_face = 0;
         int m_vertex_offset_rounded = 0;
+        int m_vertex_offset_sphere = 0;
+        int m_vertex_offset_cylinder = 0;
         float m_average_cell_size = 0.0f;
 
         int m_current_hovered_halfface_id = -1;
         int m_current_hovered_cell_id = -1;
+        int m_current_isolated_cell_id = -1;
 
         std::map<int, glm::vec3> m_face_normals;
         std::map<int, glm::vec3> m_face_centers;

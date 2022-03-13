@@ -10,6 +10,7 @@ uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform float u_average_cell_size;
+uniform float u_cell_size;
 
 mat4 get_rotation_matrix(vec3 axis, float angle)
 {
@@ -24,7 +25,7 @@ mat4 get_rotation_matrix(vec3 axis, float angle)
 
 void main()
 {
-    float edge_length = length(u_to_vertex - u_from_vertex);
+    float edge_length = length(u_to_vertex - u_from_vertex) * u_cell_size;
     vec3 edge_dir = normalize(u_to_vertex - u_from_vertex);
     float rot_angle = acos(dot(UP, edge_dir));
     vec3 rot_axis = normalize(cross(UP, edge_dir));
