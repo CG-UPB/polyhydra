@@ -151,7 +151,7 @@ void Demo::color_splash_ui()
 void Demo::color_splash_hit(int mesh_id, int element_id, bool selected)
 {
     std::thread* s_run_thread = new std::thread(&Demo::color_splash_hit_threaded, this, mesh_id, element_id, selected);
-    s_run_thread.join();
+    s_run_thread->join();
 }
 
 void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
