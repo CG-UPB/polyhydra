@@ -10,6 +10,7 @@ in vec3 v_tri_dist;
 uniform bool u_draw_wireframe;
 uniform bool u_draw_shadows;
 uniform bool u_draw_ao;
+uniform float u_wireframe_size;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
@@ -122,11 +123,11 @@ void main()
         }
         float min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
         float max_dist_to_edge = max(max(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
-        if (min_dist_to_edge > 0.0015)
+        if (min_dist_to_edge > 0.0015 * u_wireframe_size)
         {
             discard;
         }
-        if (max_dist_to_edge > 2.0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z))
+        if (max_dist_to_edge > 0.0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z))
         {
             discard;
         }
