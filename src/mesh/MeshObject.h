@@ -257,11 +257,9 @@ namespace vOS
 
         [[nodiscard]] VertexArrayObject* get_vao() const;
 
-        glm::vec3& get_min()
-        { return m_min; };
+        glm::vec3 get_min();
 
-        glm::vec3& get_max()
-        { return m_max; };
+        glm::vec3 get_max();
 
         /**
          * Calculates bounding box of transformed vertices. Used for slicing into camera direction.
@@ -350,10 +348,6 @@ namespace vOS
         std::pair<glm::vec3, glm::vec3> m_transformed_bb;
 
         glm::vec3 m_mesh_offset_from_center;
-
-        glm::vec3 m_min;
-
-        glm::vec3 m_max;
 
         glm::vec3 m_slice_dir;
 

@@ -259,7 +259,7 @@ namespace vOS
             {
                 m_pitch = -89.0f;
             }
-            std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
+            //std::cout << "Pitch: " << m_pitch << " ,Yaw: " << m_yaw << std::endl;
 
         }
         else if (m_mode == ORBIT)
