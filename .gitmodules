@@ -16,3 +16,6 @@
 [submodule "ext/json-develop"]
 	path = ext/json-develop
 	url = https://github.com/nlohmann/json.git
+[submodule "ext/tinyfiledialogs"]
+	path = ext/tinyfiledialogs
+	url = https://git.code.sf.net/p/tinyfiledialogs/code

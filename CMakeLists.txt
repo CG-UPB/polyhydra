@@ -52,7 +52,6 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/PixelBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
-        ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
         ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
         ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.cpp
@@ -65,7 +64,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparentShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowColorFilterPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp src/rendering/passes/SSAOPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp
         ${VOLUMESHOS_SRC}/rendering/Camera.cpp
@@ -84,7 +84,7 @@ add_subdirectory(ext/json-develop)
 
 find_package(Filesystem REQUIRED Experimental Final)
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem)
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
 target_compile_definitions(volumeshOS PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
 
 # copy our resources to the build dir
