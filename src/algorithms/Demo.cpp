@@ -26,9 +26,9 @@ Demo::Demo()
 void Demo::start()
 {
     // Imgui Callback
-    window->set_custom_imgui([this] {color_splash_ui();});
+    window->set_custom_imgui([this] {code_demo_ui();});
 
-    color_splash_init();
+    code_demo();
 
     // Threaded Mode
     //std::thread* s_run_thread = new std::thread(&Demo::code_demo, this);
