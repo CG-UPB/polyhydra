@@ -319,6 +319,35 @@ namespace vOS
         return get_mesh_obj(mesh_id)->get_data().m_rendering_mode;
     }
 
+    void Window::set_face_color(int mesh_id, int ovm_face_id, Color color)
+    {
+        get_mesh_obj(mesh_id)->set_face_color(ovm_face_id, color);
+    }
+
+    void Window::set_cell_color(int mesh_id, int ovm_face_id, Color color)
+    {
+        if(ovm_face_id < 0)
+            return;
+
+        rendering_mutex.lock();
+        // Get Meshobj and ovm mesh
+        auto mesh_obj = get_mesh_obj(mesh_id);
+        auto mesh = mesh_obj->m_mesh;
+
+        // Get Cell Iterator
+        auto cell_iter = mesh->cells().first;
+        cell_iter += ovm_face_id;
+
+        // Iterate all faces
+        for (auto fhe_it: mesh->cell_faces(*cell_iter)) {
+            int id = fhe_it.idx();
+
+            // Color individual faces
+            mesh_obj->set_face_color(ovm_face_id, color);
+        }
+        rendering_mutex.unlock();
+    }
+
     void Window::set_mesh_color(Color color)
     {
         set_mesh_color(0, color);
@@ -740,7 +769,7 @@ namespace vOS
         rendering_mutex.lock();
         // Get Face Normal
         auto face_normal = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_normal(ovm_face_id);
-        auto face_barycenter = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_barycenter(ovm_face_id);
+        auto face_barycenter = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_halfface_barycenter(ovm_face_id);
         // Focus
         m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal, time);
         rendering_mutex.unlock();

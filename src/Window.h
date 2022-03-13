@@ -161,6 +161,15 @@ namespace vOS {
         void set_face_color(int mesh_id, int ovm_face_id, Color color);
 
         /**
+         * Draws faces belonging to cell in given Color.
+         * Alpha values determines how much given color should override default mesh color (1 : complete overwrite, 0 : no effect)
+         * @param mesh_id
+         * @param ovm_face_id
+         * @param color
+         */
+        void set_cell_color(int mesh_id, int ovm_cell_id, Color color);
+
+        /**
          * Applies color to mesh with given mesh_id
          * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
