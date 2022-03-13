@@ -219,6 +219,8 @@ namespace vOS
          */
         void set_selection_offset(int start);
 
+        void set_face_color(int ovm_id, Color color);
+
         /**
          * updates the vertex_buffer
          */

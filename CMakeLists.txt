@@ -67,7 +67,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/algorithms/TestClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp
         ${VOLUMESHOS_SRC}/rendering/Camera.cpp
-        ${VOLUMESHOS_SRC}/rendering/Light.cpp src/panels/QualityPanel.cpp src/panels/QualityPanel.h src/rendering/passes/VertexOnlyPass.cpp src/rendering/MeshMover.cpp src/rendering/MeshMover.h)
+        ${VOLUMESHOS_SRC}/rendering/Light.cpp src/panels/QualityPanel.cpp src/panels/QualityPanel.h src/rendering/passes/VertexOnlyPass.cpp src/rendering/MeshMover.cpp src/rendering/MeshMover.h src/algorithms/Demo.cpp src/algorithms/Demo.h)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

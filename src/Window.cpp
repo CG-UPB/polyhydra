@@ -319,6 +319,11 @@ namespace vOS
         return get_mesh_obj(mesh_id)->get_data().m_rendering_mode;
     }
 
+    void Window::set_face_color(int mesh_id, int ovm_face_id, Color color)
+    {
+        get_mesh_obj(mesh_id)->set_face_color(ovm_face_id, color);
+    }
+
     void Window::set_mesh_color(Color color)
     {
         set_mesh_color(0, color);
