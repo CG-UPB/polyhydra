@@ -59,8 +59,8 @@ namespace vOS
         pre_phong_shader->set_uniform_vec3f("u_max", max);
         pre_phong_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         pre_phong_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-        pre_phong_shader->set_uniform_bool("u_rounding", data.rounding.active);
-        pre_phong_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        pre_phong_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
+        pre_phong_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         pre_phong_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
 
         vao->draw();

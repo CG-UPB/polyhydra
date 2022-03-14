@@ -134,19 +134,6 @@ namespace vOS
             }
 
 
-
-            bool rounding_active = GlobalViewerSettings::getInstance()->get_rounding_active();
-            ImGui::Checkbox("Rounded Cells?", &rounding_active);
-            GlobalViewerSettings::getInstance()->set_rounding_active(rounding_active);
-            ImGui::SameLine();
-            Tooltips::HelpMarkerWithQuestionMark("This checkbox activates rounded corners for the edges of the meshes");
-
-            if (rounding_active)
-            {
-                float actual_rounding_size = GlobalViewerSettings::getInstance()->get_rounding_size();
-                ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
-                GlobalViewerSettings::getInstance()->set_rounding_size(actual_rounding_size);
-            }
         }
         ImGui::End();
     }

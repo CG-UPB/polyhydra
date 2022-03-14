@@ -89,8 +89,8 @@ namespace vOS
         m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_shadow_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
         m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->get_mesh_mode() == Wireframe);
-        m_shadow_shader->set_uniform_bool("u_rounding", data.rounding.active);
-        m_shadow_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        m_shadow_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
+        m_shadow_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
 
         m_shadow_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
         m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.view);

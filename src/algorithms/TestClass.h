@@ -15,5 +15,7 @@ namespace vOS {
         void initialize();
 
         void startQuad();
+
+        void someMeshes();
     };
 }

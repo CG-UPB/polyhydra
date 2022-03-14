@@ -138,4 +138,19 @@ namespace vOS {
 
         window.load_mesh_data(0);
     }
+
+
+    void TestClass::someMeshes()
+    {
+        OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
+        OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh1;
+        OpenVolumeMesh::IO::FileManager file_manager;
+        file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh);
+        file_manager.readFile("../res/sample_meshes/kitten_el2_hex.ovm", m_mesh1);
+        Window &window = Window::instance();
+        window.add_mesh(&m_mesh);
+        window.add_mesh(&m_mesh1);
+
+        //window.load_mesh_data(0);
+    }
 }

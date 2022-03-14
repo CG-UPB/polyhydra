@@ -75,6 +75,10 @@ namespace vOS
              j["transform_position"] = {m_position.x, m_position.y, m_position.z};
              j["transform_scale"] = {m_scale.x, m_scale.y, m_scale.z};
 
+             // Roundings
+             j["roundings activated"] = m_rounding_activated;
+             j["rounding size"] = m_rounding_size;
+
             return j;
          }
 
@@ -106,6 +110,10 @@ namespace vOS
              m_position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
              auto scale_vec = j["transform_scale"];
              m_scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
+
+             // Roundings
+             m_rounding_activated = j["roundings activated"];
+             m_rounding_size = j["rounding size"];
          }
 
         [[nodiscard]] glm::mat4 get_transform() const
@@ -140,6 +148,10 @@ namespace vOS
         glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 m_scale = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 m_offset = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        //Rounding Variables
+        bool m_rounding_activated = false;
+        float m_rounding_size = 0.3f;
     };
 
     class MeshObject

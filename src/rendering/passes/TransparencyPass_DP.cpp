@@ -174,8 +174,8 @@ namespace vOS
         m_transparency_shader->set_uniform_float("u_ordering_strength", m_ordering_strength);
         m_transparency_shader->set_uniform_float("u_t_min", m_min);
         m_transparency_shader->set_uniform_float("u_t_max", m_max);
-        m_transparency_shader->set_uniform_bool("u_rounding", data.rounding.active);
-        m_transparency_shader->set_uniform_float("u_rounding_size", data.rounding.size);
+        m_transparency_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
+        m_transparency_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         m_transparency_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
         m_transparency_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
         m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
