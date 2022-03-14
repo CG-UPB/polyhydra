@@ -5,6 +5,7 @@
 #include "../meshes/CommonMeshes.h"
 #include "../../settings/GlobalViewerSettings.h"
 #include "../../Window.h"
+#include "../../util/ModeEnum.h"
 
 namespace vOS {
     SelectionPass::SelectionPass(): m_selection_shader(Shader::selection_face())
@@ -54,7 +55,7 @@ namespace vOS {
         // Faces should not be selectable in Vertex or Edge Selection mode
         bool faces_selectable = false;
 
-        if(selection_mode == 0 || selection_mode == 3 || selection_mode == 6)
+        if(selection_mode == Selection::ALL || selection_mode == Selection::Face || selection_mode == Selection::CELL)
         {
             faces_selectable = true;
         }
@@ -81,7 +82,7 @@ namespace vOS {
 
         m_selection_shader->unbind();
 
-        if(selection_mode == 0 || selection_mode == 2)
+        if(selection_mode == Selection::ALL || selection_mode == Selection::Edge)
         {
             // Draw cylinders for each Edge
             glDisable(GL_CULL_FACE);
@@ -111,7 +112,7 @@ namespace vOS {
 
         glDepthMask(GL_TRUE);
 
-        if (selection_mode == 0 || selection_mode == 1)
+        if (selection_mode == Selection::ALL || selection_mode == Selection::Vertex)
         {
 
             // Draw spheres for each Vertex

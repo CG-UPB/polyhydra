@@ -132,45 +132,47 @@ namespace vOS
                 m_previous_manual_selection_type = m_manual_selection_type;
             }
 
-            ImGui::Checkbox("Activate Click Selection", &m_selection_activated);
+            ImGui::Text("Click Selection:");
+
+            ImGui::Checkbox("Activate", &m_selection_activated);
             ImGui::SameLine();
             Tooltips::HelpMarkerWithQuestionMark("With this checkbox you can activate the click selection");
             GlobalViewerSettings::getInstance()->set_selection_activated(m_selection_activated);
             if (m_selection_activated)
             {
-                if (ImGui::RadioButton("All-Selection", m_current_selection_mode == 0))
+                if (ImGui::RadioButton("All-Selection", m_current_selection_mode == Selection::ALL))
                 {
-                    m_current_selection_mode = 0;
-                    GlobalViewerSettings::getInstance()->set_selection_mode(0);
+                    m_current_selection_mode = Selection::ALL;
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Selection::ALL);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark(
                         "This button will select the nearest Vertex, Edge or Face of your pick");
-                if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
+                if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Selection::Vertex))
                 {
-                    m_current_selection_mode = Vertex;
-                    GlobalViewerSettings::getInstance()->set_selection_mode(Vertex);
+                    m_current_selection_mode = Selection::Vertex;
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Selection::Vertex);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
-                if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
+                if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Selection::Edge))
                 {
-                    m_current_selection_mode = Edge;
-                    GlobalViewerSettings::getInstance()->set_selection_mode(Edge);
+                    m_current_selection_mode = Selection::Edge;
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Selection::Edge);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
-                if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
+                if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Selection::Face))
                 {
-                    m_current_selection_mode = Face;
-                    GlobalViewerSettings::getInstance()->set_selection_mode(Face);
+                    m_current_selection_mode = Selection::Face;
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Selection::Face);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
-                if (ImGui::RadioButton("Cell-Selection", m_current_selection_mode == CELL))
+                if (ImGui::RadioButton("Cell-Selection", m_current_selection_mode == Selection::CELL))
                 {
-                    m_current_selection_mode = CELL;
-                    GlobalViewerSettings::getInstance()->set_selection_mode(CELL);
+                    m_current_selection_mode = Selection::CELL;
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Cell of your pick");

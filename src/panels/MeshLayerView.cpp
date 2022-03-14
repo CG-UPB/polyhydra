@@ -75,30 +75,6 @@ namespace vOS
             Window::instance().set_mesh_color(m.first, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
-
-//            // TODO: Update to an enum, so that its not hard coded here
-//            std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m.first);
-//            int current_rendering_mode_int = 0;
-//            if (current_rendering_mode == "mesh_wireframe")
-//                current_rendering_mode_int = 1;
-//            if (current_rendering_mode == "mesh_normal")
-//                current_rendering_mode_int = 2;
-//            const char *rendering_mode_internal_names[] =
-//                    {
-//                            "mesh_phong", "mesh_wireframe", "mesh_normal"
-//                    };
-//            const char *rendering_mode_external_names[] =
-//                    {
-//                                "Phong", "Wireframe", "Normal"
-//                    };
-//            str = "##R-Mode " + std::to_string(m.first);
-//            char_type = new char[str.length()];
-//            ImGui::Combo(strcpy(char_type, str.c_str()), &current_rendering_mode_int, rendering_mode_external_names,
-//                         IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
-//            std::cout << rendering_mode_internal_names[current_rendering_mode_int] << std::endl;
-//            Window::instance().set_mesh_rendering_mode(m.first,rendering_mode_internal_names[current_rendering_mode_int]);
-//            Tooltips::ToolTipByHovering("Sets the rendering mode of the mesh");
-
             // Advanced Settings
             //ImGui::SameLine();
 
@@ -145,28 +121,28 @@ namespace vOS
                 ImGui::Text("Ambient:");
                 ImGui::SameLine();
                 float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
-                ImGui::SliderFloat("Ambient", &ambient_value, 0.0f, 1.0f);
+                ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f);
                 Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
 
                 // Diffuse
                 ImGui::Text("Diffuse:");
                 ImGui::SameLine();
                 float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
-                ImGui::SliderFloat("Diffuse", &diffuse_value, 0.0f, 1.0f);
+                ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f);
                 Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
 
                 // Specular
                 ImGui::Text("Specular:");
                 ImGui::SameLine();
                 float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
-                ImGui::SliderFloat("Specular", &specular_value, 0.0f, 1.0f);
+                ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f);
                 Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
 
                 // Specular Exponent
                 ImGui::Text("Specular Exponent:");
                 ImGui::SameLine();
                 float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
-                ImGui::SliderFloat("Specular Exponent", &specular_exp, 0.0f, 10.0f);
+                ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f);
                 Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
                 ImGui::EndPopup();
             }

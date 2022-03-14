@@ -21,4 +21,14 @@ namespace vOS
         PERFORMANCE = 3,
         CUSTOM = 4
     };
+
+
+    enum Selection{
+        ALL = 0,
+        Vertex = 1,
+        Edge = 2,
+        Face = 3,
+        CELL = 6
+    };
+
 }

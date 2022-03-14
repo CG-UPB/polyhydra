@@ -58,7 +58,7 @@ namespace vOS
         GlobalViewerSettings();
         static GlobalViewerSettings* instance;
         bool m_current_selection_activated = false;
-        int m_current_selection_mode = 0;
+        int m_current_selection_mode = Selection::ALL;
         bool m_isolation_started = false;
         bool m_current_digging_active = false;
         int mesh_mode = Phong_Facenormals;

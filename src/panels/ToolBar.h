@@ -6,16 +6,10 @@
 #include <string.h>
 #include <vector>
 #include "../settings/GlobalViewerSettings.h"
+#include "../util/ModeEnum.h"
 
 namespace vOS
 {
-    // Enum for better understandability
-    enum Selection{
-        Vertex = 1,
-        Edge = 2,
-        Face = 3,
-        CELL = 6
-    };
 
     /**
      *  This class represents the toolbar. Various actions are possible in this toolbar. On the one hand there is the
