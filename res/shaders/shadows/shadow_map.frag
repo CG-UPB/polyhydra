@@ -1,5 +1,7 @@
 #version 330 core
 
+layout (location = 0) out vec4 FragColor;
+
 in vec3 v_pos;
 flat in int v_visible;
 in vec3 v_tri_dist;
@@ -8,6 +10,14 @@ uniform bool u_draw_wireframe;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
+
+float LinearizeDepth(float depth)
+{
+    float near = 0.1;
+    float far = 100.0;
+    float z = depth * 2.0 - 1.0; // back to NDC
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
 
 void main()
 {
@@ -37,5 +47,7 @@ void main()
     {
         discard;
     }
+    FragColor = vec4(vec3(LinearizeDepth(gl_FragCoord.z)), 1.0);
+    //FragColor = vec4(0.9, 0.1, 0.1, 1.0);
 
 }

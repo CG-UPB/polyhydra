@@ -1,18 +1,20 @@
 #version 330 core
 
-layout (location = 0) in vec3 a_Pos;
-layout (location = 1) in vec3 a_Normal;
-layout (location = 2) in vec3 a_Center;
+layout (location = 0) in vec3 a_pos;
+layout (location = 1) in vec3 a_normal;
+layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
-layout (location = 4) in float a_isDigged;
-layout (location = 5) in vec4 a_Color;
-layout (location = 6) in float a_isIsolated;
-layout (location = 7) in float a_isTriangle;
+layout (location = 4) in float a_is_digged;
+layout (location = 5) in vec4 a_color;
+layout (location = 6) in float a_is_isolated;
+layout (location = 7) in float a_is_triangle;
 layout (location = 8) in float a_vertex_type_rounded;
 layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
-layout (location = 12) in float a_isSelected;
+layout (location = 12) in float a_is_selected;
+
+const int NUM_CASCADES = 3;
 
 out vec3 v_Pos;
 flat out int v_Visible;
@@ -20,9 +22,7 @@ flat out int v_isTriangle;
 
 uniform bool u_rounding;
 uniform float u_rounding_size;
-
 uniform float u_cell_size;
-
 uniform int u_peel_depth;
 uniform float u_slice_depth;
 uniform vec3 u_min;
@@ -39,8 +39,8 @@ const float ROUNDED_VERTEX_TYPE_CENTER   = 3.0;
 const float EDGE_FACTOR = 1.0 / sqrt(2.0);
 const float CORNER_FACTOR = sqrt(2.0);
 
-uniform mat4 u_light_projection;
 uniform mat4 u_light_view;
+uniform mat4 u_light_projection;
 uniform mat4 u_transform;
 
 float get_shrink_factor(float angle, float dist) {
@@ -50,15 +50,7 @@ float get_shrink_factor(float angle, float dist) {
 
 void main()
 {
-    ////////////////////////////////////////////////////////
-    // Slicing and Peeling
-    ////////////////////////////////////////////////////////
     v_Visible = 1;
-
-    if (a_isDigged == 1.0 || a_isIsolated == 1.0)
-    {
-        v_Visible = 0;
-    }
 
     mat4 view_transform = u_light_view * u_transform;
 
@@ -70,16 +62,15 @@ void main()
 
     vec3 slice_point = max_slice + u_slice_depth * (min_slice - max_slice);
     vec3 dir = slice_dir;
-    vec3 center = vec3(view_transform * vec4(a_Center, 1.0));
+    vec3 center = vec3(view_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peel_depth < u_peel_depth || angle > 0)
+    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_digged == 1.0 || a_is_isolated == 1.0)
     {
         v_Visible = 0;
     }
-    ////////////////////////////////////////////////////////
 
-    vec3 position = a_Pos;
+    vec3 position = a_pos;
     if (u_rounding_size > 0.0)
     {
         float type = a_vertex_type_rounded;
@@ -106,8 +97,8 @@ void main()
         }
     }
 
-    vec3 pos = a_Center + (position - a_Center) * u_cell_size;
+    vec3 pos = a_center + (position - a_center) * u_cell_size;
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
-    v_isTriangle = (a_isTriangle == 0.0) ? 0 : 1;
+    v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
 
 }

@@ -71,6 +71,7 @@ namespace vOS {
         float phi = 0;
         float theta = 0;
         float radius = 10;
+        float zoom = 55.0f;
 
     private:
 
@@ -84,7 +85,6 @@ namespace vOS {
         float m_vertical_speed = 6.0f;
         float m_horizontal_speed = 7.0f;
         float m_sensitivity = 0.2f;
-        float m_zoom = 55.0f;
         /*
          * Moves the Camera one a step closer to a desired focus point with focus viewing direction
          * If timer runs through, the camera will look at the desired object and normal camera movement is allowed again

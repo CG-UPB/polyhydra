@@ -16,6 +16,8 @@ layout (location = 12) in float a_is_selected;
 layout (location = 13) in float a_hovered;
 layout (location = 14) in vec3 a_vertex_normal;
 
+const int NUM_CASCADES = 3;
+
 out vec3 v_Pos;
 out vec3 v_Normal;
 out vec4 v_Color;
@@ -111,7 +113,6 @@ void main()
     }
 
     mat4 cam_space_mat = u_projection * view_transform;
-    mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
     vec3 pos = a_center + (position - a_center) * u_cell_size;
 
     vec3 normal = a_normal;
@@ -122,7 +123,10 @@ void main()
 
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(view_transform))) * normal;
+
+    mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
+
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), 1.0);
 

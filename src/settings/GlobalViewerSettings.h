@@ -69,6 +69,7 @@ namespace vOS
         float m_rounding_size = 0.3f;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
         int m_current_number_passes = 12;
+        int m_current_cascade_level = 1;
 
         // booleans for the render passes
         bool transparency_active = false;
