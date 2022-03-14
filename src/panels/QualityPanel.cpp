@@ -42,7 +42,6 @@ namespace vOS
                     GlobalViewerSettings::getInstance()->set_vertex_only_size(vertex_only_size);
                 }
                 ImGui::PopID();
-
                 ImGui::End();
                 return;
             }

@@ -186,11 +186,15 @@ namespace vOS
 
         void set_halfface_color(int halfface_id, float r, float g, float b, float a);
 
+        glm::vec4 get_halfface_color(int halfface_id);
+
         void set_halfface_selection(int halfface_id, bool selected);
 
         void hover_halfface(int halfface_id);
 
         void set_cell_color(int cell_id, float r, float g, float b, float a);
+
+        glm::vec4 get_cell_color(int cell_id);
 
         void set_cell_selection(int cell_id, bool selected);
 
@@ -284,6 +288,18 @@ namespace vOS
 
         template<typename T>
         void update_attribute(VAO vao_id, Attribute attribute, T value);
+
+        template<typename T>
+        T get_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id);
+
+        template<typename T>
+        T get_cell_attribute(VAO vao_id, Attribute attribute, int cell_id);
+
+        template<typename T>
+        T get_default_value();
+
+        template<typename T>
+        T get_value_for_offset(VAO vao_id, Attribute attribute, int offset);
 
         template<typename T>
         std::pair<glm::vec4, int> get_value_and_size(T value);

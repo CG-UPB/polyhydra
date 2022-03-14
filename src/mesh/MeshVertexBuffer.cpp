@@ -900,6 +900,11 @@ namespace vOS
         }
     }
 
+    glm::vec4 MeshVertexBuffer::get_halfface_color(int halfface_id)
+    {
+        return get_halfface_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, halfface_id);
+    }
+
     void MeshVertexBuffer::set_halfface_selection(int halfface_id, bool selected)
     {
         auto hf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
@@ -941,6 +946,11 @@ namespace vOS
             update_cell_attribute(VAO::MESH_FACE, Attribute::COLOR, ch.idx(), value);
             update_cell_attribute(VAO::MESH_ROUNDED, Attribute::COLOR, ch.idx(), value);
         }
+    }
+
+    glm::vec4 MeshVertexBuffer::get_cell_color(int cell_id)
+    {
+        return get_cell_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, cell_id);
     }
 
     void MeshVertexBuffer::set_cell_selection(int cell_id, bool selected)
@@ -1197,6 +1207,77 @@ namespace vOS
         }
     }
 
+    template<typename T>
+    T MeshVertexBuffer::get_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id)
+    {
+        auto hf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
+        if (!is_loading_finished() || !hf.is_valid())
+        {
+            return get_default_value<T>();
+        }
+        auto [offset, count] = get_halfface_index_and_count(vao_id, halfface_id);
+        return get_value_for_offset<T>(vao_id, attribute, offset);
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_cell_attribute(VAO vao_id, Attribute attribute, int cell_id)
+    {
+        auto cell = OpenVolumeMesh::CellHandle{cell_id};
+        if (!is_loading_finished() || !cell.is_valid())
+        {
+            return get_default_value<T>();
+        }
+        auto [offset, count] = get_cell_index_and_count(vao_id, cell_id);
+        return get_value_for_offset<T>(vao_id, attribute, offset);
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_default_value()
+    {
+        if constexpr(std::is_same_v<T, float>)
+        {
+            return 0;
+        }
+        else if constexpr(std::is_same_v<T, glm::vec2>)
+        {
+            return glm::vec2(0.0f, 0.0f);
+        }
+        else if constexpr(std::is_same_v<T, glm::vec3>)
+        {
+            return glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+        else if constexpr(std::is_same_v<T, glm::vec4>)
+        {
+            return glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        }
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_value_for_offset(VAO vao_id, Attribute attribute, int offset)
+    {
+        auto& vao_definitions = s_attribute_definitions.of(vao_id);
+        auto& attrib_definition = vao_definitions[static_cast<int>(attribute)];
+        auto& attrib_array = get_attrib_array(vao_id, attribute);
+        size_t index = offset * attrib_definition.element_count;
+        if constexpr(std::is_same_v<T, float>)
+        {
+            return attrib_array[index];
+        }
+        else if constexpr(std::is_same_v<T, glm::vec2>)
+        {
+            return glm::vec2{attrib_array[index], attrib_array[index + 1]};
+        }
+        else if constexpr(std::is_same_v<T, glm::vec3>)
+        {
+            return glm::vec3{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2]};
+        }
+        else if constexpr(std::is_same_v<T, glm::vec4>)
+        {
+            return glm::vec4{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2], attrib_array[index + 3]};
+        }
+        return get_default_value<T>();
+    }
+
     template void MeshVertexBuffer::update_cell_attribute<float>(VAO, Attribute, int, float);
     template void MeshVertexBuffer::update_cell_attribute<glm::vec2>(VAO, Attribute, int, glm::vec2);
     template void MeshVertexBuffer::update_cell_attribute<glm::vec3>(VAO, Attribute, int, glm::vec3);
@@ -1221,4 +1302,24 @@ namespace vOS
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec2>(glm::vec2);
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec3>(glm::vec3);
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec4>(glm::vec4);
+
+    template float MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+
+    template float MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+
+    template float MeshVertexBuffer::get_default_value();
+    template glm::vec2 MeshVertexBuffer::get_default_value();
+    template glm::vec3 MeshVertexBuffer::get_default_value();
+    template glm::vec4 MeshVertexBuffer::get_default_value();
+
+    template float MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
 }
