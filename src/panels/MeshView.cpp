@@ -50,19 +50,6 @@ namespace vOS
         m_render_data.camera.set_viewport_size(width, height);
 
         m_mover.set_references(&m_render_data.camera, &m_selection_hover_pass);
-//        // setup light including projection and view for shadow map
-//        m_render_data.light.color = glm::vec3{1.0f, 1.0f, 1.0f};
-//        m_render_data.light.world = glm::mat4(1.0f);
-//        //m_render_data.light.position = m_render_data.camera.position + glm::normalize(view_dir) * 20.0f;
-//        m_render_data.light.position = glm::vec3{10.0f, 10.0f, 10.0f};
-//        m_render_data.light.projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-//
-//        m_render_data.light.view = glm::lookAt(
-//            m_render_data.light.position,
-//            glm::vec3(0.0f, 0.0f, 0.0f),
-//            glm::vec3(0.0f, 1.0f, 0.0f)
-//        );
-
 
         num_passes = 0;
 
@@ -339,6 +326,19 @@ namespace vOS
         m_shadow_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
 
+        // calculate all cascade matrices
+        m_shadow_pass->clear_cascades();
+        int cascade_level = GlobalViewerSettings::getInstance()->m_get_current_cascade_level();
+        auto cam = m_render_data.camera;
+
+        float max = cam.far - cam.near;
+        for(int i = 0; i < cascade_level; i++)
+        {
+//            float near = cam.near + (float)i * (max / (float)cascade_level);
+//            float far = cam.near + (float)(i + 1) * (max / (float)cascade_level);
+            m_shadow_pass->calculate_cascade(cam.near, cam.far / 2);
+        }
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
@@ -361,61 +361,61 @@ namespace vOS
         m_shadow_color_filter_pass->get_framebuffer()->unbind();
 
         // render transparent shadow map
-        m_transparent_shadow_pass->get_framebuffer()->bind();
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-            if (!mesh->get_data().m_visible)
-            {
-                continue;
-            }
-            mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_transparent_shadow_pass->render(vao, m_render_data, m.first);
-            }
-        }
-        m_transparent_shadow_pass->get_framebuffer()->unbind();
-
-
-        // calculate color filter for transparent shadows
-        m_shadow_color_filter_pass->get_framebuffer()->bind();
+//        m_transparent_shadow_pass->get_framebuffer()->bind();
+//        glClearColor(0.0, 0.0, 0.0, 0.0);
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+//        {
+//            auto mesh = m.second;
+//            if (!mesh->get_data().m_visible)
+//            {
+//                continue;
+//            }
+//            mesh->update_vertex_buffer();
+//            VertexArrayObject* vao = mesh->get_vao();
+//            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+//            {
+//                vao = mesh->get_mvb()->get_vao_rounded();
+//            }
+//            if (vao != nullptr)
+//            {
+//                m_transparent_shadow_pass->render(vao, m_render_data, m.first);
+//            }
+//        }
+//        m_transparent_shadow_pass->get_framebuffer()->unbind();
+//
+//
+//        // calculate color filter for transparent shadows
+//        m_shadow_color_filter_pass->get_framebuffer()->bind();
 
         //glClearColor(1.0, 1.0, 1.0, 0.0 );
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-            if (!mesh->get_data().m_visible)
-            {
-                continue;
-            }
-            mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_shadow_color_filter_pass->render(vao, m_render_data, m.first);
-            }
-        }
-        m_shadow_color_filter_pass->get_framebuffer()->unbind();
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glEnable(GL_CULL_FACE);
-        glDisable(GL_BLEND);
-        glBlendEquation(GL_FUNC_ADD);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//        glClearColor(0.0, 0.0, 0.0, 0.0);
+//
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+//        {
+//            auto mesh = m.second;
+//            if (!mesh->get_data().m_visible)
+//            {
+//                continue;
+//            }
+//            mesh->update_vertex_buffer();
+//            VertexArrayObject* vao = mesh->get_vao();
+//            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+//            {
+//                vao = mesh->get_mvb()->get_vao_rounded();
+//            }
+//            if (vao != nullptr)
+//            {
+//                m_shadow_color_filter_pass->render(vao, m_render_data, m.first);
+//            }
+//        }
+//        m_shadow_color_filter_pass->get_framebuffer()->unbind();
+//        glClearColor(0.0, 0.0, 0.0, 0.0);
+//        glEnable(GL_CULL_FACE);
+//        glDisable(GL_BLEND);
+//        glBlendEquation(GL_FUNC_ADD);
+//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     }
 
@@ -445,15 +445,7 @@ namespace vOS
             {
                 continue;
             }
-
-//            if(!m_zoom)
-//            {
-//                m_zoom_point = mesh->get_mesh_offset();
-//            }
-//            mesh_data.offset = m_zoom_point;
-
             mesh->update_vertex_buffer();
-
             VertexArrayObject* vao = mesh->get_vao();
             if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
             {
@@ -817,8 +809,8 @@ namespace vOS
         // Update Camera
         m_render_data.camera.update();
 
-//        // Update Mesh Mover
-//        m_mover.update();
+        // Update Mesh Mover
+        m_mover.update();
 
         // Render Meshes
         render_pre_pass();
@@ -1001,7 +993,8 @@ namespace vOS
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                //return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
                 return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:
@@ -1013,6 +1006,4 @@ namespace vOS
         }
         return -1;
     }
-
-
 }

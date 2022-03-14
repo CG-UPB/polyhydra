@@ -73,6 +73,7 @@ namespace vOS
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
 
+
         // settings
         m_mesh_shader->set_uniform_bool("u_draw_wireframe", settings->m_get_current_mesh_mode() == Wireframe);
         m_mesh_shader->set_uniform_bool("u_draw_shadows", settings->m_get_current_shadows_activated());
@@ -90,6 +91,4 @@ namespace vOS
 
         m_mesh_shader->unbind();
     }
-
-
 }

@@ -13,32 +13,14 @@ namespace vOS
 
     Light::Light()
     {
-        position =glm::vec3{0.0f, 15.0f, 10.0f};
+        position =glm::vec3{0.0f, 10.0f, 5.0f};
         color = glm::vec3{1.0f, 1.0f, 1.0f};
-        m_target = glm::vec3{0.0f, 0.0f, 0.0f};
+        target = glm::vec3{0.0f, 0.0f, 0.0f};
+        light_dir = position;
 
         near = 0.1f;
         far = 100.0f;
 
         world = glm::mat4(1.0f);
-
-        projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-        view = glm::lookAt(
-                position,
-                m_target,
-                glm::vec3(0.0f, 1.0f, 0.0f)
-        );
-    }
-
-
-    void Light::update()
-    {
-        projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
-        view = glm::lookAt(
-                position,
-                m_target,
-                glm::vec3(0.0f, 1.0f, 0.0f)
-        );
     }
 }

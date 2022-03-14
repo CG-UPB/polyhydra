@@ -36,6 +36,7 @@ namespace vOS
         void m_set_current_number_passes(int np){m_current_number_passes = np;};
         void m_set_current_transparency_activated(bool t){transparency_active = t;};
         void m_set_current_shadows_activated(bool s){shadows_active = s;};
+        void m_set_current_cascade_level(int level){m_current_cascade_level = level;};
         void m_set_current_ambient_occlusion_activated(bool ao){ambient_occlusion_active = ao;};
         void m_set_current_ssao_option(int s){ssao_option = s;};
         void m_set_current_costume_options(const SSAOOptions& s){current_costume_options = s;};
@@ -51,6 +52,7 @@ namespace vOS
         [[nodiscard]] int m_get_current_number_passes() const{return m_current_number_passes;};
         [[nodiscard]] bool m_get_current_transparency_activated() const{return transparency_active;};
         [[nodiscard]] bool m_get_current_shadows_activated() const{return shadows_active;};
+        [[nodiscard]] bool m_get_current_cascade_level() const{return m_current_cascade_level;};
         [[nodiscard]] bool m_get_current_ambient_occlusion_activated() const{return ambient_occlusion_active;};
         [[nodiscard]] int m_get_current_ssao_option() const{return ssao_option;};
         [[nodiscard]] SSAOOptions m_get_current_costume_options() const{return current_costume_options;};
@@ -68,6 +70,7 @@ namespace vOS
         float m_rounding_size = 0.3f;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
         int m_current_number_passes = 12;
+        int m_current_cascade_level = 1;
 
         // booleans for the render passes
         bool transparency_active = false;

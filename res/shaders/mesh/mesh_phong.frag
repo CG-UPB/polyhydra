@@ -55,24 +55,25 @@ float shadow_calculation(vec4 pos_ls, float bias)
 
     // sample surrounding values and use average value for smoother shadows
     vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
-//    for(int x = -1; x <= 1; ++x)
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
+            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+
+
+    //    for(int i = 0; i < 4; i++)
 //    {
-//        for(int y = -1; y <= 1; ++y)
+//        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
 //        {
-//            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
-//            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
+//            shadow += 0.25;
 //        }
 //    }
 
-    for(int i = 0; i < 4; i++)
-    {
-        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
-        {
-            shadow += 0.25;
-        }
-    }
-
-    //shadow /= 9.0;
 
     if(proj_coords.z > 1.0)
     {
@@ -142,7 +143,7 @@ void main()
     }
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
-    vec3 l = normalize(u_light_pos - v_pos);
+    vec3 l = normalize(vec3(0.0f, 10.0f, 5.0f));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
@@ -150,7 +151,8 @@ void main()
     if (u_draw_shadows)
     {
         // shadow calculation
-        float bias = max(0.0005 * (1.0 - dot(n, l)), 0.00005);
+        vec3 light_dir = normalize(u_light_pos - v_pos);
+        float bias = max(0.005 * (1.0 - dot(n, light_dir)), 0.0005);
         shadow = shadow_calculation(v_pos_ls, bias);
         float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
         transparent_shadow = 0.0;

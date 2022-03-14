@@ -88,7 +88,7 @@ namespace vOS
 
 
         projection = glm::perspective(
-                glm::radians(m_zoom),
+                glm::radians(zoom),
                 (float) m_screen_width / (float) m_screen_height,
                 near,
                 far
@@ -210,14 +210,14 @@ namespace vOS
     {
         if (m_mode == FLY)
         {
-            m_zoom -= m_zoom_strength * (float) y_offset;
-            if (m_zoom < 1.0f)
+            zoom -= m_zoom_strength * (float) y_offset;
+            if (zoom < 1.0f)
             {
-                m_zoom = 1.0f;
+                zoom = 1.0f;
             }
-            if (m_zoom > 90.0f)
+            if (zoom > 90.0f)
             {
-                m_zoom = 90.0f;
+                zoom = 90.0f;
             }
         }
         if (m_mode == ORBIT)
