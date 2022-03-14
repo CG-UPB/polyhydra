@@ -13,6 +13,7 @@ namespace vOS {
         void start();
 
         void initialize();
+        void ui();
 
         void startQuad();
 

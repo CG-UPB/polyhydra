@@ -5,6 +5,7 @@
 #include "TestClass.h"
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include "../Window.h"
+#include "../panels/NewFileDialog.h"
 
 namespace vOS {
 
@@ -14,6 +15,31 @@ namespace vOS {
         Window::instance().set_vos_initialized(std::bind(&TestClass::start, this));
 
         Window::instance().open();
+    }
+
+    void TestClass::ui()
+    {
+        vOS::Window &window = vOS::Window::instance();
+        ImGui::Begin("Custom UI");
+        // Next Phase
+
+        if (ImGui::Button("Load Mesh"))
+        {
+            vOS::NewFileDialog file_dialog;
+
+            char const * filename;
+
+            filename = file_dialog.openDialog("Open Mesh File");
+
+            if (filename != NULL){
+                vOS::Window &window = vOS::Window::instance();
+                OpenVolumeMesh::GeometricPolyhedralMeshV3d mesh;
+                OpenVolumeMesh::IO::FileManager file_manager;
+                file_manager.readFile(filename, mesh);
+                window.add_mesh(&mesh);
+            }
+        }
+        ImGui::End();
     }
 
     void TestClass::start() {
@@ -79,6 +105,7 @@ namespace vOS {
 
         // VOS Window
         Window &window = Window::instance();
+        window.set_custom_imgui(std::bind(&TestClass::ui, this));
         window.add_mesh(&myMesh);
 
         window.load_mesh_data(0);

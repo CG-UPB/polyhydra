@@ -7,25 +7,6 @@
 
 namespace vOS {
 
-    struct Ortho
-    {
-        Ortho(float x1, float x2, float y1, float y2, float z1, float z2)
-        {
-            min_x = x1;
-            max_x = x2;
-            min_y = y1;
-            max_y = y2;
-            min_z = z1;
-            max_z = z2;
-        }
-        float min_x;
-        float max_x;
-        float min_y;
-        float max_y;
-        float min_z;
-        float max_z;
-    };
-
     class Light {
 
     public:
