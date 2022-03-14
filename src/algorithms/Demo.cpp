@@ -206,17 +206,25 @@ void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
 
             auto distance = glm::length(barycenter - center_point);
 
-            float chance = (m_splash_size* m_mesh_scalar_value - distance);
+            float chance = (m_splash_size* m_mesh_scalar_value - distance)/m_splash_size;
             //std::cout << distance << " chance: " << chance << std::endl;
             if(chance < 0)
                 chance = 0;
 
             bool do_color = (rand()%100)/100.0f < chance;
-            if(chance > 0)
+            if(chance)
             {
-                int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(face_iter).idx();
+                //int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(face_iter).idx();
                 int cell_id = ovm_mesh->incident_cell(face_iter).idx();
-                window->set_cell_color(mesh_id, cell_id, splash_color);
+
+                Color preset_color = window->get_cell_color(mesh_id, cell_id);
+
+                float alpha = std::clamp(preset_color.a + splash_color.a, 0.0f, 1.0f);
+
+                auto normalized_color = (preset_color.get_rgb() * (1 - m_splash_strength)) + (splash_color.get_rgb() * m_splash_strength);
+                normalized_color = glm::normalize(normalized_color);
+
+                window->set_cell_color(mesh_id, cell_id, Color(normalized_color.r, normalized_color.g, normalized_color.b, alpha));
                 //window->set_face_color(mesh_id, face_id, splash_color);
             }
         }

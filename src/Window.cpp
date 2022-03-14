@@ -324,35 +324,29 @@ namespace vOS
         get_mesh_obj(mesh_id)->set_face_color(ovm_face_id, color);
     }
 
-    void Window::set_cell_color(int mesh_id, int ovm_face_id, Color color)
+    void Window::set_cell_color(int mesh_id, int ovm_cell_id, Color color)
     {
-        if(ovm_face_id < 0)
-            return;
-
-        rendering_mutex.lock();
-        // Get Meshobj and ovm mesh
-        auto mesh_obj = get_mesh_obj(mesh_id);
-        auto mesh = mesh_obj->m_mesh;
-
-        // Get Cell Iterator
-        auto cell_iter = mesh->cells().first;
-        cell_iter += ovm_face_id;
-
-        if(cell_iter->is_valid() && cell_iter != mesh->cells_end()) {
-
-            mesh_obj->get_mvb()->set_cell_color(cell_iter->idx(), color.r, color.g, color.b, color.a);
-        }
-        rendering_mutex.unlock();
+        get_mesh_obj(mesh_id)->get_mvb()->set_cell_color(ovm_cell_id, color.r, color.g, color.b, color.a);
     }
 
     Color Window::get_face_color(int mesh_id, int ovm_face_id)
     {
-        return Color(0,0,0,0);
+        rendering_mutex.lock();
+        auto ovm_face_handle = OpenVolumeMesh::FaceHandle(ovm_face_id);
+        int ovm_halfface_id = get_mesh_obj(mesh_id)->m_mesh->face_halffaces(ovm_face_handle)[0].idx();
+        auto col = get_mesh_obj(mesh_id)->get_mvb()->get_halfface_color(ovm_halfface_id);
+        Color color = Color(col.r, col.g, col.b, col.a);
+        rendering_mutex.unlock();
+        return color;
     }
 
     Color Window::get_cell_color(int mesh_id, int ovm_cell_id)
     {
-        return Color(0,0,0,0);
+        rendering_mutex.lock();
+        auto col = get_mesh_obj(mesh_id)->get_mvb()->get_cell_color(ovm_cell_id);
+        Color color = Color(col.r, col.g, col.b, col.a);
+        rendering_mutex.unlock();
+        return color;
     }
 
     void Window::set_mesh_color(Color color)
