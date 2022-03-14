@@ -56,6 +56,16 @@ namespace vOS
         delta = current_frame - last_frame;
         last_frame = current_frame;
 
+        if(Input::key_pressed(77))
+        {
+            if(m_mode == FLY){
+                m_orbital_origin = {0,0,0};
+                set_mode(ORBIT, 10);
+            }else
+            {
+                set_mode(FLY);
+            }
+        }
 
         // calculate the new Front vector and concluding right and up-vector
         // Ignore input, if in focus mode
