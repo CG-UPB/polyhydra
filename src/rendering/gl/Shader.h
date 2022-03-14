@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <filesystem>
+#include FS_HEADER
 #include "glm/mat4x4.hpp"
 
 namespace vOS
@@ -157,7 +157,7 @@ namespace vOS
          * @param fragmentPath fragment resource path
          * @param geometryPath geometry resource path (may be empty)
          */
-        Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath);
+        Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath);
         ~Shader() = default;
 
         // all loaded shaders by name

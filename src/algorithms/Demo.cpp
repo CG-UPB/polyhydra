@@ -144,7 +144,17 @@ void Demo::color_splash_init()
 void Demo::color_splash_ui()
 {
     ImGui::Begin("Custom UI");
-    ImGui::SliderFloat("SplashSize", &m_splash_size, 0, 10.0f);
+    // Next Phase
+    if (ImGui::Button("Next")) {
+        // Clean up
+        window->remove_mesh(m_hand_mesh);
+        window->set_callback_face_selection();
+        window->set_custom_imgui([this] {multi_mesh_ui();});
+
+        multi_mesh();
+    }
+    ImGui::SliderFloat("Splash Size", &m_splash_size, 0, 15.0f);
+    ImGui::SliderFloat("Splash Strength", &m_splash_strength, 0, 1.0f);
     ImGui::End();
 }
 
@@ -157,7 +167,7 @@ void Demo::color_splash_hit(int mesh_id, int element_id, bool selected)
 void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
 {
 
-    Color splash_color = Color((rand()%1000)/1000.0f, (rand()%1000)/1000.0f, (rand()%1000)/1000.0f, 1.0f);
+    Color splash_color = Color((rand()%1000)/1000.0f, (rand()%1000)/1000.0f, (rand()%1000)/1000.0f, m_splash_strength);
 
     //std::cout << "Selection Callback: " << mesh_id << " " << element_id << " " << selected << std::endl;
     //std::cout << "Color: " << splash_color.r << " " << splash_color.g << " " << splash_color.b << std::endl;
@@ -205,8 +215,34 @@ void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
             if(chance > 0)
             {
                 int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(face_iter).idx();
-                window->set_face_color(mesh_id, face_id, splash_color);
+                int cell_id = ovm_mesh->incident_cell(face_iter).idx();
+                window->set_cell_color(mesh_id, cell_id, splash_color);
+                //window->set_face_color(mesh_id, face_id, splash_color);
             }
         }
     }
+}
+
+void Demo::multi_mesh()
+{
+    // Load Example Mesh
+    // OVM Setup
+    OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_hand;
+    OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_nut;
+
+    OpenVolumeMesh::IO::FileManager file_manager;
+    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh_hand);
+    file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh_nut);
+
+    // Add Mesh
+    m_hand_mesh = window->add_mesh(&m_mesh_hand);
+    m_nut_mesh = window->add_mesh(&m_mesh_nut);
+
+    window->set_mesh_position(m_hand_mesh, -3, 0,3);
+    window->set_mesh_position(m_nut_mesh, 0, -3, 0);
+}
+
+void Demo::multi_mesh_ui()
+{
+
 }

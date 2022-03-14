@@ -16,7 +16,8 @@ namespace vOS
     struct VertexData
     {
         glm::vec3 position{};
-        glm::vec3 normal{};
+        glm::vec3 halfface_normal{};
+        glm::vec3 vertex_normal{};
         glm::vec3 color{};
     };
 
@@ -57,7 +58,7 @@ namespace vOS
         int cell_id = -1;
         std::vector<float> vertex_types;
         std::vector<float> vertex_positions;
-        std::vector<float> vertex_normals;
+        std::vector<float> vertex_halfface_normals;
         std::vector<float> vertex_cell_centers;
         std::vector<float> vertex_colors;
         std::vector<float> vertex_peel_depths;
@@ -69,6 +70,7 @@ namespace vOS
         std::vector<float> dihedral_angle;
         std::vector<float> selection;
         std::vector<float> hovered;
+        std::vector<float> vertex_normals;
         std::vector<unsigned int> indices;
     };
 
@@ -87,9 +89,9 @@ namespace vOS
 
     enum class Attribute
     {
-        POSITION, NORMAL, CELL_CENTER, PEEL_DEPTH, IS_DIGGED, COLOR, IS_ISOLATED, IS_TRIANGLE, VERTEX_TYPE,
+        POSITION, FACE_NORMAL, CELL_CENTER, PEEL_DEPTH, IS_DIGGED, COLOR, IS_ISOLATED, IS_TRIANGLE, VERTEX_TYPE,
         FACE_CENTER, TO_VERTEX, DIHEDRAL_ANGLE, SELECTION, SELECTION_VERTEX_POSITION, SELECTION_FROM_VERTEX,
-        SELECTION_TO_VERTEX, HOVERED,
+        SELECTION_TO_VERTEX, HOVERED, VERTEX_NORMAL,
         NUM_VALUES
     };
 
@@ -186,11 +188,15 @@ namespace vOS
 
         void set_halfface_color(int halfface_id, float r, float g, float b, float a);
 
+        glm::vec4 get_halfface_color(int halfface_id);
+
         void set_halfface_selection(int halfface_id, bool selected);
 
         void hover_halfface(int halfface_id);
 
         void set_cell_color(int cell_id, float r, float g, float b, float a);
+
+        glm::vec4 get_cell_color(int cell_id);
 
         void set_cell_selection(int cell_id, bool selected);
 
@@ -237,7 +243,8 @@ namespace vOS
                 RoundedCellData& data,
                 float type,
                 const glm::vec3& pos,
-                const glm::vec3& norm,
+                const glm::vec3& hf_norm,
+                const glm::vec3& v_norm,
                 const glm::vec4& col,
                 const glm::vec3& face_center,
                 const glm::vec3& to_vertex,
@@ -255,7 +262,9 @@ namespace vOS
 
         static std::vector<float> get_vertices(Mesh& mesh);
 
-        [[nodiscard]] inline glm::vec3 normal_to_vec3(int halfface_id);
+        [[nodiscard]] inline glm::vec3 halfface_normal_to_vec3(int halfface_id);
+
+        [[nodiscard]] inline glm::vec3 vertex_normal_to_vec3(int vertex_id);
 
         void add_attribute_data(VAO vao, Attribute attribute, const std::vector<float>& data);
 
@@ -284,6 +293,18 @@ namespace vOS
 
         template<typename T>
         void update_attribute(VAO vao_id, Attribute attribute, T value);
+
+        template<typename T>
+        T get_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id);
+
+        template<typename T>
+        T get_cell_attribute(VAO vao_id, Attribute attribute, int cell_id);
+
+        template<typename T>
+        T get_default_value();
+
+        template<typename T>
+        T get_value_for_offset(VAO vao_id, Attribute attribute, int offset);
 
         template<typename T>
         std::pair<glm::vec4, int> get_value_and_size(T value);

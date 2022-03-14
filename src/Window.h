@@ -170,6 +170,22 @@ namespace vOS {
         void set_cell_color(int mesh_id, int ovm_cell_id, Color color);
 
         /**
+         * Returns color of face. Clear color if non has been set
+         * @param mesh_id
+         * @param ovm_face_id
+         * @return
+         */
+        Color get_face_color(int mesh_id, int ovm_face_id);
+
+        /**
+         * Returns color of cell. Clear color if non has been set
+         * @param mesh_id
+         * @param ovm_cell_id
+         * @return
+         */
+        Color get_cell_color(int mesh_id, int ovm_cell_id);
+
+        /**
          * Applies color to mesh with given mesh_id
          * To call custom shaders, simply add the .frag and .vert files in the res/shaders folder and use its name (without extension) as a paramater here
          */
@@ -450,6 +466,26 @@ namespace vOS {
          * Sets Callback Function which is called when the user performs a selection operation on cells
          */
         void set_callback_cell_selection(cell_selection_callback csc) { m_on_cell_selection = csc; };
+
+        /**
+         * Sets Callback Function which is called when the user performs a selection operation on vertices
+         */
+        void set_callback_vertex_selection() { m_on_vertex_selection = default_vertex_selection_function; };
+
+        /**
+         * Sets Callback Function which is called when the user performs a selection operation on edges
+         */
+        void set_callback_edge_selection() { m_on_edge_selection = default_edge_selection_function; };
+
+        /**
+         * Sets Callback Function which is called when the user performs a selection operation on faces
+         */
+        void set_callback_face_selection() { m_on_face_selection = default_face_selection_function; };
+
+        /**
+         * Sets Callback Function which is called when the user performs a selection operation on cells
+         */
+        void set_callback_cell_selection() { m_on_cell_selection = default_cell_selection_function; };
 
         /**
          * Initializes (if not already) and opens the Vos Viewer Window

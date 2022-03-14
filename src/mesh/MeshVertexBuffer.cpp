@@ -14,7 +14,7 @@ namespace vOS
     {
         auto mesh_vaos = {VAO::MESH_FACE, VAO::MESH_ROUNDED};
         define_attribute(Attribute::POSITION, {0, 3, false}, mesh_vaos);
-        define_attribute(Attribute::NORMAL, {1, 3, false}, mesh_vaos);
+        define_attribute(Attribute::FACE_NORMAL, {1, 3, false}, mesh_vaos);
         define_attribute(Attribute::CELL_CENTER, {2, 3, false}, mesh_vaos);
         define_attribute(Attribute::PEEL_DEPTH, {3, 1, false}, mesh_vaos);
         define_attribute(Attribute::IS_DIGGED, {4, 1, false}, mesh_vaos);
@@ -27,10 +27,11 @@ namespace vOS
         define_attribute(Attribute::DIHEDRAL_ANGLE, {11, 1, false}, mesh_vaos);
         define_attribute(Attribute::SELECTION, {12, 1, false}, mesh_vaos);
         define_attribute(Attribute::HOVERED, {13, 1, false}, mesh_vaos);
+        define_attribute(Attribute::VERTEX_NORMAL, {14, 3, false}, mesh_vaos);
 
         auto sphere_vaos = {VAO::SPHERE};
         define_attribute(Attribute::POSITION, {0, 3, false}, sphere_vaos);
-        define_attribute(Attribute::NORMAL, {1, 3, true}, sphere_vaos);
+        define_attribute(Attribute::FACE_NORMAL, {1, 3, true}, sphere_vaos);
         define_attribute(Attribute::SELECTION_VERTEX_POSITION, {2, 3, true}, sphere_vaos);
         define_attribute(Attribute::CELL_CENTER, {3, 3, true}, sphere_vaos);
         define_attribute(Attribute::PEEL_DEPTH, {4, 1, true}, sphere_vaos);
@@ -246,14 +247,20 @@ namespace vOS
         {
             HalffaceData halfface_data;
             int halfface_id = chf_it.idx();
-            auto normal = normal_to_vec3(chf_it.idx());
+            auto normal = halfface_normal_to_vec3(chf_it.idx());
 
             // Count the amount of Vertices this Face has
             std::vector<glm::vec3> halfface_vertices;
+            std::vector<glm::vec3> vertex_normals;
             for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
             {
                 // get the corresponding edge vertex
-                halfface_vertices.push_back(VecUtil::pos_to_vec3(mesh, mesh.from_vertex_handle(hfhe_it)));
+                auto vertex = mesh.from_vertex_handle(hfhe_it);
+                auto face = vOS::Mesh::face_handle(chf_it);
+                bool is_boundary = mesh.is_boundary(face);
+                glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
+                vertex_normals.push_back(vertex_normal);
+                halfface_vertices.push_back(VecUtil::pos_to_vec3(mesh, vertex));
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
@@ -261,13 +268,15 @@ namespace vOS
             {
                 glm::vec3 barycenter = {0,0,0};
                 // iterate over the halfedges of the halfface
-                for (auto vertex_pos: halfface_vertices)
+                for (size_t i = 0; i < halfface_vertices.size(); i++)
                 {
+                    auto vertex_pos = halfface_vertices[i];
                     // get geometry data
                     VertexData v_data;
                     v_data.position = vertex_pos;
                     barycenter += vertex_pos;
-                    v_data.normal = -normal;
+                    v_data.halfface_normal = -normal;
+                    v_data.vertex_normal = vertex_normals[i];
                     halfface_data.vertices.push_back(v_data);
                 }
                 halfface_data.halfface_ids.push_back(halfface_id);
@@ -312,20 +321,25 @@ namespace vOS
                 }
                 hf_normal = -glm::normalize(hf_normal);
                 halfface_data.vertices[0].position = midpoint;
-                halfface_data.vertices[0].normal = hf_normal;
+                halfface_data.vertices[0].halfface_normal = hf_normal;
 
                 m_face_centers.emplace(halfface_id, midpoint);
                 m_face_normals.emplace(halfface_id, hf_normal);
 
                 // Add Vertex Data
-                for (auto vertex_pos: halfface_vertices)
+                glm::vec3 center_vertex_normal_average(0.0f);
+                for (size_t i = 0; i < halfface_vertices.size(); i++)
                 {
+                    auto vertex_pos = halfface_vertices[i];
                     VertexData v_data;
                     v_data.position = vertex_pos;
-                    v_data.normal = hf_normal;
+                    v_data.halfface_normal = hf_normal;
+                    v_data.vertex_normal = vertex_normals[i];
                     halfface_data.vertices.push_back(v_data);
                     halfface_data.halfface_ids.push_back(halfface_id);
+                    center_vertex_normal_average += v_data.vertex_normal;
                 }
+                halfface_data.vertices[0].vertex_normal = glm::normalize(center_vertex_normal_average);
                 add_face_indices(mesh, halfface_data);
                 m_num_vertices_face += (int) halfface_data.vertices.size();
                 halffaces.push_back(halfface_data);
@@ -344,7 +358,8 @@ namespace vOS
             for (const VertexData& vertex: halfface.vertices)
             {
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::POSITION), vertex.position);
-                VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::NORMAL), vertex.normal);
+                VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::FACE_NORMAL), vertex.halfface_normal);
+                VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::VERTEX_NORMAL), vertex.vertex_normal);
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::CELL_CENTER), cell_center);
                 VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{1.0f, 1.0f, 1.0f, 0.0f});
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
@@ -402,7 +417,8 @@ namespace vOS
             RoundedCellData& data,
             const float type,
             const glm::vec3& pos,
-            const glm::vec3& norm,
+            const glm::vec3& hf_norm,
+            const glm::vec3& v_norm,
             const glm::vec4& col,
             const glm::vec3& face_center,
             const glm::vec3& to_vertex,
@@ -412,7 +428,8 @@ namespace vOS
         auto peel_depth = m_peel_depths[data.cell_id];
         unsigned int index = data.vertex_types.size();
         VecUtil::push_vec3(data.vertex_positions, pos);
-        VecUtil::push_vec3(data.vertex_normals, norm);
+        VecUtil::push_vec3(data.vertex_halfface_normals, hf_norm);
+        VecUtil::push_vec3(data.vertex_normals, v_norm);
         VecUtil::push_vec3(data.vertex_cell_centers, cell_center);
         VecUtil::push_vec4(data.vertex_colors, col);
         data.vertex_peel_depths.push_back(peel_depth);
@@ -561,11 +578,13 @@ namespace vOS
         {
             float type;
             glm::vec3 pos;
-            glm::vec3 norm;
+            glm::vec3 hf_norm;
+            glm::vec3 v_norm;
             glm::vec4 col;
             glm::vec3 face_center;
             glm::vec3 to_vertex;
             float dihedral_angle;
+            bool used_vertex_normal;
             RoundedFaceVertexData data;
 
         };
@@ -599,8 +618,8 @@ namespace vOS
                 corner_normal += glm::cross(to_vertex_pos - corner_pos, next_to_vertex_pos - corner_pos);
                 corner_face_center_average += face_centers[data.halfface_id];
 
-                glm::vec3 face_normal = normal_to_vec3(data.halfface_id);
-                glm::vec3 prev_face_normal = normal_to_vec3(prev_data.halfface_id);
+                glm::vec3 face_normal = halfface_normal_to_vec3(data.halfface_id);
+                glm::vec3 prev_face_normal = halfface_normal_to_vec3(prev_data.halfface_id);
 
                 float dihedral_angle = M_PI - VecUtil::get_angle(face_normal, prev_face_normal);
                 corner_dihedral_angle_average += dihedral_angle;
@@ -615,22 +634,30 @@ namespace vOS
                         VertexType::EDGE,
                         corner_pos,
                         -edge_normal,
+                        -edge_normal,
                         color,
                         edge_face_center_average,
                         to_vertex_pos,
                         dihedral_angle
                 );
                 total_cell_vertex_count++;
+
+                auto face = vOS::Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
+                bool is_boundary = mesh.is_boundary(face);
+                glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex_id) : -face_normal;
+
                 // face vertex
                 glm::vec3 face_center = face_centers[data.halfface_id];
                 halfface_vertices[data.halfface_id].push_back({
                   VertexType::FACE,
                   corner_pos,
                   -face_normal,
+                  vertex_normal,
                   color,
                   face_center,
                   zero,
                   0.0f,
+                  is_boundary,
                   {
                           0,
                           vertex_id,
@@ -650,6 +677,7 @@ namespace vOS
                     VertexType::CORNER,
                     corner_pos,
                     -corner_normal,
+                    -corner_normal,
                     color,
                     corner_face_center_average,
                     zero,
@@ -659,43 +687,51 @@ namespace vOS
         }
         for (auto& it : face_centers)
         {
-            // center vertex
             const int halfface_id = it.first;
-            const auto& center_pos = it.second;
-            face_center_indices[halfface_id] = add_vertex_data_to_cell_data(
-                    cell_data,
-                    VertexType::CENTER,
-                    center_pos,
-                    -face_normals[halfface_id],
-                    color,
-                    zero,
-                    zero,
-                    0.0f
-            );
-            int num_halfface_vertices = 1;
+            int num_halfface_vertices = 0;
+            bool use_vertex_normal = false;
+            glm::vec3 vertex_normal_average(0.0f);
             for (auto& attrib_data : halfface_vertices[halfface_id])
             {
+                use_vertex_normal = attrib_data.used_vertex_normal;
+                vertex_normal_average += attrib_data.v_norm;
                 unsigned int face_vertex_index = add_vertex_data_to_cell_data(
                         cell_data,
                         attrib_data.type,
                         attrib_data.pos,
-                        attrib_data.norm,
+                        attrib_data.hf_norm,
+                        attrib_data.v_norm,
                         attrib_data.col,
                         attrib_data.face_center,
                         attrib_data.to_vertex,
                         attrib_data.dihedral_angle
                 );
                 halfface_vertices_indices[halfface_id].push_back({
-                      face_vertex_index,
-                      attrib_data.data.corner_vertex_id,
-                      attrib_data.data.to_vertex_id,
-                      attrib_data.data.next_to_vertex_id,
-                      attrib_data.data.to_vertex_halfedge_id,
-                      attrib_data.data.next_to_vertex_halfedge_id
+                     face_vertex_index,
+                     attrib_data.data.corner_vertex_id,
+                     attrib_data.data.to_vertex_id,
+                     attrib_data.data.next_to_vertex_id,
+                     attrib_data.data.to_vertex_halfedge_id,
+                     attrib_data.data.next_to_vertex_halfedge_id
                 });
                 corner_vertex_face_vertex_index[attrib_data.data.corner_vertex_id][halfface_id] = face_vertex_index;
                 num_halfface_vertices++;
             }
+            // center vertex
+            const auto& center_pos = it.second;
+            glm::vec3 face_center_vertex_normal = use_vertex_normal ? glm::normalize(vertex_normal_average) : -face_normals[halfface_id];
+            face_center_indices[halfface_id] = add_vertex_data_to_cell_data(
+                    cell_data,
+                    VertexType::CENTER,
+                    center_pos,
+                    -face_normals[halfface_id],
+                    face_center_vertex_normal,
+                    color,
+                    zero,
+                    zero,
+                    0.0f
+            );
+            num_halfface_vertices++;
             int offset = total_cell_vertex_count + m_vertex_offset_rounded;
             add_halfface_index_and_count(VAO::MESH_ROUNDED, halfface_id, offset, num_halfface_vertices);
             total_cell_vertex_count += num_halfface_vertices;
@@ -751,7 +787,7 @@ namespace vOS
         }
         VecUtil::push_buffer(cell_data.indices, m_indices_rounded);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::POSITION, cell_data.vertex_positions);
-        add_attribute_data(VAO::MESH_ROUNDED, Attribute::NORMAL, cell_data.vertex_normals);
+        add_attribute_data(VAO::MESH_ROUNDED, Attribute::FACE_NORMAL, cell_data.vertex_halfface_normals);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::CELL_CENTER, cell_data.vertex_cell_centers);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::COLOR, cell_data.vertex_colors);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::PEEL_DEPTH, cell_data.vertex_peel_depths);
@@ -764,6 +800,7 @@ namespace vOS
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::DIHEDRAL_ANGLE, cell_data.dihedral_angle);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::SELECTION, cell_data.selection);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::HOVERED, cell_data.hovered);
+        add_attribute_data(VAO::MESH_ROUNDED, Attribute::VERTEX_NORMAL, cell_data.vertex_normals);
         m_current_rounded_index += (int) cell_data.vertex_positions.size() / 3;
     }
 
@@ -900,6 +937,11 @@ namespace vOS
         }
     }
 
+    glm::vec4 MeshVertexBuffer::get_halfface_color(int halfface_id)
+    {
+        return get_halfface_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, halfface_id);
+    }
+
     void MeshVertexBuffer::set_halfface_selection(int halfface_id, bool selected)
     {
         auto hf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
@@ -941,6 +983,11 @@ namespace vOS
             update_cell_attribute(VAO::MESH_FACE, Attribute::COLOR, ch.idx(), value);
             update_cell_attribute(VAO::MESH_ROUNDED, Attribute::COLOR, ch.idx(), value);
         }
+    }
+
+    glm::vec4 MeshVertexBuffer::get_cell_color(int cell_id)
+    {
+        return get_cell_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, cell_id);
     }
 
     void MeshVertexBuffer::set_cell_selection(int cell_id, bool selected)
@@ -1059,9 +1106,15 @@ namespace vOS
         return m_vao.vertex_only;
     }
 
-    glm::vec3 MeshVertexBuffer::normal_to_vec3(int halfface_id)
+    glm::vec3 MeshVertexBuffer::halfface_normal_to_vec3(int halfface_id)
     {
         auto normal = m_normals[OpenVolumeMesh::HalfFaceHandle{halfface_id}];
+        return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
+    }
+
+    glm::vec3 MeshVertexBuffer::vertex_normal_to_vec3(int vertex_id)
+    {
+        auto normal = m_normals[OpenVolumeMesh::VertexHandle{vertex_id}];
         return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
     }
 
@@ -1197,6 +1250,77 @@ namespace vOS
         }
     }
 
+    template<typename T>
+    T MeshVertexBuffer::get_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id)
+    {
+        auto hf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
+        if (!is_loading_finished() || !hf.is_valid())
+        {
+            return get_default_value<T>();
+        }
+        auto [offset, count] = get_halfface_index_and_count(vao_id, halfface_id);
+        return get_value_for_offset<T>(vao_id, attribute, offset);
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_cell_attribute(VAO vao_id, Attribute attribute, int cell_id)
+    {
+        auto cell = OpenVolumeMesh::CellHandle{cell_id};
+        if (!is_loading_finished() || !cell.is_valid())
+        {
+            return get_default_value<T>();
+        }
+        auto [offset, count] = get_cell_index_and_count(vao_id, cell_id);
+        return get_value_for_offset<T>(vao_id, attribute, offset);
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_default_value()
+    {
+        if constexpr(std::is_same_v<T, float>)
+        {
+            return 0;
+        }
+        else if constexpr(std::is_same_v<T, glm::vec2>)
+        {
+            return glm::vec2(0.0f, 0.0f);
+        }
+        else if constexpr(std::is_same_v<T, glm::vec3>)
+        {
+            return glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+        else if constexpr(std::is_same_v<T, glm::vec4>)
+        {
+            return glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        }
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_value_for_offset(VAO vao_id, Attribute attribute, int offset)
+    {
+        auto& vao_definitions = s_attribute_definitions.of(vao_id);
+        auto& attrib_definition = vao_definitions[static_cast<int>(attribute)];
+        auto& attrib_array = get_attrib_array(vao_id, attribute);
+        size_t index = offset * attrib_definition.element_count;
+        if constexpr(std::is_same_v<T, float>)
+        {
+            return attrib_array[index];
+        }
+        else if constexpr(std::is_same_v<T, glm::vec2>)
+        {
+            return glm::vec2{attrib_array[index], attrib_array[index + 1]};
+        }
+        else if constexpr(std::is_same_v<T, glm::vec3>)
+        {
+            return glm::vec3{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2]};
+        }
+        else if constexpr(std::is_same_v<T, glm::vec4>)
+        {
+            return glm::vec4{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2], attrib_array[index + 3]};
+        }
+        return get_default_value<T>();
+    }
+
     template void MeshVertexBuffer::update_cell_attribute<float>(VAO, Attribute, int, float);
     template void MeshVertexBuffer::update_cell_attribute<glm::vec2>(VAO, Attribute, int, glm::vec2);
     template void MeshVertexBuffer::update_cell_attribute<glm::vec3>(VAO, Attribute, int, glm::vec3);
@@ -1221,4 +1345,24 @@ namespace vOS
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec2>(glm::vec2);
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec3>(glm::vec3);
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec4>(glm::vec4);
+
+    template float MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+
+    template float MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+
+    template float MeshVertexBuffer::get_default_value();
+    template glm::vec2 MeshVertexBuffer::get_default_value();
+    template glm::vec3 MeshVertexBuffer::get_default_value();
+    template glm::vec4 MeshVertexBuffer::get_default_value();
+
+    template float MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
 }

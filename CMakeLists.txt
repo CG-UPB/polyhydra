@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(volumeshOS)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
@@ -50,7 +52,6 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/PixelBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/ClosedCylinderMesh.cpp
-        ${VOLUMESHOS_SRC}/filedialog/tinyfiledialogs.cpp
         ${VOLUMESHOS_SRC}/panels/NewFileDialog.cpp
         ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.cpp
@@ -63,11 +64,16 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparentShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowColorFilterPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp src/rendering/passes/SSAOPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp
         ${VOLUMESHOS_SRC}/rendering/Camera.cpp
-        ${VOLUMESHOS_SRC}/rendering/Light.cpp src/panels/QualityPanel.cpp src/panels/QualityPanel.h src/rendering/passes/VertexOnlyPass.cpp src/rendering/MeshMover.cpp src/rendering/MeshMover.h src/algorithms/Demo.cpp src/algorithms/Demo.h)
+        ${VOLUMESHOS_SRC}/rendering/Light.cpp
+        ${VOLUMESHOS_SRC}/panels/QualityPanel.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
+        ${VOLUMESHOS_SRC}/rendering/MeshMover.cpp
+        ${VOLUMESHOS_SRC}/algorithms/Demo.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
@@ -76,7 +82,10 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 add_subdirectory(ext/json-develop)
 
-target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json ImGuiFileDialog stb)
+find_package(Filesystem REQUIRED Experimental Final)
+
+target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
+target_compile_definitions(volumeshOS PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
 
 # copy our resources to the build dir
 if(MSVC)

@@ -10,6 +10,7 @@ in vec3 v_tri_dist;
 uniform bool u_draw_wireframe;
 uniform bool u_draw_shadows;
 uniform bool u_draw_ao;
+uniform float u_wireframe_size;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
@@ -51,10 +52,10 @@ float shadow_calculation(vec4 pos_ls, float bias)
 
     float closest_depth = texture(u_shadow_texture, proj_coords.xy).r;
     float current_depth = proj_coords.z;
-    //float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+    //shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
 
     // sample surrounding values and use average value for smoother shadows
-    vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
+//    vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
 //    for(int x = -1; x <= 1; ++x)
 //    {
 //        for(int y = -1; y <= 1; ++y)
@@ -63,6 +64,8 @@ float shadow_calculation(vec4 pos_ls, float bias)
 //            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
 //        }
 //    }
+//    shadow /= 9.0;
+
 
     for(int i = 0; i < 4; i++)
     {
@@ -72,7 +75,6 @@ float shadow_calculation(vec4 pos_ls, float bias)
         }
     }
 
-    //shadow /= 9.0;
 
     if(proj_coords.z > 1.0)
     {
@@ -122,11 +124,11 @@ void main()
         }
         float min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
         float max_dist_to_edge = max(max(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
-        if (min_dist_to_edge > 0.0015)
+        if (min_dist_to_edge > 0.0015 * u_wireframe_size)
         {
             discard;
         }
-        if (max_dist_to_edge > 2.0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z))
+        if (max_dist_to_edge > 0.0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z))
         {
             discard;
         }
@@ -142,7 +144,7 @@ void main()
     }
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
-    vec3 l = normalize(u_light_pos - v_pos);
+    vec3 l = normalize(vec3(20.0f, 50.0f, 20.0f));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
@@ -150,7 +152,8 @@ void main()
     if (u_draw_shadows)
     {
         // shadow calculation
-        float bias = max(0.0005 * (1.0 - dot(n, l)), 0.00005);
+        vec3 light_dir = normalize(u_light_pos - v_pos);
+        float bias = max(0.05 * (1.0 - dot(n, l)), 0.005);
         shadow = shadow_calculation(v_pos_ls, bias);
         float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
         transparent_shadow = 0.0;

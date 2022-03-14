@@ -47,7 +47,7 @@ namespace vOS {
         // Remember whether or not we are in dragging mode
         bool m_dragging = false;
         // How many unity should an object be moved along the z-axis when scrolling
-        float m_scroll_strength = 1.0f;
+        float m_scroll_strength = 0.25f;
         // How far has the user scrolled so far
         float m_scroll_value = 0.0f;
     };
