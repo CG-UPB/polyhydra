@@ -5,25 +5,33 @@
 
 namespace vOS
 {
-    ShadowMapPass::ShadowMapPass(MeshView* mesh_view, int width, int height): m_mesh_view(mesh_view)
+    ShadowMapPass::ShadowMapPass(MeshView *mesh_view, int width, int height) : m_mesh_view(mesh_view)
     {
         m_shadow_shader = Shader::get("shadow_map");
 
         std::vector<FrameBufferAttachment> attachments =
         {
+                FrameBufferAttachment{
+                        .internal_format    = GL_RGBA,
+                        .format             = GL_RGBA,
+                        .type               = GL_UNSIGNED_BYTE,
+                        .attachment         = GL_COLOR_ATTACHMENT0,
+                        .texture_filter     = GL_LINEAR,
+                        .texture_wrap       = GL_CLAMP_TO_EDGE
+                },
                 FrameBufferAttachment
-                {
-                        .internal_format    = GL_DEPTH_COMPONENT,
-                        .format             = GL_DEPTH_COMPONENT,
-                        .type               = GL_FLOAT,
-                        .attachment         = GL_DEPTH_ATTACHMENT,
-                        .texture_filter     = GL_NEAREST,
-                        .texture_wrap       = GL_CLAMP_TO_EDGE,
-                        .texture_comp_func  = GL_LEQUAL,
-                        .texture_comp_mode  = GL_NONE,
-                }
+                        {
+                                .internal_format    = GL_DEPTH_COMPONENT,
+                                .format             = GL_DEPTH_COMPONENT,
+                                .type               = GL_FLOAT,
+                                .attachment         = GL_DEPTH_ATTACHMENT,
+                                .texture_filter     = GL_NEAREST,
+                                .texture_wrap       = GL_CLAMP_TO_EDGE,
+                                .texture_comp_func  = GL_LEQUAL,
+                                .texture_comp_mode  = GL_NONE,
+                        }
         };
-        m_shadow_framebuffer                = new FrameBufferObject(width, height, attachments);
+        m_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
 
     }
 
@@ -32,65 +40,45 @@ namespace vOS
         delete m_shadow_framebuffer;
     }
 
-    void ShadowMapPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id)
     {
         // Get Mesh
-        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
-        if(obj == nullptr)
+        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        if (obj == nullptr)
             return;
-
-        // Activate Wireframe mode if desired
-        std::string rendering_mode = obj->get_data().m_rendering_mode;
-        bool render_in_wireframe_mode = false;
-        if(rendering_mode == "mesh_wireframe") {
-            rendering_mode = "mesh_phong";
-            render_in_wireframe_mode = true;
-        }
-
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
-
-        // Additonal Setup necessary if in wireframe mode
-        if (render_in_wireframe_mode)
-        {
-            glDisable(GL_CULL_FACE);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        else
-        {
-            //glEnable(GL_BLEND);
-        }
+        glEnable(GL_DEPTH_CLAMP);
 
         m_shadow_framebuffer->bind();
         m_shadow_shader->bind();
 
 
         // Transform
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 light_projection = data.light.projection;
         glm::mat4 light_view = data.light.view;
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
-        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform() * positionOffset;
-
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform();
+        glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations
         float cell_size = obj->get_data().m_cell_size;
         int peel_depth = obj->get_data().m_peel_level;
         float slice_depth = obj->get_data().m_slice_level;
 
-        auto bb = obj->get_transformed_bb(transform);
+        auto bb = obj->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
         // View Operations
-        glm::mat4 view_inv = glm::inverse(data.camera.view);
-        glm::vec3 view_dir = {view_inv[2][0], view_inv[2][1], view_inv[2][2]};
-        auto slice_direction = obj->get_slice_dir(transform, view_dir);
+        glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
+        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
+
+        auto settings = GlobalViewerSettings::getInstance();
 
         // Shader uniforms
         m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
@@ -100,28 +88,16 @@ namespace vOS
         m_shadow_shader->set_uniform_vec3f("u_max", max);
         m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_shadow_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-        m_shadow_shader->set_uniform_bool("u_draw_wireframe", render_in_wireframe_mode);
+        m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->get_mesh_mode() == Wireframe);
         m_shadow_shader->set_uniform_bool("u_rounding", data.rounding.active);
         m_shadow_shader->set_uniform_float("u_rounding_size", data.rounding.size);
-        m_shadow_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
 
-
-        m_shadow_shader->set_uniform_mat4f("u_light_projection", light_projection);
-        m_shadow_shader->set_uniform_mat4f("u_light_view", light_view);
+        m_shadow_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
+        m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.view);
         m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
 
         m_shadow_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_shadow_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
-
-        if (data.rounding.active)
-        {
-            obj->get_mvb()->get_vao_rounded()->draw();
-        }
-        else
-        {
-            vao->draw();
-        }
-
 
         vao->draw();
 
@@ -130,6 +106,8 @@ namespace vOS
 
         glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_CLAMP);
+
     }
 
     void ShadowMapPass::resize_buffers(int width, int height)
@@ -137,7 +115,7 @@ namespace vOS
         m_shadow_framebuffer->resize(width, height);
     }
 
-    FrameBufferObject* ShadowMapPass::get_framebuffer() const
+    FrameBufferObject *ShadowMapPass::get_framebuffer() const
     {
         return m_shadow_framebuffer;
     }
@@ -145,6 +123,113 @@ namespace vOS
     unsigned int ShadowMapPass::get_shadow_map() const
     {
         return m_shadow_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
+    }
+
+    void ShadowMapPass::calculate_cascade(float near, float far)
+    {
+        auto& cam = m_mesh_view->m_render_data.camera;
+        auto& light = m_mesh_view->m_render_data.light;
+
+        //const auto proj = cam.projection;
+        const auto proj = glm::perspective(
+                (float)glm::radians(cam.zoom),
+                (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth,
+                near,
+                far
+                );
+
+
+        std::vector<glm::vec4> frustum_corners;
+        const auto inverse = glm::inverse(proj * cam.view);
+
+
+//
+//        float ar = (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth;
+//
+//        float tan_half_hfov = tan(glm::radians(cam.zoom / 2.0f));
+//        float tan_half_vfov = tan(glm::radians((cam.zoom * ar) / 2.0f));
+//
+//        float xn = near * tan_half_hfov;
+//        float xf = far * tan_half_hfov;
+//        float yn = near * tan_half_vfov;
+//        float yf = far * tan_half_vfov;
+//
+//        frustum_corners.emplace_back(xn, yn, near, 1.0);
+//        frustum_corners.emplace_back(-xn, yn, near, 1.0);
+//        frustum_corners.emplace_back(xn, -yn, near, 1.0);
+//        frustum_corners.emplace_back(-xn, -yn, near, 1.0);
+//
+//        frustum_corners.emplace_back(xf, yf, far, 1.0);
+//        frustum_corners.emplace_back(-xf, yf, far, 1.0);
+//        frustum_corners.emplace_back(xf, -yf, far, 1.0);
+//        frustum_corners.emplace_back(-xf, -yf, far, 1.0);
+
+        for (unsigned int x = 0; x < 2; ++x)
+        {
+            for (unsigned int y = 0; y < 2; ++y)
+            {
+                for(unsigned int z = 0; z < 2; ++z)
+                {
+                    glm::vec4 corner = inverse * glm::vec4(2.0f * (float)x - 1.0f, 2.0f * (float)y - 1.0f, 2.0f * (float)z - 1.0f, 1.0f);
+                    frustum_corners.push_back(corner / corner.w);
+                }
+            }
+        }
+
+        glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
+        for (auto &c: frustum_corners)
+        {
+            center += glm::vec3(c);
+        }
+        center /= frustum_corners.size();
+
+        auto light_dir = glm::normalize(light.light_dir);
+        light.position = center + light_dir;
+        const auto light_view = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
+        //const auto light_view = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), light_dir, glm::vec3(0.0f, 1.0f, 0.0f));
+        light.view = light_view;
+
+        float min_x = std::numeric_limits<float>::max();
+        float max_x = std::numeric_limits<float>::min();
+        float min_y = std::numeric_limits<float>::max();
+        float max_y = std::numeric_limits<float>::min();
+        float min_z = std::numeric_limits<float>::max();
+        float max_z = std::numeric_limits<float>::min();
+
+        for (auto &c: frustum_corners)
+        {
+            auto transformed_corner = light_view * c;
+            min_x = std::min(min_x, transformed_corner.x);
+            max_x = std::max(max_x, transformed_corner.x);
+            min_y = std::min(min_y, transformed_corner.y);
+            max_y = std::max(max_y, transformed_corner.y);
+            min_z = std::min(min_z, transformed_corner.z);
+            max_z = std::max(max_z, transformed_corner.z);
+        }
+
+        const float z_mult = m_z_mult;
+        if (min_z < 0)
+        {
+            min_z *= z_mult;
+        } else
+        {
+            min_z /= z_mult;
+        }
+        if (max_z < 0)
+        {
+            max_z /= z_mult;
+        } else
+        {
+            max_z *= z_mult;
+        }
+        const glm::mat4 light_projection = glm::ortho(min_x, max_x, min_y, max_y, min_z, max_z);
+        light.projection = light_projection;
+    }
+
+    void ShadowMapPass::clear_cascades()
+    {
+        m_cascade_projections.clear();
+        m_cascade_views.clear();
     }
 
 }

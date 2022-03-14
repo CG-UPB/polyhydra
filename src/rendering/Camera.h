@@ -14,7 +14,8 @@ namespace vOS {
     enum Mode
     {
         FLY,
-        ORBIT
+        ORBIT,
+        SET
     };
 
 /**
@@ -24,6 +25,8 @@ namespace vOS {
 
     public:
         Camera();
+
+        glm::vec3 get_viewport_size();
 
         void set_viewport_size(float width, float height);
         void set_mode(int mode, float orbital_radius = 10);
@@ -37,6 +40,10 @@ namespace vOS {
         void focus_spot(glm::vec3 target_position, glm::vec3 target_normal, float time);
 
         void look_at(glm::vec3 target);
+
+        [[nodiscard]] const glm::vec3& get_front() const;
+        [[nodiscard]] const glm::vec3& get_up() const;
+        [[nodiscard]] const glm::vec3& get_right() const;
 
         // Matrices
         glm::mat4 world;
@@ -64,6 +71,7 @@ namespace vOS {
         float phi = 0;
         float theta = 0;
         float radius = 10;
+        float zoom = 45.0f;
 
     private:
 
@@ -72,12 +80,11 @@ namespace vOS {
         glm::vec3 m_previous_position = {0,0,0};
         glm::vec3 m_previous_movement_vector = {0,0,0};
 
-        float m_yaw = -90.0f;
+        float m_yaw = 0.0f;
         float m_pitch = 0.0f;
-        float m_vertical_speed = 5.0f;
-        float m_horizontal_speed = 10.0f;
-        float m_sensitivity = 0.3f;
-        float m_zoom = 55.0f;
+        float m_vertical_speed = 6.0f;
+        float m_horizontal_speed = 7.0f;
+        float m_sensitivity = 0.2f;
         /*
          * Moves the Camera one a step closer to a desired focus point with focus viewing direction
          * If timer runs through, the camera will look at the desired object and normal camera movement is allowed again

@@ -5,12 +5,11 @@ layout (location = 0) out vec4 FragColor;
 in vec3 v_pos;
 in vec3 v_normal;
 in vec4 v_color;
-in vec4 v_pos_ls;
 flat in int v_visible;
 
-uniform vec3 u_lightPos;
-uniform vec3 u_camPos;
-uniform vec3 u_lightColor;
+uniform vec3 u_light_pos;
+uniform vec3 u_cam_pos;
+uniform vec3 u_light_color;
 uniform vec4 u_object_color;
 uniform int u_viewport_width;
 uniform int u_viewport_height;
@@ -29,11 +28,9 @@ uniform float u_diffuse_strength;
 uniform float u_spec_exponent;
 
 uniform sampler2D last_depth_texture;
-uniform sampler2D u_ssao_texture;
 
 void main()
 {
-
     vec4 color = u_object_color;
     float frag_depth = gl_FragCoord.z;
 
@@ -43,36 +40,31 @@ void main()
     {
         discard;
     }
-
-    vec3 light_color = u_lightColor;
-    vec3 n = -normalize(v_normal);
-    vec3 l = normalize(vec3(0.0, -1.0, -1.0));
-    vec3 light_dir = normalize(u_lightPos - v_pos);
-    float diff = max(0.0, dot(l, n));
+    vec3 light_color = u_light_color;
+    vec3 n = normalize(v_normal);
+    vec3 l = normalize(u_light_pos - v_pos);
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
-    //ambient
-    float ao_factor = 1.0;
-    vec3 ambient = u_ambient_strength * light_color * ao_factor;
-
     // Phong Shading
+    vec3 used_color = mix(u_object_color.rgb, v_color.rgb, v_color.a);
 
-    vec3 used_color = mix(u_object_color.rgb, v_color.rgb, 0.0);
+    //ambient
+    vec3 ambient = u_ambient_strength * light_color;
 
     //diffuse
-    //vec3 l = normalize(u_lightPos - v_pos);
-    // constant light direction looks way better than a single point of light
+    float diff = max(0.0, dot(l, n));
     vec3 diffuse = u_diffuse_strength * diff * light_color;
 
     //specular
-    vec3 v = normalize(u_camPos - v_pos);
+    vec3 v = normalize(u_cam_pos - v_pos);
     vec3 r = reflect(-l, n);
     float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
     vec3 specular = u_spec_strength * spec * light_color;
 
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-    color.rgb = (ambient + diffuse + specular) / norm * used_color;
+    color.rgb = (ambient + (diffuse + specular)) / norm * used_color;
 
     FragColor = color;
+
 }

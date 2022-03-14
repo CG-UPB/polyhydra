@@ -385,6 +385,17 @@ namespace vOS
             }
 
             /**
+             * This cylinder gets drawn for each edge hover.
+             *
+             * @return a medium resolution cylinder
+             */
+            static CylinderMesh& edge_hover_cylinder()
+            {
+                static CylinderMesh s_edge_hover = CylinderMesh(20, 0.5f, 1.0f);
+                return s_edge_hover;
+            }
+
+            /**
              * Generates a list of vertices for this cylinder.
              *
              * @return list of vertices

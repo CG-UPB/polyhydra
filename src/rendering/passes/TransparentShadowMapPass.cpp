@@ -48,11 +48,10 @@ namespace vOS
         m_transparent_shadow_framebuffer->bind();
         m_transparent_shadow_shader->bind();
 
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
         glm::mat4 light_projection = data.light.projection;
         glm::mat4 light_view = data.light.view;
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
-        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform();
 
         // Shader uniforms
         m_transparent_shadow_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());

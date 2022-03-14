@@ -10,6 +10,7 @@
 #include "glm/gtx/transform.hpp"
 #include "MeshVertexBuffer.h"
 #include "nlohmann/json.hpp"
+#include "../util/VecUtil.h"
 
 namespace vOS
 {
@@ -72,9 +73,7 @@ namespace vOS
 
              // Transform Data
              j["transform_position"] = {m_position.x, m_position.y, m_position.z};
-             j["transform_position_offset"] = m_selection_offset;
              j["transform_scale"] = {m_scale.x, m_scale.y, m_scale.z};
-             j["transform_offset"] = {m_offset.x, m_offset.y, m_offset.z};
 
             return j;
          }
@@ -103,20 +102,17 @@ namespace vOS
 
 
              // Transform Data
-             m_selection_offset = j["transform_position_offset"];
              auto pos_vec = j["transform_position"];
              m_position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
              auto scale_vec = j["transform_scale"];
              m_scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
-             auto off_vec = j["transform_offset"];
-             m_offset = glm::vec3(off_vec[0], off_vec[1], off_vec[2]);
          }
 
         [[nodiscard]] glm::mat4 get_transform() const
         {
             glm::mat4 pos = glm::translate(m_position);
             glm::mat4 scl = glm::scale(m_scale * scale_normalization);
-            return pos * scl;
+            return pos * scl * glm::translate(-m_offset);
         }
 
         // Rendering Variables
@@ -207,7 +203,7 @@ namespace vOS
          * Uses OVM FileManager to load Mesh from file
          * @param file_path path to file
          */
-        void load_from_file(std::string file_path);
+        void load_from_file(const std::string& file_path);
 
         /**
          * Uses OVM FileManager to save Mesh to file
@@ -223,6 +219,8 @@ namespace vOS
          */
         void set_selection_offset(int start);
 
+        void set_face_color(int ovm_id, Color color);
+
         /**
          * updates the vertex_buffer
          */
@@ -233,21 +231,21 @@ namespace vOS
          * @param value id value
          * @return
          */
-        int to_vertexID(int value);
+        int to_vertex_id(int value);
 
         /**
          * converts selection id of edges to OVM id
          * @param value id value
          * @return
          */
-        int to_edgeID(int value);
+        int to_edge_id(int value);
 
         /**
          * converts selection id of faces to OVM id
          * @param value id value
          * @return
          */
-        int to_faceID(int value);
+        int to_halfface_id(int value);
 
 
         int get_max_peel_depth() const;
@@ -259,11 +257,9 @@ namespace vOS
 
         [[nodiscard]] VertexArrayObject* get_vao() const;
 
-        glm::vec3& get_min()
-        { return m_min; };
+        glm::vec3 get_min();
 
-        glm::vec3& get_max()
-        { return m_max; };
+        glm::vec3 get_max();
 
         /**
          * Calculates bounding box of transformed vertices. Used for slicing into camera direction.
@@ -274,11 +270,11 @@ namespace vOS
 
         /**
          * Calculates the direction the camera points to
-         * @param transform Transformation matrix
+         * @param view_transform Transformation matrix
          * @param view_dir camera direction
          * @return direction vector
          */
-        glm::vec3 &get_slice_dir(const glm::mat4 &transform, const glm::vec3 &view_dir);
+        glm::vec3 &get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir);
 
         MeshData &get_data()
         { return m_data; }
@@ -352,10 +348,6 @@ namespace vOS
         std::pair<glm::vec3, glm::vec3> m_transformed_bb;
 
         glm::vec3 m_mesh_offset_from_center;
-
-        glm::vec3 m_min;
-
-        glm::vec3 m_max;
 
         glm::vec3 m_slice_dir;
 

@@ -1,14 +1,14 @@
 #pragma once
 
 #include <string>
-#include <filesystem>
+#include FS_HEADER
 
 namespace vOS
 {
     class FileManager
     {
     public:
-        static std::filesystem::path& get_resource_path();
-        static std::string load_as_string(const std::filesystem::path& file_path, bool abs_path = false);
+        static FS_NAMESPACE::path& get_resource_path();
+        static std::string load_as_string(const FS_NAMESPACE::path& file_path, bool abs_path = false);
     };
 }

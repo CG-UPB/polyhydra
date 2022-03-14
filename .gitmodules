@@ -13,6 +13,9 @@
 [submodule "ext/stb"]
 	path = ext/stb
 	url = https://github.com/nothings/stb.git
-[submodule "ext/ImGuiFileDialog"]
-	path = ext/ImGuiFileDialog
-	url = https://github.com/aiekick/ImGuiFileDialog.git
+[submodule "ext/json-develop"]
+	path = ext/json-develop
+	url = https://github.com/nlohmann/json.git
+[submodule "ext/tinyfiledialogs"]
+	path = ext/tinyfiledialogs
+	url = https://git.code.sf.net/p/tinyfiledialogs/code

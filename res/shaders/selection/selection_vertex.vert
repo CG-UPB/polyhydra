@@ -4,7 +4,7 @@ layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_offset;
 layout (location = 3) in vec3 a_center;
-layout (location = 4) in float a_peelDepth;
+layout (location = 4) in float a_peel_depth;
 layout (location = 5) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
 
@@ -13,6 +13,7 @@ uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform vec3 u_cam_pos;
 uniform float u_cell_size;
+uniform float u_average_cell_size;
 
 uniform int u_peel_depth;
 uniform float u_slice_depth;
@@ -23,7 +24,7 @@ uniform bool u_slice_locked;
 
 flat out int v_visible;
 flat out int v_discard;
-flat out int v_instance_id;
+flat out int v_vertex_id;
 
 void main()
 {
@@ -32,42 +33,38 @@ void main()
     ////////////////////////////////////////////////////////
     v_visible = 1;
 
-    vec3 min = vec3(u_mesh_transform * vec4(u_min, 1.0));
-    vec3 max = vec3(u_mesh_transform * vec4(u_max, 1.0));
-
-    vec4 temp_dir = vec4(normalize(u_slice_direction), 0.0);
-    if (u_slice_locked)
+    if (a_is_digged == 1.0 || a_is_isolated == 1.0)
     {
-        temp_dir = u_mesh_transform * temp_dir;
+        v_visible = 0;
     }
 
+    mat4 view_transform = u_view * u_mesh_transform;
+
+    vec3 min_slice = vec3(view_transform * vec4(u_min, 1.0));
+    vec3 max_slice = vec3(view_transform * vec4(u_max, 1.0));
+
+    vec4 temp_dir = view_transform * vec4(normalize(u_slice_direction), 0.0);
     vec3 slice_dir = temp_dir.xyz;
 
-    vec3 slice_point = max + u_slice_depth * (min - max);
+    vec3 slice_point = max_slice + u_slice_depth * (min_slice - max_slice);
     vec3 dir = slice_dir;
-    vec3 center =  vec3(u_mesh_transform * vec4(a_center, 1.0));
+    vec3 center = vec3(view_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peelDepth < u_peel_depth || angle > 0 || a_is_digged == 0.0 || a_is_isolated == 0.0)
+    if (a_peel_depth < u_peel_depth || angle > 0)
     {
         v_visible = 0;
     }
     ////////////////////////////////////////////////////////
 
-
-    vec3 off = a_center + (a_offset - a_center) * u_cell_size;
-
-    v_instance_id = gl_InstanceID;
-
-    vec3 view_dir = normalize(off - u_cam_pos);
-    vec3 normal = mat3(transpose(inverse(u_mesh_transform))) * a_normal;
+    v_vertex_id = gl_InstanceID;
 
     // currently, no spheres are discarded, but we could discard those whose vertex is invisible
     v_discard = 0;
     //v_discard = dot(view_dir, normal) > 0.01 ? 1 : 0;
 
-    vec3 offset = off;
-    float width = 0.2 * (1.0 / length(u_mesh_transform[0]));
+    vec3 offset = a_center + (a_offset - a_center) * u_cell_size;
+    float width = 0.25 * u_average_cell_size;
     mat4 scale = mat4(
         width, 0.0, 0.0, 0.0,
         0.0, width, 0.0, 0.0,

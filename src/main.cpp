@@ -3,18 +3,21 @@
 #include "algorithms/ExampleClass.h"
 #include "algorithms/TestClass.h"
 #include "algorithms/TestQuads.h"
+#include "algorithms/Demo.h"
 
 int main()
 {
-    ExampleClass cl;
-    cl.initialize();
+    //Demo demo;
+
+    //ExampleClass cl;
+    //cl.initialize();
 
 
 //    vOS::TestClass test;
 //    test.initialize();
 
-   // vOS::Dijkstra dijkstra;
-    //dijkstra.start();
+    vOS::Dijkstra dijkstra;
+    dijkstra.start();
 
 //    TestQuads test;
 //    test.run();

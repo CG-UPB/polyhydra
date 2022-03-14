@@ -204,12 +204,12 @@ void ExampleClass::selection_run(){
     Window& window = Window::instance();
 
 
-    /*window.unselect_all_elements();
+    window.unselect_all_elements();
     for(int i = 0; i < selection_level; i++){
         window.select_element(hand, (i) % 10000,selection_type);
-    }*/
+    }
 
-    window.camera_focus_on(hand, selection_level, 2);
+   // window.camera_focus_on(hand, selection_level, 2);
 };
 
 void ExampleClass::bounding_demonstration_ui() {

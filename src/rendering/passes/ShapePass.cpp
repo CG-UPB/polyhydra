@@ -27,12 +27,13 @@ namespace vOS
             return;
 
         // Translate
-        glm::mat4 positionOffset = glm::translate(-obj->get_data().m_offset);
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform() * positionOffset;
+        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
 
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
+
+        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
 
         // Renders all Shapes
         for (Shape* shape : s_shapes)
@@ -46,7 +47,7 @@ namespace vOS
             shader.set_uniform_mat4f("u_projection", data.camera.projection);
             shader.set_uniform_mat4f("u_view", data.camera.view);
 
-            shader.set_uniform_vec3f("u_light_pos", data.light.position);
+            shader.set_uniform_vec3f("u_light_pos", light_pos);
             shader.set_uniform_vec3f("u_cam_pos", data.camera.position);
             shader.set_uniform_vec3f("u_light_color", data.light.color);
             shader.set_uniform_bool("u_phong", true);

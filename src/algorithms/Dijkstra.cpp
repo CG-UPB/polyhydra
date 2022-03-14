@@ -8,7 +8,6 @@
 #include <thread>
 #include <math.h>
 #include <OpenVolumeMesh/FileManager/FileManager.hh>
-#include "ImGuiFileDialog.h"
 #include "../panels/NewFileDialog.h"
 
 typedef std::pair<float, OpenVolumeMesh::VertexHandle> Node;
@@ -88,13 +87,14 @@ namespace vOS
         {
             // Run Dijkstra linearly
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_linear, this));
-            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            Window::instance().load_dark_mode();
+            //Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
             Window::instance().open();
         }else{
             // Run Dijkstra parallel
             Window::instance().set_custom_imgui(std::bind(&Dijkstra::debugging_template_ui_parallel, this));
             std::cout << " Parallel approach " << std::endl;
-            Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
+            //Window::instance().set_keybind_manual(GLFW_KEY_W, GLFW_KEY_R);
             std::thread* vos_thread = new std::thread(&Window::open, &Window::instance());
 
             parallel_run();
@@ -302,7 +302,8 @@ namespace vOS
                     box->set_base_color(1.0f, 0.2f, 0.2f);
                 }
                 window.add_shape(box);*/
-                window.select_element(0, res[i], 1);
+                auto vf = m_mesh.vertex_faces(vertex).first;
+                window.select_element(0, vf->idx(), 0);
                 first = false;
 
                 std::cout << "Vertex: " << vertex.idx() << std::endl;

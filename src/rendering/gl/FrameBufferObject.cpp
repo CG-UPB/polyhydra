@@ -37,6 +37,12 @@ namespace vOS
                     .format             = GL_RGBA,
                     .type               = GL_UNSIGNED_BYTE,
                     .attachment         = GL_COLOR_ATTACHMENT0,
+                    .texture_filter     = -1,
+                    .texture_wrap       = -1,
+                    .texture_comp_func  = -1,
+                    .texture_comp_mode  = -1,
+                    .border_color       = -1,
+                    .generate_mipmap    = false,
                     .multisample        = true
             },
             // depth
@@ -45,6 +51,12 @@ namespace vOS
                     .format             = GL_DEPTH_COMPONENT,
                     .type               = GL_FLOAT,
                     .attachment         = GL_DEPTH_ATTACHMENT,
+                    .texture_filter     = -1,
+                    .texture_wrap       = -1,
+                    .texture_comp_func  = -1,
+                    .texture_comp_mode  = -1,
+                    .border_color       = -1,
+                    .generate_mipmap    = false,
                     .multisample        = true
             }
     };

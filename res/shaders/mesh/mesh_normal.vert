@@ -1,15 +1,15 @@
 #version 330 core
 
-layout (location = 0) in vec3 a_Pos;
-layout (location = 1) in vec3 a_Normal;
-layout (location = 2) in vec3 a_Center;
+layout (location = 0) in vec3 a_pos;
+layout (location = 1) in vec3 a_normal;
+layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
-layout (location = 4) in float a_isBoundary;
+layout (location = 4) in float a_is_boundary;
 
 
-uniform mat4 u_Transform;
-uniform mat4 u_Projection;
-uniform mat4 u_View;
+uniform mat4 u_transform;
+uniform mat4 u_projection;
+uniform mat4 u_view;
 uniform float u_cell_size;
 
 uniform int u_peel_depth;
@@ -29,20 +29,20 @@ void main()
     ////////////////////////////////////////////////////////
     v_Visible = 1;
 
-    vec3 min = vec3(u_Transform * vec4(u_min, 1.0));
-    vec3 max = vec3(u_Transform * vec4(u_max, 1.0));
+    vec3 min = vec3(u_transform * vec4(u_min, 1.0));
+    vec3 max = vec3(u_transform * vec4(u_max, 1.0));
 
     vec4 temp_dir = vec4(normalize(u_slice_direction), 0.0);
     if (u_slice_locked)
     {
-        temp_dir = u_Transform * temp_dir;
+        temp_dir = u_transform * temp_dir;
     }
 
     vec3 slice_dir = temp_dir.xyz;
 
     vec3 slice_point = max + u_slice_depth * (min - max);
     vec3 dir = slice_dir;
-    vec3 center =  vec3(u_Transform * vec4(a_Center, 1.0));
+    vec3 center =  vec3(u_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
     if (a_peel_depth < u_peel_depth || angle > 0)
@@ -51,7 +51,7 @@ void main()
     }
     ////////////////////////////////////////////////////////
 
-    vec3 pos = a_Center + (a_Pos - a_Center) * u_cell_size;
-    v_Normal = a_Normal;
-    gl_Position = u_Projection * u_View * u_Transform * vec4(pos, 1.0);
+    vec3 pos = a_center + (a_pos - a_center) * u_cell_size;
+    v_Normal = a_normal;
+    gl_Position = u_projection * u_view * u_transform * vec4(pos, 1.0);
 }
