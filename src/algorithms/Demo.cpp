@@ -240,7 +240,7 @@ void Demo::multi_mesh()
 
     OpenVolumeMesh::IO::FileManager file_manager;
     file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh_hand);
-    file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh_nut);
+    file_manager.readFile("../res/sample_meshes/kitten_el2_hex.ovm", m_mesh_nut);
 
     // Add Mesh
     m_hand_mesh = window->add_mesh(&m_mesh_hand);
@@ -248,6 +248,7 @@ void Demo::multi_mesh()
 
     window->set_mesh_position(m_hand_mesh, -3, 0,3);
     window->set_mesh_position(m_nut_mesh, 0, -3, 0);
+    window->camera_mode(0);
 }
 
 void Demo::multi_mesh_ui()
