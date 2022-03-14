@@ -328,7 +328,7 @@ namespace vOS
 
         // calculate all cascade matrices
         m_shadow_pass->clear_cascades();
-        int cascade_level = GlobalViewerSettings::getInstance()->m_get_current_cascade_level();
+        int cascade_level = 1;
         auto cam = m_render_data.camera;
 
         float max = cam.far - cam.near;

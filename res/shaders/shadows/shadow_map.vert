@@ -65,7 +65,7 @@ void main()
     vec3 center = vec3(view_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_digged == 0.0 || a_is_isolated == 0.0)
+    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_digged == 1.0 || a_is_isolated == 1.0)
     {
         v_Visible = 0;
     }
