@@ -322,12 +322,12 @@ namespace vOS
                 hf_normal = -glm::normalize(hf_normal);
                 halfface_data.vertices[0].position = midpoint;
                 halfface_data.vertices[0].halfface_normal = hf_normal;
-                halfface_data.vertices[0].vertex_normal = hf_normal;
 
                 m_face_centers.emplace(halfface_id, midpoint);
                 m_face_normals.emplace(halfface_id, hf_normal);
 
                 // Add Vertex Data
+                glm::vec3 center_vertex_normal_average(0.0f);
                 for (size_t i = 0; i < halfface_vertices.size(); i++)
                 {
                     auto vertex_pos = halfface_vertices[i];
@@ -337,7 +337,9 @@ namespace vOS
                     v_data.vertex_normal = vertex_normals[i];
                     halfface_data.vertices.push_back(v_data);
                     halfface_data.halfface_ids.push_back(halfface_id);
+                    center_vertex_normal_average += v_data.vertex_normal;
                 }
+                halfface_data.vertices[0].vertex_normal = glm::normalize(center_vertex_normal_average);
                 add_face_indices(mesh, halfface_data);
                 m_num_vertices_face += (int) halfface_data.vertices.size();
                 halffaces.push_back(halfface_data);

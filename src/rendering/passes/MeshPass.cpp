@@ -92,8 +92,14 @@ namespace vOS
         m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4,m_mesh_view->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
 
         // wireframe mode should always be non-rounded
-        vao->draw();
-
+        if (draw_wireframe)
+        {
+            obj->get_mvb()->get_vao_by_face()->draw();
+        }
+        else
+        {
+            vao->draw();
+        }
 
         m_mesh_shader->unbind();
     }
