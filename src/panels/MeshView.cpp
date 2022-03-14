@@ -152,7 +152,11 @@ namespace vOS
         m_ssao_pass->resize_buffers(export_width, export_height);
 
         render_pre_pass();
-        render_ssao_pass();
+
+        if (GlobalViewerSettings::getInstance()->get_ambient_occlusion_activated())
+        {
+            render_ssao_pass();
+        }
 
         export_framebuffer_ms->bind();
 
@@ -171,11 +175,16 @@ namespace vOS
                 }
 
                 mesh->update_vertex_buffer();
+                VertexArrayObject* vao = mesh->get_vao();
+                if (GlobalViewerSettings::getInstance()->get_rounding_active())
+                {
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
 
                 // render all passes
-                if (mesh->get_vao() != nullptr)
+                if (vao != nullptr)
                 {
-                    m_mesh_pass->render(mesh->get_vao(), m_render_data, m.first);
+                    m_mesh_pass->render(vao, m_render_data, m.first);
                     m_shape_pass.render(nullptr, m_render_data, m.first);
                 }
             }
