@@ -338,14 +338,21 @@ namespace vOS
         auto cell_iter = mesh->cells().first;
         cell_iter += ovm_face_id;
 
-        // Iterate all faces
-        for (auto fhe_it: mesh->cell_faces(*cell_iter)) {
-            int id = fhe_it.idx();
+        if(cell_iter->is_valid() && cell_iter != mesh->cells_end()) {
 
-            // Color individual faces
-            mesh_obj->set_face_color(ovm_face_id, color);
+            mesh_obj->get_mvb()->set_cell_color(cell_iter->idx(), color.r, color.g, color.b, color.a);
         }
         rendering_mutex.unlock();
+    }
+
+    Color Window::get_face_color(int mesh_id, int ovm_face_id)
+    {
+        return Color(0,0,0,0);
+    }
+
+    Color Window::get_cell_color(int mesh_id, int ovm_cell_id)
+    {
+        return Color(0,0,0,0);
     }
 
     void Window::set_mesh_color(Color color)

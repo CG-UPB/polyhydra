@@ -21,15 +21,18 @@ public:
     void color_splash_ui();
     void color_splash_hit(int mesh_id, int element_id, bool selected);
     void color_splash_hit_threaded(int mesh_id, int element_id, bool selected);
+
+    void multi_mesh();
+    void multi_mesh_ui();
 private:
     Window* window;
-
 
     int m_nut_mesh;
     int m_hand_mesh;
 
     float m_mesh_scalar_value = 1.0f;
-    float m_splash_size = 0.2f;
+    float m_splash_size = 5.0f;
+    float m_splash_strength = 0.7f;
 };
 
 
