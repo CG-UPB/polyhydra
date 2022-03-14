@@ -375,6 +375,11 @@ namespace vOS
         m_max_peel_depth = max_depth;
     }
 
+    void MeshObject::set_face_color(int ovm_id, Color color)
+    {
+        m_mvb->set_face_color(ovm_id, color.r, color.g, color.b, color.a);
+    }
+
     int MeshObject::to_vertex_id(int value)
     {
         return m_mvb->to_vertex_id(value);
@@ -413,7 +418,6 @@ namespace vOS
 
     int MeshObject::calculate_selection_size() const
     {
-        // make sure that we choose the biggest possible vertex, edge or face id as the offset
         int size = 0;
         for (auto hf_it : m_mesh->halffaces())
         {
@@ -422,7 +426,8 @@ namespace vOS
             {
                 num_halfface_vertices++;
             }
-            size += num_halfface_vertices + 1;
+            // number of halfface edges, if we put a vertex at the center and connect it to all other vertices
+            size += num_halfface_vertices * 2;
         }
         return size;
     }
@@ -530,5 +535,8 @@ namespace vOS
     MeshVertexBuffer *MeshObject::get_mvb() const {
         return m_mvb;
     }
+
+    glm::vec3 MeshObject::get_min() {return m_mvb->get_min_bounding_box();}
+    glm::vec3 MeshObject::get_max() {return m_mvb->get_max_bounding_box();}
 }
 

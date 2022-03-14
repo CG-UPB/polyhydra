@@ -207,6 +207,9 @@ namespace vOS
         glm::vec3 cell_center = VecUtil::get_center(vertices);
         m_cell_centers[cell.idx()] = cell_center;
 
+        max_bounding_box = max;
+        min_bounding_box = min;
+
         // get peel depth of the cell
         int peel_depth = peel_property[cell];
         m_peel_depths[cell.idx()] = (float) peel_depth;
@@ -214,9 +217,11 @@ namespace vOS
         {
             VecUtil::push_vec3(get_attrib_array(VAO::SPHERE, Attribute::CELL_CENTER), cell_center);
             get_attrib_array(VAO::SPHERE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
-            get_attrib_array(VAO::SPHERE, Attribute::IS_DIGGED).push_back(1.0f);
-            get_attrib_array(VAO::SPHERE, Attribute::IS_ISOLATED).push_back(1.0f);
+            get_attrib_array(VAO::SPHERE, Attribute::IS_DIGGED).push_back(0.0f);
+            get_attrib_array(VAO::SPHERE, Attribute::IS_ISOLATED).push_back(0.0f);
         }
+        add_cell_index_and_count(VAO::SPHERE, cell.idx(), m_vertex_offset_sphere, num_selection_vertices);
+        m_vertex_offset_sphere += num_selection_vertices;
 
         // same for the edges, only add them once for the selection
         int num_selection_edges = 0;
@@ -227,10 +232,12 @@ namespace vOS
             m_selection_map.edge_ids.push_back(ce_it.idx());
             VecUtil::push_vec3(get_attrib_array(VAO::CYLINDER, Attribute::CELL_CENTER), cell_center);
             get_attrib_array(VAO::CYLINDER, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
-            get_attrib_array(VAO::CYLINDER, Attribute::IS_DIGGED).push_back(1.0f);
-            get_attrib_array(VAO::CYLINDER, Attribute::IS_ISOLATED).push_back(1.0f);
+            get_attrib_array(VAO::CYLINDER, Attribute::IS_DIGGED).push_back(0.0f);
+            get_attrib_array(VAO::CYLINDER, Attribute::IS_ISOLATED).push_back(0.0f);
             num_selection_edges++;
         }
+        add_cell_index_and_count(VAO::CYLINDER, cell.idx(), m_vertex_offset_cylinder, num_selection_edges);
+        m_vertex_offset_cylinder += num_selection_edges;
 
         int cell_vertex_offset = m_vertex_offset_face;
 
@@ -340,10 +347,9 @@ namespace vOS
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::NORMAL), vertex.normal);
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::CELL_CENTER), cell_center);
                 VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{1.0f, 1.0f, 1.0f, 0.0f});
-
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
-                get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(1.0f);
-                get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(1.0f);
+                get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(0.0f);
+                get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_TRIANGLE).push_back(is_triangle);
                 get_attrib_array(VAO::MESH_FACE, Attribute::SELECTION).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::HOVERED).push_back(0.0f);
@@ -411,8 +417,8 @@ namespace vOS
         VecUtil::push_vec4(data.vertex_colors, col);
         data.vertex_peel_depths.push_back(peel_depth);
         data.vertex_is_triangle.push_back(1.0f);
-        data.vertex_is_digged.push_back(1.0f);
-        data.vertex_is_isolated.push_back(1.0f);
+        data.vertex_is_digged.push_back(0.0f);
+        data.vertex_is_isolated.push_back(0.0f);
         data.vertex_types.push_back(type);
         VecUtil::push_vec3(data.face_center, face_center);
         VecUtil::push_vec3(data.to_vertex, to_vertex);
@@ -894,6 +900,11 @@ namespace vOS
         }
     }
 
+    glm::vec4 MeshVertexBuffer::get_halfface_color(int halfface_id)
+    {
+        return get_halfface_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, halfface_id);
+    }
+
     void MeshVertexBuffer::set_halfface_selection(int halfface_id, bool selected)
     {
         auto hf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
@@ -935,6 +946,11 @@ namespace vOS
             update_cell_attribute(VAO::MESH_FACE, Attribute::COLOR, ch.idx(), value);
             update_cell_attribute(VAO::MESH_ROUNDED, Attribute::COLOR, ch.idx(), value);
         }
+    }
+
+    glm::vec4 MeshVertexBuffer::get_cell_color(int cell_id)
+    {
+        return get_cell_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, cell_id);
     }
 
     void MeshVertexBuffer::set_cell_selection(int cell_id, bool selected)
@@ -985,125 +1001,61 @@ namespace vOS
         }
     }
 
-    void MeshVertexBuffer::update_digging_buffer(int id, float newValue)
+    void MeshVertexBuffer::set_cell_digged(int cell_id, bool digged)
     {
-//        int nbr_vertices = m_size_of_cell_vertices[id];
-//        int start = m_start_of_cell_vertices[id];
-//
-//        for (size_t i = 0; i < nbr_vertices; i++)
-//        {
-//            //m_is_digged_by_face[start + i] = newValue;
-//        }
-//
-//        int sphere_index = m_selection_sphere_digging_indices[id];
-//        int nbr_spheres = m_selection_sphere_digging_numbers[id];
-//        for (size_t i = 0; i < nbr_spheres; i++)
-//        {
-//            //m_sphere_is_digged[sphere_index + i] = newValue;
-//        }
-//
-//        int cylinder_index = m_selection_cylinder_digging_indices[id];
-//        int nbr_cylinders = m_selection_cylinder_digging_numbers[id];
-//        for (size_t i = 0; i < nbr_cylinders; i++)
-//        {
-//            //m_cylinder_is_digged[cylinder_index + i] = newValue;
-//        }
-//
-//        //m_vao_by_face->update_attribute(m_is_digged_by_face, 5);
-//        //m_selection_sphere_vao->update_attribute(m_sphere_is_digged, 5);
-//        //m_selection_cylinder_vao->update_attribute(m_cylinder_is_digged, 5);
+        auto cell = OpenVolumeMesh::CellHandle{cell_id};
+        float value = digged ? 1.0f : 0.0f;
+        if (cell.is_valid())
+        {
+            update_cell_attribute(VAO::MESH_FACE, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::SPHERE, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, cell.idx(), value);
+        }
     }
 
     void MeshVertexBuffer::reset_digging()
     {
-//        for (size_t i = 0; i < m_is_digged_by_face.size(); i++)
-//        {
-//            m_is_digged_by_face[i] = 1.0;
-//        }
-//        for (size_t i = 0; i < m_sphere_is_digged.size(); i++)
-//        {
-//            m_sphere_is_digged[i] = 1.0;
-//        }
-//        for (size_t i = 0; i < m_cylinder_is_digged.size(); i++)
-//        {
-//            m_cylinder_is_digged[i] = 1.0;
-//        }
-//
-//        m_vao_by_face->update_attribute(m_is_digged_by_face, 5);
-//        m_selection_sphere_vao->update_attribute(m_sphere_is_digged, 5);
-//        m_selection_cylinder_vao->update_attribute(m_cylinder_is_digged, 5);
+        float value = 0.0f;
+        update_attribute(VAO::MESH_FACE, Attribute::IS_DIGGED, value);
+        update_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, value);
+        update_attribute(VAO::SPHERE, Attribute::IS_DIGGED, value);
+        update_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, value);
     }
 
 
-    void MeshVertexBuffer::update_isolate_buffer(int id, float newValue)
+    void MeshVertexBuffer::set_cell_isolated(int cell_id)
     {
-//        int nbr_vertices = m_size_of_cell_vertices[id];
-//        int start = m_start_of_cell_vertices[id];
-//
-//        for (size_t i = 0; i < nbr_vertices; i++)
-//        {
-//            //m_is_isolated_by_face[start + i] = newValue;
-//        }
-//
-//        int sphere_index = m_selection_sphere_digging_indices[id];
-//        int nbr_spheres = m_selection_sphere_digging_numbers[id];
-//        for (size_t i = 0; i < nbr_spheres; i++)
-//        {
-//            //m_sphere_is_isolated[sphere_index + i] = newValue;
-//        }
-//
-//        int cylinder_index = m_selection_cylinder_digging_indices[id];
-//        int nbr_cylinders = m_selection_cylinder_digging_numbers[id];
-//        for (size_t i = 0; i < nbr_cylinders; i++)
-//        {
-//            //m_cylinder_is_isolated[cylinder_index + i] = newValue;
-//        }
-//
-//        activate_isolation();
-    }
-
-    void MeshVertexBuffer::start_isolation()
-    {
-//        for (size_t i = 0; i < m_is_isolated_by_face.size(); i++)
-//        {
-//            m_is_isolated_by_face[i] = 0.0;
-//        }
-//        for (size_t i = 0; i < m_sphere_is_isolated.size(); i++)
-//        {
-//            m_sphere_is_isolated[i] = 0.0;
-//        }
-//        for (size_t i = 0; i < m_cylinder_is_isolated.size(); i++)
-//        {
-//            m_cylinder_is_isolated[i] = 0.0;
-//        }
-//        //activate_isolation();
-    }
-
-    void MeshVertexBuffer::activate_isolation()
-    {
-        //m_vao_by_face->update_attribute(m_is_isolated_by_face, 7);
-        //m_selection_sphere_vao->update_attribute(m_sphere_is_isolated, 6);
-        //m_selection_cylinder_vao->update_attribute(m_cylinder_is_isolated, 6);
+        if (cell_id == m_current_isolated_cell_id)
+        {
+            reset_isolation();
+            m_current_isolated_cell_id = -1;
+            return;
+        }
+        auto cell = OpenVolumeMesh::CellHandle{cell_id};
+        if (cell.is_valid())
+        {
+            float invisible = 1.0f;
+            float visible = 0.0f;
+            update_attribute(VAO::MESH_FACE, Attribute::IS_ISOLATED, invisible);
+            update_attribute(VAO::MESH_ROUNDED, Attribute::IS_ISOLATED, invisible);
+            update_attribute(VAO::SPHERE, Attribute::IS_ISOLATED, invisible);
+            update_attribute(VAO::CYLINDER, Attribute::IS_ISOLATED, invisible);
+            update_cell_attribute(VAO::MESH_FACE, Attribute::IS_ISOLATED, cell.idx(), visible);
+            update_cell_attribute(VAO::MESH_ROUNDED, Attribute::IS_ISOLATED, cell.idx(), visible);
+            update_cell_attribute(VAO::SPHERE, Attribute::IS_ISOLATED, cell.idx(), visible);
+            update_cell_attribute(VAO::CYLINDER, Attribute::IS_ISOLATED, cell.idx(), visible);
+            m_current_isolated_cell_id = cell.idx();
+        }
     }
 
     void MeshVertexBuffer::reset_isolation()
     {
-//        for (size_t i = 0; i < m_is_isolated_by_face.size(); i++)
-//        {
-//            m_is_isolated_by_face[i] = 1.0;
-//        }
-//        for (size_t i = 0; i < m_sphere_is_isolated.size(); i++)
-//        {
-//            m_sphere_is_isolated[i] = 1.0;
-//        }
-//        for (size_t i = 0; i < m_cylinder_is_isolated.size(); i++)
-//        {
-//            m_cylinder_is_isolated[i] = 1.0;
-//        }
-//
-//        m_vao_by_face->update_attribute(m_is_isolated_by_face, 7);
-//        m_selection_sphere_vao->update_attribute(m_sphere_is_isolated, 6);
-//        m_selection_cylinder_vao->update_attribute(m_cylinder_is_isolated, 6);
+        float value = 0.0f;
+        update_attribute(VAO::MESH_FACE, Attribute::IS_ISOLATED, value);
+        update_attribute(VAO::MESH_ROUNDED, Attribute::IS_ISOLATED, value);
+        update_attribute(VAO::SPHERE, Attribute::IS_ISOLATED, value);
+        update_attribute(VAO::CYLINDER, Attribute::IS_ISOLATED, value);
     }
 
     float MeshVertexBuffer::get_average_cell_size() const
@@ -1145,14 +1097,6 @@ namespace vOS
                 offset = offset_count.first;
                 count = offset_count.second;
             }
-            else
-            {
-                continue;
-            }
-            if (offset < 0 || count < 0)
-            {
-                continue;
-            }
             auto& vao_definitions = s_attribute_definitions.of(data.vao);
             auto& attrib_definition = vao_definitions[static_cast<int>(data.attribute)];
             auto& attrib_array = get_attrib_array(data.vao, data.attribute);
@@ -1160,12 +1104,29 @@ namespace vOS
             int buffer_index = offset * attrib_definition.element_count;
             for (auto* vao : m_vertex_arrays[static_cast<int>(data.vao)])
             {
-                for (size_t i = 0; i < count; i++)
+                if (data.fill_all)
                 {
-                    size_t index = (offset + i) * attrib_definition.element_count;
-                    set_attribute_buffer(attrib_array, index, data.value_size, data.value);
+                    size_t total_indices = attrib_array.size() / attrib_definition.element_count;
+                    for (size_t i = 0; i < total_indices; i++)
+                    {
+                        size_t index = i * attrib_definition.element_count;
+                        set_attribute_buffer(attrib_array, index, data.value_size, data.value);
+                    }
+                    vao->update_attribute(attrib_array, attrib_definition.location);
                 }
-                vao->update_attribute(attrib_array, attrib_definition.location, buffer_index, size);
+                else
+                {
+                    if (offset < 0 || count < 0)
+                    {
+                        break;
+                    }
+                    for (size_t i = 0; i < count; i++)
+                    {
+                        size_t index = (offset + i) * attrib_definition.element_count;
+                        set_attribute_buffer(attrib_array, index, data.value_size, data.value);
+                    }
+                    vao->update_attribute(attrib_array, attrib_definition.location, buffer_index, size);
+                }
             }
         }
         m_vao_update_data.clear();
@@ -1174,14 +1135,12 @@ namespace vOS
     template<typename T>
     void MeshVertexBuffer::update_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id, T data)
     {
-        auto [offset, count] = get_halfface_index_and_count(vao_id, halfface_id);
         update_attribute(vao_id, attribute,data, halfface_id, -1);
     }
 
     template<typename T>
     void MeshVertexBuffer::update_cell_attribute(VAO vao_id, Attribute attribute, int cell_id, T data)
     {
-        auto [offset, count] = get_cell_index_and_count(vao_id, cell_id);
         update_attribute(vao_id, attribute, data, -1, cell_id);
     }
 
@@ -1195,7 +1154,23 @@ namespace vOS
                 val,
                 val_size,
                 halfface_id,
-                cell_id
+                cell_id,
+                false
+        });
+    }
+
+    template<typename T>
+    void MeshVertexBuffer::update_attribute(VAO vao_id, Attribute attribute, T value)
+    {
+        auto [val, val_size] = get_value_and_size(value);
+        m_vao_update_data.push_back({
+                vao_id,
+                attribute,
+                val,
+                val_size,
+                -1,
+                -1,
+                true
         });
     }
 
@@ -1232,6 +1207,77 @@ namespace vOS
         }
     }
 
+    template<typename T>
+    T MeshVertexBuffer::get_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id)
+    {
+        auto hf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
+        if (!is_loading_finished() || !hf.is_valid())
+        {
+            return get_default_value<T>();
+        }
+        auto [offset, count] = get_halfface_index_and_count(vao_id, halfface_id);
+        return get_value_for_offset<T>(vao_id, attribute, offset);
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_cell_attribute(VAO vao_id, Attribute attribute, int cell_id)
+    {
+        auto cell = OpenVolumeMesh::CellHandle{cell_id};
+        if (!is_loading_finished() || !cell.is_valid())
+        {
+            return get_default_value<T>();
+        }
+        auto [offset, count] = get_cell_index_and_count(vao_id, cell_id);
+        return get_value_for_offset<T>(vao_id, attribute, offset);
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_default_value()
+    {
+        if constexpr(std::is_same_v<T, float>)
+        {
+            return 0;
+        }
+        else if constexpr(std::is_same_v<T, glm::vec2>)
+        {
+            return glm::vec2(0.0f, 0.0f);
+        }
+        else if constexpr(std::is_same_v<T, glm::vec3>)
+        {
+            return glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+        else if constexpr(std::is_same_v<T, glm::vec4>)
+        {
+            return glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        }
+    }
+
+    template<typename T>
+    T MeshVertexBuffer::get_value_for_offset(VAO vao_id, Attribute attribute, int offset)
+    {
+        auto& vao_definitions = s_attribute_definitions.of(vao_id);
+        auto& attrib_definition = vao_definitions[static_cast<int>(attribute)];
+        auto& attrib_array = get_attrib_array(vao_id, attribute);
+        size_t index = offset * attrib_definition.element_count;
+        if constexpr(std::is_same_v<T, float>)
+        {
+            return attrib_array[index];
+        }
+        else if constexpr(std::is_same_v<T, glm::vec2>)
+        {
+            return glm::vec2{attrib_array[index], attrib_array[index + 1]};
+        }
+        else if constexpr(std::is_same_v<T, glm::vec3>)
+        {
+            return glm::vec3{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2]};
+        }
+        else if constexpr(std::is_same_v<T, glm::vec4>)
+        {
+            return glm::vec4{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2], attrib_array[index + 3]};
+        }
+        return get_default_value<T>();
+    }
+
     template void MeshVertexBuffer::update_cell_attribute<float>(VAO, Attribute, int, float);
     template void MeshVertexBuffer::update_cell_attribute<glm::vec2>(VAO, Attribute, int, glm::vec2);
     template void MeshVertexBuffer::update_cell_attribute<glm::vec3>(VAO, Attribute, int, glm::vec3);
@@ -1247,8 +1293,33 @@ namespace vOS
     template void MeshVertexBuffer::update_attribute<glm::vec3>(VAO, Attribute, glm::vec3, int, int);
     template void MeshVertexBuffer::update_attribute<glm::vec4>(VAO, Attribute, glm::vec4, int, int);
 
+    template void MeshVertexBuffer::update_attribute<float>(VAO, Attribute, float);
+    template void MeshVertexBuffer::update_attribute<glm::vec2>(VAO, Attribute, glm::vec2);
+    template void MeshVertexBuffer::update_attribute<glm::vec3>(VAO, Attribute, glm::vec3);
+    template void MeshVertexBuffer::update_attribute<glm::vec4>(VAO, Attribute, glm::vec4);
+
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<float>(float);
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec2>(glm::vec2);
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec3>(glm::vec3);
     template std::pair<glm::vec4, int> MeshVertexBuffer::get_value_and_size<glm::vec4>(glm::vec4);
+
+    template float MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_halfface_attribute(VAO, Attribute, int);
+
+    template float MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_cell_attribute(VAO, Attribute, int);
+
+    template float MeshVertexBuffer::get_default_value();
+    template glm::vec2 MeshVertexBuffer::get_default_value();
+    template glm::vec3 MeshVertexBuffer::get_default_value();
+    template glm::vec4 MeshVertexBuffer::get_default_value();
+
+    template float MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec2 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec3 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
+    template glm::vec4 MeshVertexBuffer::get_value_for_offset(VAO, Attribute, int);
 }

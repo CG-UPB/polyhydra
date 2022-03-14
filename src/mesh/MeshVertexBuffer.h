@@ -119,6 +119,7 @@ namespace vOS
         int value_size;
         int halfface_id;
         int cell_id;
+        bool fill_all;
     };
 
     class MeshVertexBuffer
@@ -185,11 +186,15 @@ namespace vOS
 
         void set_halfface_color(int halfface_id, float r, float g, float b, float a);
 
+        glm::vec4 get_halfface_color(int halfface_id);
+
         void set_halfface_selection(int halfface_id, bool selected);
 
         void hover_halfface(int halfface_id);
 
         void set_cell_color(int cell_id, float r, float g, float b, float a);
+
+        glm::vec4 get_cell_color(int cell_id);
 
         void set_cell_selection(int cell_id, bool selected);
 
@@ -199,24 +204,22 @@ namespace vOS
 
         VertexArrayObject* get_cylinder_vao();
 
-        void update_digging_buffer(int id, float newValue);
+        void set_cell_digged(int cell_id, bool digged);
 
-        void update_isolate_buffer(int id, float newValue);
+        void set_cell_isolated(int cell_id);
 
         void reset_isolation();
 
         void reset_digging();
 
-        void activate_isolation();
-
-        void start_isolation();
-
         glm::vec3 get_face_normal(int ovm_id)
         { return m_face_normals[ovm_id]; }
 
-        glm::vec3 get_face_barycenter(int ovm_id)
+        glm::vec3 get_halfface_barycenter(int ovm_id)
         { return m_face_centers[ovm_id]; }
 
+        glm::vec3 get_min_bounding_box(){return min_bounding_box;}
+        glm::vec3 get_max_bounding_box(){return max_bounding_box;}
         void load_next_cell();
 
         bool is_loading_finished() const;
@@ -281,7 +284,22 @@ namespace vOS
         void set_attribute_buffer(std::vector<float>& buffer, size_t offset, int value_size, const glm::vec4& value);
 
         template<typename T>
-        void update_attribute(VAO vao_id, Attribute attribute, T value, int halfface_id = -1, int cell_id = -1);
+        void update_attribute(VAO vao_id, Attribute attribute, T value, int halfface_id, int cell_id);
+
+        template<typename T>
+        void update_attribute(VAO vao_id, Attribute attribute, T value);
+
+        template<typename T>
+        T get_halfface_attribute(VAO vao_id, Attribute attribute, int halfface_id);
+
+        template<typename T>
+        T get_cell_attribute(VAO vao_id, Attribute attribute, int cell_id);
+
+        template<typename T>
+        T get_default_value();
+
+        template<typename T>
+        T get_value_for_offset(VAO vao_id, Attribute attribute, int offset);
 
         template<typename T>
         std::pair<glm::vec4, int> get_value_and_size(T value);
@@ -339,12 +357,18 @@ namespace vOS
         int m_num_vertices_face = 0;
         int m_vertex_offset_face = 0;
         int m_vertex_offset_rounded = 0;
+        int m_vertex_offset_sphere = 0;
+        int m_vertex_offset_cylinder = 0;
         float m_average_cell_size = 0.0f;
 
         int m_current_hovered_halfface_id = -1;
         int m_current_hovered_cell_id = -1;
+        int m_current_isolated_cell_id = -1;
 
+        // Saved Data
         std::map<int, glm::vec3> m_face_normals;
         std::map<int, glm::vec3> m_face_centers;
+        glm::vec3 min_bounding_box;
+        glm::vec3 max_bounding_box;
     };
 }

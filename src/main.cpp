@@ -3,9 +3,12 @@
 #include "algorithms/ExampleClass.h"
 #include "algorithms/TestClass.h"
 #include "algorithms/TestQuads.h"
+#include "algorithms/Demo.h"
 
 int main()
 {
+    Demo demo;
+
     //ExampleClass cl;
     //cl.initialize();
 

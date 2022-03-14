@@ -29,7 +29,7 @@ namespace vOS
             return;
         }
 
-        int mesh_mode = GlobalViewerSettings::getInstance()->m_get_current_mesh_mode();
+        int mesh_mode = GlobalViewerSettings::getInstance()->get_mesh_mode();
         int old_mode = mesh_mode;
         const char *element_mode_types[] =
                 {
@@ -44,7 +44,7 @@ namespace vOS
         ImGui::SameLine();
         Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use. For more "
                                              "extensive explanations take a look in the documentation");
-        GlobalViewerSettings::getInstance()->m_set_current_mesh_mode(mesh_mode);
+        GlobalViewerSettings::getInstance()->set_mesh_mode(mesh_mode);
 
 
         if (old_mode != mesh_mode)
@@ -135,13 +135,13 @@ namespace vOS
             ImGui::Checkbox("Activate Click Selection", &m_selection_activated);
             ImGui::SameLine();
             Tooltips::HelpMarkerWithQuestionMark("With this checkbox you can activate the click selection");
-            GlobalViewerSettings::getInstance()->m_set_current_selection_activated(m_selection_activated);
+            GlobalViewerSettings::getInstance()->set_selection_activated(m_selection_activated);
             if (m_selection_activated)
             {
                 if (ImGui::RadioButton("All-Selection", m_current_selection_mode == 0))
                 {
                     m_current_selection_mode = 0;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(0);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(0);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark(
@@ -149,28 +149,28 @@ namespace vOS
                 if (ImGui::RadioButton("Vertex-Selection", m_current_selection_mode == Vertex))
                 {
                     m_current_selection_mode = Vertex;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Vertex);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Vertex);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Vertex of your pick");
                 if (ImGui::RadioButton("Edge-Selection", m_current_selection_mode == Edge))
                 {
                     m_current_selection_mode = Edge;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Edge);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Edge);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Edge of your pick");
                 if (ImGui::RadioButton("Face-Selection", m_current_selection_mode == Face))
                 {
                     m_current_selection_mode = Face;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(Face);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(Face);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Face of your pick");
                 if (ImGui::RadioButton("Cell-Selection", m_current_selection_mode == CELL))
                 {
                     m_current_selection_mode = CELL;
-                    GlobalViewerSettings::getInstance()->m_set_current_selection_mode(CELL);
+                    GlobalViewerSettings::getInstance()->set_selection_mode(CELL);
                 }
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This button will select the nearest Cell of your pick");
@@ -184,7 +184,8 @@ namespace vOS
         // If there is at least one mesh, the Active Mesh Settings (Slicing, Peeling, etc.) are available
         if (active_mesh != -1)
         {
-            if (ImGui::CollapsingHeader("Active Mesh Settings"))
+            std::string header_name = "Mesh " + std::to_string(active_mesh) + " Settings";
+            if (ImGui::CollapsingHeader(header_name.c_str()))
             {
                 if (ImGui::BeginTable("split1", 1))
                 {
@@ -202,7 +203,6 @@ namespace vOS
                         m_mesh_position[2] = pos.z;
                         m_mesh_scale = scl.x;
                     }
-
 
                     ImGui::Text("Position:");
                     ImGui::SameLine();
@@ -286,72 +286,79 @@ namespace vOS
                         Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
                     }
 
+                    ImGui::Text("Digging");
+                    ImGui::SameLine();
+                    Tooltips::HelpMarkerWithQuestionMark("Dig into the mesh by clicking cells to remove");
 
                     static int clicked_digging = 0;
-                    if (ImGui::Button("Activate Digging"))
+                    ImGui::PushID("Digging");
+                    if (ImGui::Button("Reset"))
+                    {
+                        if (active_mesh >= 0)
+                        {
+                            auto mesh = Window::instance().get_mesh_obj(active_mesh);
+                            mesh->get_mvb()->reset_digging();
+                        }
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button(m_digging_activated ? "Deactivate" : "Activate"))
                     {
                         if (!m_digging_activated)
                         {
                             m_digging_activated = true;
-                            GlobalViewerSettings::getInstance()->m_set_current_digging_active(m_digging_activated);
-                            clicked_digging++;
+                            m_selection_activated = true;
+                            m_current_selection_mode = Selection::CELL;
+                            GlobalViewerSettings::getInstance()->set_selection_activated(true);
+                            GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
                         }
+                        else
+                        {
+                            m_digging_activated = false;
+                        }
+                        GlobalViewerSettings::getInstance()->set_digging_active(m_digging_activated);
+                        clicked_digging++;
                     }
                     if (clicked_digging & 1)
                     {
                         ImGui::SameLine();
-                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Digging is Active");
-                        if (ImGui::Button("Reset Digging"))
-                        {
-                            if (m_digging_activated)
-                            {
-                                m_digging_activated = false;
-                                GlobalViewerSettings::getInstance()->m_set_current_digging_active(m_digging_activated);
-                                clicked_digging++;
-                            }
-                        }
+                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Active");
                     }
+                    ImGui::PopID();
 
-                    // Therefore, a picker has to work
-                    ImGui::Text("Start Isolation:");
+                    ImGui::Text("Isolation");
                     ImGui::SameLine();
-                    Tooltips::HelpMarkerWithQuestionMark("With this button you can start a selection of a "
-                                                         "variable number of vertices, edges or faces, which you "
-                                                         "want to visualize for their own. To stop the selection "
-                                                         "you have to press the button below");
+                    Tooltips::HelpMarkerWithQuestionMark("Isolate a single cell by clicking on it. Click again to reset the isolation");
+
                     static int clicked = 0;
-                    if (ImGui::Button("Isolationstart"))
+                    ImGui::PushID("Isolation");
+                    if (ImGui::Button(m_isolation_started ? "Deactivate" : "Activate"))
                     {
                         if (!m_isolation_started)
                         {
                             m_isolation_started = true;
-                            GlobalViewerSettings::getInstance()->m_set_current_isolation_state(m_isolation_started);
-                            clicked++;
+                            m_selection_activated = true;
+                            m_current_selection_mode = Selection::CELL;
+                            GlobalViewerSettings::getInstance()->set_selection_activated(true);
+                            GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
                         }
+                        else
+                        {
+                            if (active_mesh >= 0)
+                            {
+                                m_isolation_started = false;
+                                auto mesh = Window::instance().get_mesh_obj(active_mesh);
+                                mesh->get_mvb()->reset_isolation();
+                            }
+                        }
+                        GlobalViewerSettings::getInstance()->set_isolation_state(m_isolation_started);
+                        clicked++;
                     }
                     if (clicked & 1)
                     {
                         ImGui::SameLine();
-                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Isolation-Selection is Active");
+                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Active");
                     }
-                    //...
-                    ImGui::Text("Finish Isolation:");
-                    if (ImGui::Button("Isolationend"))
-                    {
-                        if (m_isolation_started)
-                        {
-                            m_isolation_started = false;
-                            GlobalViewerSettings::getInstance()->m_set_current_isolation_state(m_isolation_started);
-                            for (const auto &m: Window::instance().get_mesh_list())
-                            {
-                                auto mesh = m.second;
-                                auto mvb = mesh->get_mvb();
-                                mvb->activate_isolation();
-                            }
-                            clicked++;
-                        }
-                    }
-
+                    ImGui::PopID();
                     ImGui::EndTable();
                 }
             }

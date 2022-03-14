@@ -48,7 +48,7 @@ namespace vOS {
 
         // Get Selection Mode
         // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
-        int selection_mode = GlobalViewerSettings::getInstance()->m_get_current_selection_mode();
+        int selection_mode = GlobalViewerSettings::getInstance()->get_selection_mode();
 
 
         // Faces should not be selectable in Vertex or Edge Selection mode

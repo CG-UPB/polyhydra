@@ -116,7 +116,7 @@ namespace vOS
         obj->update_vertex_buffer();
 
         VertexArrayObject* vao = obj->get_vao();
-        if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+        if (GlobalViewerSettings::getInstance()->get_rounding_active())
         {
             vao = obj->get_mvb()->get_vao_rounded();
         }
@@ -303,7 +303,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -349,7 +349,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -447,7 +447,7 @@ namespace vOS
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+            if (GlobalViewerSettings::getInstance()->get_rounding_active())
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
@@ -471,7 +471,7 @@ namespace vOS
 
     void MeshView::render_transparency_dp()
     {
-        num_passes = GlobalViewerSettings::getInstance()->m_get_current_number_passes();
+        num_passes = GlobalViewerSettings::getInstance()->get_number_passes();
         for (int i = 0; i < num_passes; i++)
         {
             if (i % 2 == 0)
@@ -501,7 +501,7 @@ namespace vOS
 
                 mesh->update_vertex_buffer();
                 VertexArrayObject* vao = mesh->get_vao();
-                if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
+                if (GlobalViewerSettings::getInstance()->get_rounding_active())
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
@@ -544,131 +544,60 @@ namespace vOS
 
             if (picked_id >= from && picked_id <= to)
             {
-                int face_id_mesh = m.first;
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
                 any_mesh_hovered = true;
 
+                auto& settings = *GlobalViewerSettings::getInstance();
+
                 if (type == SELECTION_TYPE_FACE)
                 {
+                    face_id_mesh = m.first;
                     int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
+                    auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
+                    auto ch = mesh->m_mesh->incident_cell(chf);
                     mesh->get_mvb()->hover_halfface(halfface_id);
+                    face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(OpenVolumeMesh::HalfFaceHandle(halfface_id)).idx();
 
-                    if (GlobalViewerSettings::getInstance()->m_get_current_isolation_state())
+                    if (settings.get_isolation_state())
                     {
-
-                        auto mvb = mesh->get_mvb();
-                        mvb->start_isolation();
-
-                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        int face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(
-                                halfface).idx();
-
-                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
-
-                        OpenVolumeMesh::FaceHandle face(face_id);
-                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face, 0);
-
-                        OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
-                        OpenVolumeMesh::CellPropertyT<bool> isolateProp = mesh->m_mesh->request_cell_property<bool>(
-                                "IsolateProperty");
-
-                        if (cell_handle.idx() == -1)
+                        if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         {
-                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                            cell_handle = mesh->m_mesh->incident_cell(hf1);
-
-                            //std::cout << "Zelle 2: " << cell_handle.idx();
+                            mesh->get_mvb()->set_cell_isolated(ch.idx());
                         }
-                        else
-                        {
-                            if (isolateProp[cell_handle] == 0.0)
-                            {
-                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                                cell_handle = mesh->m_mesh->incident_cell(hf1);
-                            }
-                        }
-                        if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                        {
-
-                            isolateProp[cell_handle] = 1.0;
-
-                            auto mvb = mesh->get_mvb();
-                            mvb->update_isolate_buffer(cell_handle.idx(), 1.0f);
-                        }
-
                     }
 
-                    if (GlobalViewerSettings::getInstance()->m_get_current_selection_mode() == CELL ||
-                        GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
+                    if (settings.get_selection_mode() == CELL || settings.get_digging_activated())
                     {
-                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
-                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
-
-                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
-
-                        OpenVolumeMesh::FaceHandle face(face_id);
-                        OpenVolumeMesh::HalfFaceHandle hf = mesh->m_mesh->halfface_handle(face, 0);
-
-                        OpenVolumeMesh::CellHandle cell_handle = mesh->m_mesh->incident_cell(hf);
-                        OpenVolumeMesh::CellPropertyT<bool> diggingProp = mesh->m_mesh->request_cell_property<bool>(
-                                "DiggingProperty");
-
-                        if (cell_handle.idx() == -1)
+                        if (chf.is_valid())
                         {
-                            OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                            cell_handle = mesh->m_mesh->incident_cell(hf1);
-                        }
-                        else
-                        {
-                            if (diggingProp[cell_handle] == 0.0)
-                            {
-                                OpenVolumeMesh::HalfFaceHandle hf1 = mesh->m_mesh->halfface_handle(face, 1);
-
-                                cell_handle = mesh->m_mesh->incident_cell(hf1);
-                            }
+                            auto cell = mesh->m_mesh->incident_cell(chf);
+                            mesh->get_mvb()->hover_cell(cell.idx());
                         }
 
-                        if (GlobalViewerSettings::getInstance()->m_get_current_digging_activated())
+                        if (settings.get_digging_activated() && !settings.get_isolation_state())
                         {
-                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                             {
-                                diggingProp[cell_handle] = 0.0;
-
-                                auto mvb = mesh->get_mvb();
-                                mvb->update_digging_buffer(cell_handle.idx(), 0.0f);
+                                mesh->get_mvb()->set_cell_digged(ch.idx(), true);
                             }
                         }
                         else
                         {
                             // cell_handle beinhaltet cell
-                            if (cell_handle.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                             {
                                 // Select element via Window class, to activate Callback function
                                 // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                                 Window::instance().rendering_mutex.unlock();
-                                Window::instance().select_element(m.first, cell_handle.idx(), 6);
+                                Window::instance().select_element(m.first, ch.idx(), 6);
                                 Window::instance().rendering_mutex.lock();
                             }
                         }
-
-
                     }
                     else
                     {
-
-                        // because of unsigned int as return value mesh.to_halfface_id(pickedID) returns the id + 1 and 0 means
-                        // there is no valid ID (e.g when clicking background)
-                        int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
-                        OpenVolumeMesh::HalfFaceHandle halfface{halfface_id};
-                        face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(halfface).idx();
-
-                        //std::cout << "hovering face with id: " << face_id << std::endl;
 
                         m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
 
@@ -729,10 +658,10 @@ namespace vOS
         {
             if (face_id_mesh >= 0)
             {
-                Window().instance().rendering_mutex.unlock();
+                Window::instance().rendering_mutex.unlock();
                 // Focus
-                Window().instance().camera_focus_on(face_id_mesh, face_id, 0.4);
-                Window().instance().rendering_mutex.lock();
+                Window::instance().camera_focus_on(face_id_mesh, face_id, 0.4);
+                Window::instance().rendering_mutex.lock();
             }
         }
         if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
@@ -741,7 +670,7 @@ namespace vOS
         }
 
         auto active_mesh = Window::instance().get_focused_mesh_object();
-        if (!any_mesh_hovered && active_mesh != nullptr)
+        if ((!any_mesh_hovered && active_mesh != nullptr) || !ImGui::IsWindowHovered())
         {
             for (const auto& m: Window::instance().get_mesh_list())
             {
@@ -780,7 +709,7 @@ namespace vOS
 
     void MeshView::render_transparency()
     {
-        m_transparency = GlobalViewerSettings::getInstance()->m_get_current_transparency_mode();
+        m_transparency = GlobalViewerSettings::getInstance()->get_transparency_mode();
 
         switch (m_transparency)
         {
@@ -796,8 +725,8 @@ namespace vOS
     {
         render_debug_menu();
 
-        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->m_get_current_rounding_active();
-        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->m_get_current_rounding_size();
+        m_render_data.rounding.active = GlobalViewerSettings::getInstance()->get_rounding_active();
+        m_render_data.rounding.size = GlobalViewerSettings::getInstance()->get_rounding_size();
 
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
@@ -815,7 +744,7 @@ namespace vOS
         // Render Meshes
         render_pre_pass();
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_mesh_mode() == ModeEnum::Only_Vertices)
+        if (GlobalViewerSettings::getInstance()->get_mesh_mode() == ModeEnum::Only_Vertices)
         {
             render_background();
             m_meshFrameBuffer->bind();
@@ -836,12 +765,12 @@ namespace vOS
         }
         else
         {
-            if (GlobalViewerSettings::getInstance()->m_get_current_ambient_occlusion_activated())
+            if (GlobalViewerSettings::getInstance()->get_ambient_occlusion_activated())
             {
                 render_ssao_pass();
             }
 
-            if (GlobalViewerSettings::getInstance()->m_get_current_shadows_activated())
+            if (GlobalViewerSettings::getInstance()->get_shadows_activated())
             {
                 render_shadow_map();
             }
@@ -858,13 +787,13 @@ namespace vOS
                                     m_screen_quad_frameBuffer);
 
             // Render transparent objects
-            if (GlobalViewerSettings::getInstance()->m_get_current_transparency_activated())
+            if (GlobalViewerSettings::getInstance()->get_transparency_activated())
             {
                 render_transparency();
             }
 
             // Render Selection
-            if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+            if (GlobalViewerSettings::getInstance()->get_selection_activated())
             {
                 renderSelection();
             }
@@ -905,7 +834,7 @@ namespace vOS
 
         // Show hovered element type and id
 
-        if (GlobalViewerSettings::getInstance()->m_get_current_selection_activated())
+        if (GlobalViewerSettings::getInstance()->get_selection_activated())
         {
             std::string hovered_element_name =
                     m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
@@ -963,7 +892,7 @@ namespace vOS
             if (ImGui::RadioButton("Selection", m_viewport_texture == SELECTION))
             {
                 m_viewport_texture = SELECTION;
-                GlobalViewerSettings::getInstance()->m_set_current_selection_activated(true);
+                GlobalViewerSettings::getInstance()->set_selection_activated(true);
             }
             if (ImGui::RadioButton("SSAO Pre", m_viewport_texture == SSAO_PRE))
             {
@@ -983,7 +912,7 @@ namespace vOS
             }
         }
         ImGui::End();
-        m_selection_pass.set_debug_mode(true);
+        m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
     }
 
     unsigned int MeshView::get_selected_texture()

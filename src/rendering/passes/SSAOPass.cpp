@@ -9,6 +9,7 @@ namespace vOS
 {
     // best image quality, but also most demanding on the gpu
     const SSAOOptions SSAOPass::QUALITY_SSAO = {
+            .active         = true,
             .num_samples    = 64,
             .sample_radius  = 0.5,
             .strength       = 1.5,
@@ -17,6 +18,7 @@ namespace vOS
 
     // balance between image quality and performance
     const SSAOOptions SSAOPass::BALANCED_SSAO = {
+            .active         = true,
             .num_samples    = 32,
             .sample_radius  = 0.5,
             .strength       = 1.5,
@@ -25,6 +27,7 @@ namespace vOS
 
     // lowest image quality, but least performance impact
     const SSAOOptions SSAOPass::PERFORMANCE_SSAO = {
+            .active         = true,
             .num_samples    = 16,
             .sample_radius  = 0.5,
             .strength       = 1.5,
@@ -140,7 +143,7 @@ namespace vOS
 
     void SSAOPass::render_options(SSAOOptions* options)
     {
-        int selected_option = GlobalViewerSettings::getInstance()->m_get_current_ssao_option();
+        int selected_option = GlobalViewerSettings::getInstance()->get_ssao_options();
         switch (selected_option) {
             case OFF:
                 m_options.active = false;
@@ -155,7 +158,7 @@ namespace vOS
                 load_options(SSAOPass::PERFORMANCE_SSAO);
                 break;
             case CUSTOM:
-                load_options(GlobalViewerSettings::getInstance()->m_get_current_costume_options());
+                load_options(GlobalViewerSettings::getInstance()->get_custom_options());
                 break;
         }
     }

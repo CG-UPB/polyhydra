@@ -12,7 +12,7 @@ namespace vOS
 {
     std::unordered_map<std::string, Shader*> Shader::s_shaders;
 
-    Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::filesystem::path& geometryPath)
+    Shader::Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath)
     {
         // load vertex and fragment shader contents
         std::string vertexSource = FileManager::load_as_string(vertexPath, true);
@@ -191,29 +191,26 @@ namespace vOS
         // stores all associated paths for a given shader
         struct ShaderSourcePath
         {
-            std::filesystem::path vertex;
-            std::filesystem::path geometry;
-            std::filesystem::path fragment;
+            FS_NAMESPACE::path vertex;
+            FS_NAMESPACE::path geometry;
+            FS_NAMESPACE::path fragment;
         };
 
         // cache all shader paths by name
         std::unordered_map<std::string, ShaderSourcePath> shader_source_paths;
 
-        std::string separator(&std::filesystem::path::preferred_separator);
-        std::filesystem::path shader_path = "shaders";
-        for (auto& file: std::filesystem::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
+        FS_NAMESPACE::path shader_path = "shaders";
+        for (auto& file: FS_NAMESPACE::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
         {
             // we only care about shader files
-            if (file.is_directory())
+            if (FS_NAMESPACE::is_directory(file))
             {
                 continue;
             }
 
             // get file name and extension
-            auto path_split = StringUtil::split_str(file.path().string(), separator);
-            auto name_with_extension = StringUtil::split_str(path_split[path_split.size() - 1], ".");
-            std::string& name_without_extension = name_with_extension[0];
-            std::string& extension = name_with_extension[1];
+            std::string name_without_extension = file.path().stem().string();
+            std::string extension = file.path().extension().string();
 
             // we only have a fragment shader for this, we will load that manually later
             if (name_without_extension == "pre_mesh_phong"
@@ -232,12 +229,12 @@ namespace vOS
             auto& shader_source_path = shader_source_paths[name_without_extension];
 
             // set the source based on the extension
-            std::filesystem::path* source;
-            if (extension == "vert")
+            FS_NAMESPACE::path* source;
+            if (extension == ".vert")
             { source = &shader_source_path.vertex; }
-            else if (extension == "geom")
+            else if (extension == ".geom")
             { source = &shader_source_path.geometry; }
-            else if (extension == "frag")
+            else if (extension == ".frag")
             { source = &shader_source_path.fragment; }
             else
             { throw std::runtime_error("Unknown shader file extension: " + extension); }
@@ -256,8 +253,8 @@ namespace vOS
         }
 
         // manually load the pre pass shader, since only the fragment shader is different from the phong shader
-        std::filesystem::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
-        std::filesystem::path transparency_path = FileManager::get_resource_path() / shader_path / "transparency";
+        FS_NAMESPACE::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
+        FS_NAMESPACE::path transparency_path = FileManager::get_resource_path() / shader_path / "transparency";
 
         s_shaders["pre_mesh_phong"] = new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
