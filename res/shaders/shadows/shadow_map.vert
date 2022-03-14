@@ -71,7 +71,7 @@ void main()
     }
 
     vec3 position = a_pos;
-    if (u_rounding_size > 0.0)
+    if (u_rounding)
     {
         float type = a_vertex_type_rounded;
         float r = u_rounding_size * u_average_cell_size * 0.3;

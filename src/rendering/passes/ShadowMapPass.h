@@ -32,7 +32,7 @@ namespace vOS
         MeshView* m_mesh_view;
         Shader* m_shadow_shader = nullptr;
         FrameBufferObject* m_shadow_framebuffer = nullptr;
-        float m_z_mult = 2.5f;
+        float m_z_mult = 1.0f;
 
     };
 }

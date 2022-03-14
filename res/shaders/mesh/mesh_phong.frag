@@ -52,28 +52,28 @@ float shadow_calculation(vec4 pos_ls, float bias)
 
     float closest_depth = texture(u_shadow_texture, proj_coords.xy).r;
     float current_depth = proj_coords.z;
-    //float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+    //shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
 
     // sample surrounding values and use average value for smoother shadows
-    vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
-        {
-            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
-            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
-        }
-    }
-    shadow /= 9.0;
-
-
-    //    for(int i = 0; i < 4; i++)
+//    vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
+//    for(int x = -1; x <= 1; ++x)
 //    {
-//        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
+//        for(int y = -1; y <= 1; ++y)
 //        {
-//            shadow += 0.25;
+//            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
+//            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
 //        }
 //    }
+//    shadow /= 9.0;
+
+
+    for(int i = 0; i < 4; i++)
+    {
+        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
+        {
+            shadow += 0.25;
+        }
+    }
 
 
     if(proj_coords.z > 1.0)
@@ -144,7 +144,7 @@ void main()
     }
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
-    vec3 l = normalize(vec3(0.0f, 10.0f, 5.0f));
+    vec3 l = normalize(vec3(20.0f, 50.0f, 20.0f));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
@@ -153,7 +153,7 @@ void main()
     {
         // shadow calculation
         vec3 light_dir = normalize(u_light_pos - v_pos);
-        float bias = max(0.005 * (1.0 - dot(n, light_dir)), 0.0005);
+        float bias = max(0.05 * (1.0 - dot(n, l)), 0.005);
         shadow = shadow_calculation(v_pos_ls, bias);
         float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
         transparent_shadow = 0.0;

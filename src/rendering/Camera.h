@@ -71,7 +71,7 @@ namespace vOS {
         float phi = 0;
         float theta = 0;
         float radius = 10;
-        float zoom = 55.0f;
+        float zoom = 45.0f;
 
     private:
 

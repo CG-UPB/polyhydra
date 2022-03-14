@@ -52,6 +52,7 @@ namespace vOS
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
+        glEnable(GL_DEPTH_CLAMP);
 
         m_shadow_framebuffer->bind();
         m_shadow_shader->bind();
@@ -105,6 +106,8 @@ namespace vOS
 
         glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_CLAMP);
+
     }
 
     void ShadowMapPass::resize_buffers(int width, int height)
@@ -127,15 +130,40 @@ namespace vOS
         auto& cam = m_mesh_view->m_render_data.camera;
         auto& light = m_mesh_view->m_render_data.light;
 
+        //const auto proj = cam.projection;
         const auto proj = glm::perspective(
-                glm::radians(cam.zoom),
-                (float) m_mesh_view->m_viewportPanelWidth / (float) m_mesh_view->m_viewportPanelHeight,
+                (float)glm::radians(cam.zoom),
+                (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth,
                 near,
                 far
-        );
+                );
+
 
         std::vector<glm::vec4> frustum_corners;
         const auto inverse = glm::inverse(proj * cam.view);
+
+
+//
+//        float ar = (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth;
+//
+//        float tan_half_hfov = tan(glm::radians(cam.zoom / 2.0f));
+//        float tan_half_vfov = tan(glm::radians((cam.zoom * ar) / 2.0f));
+//
+//        float xn = near * tan_half_hfov;
+//        float xf = far * tan_half_hfov;
+//        float yn = near * tan_half_vfov;
+//        float yf = far * tan_half_vfov;
+//
+//        frustum_corners.emplace_back(xn, yn, near, 1.0);
+//        frustum_corners.emplace_back(-xn, yn, near, 1.0);
+//        frustum_corners.emplace_back(xn, -yn, near, 1.0);
+//        frustum_corners.emplace_back(-xn, -yn, near, 1.0);
+//
+//        frustum_corners.emplace_back(xf, yf, far, 1.0);
+//        frustum_corners.emplace_back(-xf, yf, far, 1.0);
+//        frustum_corners.emplace_back(xf, -yf, far, 1.0);
+//        frustum_corners.emplace_back(-xf, -yf, far, 1.0);
+
         for (unsigned int x = 0; x < 2; ++x)
         {
             for (unsigned int y = 0; y < 2; ++y)
@@ -154,11 +182,12 @@ namespace vOS
             center += glm::vec3(c);
         }
         center /= frustum_corners.size();
-        auto light_dir = light.light_dir;
+
+        auto light_dir = glm::normalize(light.light_dir);
         light.position = center + light_dir;
         const auto light_view = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
+        //const auto light_view = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), light_dir, glm::vec3(0.0f, 1.0f, 0.0f));
         light.view = light_view;
-        m_cascade_views.push_back(light_view);
 
         float min_x = std::numeric_limits<float>::max();
         float max_x = std::numeric_limits<float>::min();
@@ -194,7 +223,6 @@ namespace vOS
             max_z *= z_mult;
         }
         const glm::mat4 light_projection = glm::ortho(min_x, max_x, min_y, max_y, min_z, max_z);
-        m_cascade_projections.push_back(light_projection);
         light.projection = light_projection;
     }
 
