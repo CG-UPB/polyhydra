@@ -29,8 +29,6 @@ namespace vOS
         void set_isolation_state(bool isolation_state){ m_isolation_started = isolation_state;};
         void set_mesh_mode(int mode){ mesh_mode = mode;};
         void set_digging_active(bool b){ m_current_digging_active = b;};
-        void set_rounding_active(bool r){ m_rounding_activated = r;};
-        void set_rounding_size(float r){ m_rounding_size = r;};
         void set_transparency_mode(int t){ m_current_transparency_mode = t;};
         void set_number_passes(int np){ m_current_number_passes = np;};
         void set_transparency_activated(bool t){ transparency_active = t;};
@@ -46,8 +44,6 @@ namespace vOS
         [[nodiscard]] int get_selection_mode() const{return m_current_selection_mode;};
         [[nodiscard]] bool get_isolation_state() const{return m_isolation_started;};
         [[nodiscard]] int get_mesh_mode() const{return mesh_mode;};
-        [[nodiscard]] bool get_rounding_active() const{return m_rounding_activated;};
-        [[nodiscard]] float get_rounding_size() const{return m_rounding_size;};
         [[nodiscard]] int get_transparency_mode() const{return m_current_transparency_mode;};
         [[nodiscard]] int get_number_passes() const{return m_current_number_passes;};
         [[nodiscard]] bool get_transparency_activated() const{return transparency_active;};
@@ -62,11 +58,10 @@ namespace vOS
         GlobalViewerSettings();
         static GlobalViewerSettings* instance;
         bool m_current_selection_activated = false;
-        int m_current_selection_mode = 0;
+        int m_current_selection_mode = Selection::ALL;
         bool m_isolation_started = false;
         bool m_current_digging_active = false;
         int mesh_mode = Phong_Facenormals;
-        float m_rounding_size = 0.3f;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
         int m_current_number_passes = 12;
         int m_current_cascade_level = 1;
@@ -75,7 +70,6 @@ namespace vOS
         bool transparency_active = false;
         bool shadows_active = false;
         bool ambient_occlusion_active = false;
-        bool m_rounding_activated = false;
         float m_wireframe_size = 0.35f;
         float m_vertex_only_size = 0.4f;
 

@@ -350,6 +350,36 @@ namespace vOS {
         float get_mesh_diffuse_strength(int mesh_id);
 
         /**
+         * sets rounding size of specific mesh
+         * @param mesh_id
+         * @param scale
+         */
+        void set_mesh_rounding_size(int mesh_id, float r_size);
+
+
+        /**
+         * activate or deactivate roundings of specific mesh
+         * @param mesh_id
+         * @param scale
+         */
+        void set_mesh_rounding_activated(int mesh_id, bool r_activated);
+
+        /**
+         * returns the rounding size of a specific mesh
+         * @param mesh_id
+         * @return
+         */
+        float get_mesh_rounding_size(int mesh_id);
+
+        /**
+         * returns the activation state of a specific mesh
+         * @param mesh_id
+         * @return
+         */
+        bool get_mesh_rounding_activated(int mesh_id);
+
+
+        /**
          * Reads Json file from given path and sets it as the MeshData for given Mesh
          * @param mesh_id
          * @param json_file_path
@@ -692,6 +722,7 @@ namespace vOS {
         face_selection_callback m_on_face_selection = default_face_selection_function;
         // Called when a number of cells have been selected
         cell_selection_callback m_on_cell_selection = default_cell_selection_function;
+
 
 
     };
