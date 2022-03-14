@@ -76,27 +76,28 @@ namespace vOS
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
 
-            // TODO: Update to an enum, so that its not hard coded here
-            std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m.first);
-            int current_rendering_mode_int = 0;
-            if (current_rendering_mode == "mesh_wireframe")
-                current_rendering_mode_int = 1;
-            if (current_rendering_mode == "mesh_normal")
-                current_rendering_mode_int = 2;
-            const char *rendering_mode_internal_names[] =
-                    {
-                            "mesh_phong", "mesh_wireframe", "mesh_normal"
-                    };
-            const char *rendering_mode_external_names[] =
-                    {
-                                "Phong", "Wireframe", "Normal"
-                    };
-            str = "##R-Mode " + std::to_string(m.first);
-            char_type = new char[str.length()];
-            ImGui::Combo(strcpy(char_type, str.c_str()), &current_rendering_mode_int, rendering_mode_external_names,
-                         IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
-            Window::instance().set_mesh_rendering_mode(m.first,rendering_mode_internal_names[current_rendering_mode_int]);
-            Tooltips::ToolTipByHovering("Sets the rendering mode of the mesh");
+//            // TODO: Update to an enum, so that its not hard coded here
+//            std::string current_rendering_mode = Window::instance().get_mesh_rendering_mode(m.first);
+//            int current_rendering_mode_int = 0;
+//            if (current_rendering_mode == "mesh_wireframe")
+//                current_rendering_mode_int = 1;
+//            if (current_rendering_mode == "mesh_normal")
+//                current_rendering_mode_int = 2;
+//            const char *rendering_mode_internal_names[] =
+//                    {
+//                            "mesh_phong", "mesh_wireframe", "mesh_normal"
+//                    };
+//            const char *rendering_mode_external_names[] =
+//                    {
+//                                "Phong", "Wireframe", "Normal"
+//                    };
+//            str = "##R-Mode " + std::to_string(m.first);
+//            char_type = new char[str.length()];
+//            ImGui::Combo(strcpy(char_type, str.c_str()), &current_rendering_mode_int, rendering_mode_external_names,
+//                         IM_ARRAYSIZE(rendering_mode_internal_names), IM_ARRAYSIZE(rendering_mode_internal_names));
+//            std::cout << rendering_mode_internal_names[current_rendering_mode_int] << std::endl;
+//            Window::instance().set_mesh_rendering_mode(m.first,rendering_mode_internal_names[current_rendering_mode_int]);
+//            Tooltips::ToolTipByHovering("Sets the rendering mode of the mesh");
 
             // Advanced Settings
             //ImGui::SameLine();
