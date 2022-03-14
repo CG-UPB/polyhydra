@@ -176,7 +176,7 @@ namespace vOS
 
                 mesh->update_vertex_buffer();
                 VertexArrayObject* vao = mesh->get_vao();
-                if (GlobalViewerSettings::getInstance()->get_rounding_active())
+                if (mesh->get_data().m_rounding_activated)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
