@@ -89,6 +89,8 @@ namespace vOS
         glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
         glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
 
+        bool use_vertex_normals = GlobalViewerSettings::getInstance()->get_mesh_mode() == Phong_Vertexnormals;
+
         // set all of our uniforms
         m_transparency_shader->set_uniform_mat4f("u_transform", transform);
         m_transparency_shader->set_uniform_mat4f("u_projection", data.camera.projection);
@@ -120,6 +122,7 @@ namespace vOS
         m_transparency_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
         m_transparency_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
         m_transparency_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
+        m_transparency_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
 
         vao->draw();
         m_transparency_shader->unbind();

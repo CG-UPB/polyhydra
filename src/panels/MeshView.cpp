@@ -543,6 +543,7 @@ namespace vOS
         // Remember face id in case of double click
         int face_id = 0;
         int face_id_mesh = -1;
+        int hovered_mesh_id = -1;
 
         for (const auto& m: Window::instance().get_mesh_list())
         {
@@ -555,6 +556,7 @@ namespace vOS
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
+                hovered_mesh_id = m.first;
                 any_mesh_hovered = true;
 
                 auto& settings = *GlobalViewerSettings::getInstance();
@@ -566,7 +568,6 @@ namespace vOS
                     auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
                     auto ch = mesh->m_mesh->incident_cell(chf);
                     mesh->get_mvb()->hover_halfface(halfface_id);
-                    face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(OpenVolumeMesh::HalfFaceHandle(halfface_id)).idx();
 
                     if (settings.get_isolation_state())
                     {
@@ -660,7 +661,6 @@ namespace vOS
 
                 break;
             }
-
         }
         if (ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
         {
@@ -685,6 +685,15 @@ namespace vOS
                 m.second->get_mvb()->reset_hover();
             }
             m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
+        }
+
+        for (const auto& m: Window::instance().get_mesh_list())
+        {
+            int mesh_id = m.first;
+            if (mesh_id != hovered_mesh_id)
+            {
+                m.second->get_mvb()->reset_hover();
+            }
         }
     }
 

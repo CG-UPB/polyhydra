@@ -14,6 +14,7 @@ layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 12) in float a_is_selected;
 layout (location = 13) in float a_hovered;
+layout (location = 14) in vec3 a_vertex_normal;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -44,6 +45,7 @@ uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 uniform bool u_rounding;
 uniform float u_rounding_size;
+uniform bool u_use_vertex_normals;
 
 
 const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
@@ -112,8 +114,14 @@ void main()
     mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
     vec3 pos = a_center + (position - a_center) * u_cell_size;
 
+    vec3 normal = a_normal;
+    if (u_use_vertex_normals)
+    {
+        normal = a_vertex_normal;
+    }
+
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(view_transform))) * a_normal;
+    v_Normal = mat3(transpose(inverse(view_transform))) * normal;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), 1.0);

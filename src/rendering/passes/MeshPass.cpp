@@ -75,12 +75,14 @@ namespace vOS
 
         bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
         float wireframe_size = settings->get_wireframe_size();
+        bool use_vertex_normals = settings->get_mesh_mode() == Phong_Vertexnormals;
 
         // settings
         m_mesh_shader->set_uniform_bool("u_draw_wireframe", draw_wireframe);
         m_mesh_shader->set_uniform_bool("u_draw_shadows", settings->get_shadows_activated());
         m_mesh_shader->set_uniform_bool("u_draw_ao", settings->get_ambient_occlusion_activated());
         m_mesh_shader->set_uniform_float("u_wireframe_size", wireframe_size);
+        m_mesh_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
 
         // input textures
         m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
