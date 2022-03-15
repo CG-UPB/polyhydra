@@ -281,9 +281,9 @@ namespace vOS
                     // make it easier to get the slider onto an Integer
                     // thats helpful for peeling with transparent transition
                     float tolerance = 0.05;
-                    if(int(m_slider_peel + tolerance) != int(m_slider_peel - tolerance))
+                    if((int)(m_slider_peel + tolerance) != (int)(m_slider_peel - tolerance))
                     {
-                        m_slider_peel = float(int(m_slider_peel + tolerance));
+                        m_slider_peel = (float)(int)(m_slider_peel + tolerance);
                     }
                     ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max);
 
