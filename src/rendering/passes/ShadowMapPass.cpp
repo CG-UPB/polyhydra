@@ -185,7 +185,7 @@ namespace vOS
 
         auto light_dir = glm::normalize(light.light_dir);
         light.position = center + light_dir;
-        light.light_dir = center + light_dir;
+        //light.light_dir = center + light_dir;
         const auto light_view = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
         //const auto light_view = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), light_dir, glm::vec3(0.0f, 1.0f, 0.0f));
         light.view = light_view;

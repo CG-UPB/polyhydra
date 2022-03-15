@@ -7,14 +7,14 @@
 
 int main()
 {
-    Demo demo;
+    //Demo demo;
 
     //ExampleClass cl;
     //cl.initialize();
 
 
-//    vOS::TestClass test;
-//    test.initialize();
+    vOS::TestClass test;
+    test.initialize();
 
     //vOS::Dijkstra dijkstra;
     //dijkstra.start();

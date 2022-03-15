@@ -42,8 +42,6 @@ namespace vOS
                     GlobalViewerSettings::getInstance()->set_vertex_only_size(vertex_only_size);
                 }
                 ImGui::PopID();
-                ImGui::End();
-                return;
             }
 
             bool transparency = GlobalViewerSettings::getInstance()->get_transparency_activated();
@@ -93,6 +91,11 @@ namespace vOS
             ImGui::SameLine();
             Tooltips::HelpMarkerWithQuestionMark("This checkbox activates shadows");
 
+            if (mesh_mode == Wireframe || mesh_mode == Only_Vertices)
+            {
+                ImGui::End();
+                return;
+            }
 
             bool ambient_occlusion = GlobalViewerSettings::getInstance()->get_ambient_occlusion_activated();
             ImGui::Checkbox("Ambient Occlusion", &ambient_occlusion);

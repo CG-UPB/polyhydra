@@ -343,9 +343,9 @@ namespace vOS
         float max = cam.far - cam.near;
         for(int i = 0; i < cascade_level; i++)
         {
-//            float near = cam.near + (float)i * (max / (float)cascade_level);
-//            float far = cam.near + (float)(i + 1) * (max / (float)cascade_level);
-            //m_shadow_pass->calculate_cascade(cam.near, cam.far / 2);
+            float near = cam.near + (float)i * (max / (float)cascade_level);
+            float far = cam.near + (float)(i + 1) * (max / (float)cascade_level);
+            m_shadow_pass->calculate_cascade(cam.near, cam.far);
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
