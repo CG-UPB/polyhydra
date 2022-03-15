@@ -77,7 +77,7 @@ void main()
     //color.a = pow(color.a, 2.0);
 
     // choose weight function
-    float weight = clamp(pow(min(1.0, v_color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - LinearizeDepth(depth) * 0.5, 3.0), 1e-2, 3e3);
+    float weight = clamp(pow(min(1.0, v_color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - depth * 0.5, 3.0), 1e-2, 3e3);
     //float weight = pow(color.a, u_pow) * clamp(u_range / (1e-5 + pow(depth * 0.8, u_ordering_strenth)), u_t_min, u_t_max);
     //float weight = pow(color.a + 0.01, 4.0) + max(1e-2, min(3.0 * 1e3, 100.0 / (1e-5 + pow(abs(depth) / 10.0, 3.0) + pow(abs(depth) / 200.0, 6.0))));
 
