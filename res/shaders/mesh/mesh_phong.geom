@@ -5,6 +5,18 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 8) out;
 
+// [P0.z > 0][P1.z > 0][P2.z > 0]
+const ivec4 lookup[8] = ivec4[](
+    ivec4(3, 3, 3, 3),  // [0][0][0]
+    ivec4(2, 2, 0, 1),  // [0][0][1]
+    ivec4(1, 1, 0, 2),  // [0][1][0]
+    ivec4(1, 2, 0, 0),  // [0][1][1]
+    ivec4(0, 0, 1, 2),  // [1][0][0]
+    ivec4(0, 2, 1, 1),  // [1][0][1]
+    ivec4(0, 1, 2, 2),  // [1][1][0]
+    ivec4(3, 3, 3, 3)   // [1][1][1]
+);
+
 in vec3 v_Pos[3];
 in vec3 v_Normal[3];
 in vec4 v_Color[3];
@@ -24,6 +36,10 @@ out vec4 v_pos_ls;
 flat out int v_visible;
 
 out vec3 v_tri_dist;
+flat out int v_is_triangle;
+flat out vec4 v_a_adir;
+flat out vec4 v_b_bdir;
+flat out int v_use_lookup_path;
 
 float dist_to_edge(vec3 e0, vec3 e1, vec3 p)
 {
@@ -55,14 +71,44 @@ void main()
     vec4 screen_pos1 = u_projection * viewspace_pos1;
     vec4 screen_pos2 = u_projection * viewspace_pos2;
 
-    vec3 view_pos0 = screen_pos0.xyz / screen_pos0.w;
-    vec3 view_pos1 = screen_pos1.xyz / screen_pos1.w;
-    vec3 view_pos2 = screen_pos2.xyz / screen_pos2.w;
+    vec3 ndc_pos[3] = vec3[](
+        vec3(screen_pos0.xyz / screen_pos0.w),
+        vec3(screen_pos1.xyz / screen_pos1.w),
+        vec3(screen_pos2.xyz / screen_pos2.w)
+    );
 
-    float dist1 = (v_isTriangle[1] == 0) ? FLT_MAX : dist_to_edge(view_pos0, view_pos2, view_pos1);
-    float dist2 = (v_isTriangle[2] == 0) ? FLT_MAX : dist_to_edge(view_pos0, view_pos1, view_pos2);
+    int lookup_case = 4 * int(ndc_pos[0].z > 0) + 2 * int(ndc_pos[1].z > 0) + int(ndc_pos[2].z > 0);
+    ivec4 ndc_index = lookup[lookup_case];
+    if (ndc_index.x < 3)
+    {
+        vec2 a_p = ndc_pos[ndc_index.x].xy;
+        vec2 b_p = ndc_pos[ndc_index.y].xy;
+        vec2 aa_p = ndc_pos[ndc_index.z].xy;
+        vec2 bb_p = ndc_pos[ndc_index.w].xy;
 
-    v_tri_dist = vec3(0.0, dist_to_edge(view_pos1, view_pos2, view_pos0), 0.0);
+        vec2 a_v = a_p.xy * 0.5 + 0.5;
+        vec2 b_v = b_p.xy * 0.5 + 0.5;
+        vec2 a_dir = normalize(a_v - ((a_p + (aa_p - a_p)) * 0.5 + 0.5));
+        vec2 b_dir = normalize(b_v - ((b_p + (bb_p - b_p)) * 0.5 + 0.5));
+
+        v_a_adir = vec4(a_v, a_dir);
+        v_b_bdir = vec4(b_v, b_dir);
+        v_use_lookup_path = 1;
+    }
+    else
+    {
+        v_use_lookup_path = 0;
+    }
+
+    float dist0 = dist_to_edge(ndc_pos[1], ndc_pos[2], ndc_pos[0]);
+    float dist1 = dist_to_edge(ndc_pos[0], ndc_pos[2], ndc_pos[1]);
+    float dist2 = dist_to_edge(ndc_pos[0], ndc_pos[1], ndc_pos[2]);
+
+    // x is min -> p0 - p1 closest, y is min -> p1 - p2 closest, z is min -> p0 - p2 closest
+    // !is_triangle && x or z is min -> discard
+    v_is_triangle = v_isTriangle[0];
+
+    v_tri_dist = vec3(0.0, dist0, 0.0);
     vertex(screen_pos0, viewspace_pos0.xyz, v_Normal[0], v_Color[0], v_Visible[0], v_LightSpacePos[0]);
 
     v_tri_dist = vec3(0.0, 0.0, dist1);
