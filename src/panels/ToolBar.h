@@ -46,7 +46,7 @@ namespace vOS
         float m_color[4] = {1.0f,1.0f,1.0f,1.0f};
         float m_slider_slicer = 0.0f;
         bool m_slicer_locked = false;
-        int m_slider_peel = 0;
+        float m_slider_peel = 0;
         bool m_digging_activated = false;
         bool m_isolation_started = false;
         int m_separation_type = 2;

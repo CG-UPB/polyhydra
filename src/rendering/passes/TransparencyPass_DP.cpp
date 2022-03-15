@@ -136,7 +136,7 @@ namespace vOS
 
         // Cell operations
         float cell_size = obj->get_data().m_cell_size;
-        int peel_depth = obj->get_data().m_peel_level;
+        float peel_depth = obj->get_data().m_peel_level;
         float slice_depth = obj->get_data().m_slice_level;
 
         auto bb = obj->get_transformed_bb(view_transform);
@@ -161,7 +161,7 @@ namespace vOS
         m_transparency_shader->set_uniform_vec3f("u_light_color", data.light.color);
         m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
         m_transparency_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
-        m_transparency_shader->set_uniform_int("u_peel_depth", peel_depth);
+        m_transparency_shader->set_uniform_float("u_peel_depth", peel_depth);
         m_transparency_shader->set_uniform_float("u_slice_depth", slice_depth);
         m_transparency_shader->set_uniform_vec3f("u_min", min);
         m_transparency_shader->set_uniform_vec3f("u_max", max);

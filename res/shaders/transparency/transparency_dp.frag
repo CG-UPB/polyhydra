@@ -36,13 +36,14 @@ void main()
 
     float last_depth = texelFetch(last_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
 
-    if(frag_depth >= last_depth || color.a >= 1.0 || v_visible == 0)
+    if(frag_depth >= last_depth || v_color.a >= 1.0 - 0.01 || v_visible == 0)
     {
         discard;
     }
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos - v_pos);
+    l = normalize(vec3(20.0f, 20.0f, 20.0f));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
@@ -63,8 +64,7 @@ void main()
     vec3 specular = u_spec_strength * spec * light_color;
 
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-    color.rgb = (ambient + (diffuse + specular)) / norm * used_color;
+    color.rgb = (ambient + (diffuse + specular)) / norm * v_color.rgb;
 
-    FragColor = color;
-
+    FragColor = vec4(color.rgb, v_color.a);
 }

@@ -234,7 +234,7 @@ namespace vOS {
         /**
          * Manually sets Peel level of a Mesh
          */
-        void set_mesh_peel_level(int mesh_id, int level);
+        void set_mesh_peel_level(int mesh_id, float level);
 
         /**
          * Manually sets Slice level of a Mesh
@@ -281,12 +281,12 @@ namespace vOS {
         /**
          * Applies peel level to the currently focused mesh.
          */
-        void set_mesh_peel_level(int peel_level);
+        void set_mesh_peel_level(float peel_level);
 
         /**
          * returns the peel level of the mesh with given mesh_id
          */
-        int get_mesh_peel_level(int mesh_id);
+        float get_mesh_peel_level(int mesh_id);
 
         /**
          * Applies cell size to the given mesh_id.

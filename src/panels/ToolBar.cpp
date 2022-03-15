@@ -272,12 +272,12 @@ namespace vOS
                     ImGui::SameLine();
                     Tooltips::HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
                     m_slider_peel = Window::instance().get_mesh_peel_level(active_mesh);
-                    int peel_max = 10;
+                    float peel_max = 0.0f;
                     if (m_active_mesh >= 0)
                     {
-                        peel_max = Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1;
+                        peel_max = (float)Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1.0f;
                     }
-                    ImGui::SliderInt(" ", &m_slider_peel, 0, peel_max);
+                    ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max);
                     Window::instance().set_mesh_peel_level(active_mesh, m_slider_peel);
                     m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
                     ImGui::Text("Cell Size:");

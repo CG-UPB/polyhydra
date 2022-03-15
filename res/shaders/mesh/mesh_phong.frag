@@ -25,6 +25,8 @@ uniform float u_ambient_strength;
 uniform float u_diffuse_strength;
 uniform float u_spec_exponent;
 
+uniform float peel_depth;
+
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_shadow_texture;
@@ -138,10 +140,11 @@ void main()
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
-    if (v_visible == 0 || u_object_color.a < 1.0)
+    if (v_visible == 0 || v_color.a < 1.0 - 0.01)
     {
         discard;
     }
+
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
     vec3 l = normalize(vec3(20.0f, 20.0f, 20.0f));
@@ -192,5 +195,5 @@ void main()
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
     vec3 result = (ambient + (1.0 - shadow + 0.2) * (diffuse + specular)) / norm * used_color;
 
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, v_color.a);
 }

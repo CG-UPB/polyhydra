@@ -42,13 +42,14 @@ void main()
 {
     vec4 color = u_object_color;
 
-    if(color.a >= 1.0 || v_visible == 0)
+    if(v_color.a >= 1.0 - 0.01|| v_visible == 0)
     {
         discard;
     }
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos - v_pos);
+    l = normalize(vec3(20.0f, 20.0f, 20.0f) - v_pos);
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
@@ -77,13 +78,13 @@ void main()
     //color.a = pow(color.a, 2.0);
 
     // choose weight function
-    float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - LinearizeDepth(depth) * 0.5, 3.0), 1e-2, 3e3);
+    float weight = clamp(pow(min(1.0, v_color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - LinearizeDepth(depth) * 0.5, 3.0), 1e-2, 3e3);
     //float weight = pow(color.a, u_pow) * clamp(u_range / (1e-5 + pow(depth * 0.8, u_ordering_strenth)), u_t_min, u_t_max);
     //float weight = pow(color.a + 0.01, 4.0) + max(1e-2, min(3.0 * 1e3, 100.0 / (1e-5 + pow(abs(depth) / 10.0, 3.0) + pow(abs(depth) / 200.0, 6.0))));
 
     //float weight = 1.0 / pow(1.0 + LinearizeDepth(depth), u_pow);
 
-    accum = vec4(color.rgb * color.a, color.a) * weight;
-    reveal = color.a;
+    accum = vec4(color.rgb * v_color.a, v_color.a) * weight;
+    reveal = v_color.a;
 
 }

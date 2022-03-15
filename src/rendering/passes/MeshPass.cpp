@@ -17,11 +17,16 @@ namespace vOS
         if(obj == nullptr)
             return;
 
-        glEnable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
-        glEnable(GL_DEPTH_TEST);
+
         glDisable(GL_BLEND);
+//        glEnable(GL_BLEND);
+//        glBlendEquation(GL_FUNC_ADD);
+//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
 
@@ -53,7 +58,7 @@ namespace vOS
         m_mesh_shader->set_uniform_vec3f("u_light_color", data.light.color);
         m_mesh_shader->set_uniform_float("u_cell_size", obj->get_data().m_cell_size);
         m_mesh_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
-        m_mesh_shader->set_uniform_int("u_peel_depth", obj->get_data().m_peel_level);
+        m_mesh_shader->set_uniform_float("u_peel_depth", obj->get_data().m_peel_level);
         m_mesh_shader->set_uniform_float("u_slice_depth", obj->get_data().m_slice_level);
         m_mesh_shader->set_uniform_vec3f("u_min", obj->get_transformed_bb(view_transform).first);
         m_mesh_shader->set_uniform_vec3f("u_max", obj->get_transformed_bb(view_transform).second);

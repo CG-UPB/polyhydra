@@ -135,7 +135,7 @@ namespace vOS
         float m_specular_exponent;
 
         // Toolbox Variables
-        int m_peel_level;
+        float m_peel_level;
         bool m_slice_locked = false;
         float m_slice_level;
         float m_cell_size;

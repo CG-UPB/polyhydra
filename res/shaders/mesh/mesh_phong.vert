@@ -39,7 +39,7 @@ uniform vec4 u_object_color;
 uniform float u_cell_size;
 uniform vec4 u_selection_color;
 uniform float u_average_cell_size;
-uniform int u_peel_depth;
+uniform float u_peel_depth;
 uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;
@@ -79,13 +79,14 @@ void main()
 
     // criteria for beeing invisible:
     // peeled, sliced, isolated or digged
-    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
+    if (a_peel_depth + 1.0 <= u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
     {
         v_Visible = 0;
     }
 
     // Roundings
     vec3 position = a_pos;
+    float alpha = u_object_color.a;
     if (u_rounding)
     {
         float type = a_vertex_type_rounded;
@@ -126,10 +127,15 @@ void main()
 
     mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
     v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
-
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
-    v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), 1.0);
 
+    float peel_alpha = (u_peel_depth - a_peel_depth);
+    if(v_Visible == 1 && peel_alpha <= 1.0 && peel_alpha >= 0.0)
+    {
+        alpha = (1 - (u_peel_depth - a_peel_depth)) * alpha;
+    }
+
+    v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
     // Selection
     if (a_is_selected > 0.0)
     {
@@ -144,7 +150,7 @@ void main()
 
         // Override inverse color with preset selection color
         selection_color = mix(selection_color, u_selection_color.xyz, u_selection_color.w);
-        v_Color =vec4(selection_color, 1);
+        v_Color =vec4(selection_color, alpha);
     }
 
     if (a_hovered != 0.0)
@@ -152,5 +158,6 @@ void main()
         float hover_strength = 0.5;
         vec3 hover_color = vec3(0.9, 0.1, 0.1);
         v_Color = vec4(mix(v_Color.rgb, hover_color, 0.3), 1.0) + vec4(hover_color * hover_strength, 0.0);
+        v_Color.a = alpha;
     }
 }

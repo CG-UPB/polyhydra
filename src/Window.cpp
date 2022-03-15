@@ -426,18 +426,18 @@ namespace vOS
         return get_mesh_obj(mesh_id)->get_data().m_slice_locked;
     }
 
-    void Window::set_mesh_peel_level(int peel_level)
+    void Window::set_mesh_peel_level(float peel_level)
     {
         set_mesh_peel_level(0, peel_level);
     }
 
-    void Window::set_mesh_peel_level(int mesh_id, int peel_level)
+    void Window::set_mesh_peel_level(int mesh_id, float peel_level)
     {
         // Change MeshObject Data
         get_mesh_obj(mesh_id)->get_data().m_peel_level = peel_level;
     }
 
-    int Window::get_mesh_peel_level(int mesh_id)
+    float Window::get_mesh_peel_level(int mesh_id)
     {
         // Get MeshObject Data
         return get_mesh_obj(mesh_id)->get_data().m_peel_level;
