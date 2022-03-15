@@ -277,7 +277,16 @@ namespace vOS
                     {
                         peel_max = (float)Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1.0f;
                     }
+
+                    // make it easier to get the slider onto an Integer
+                    // thats helpful for peeling with transparent transition
+                    float tolerance = 0.05;
+                    if(int(m_slider_peel + tolerance) != int(m_slider_peel - tolerance))
+                    {
+                        m_slider_peel = float(int(m_slider_peel + tolerance));
+                    }
                     ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max);
+
                     Window::instance().set_mesh_peel_level(active_mesh, m_slider_peel);
                     m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
                     ImGui::Text("Cell Size:");
