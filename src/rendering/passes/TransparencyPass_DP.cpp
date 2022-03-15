@@ -148,7 +148,7 @@ namespace vOS
         auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
 
         glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
-        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
+        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
 
         bool use_vertex_normals = GlobalViewerSettings::getInstance()->get_mesh_mode() == Phong_Vertexnormals;
 

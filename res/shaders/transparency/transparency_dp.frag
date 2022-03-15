@@ -43,7 +43,6 @@ void main()
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos - v_pos);
-    l = normalize(vec3(20.0f, 20.0f, 20.0f));
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 

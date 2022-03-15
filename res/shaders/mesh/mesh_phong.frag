@@ -197,7 +197,6 @@ void main()
     if (u_draw_shadows)
     {
         // shadow calculation
-        vec3 light_dir = normalize(u_light_pos - v_pos);
         float bias = max(0.008 * (1.0 - max(0.0, dot(n, l))), 0.005);
         shadow = shadow_calculation(v_pos_ls, bias);
         float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
