@@ -19,19 +19,23 @@ namespace vOS
                         .texture_filter     = GL_LINEAR,
                         .texture_wrap       = GL_CLAMP_TO_EDGE
                 },
-                FrameBufferAttachment
-                        {
-                                .internal_format    = GL_DEPTH_COMPONENT,
-                                .format             = GL_DEPTH_COMPONENT,
-                                .type               = GL_FLOAT,
-                                .attachment         = GL_DEPTH_ATTACHMENT,
-                                .texture_filter     = GL_NEAREST,
-                                .texture_wrap       = GL_CLAMP_TO_EDGE,
-                                .texture_comp_func  = GL_LEQUAL,
-                                .texture_comp_mode  = GL_NONE,
-                        }
         };
         m_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
+        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
+
+        for(unsigned int i = 0; i < max_cascades; i++)
+        {
+            glBindTexture(GL_TEXTURE_2D, m_shadow_maps[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
+        glad_glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadow_maps[0], 0);
+
 
     }
 
@@ -39,6 +43,17 @@ namespace vOS
     {
         delete m_shadow_framebuffer;
     }
+
+//    void ShadowMapPass::bind_for_writing()
+//    {
+//
+//    }
+
+
+//    void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id, )
+//    {
+//
+//    }
 
     void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id)
     {
@@ -232,5 +247,7 @@ namespace vOS
         m_cascade_projections.clear();
         m_cascade_views.clear();
     }
+
+
 
 }

@@ -125,7 +125,7 @@ namespace vOS
         if (vao != nullptr)
         {
             m_mesh_pass->render(vao, m_render_data, mesh_id);
-            //m_shape_pass.render(nullptr, m_render_data, mesh_id);
+            m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
 
@@ -787,7 +787,7 @@ namespace vOS
 
             if (GlobalViewerSettings::getInstance()->get_shadows_activated())
             {
-                render_shadow_map();
+                //render_shadow_map();
             }
 
 

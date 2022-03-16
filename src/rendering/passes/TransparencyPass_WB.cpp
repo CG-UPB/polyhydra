@@ -135,6 +135,7 @@ namespace vOS
         m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, get_reveal_texture());
         VertexArrayObject::draw_screen_quad();
         m_composite_shader->unbind();
+
     }
 
     void TransparencyPass_WB::resize_buffers(int width, int height)

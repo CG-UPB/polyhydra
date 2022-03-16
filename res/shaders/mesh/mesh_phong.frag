@@ -1,11 +1,12 @@
 #version 330 core
 
-const int CASCADE_LEVEL = 2;
+const int MAX_CASCADE_LEVEL = 12;
 
 in vec3 v_pos;
 in vec3 v_normal;
 in vec4 v_color;
-in vec4 v_pos_ls;
+in vec4 v_pos_ls[MAX_CASCADE_LEVEL];
+in float v_clipspace_z;
 flat in int v_visible;
 in vec3 v_tri_dist;
 flat in int v_is_triangle;
@@ -32,10 +33,12 @@ uniform float u_diffuse_strength;
 uniform float u_spec_exponent;
 
 uniform float peel_depth;
+uniform int u_cascade_level;
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
-uniform sampler2D u_shadow_texture;
+uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
+uniform float u_cascade_ends[MAX_CASCADE_LEVEL];
 uniform sampler2D u_transparent_shadow_texture;
 uniform sampler2D u_color_filter_texture;
 
@@ -54,7 +57,7 @@ float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 lin
     return sqrt(dot(af, af) - dot(line_dir, af));
 }
 
-float shadow_calculation(vec4 pos_ls, float bias)
+float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
 {
     float shadow = 0.0;
 
@@ -64,7 +67,7 @@ float shadow_calculation(vec4 pos_ls, float bias)
     // range [0, 1]
     proj_coords = proj_coords * 0.5 + 0.5;
 
-    float closest_depth = texture(u_shadow_texture, proj_coords.xy).r;
+    float closest_depth = texture(u_shadow_texture[cascade_idx], proj_coords.xy).r;
     float current_depth = proj_coords.z;
     //shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
 
@@ -199,8 +202,22 @@ void main()
     if (u_draw_shadows)
     {
         // shadow calculation
+        // calculate bias
         float bias = max(0.008 * (1.0 - max(0.0, dot(n, l))), 0.005);
-        shadow = shadow_calculation(v_pos_ls, bias);
+        // calculate cascade level
+        int cascade_idx = 0;
+        int cascade_level = 1;
+        (u_cascade_level < MAX_CASCADE_LEVEL) ? cascade_level = u_cascade_level : cascade_level = MAX_CASCADE_LEVEL;
+        for(int i = 0; i < cascade_level; i++)
+        {
+            if(v_clipspace_z <= u_cascade_ends[i])
+            {
+                cascade_idx = i;
+                break;
+            }
+        }
+        shadow = shadow_calculation(v_pos_ls, bias, cascade_idx);
+
         float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
         transparent_shadow = 0.0;
         if (transparent_shadow != 0.0)

@@ -1,5 +1,7 @@
 #version 330 core
 
+const int MAX_CASCADE_LEVEL = 12;
+
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
@@ -16,20 +18,19 @@ layout (location = 12) in float a_is_selected;
 layout (location = 13) in float a_hovered;
 layout (location = 14) in vec3 a_vertex_normal;
 
-const int NUM_CASCADES = 3;
-
 out vec3 v_Pos;
 out vec3 v_Normal;
 out vec4 v_Color;
-out vec4 v_LightSpacePos;
+out vec4 v_LightSpacePos[MAX_CASCADE_LEVEL];
+out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
 uniform mat4 u_view;
-uniform mat4 u_light_projection;
-uniform mat4 u_light_view;
+uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
+uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_transform;
 
 uniform vec3 u_light_pos;
@@ -48,6 +49,7 @@ uniform bool u_slice_locked;
 uniform bool u_rounding;
 uniform float u_rounding_size;
 uniform bool u_use_vertex_normals;
+uniform int u_cascade_level;
 
 
 const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
@@ -125,8 +127,15 @@ void main()
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(view_transform))) * normal;
 
-    mat4 light_space_mat = u_light_projection * u_light_view * u_light_transform;
-    v_LightSpacePos = light_space_mat * vec4(pos, 1.0);
+    // Cascaded Shadowmap
+    int cascade_level = 1;
+    (u_cascade_level < MAX_CASCADE_LEVEL) ? cascade_level = u_cascade_level : cascade_level = MAX_CASCADE_LEVEL;
+
+    for(int i = 0; i < cascade_level; i++)
+    {
+        mat4 light_space_mat = u_light_projection[i] * u_light_view[i] * u_light_transform;
+        v_LightSpacePos[i] = light_space_mat * vec4(pos, 1.0);
+    }
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
 
     float peel_alpha = (u_peel_depth - a_peel_depth);

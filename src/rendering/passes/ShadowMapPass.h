@@ -20,6 +20,7 @@ namespace vOS
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
         void calculate_cascade(float near, float far);
         void clear_cascades();
+        void bind_for_reading();
 
         FrameBufferObject* get_framebuffer() const;
         [[nodiscard]] unsigned int get_shadow_map() const;
@@ -29,6 +30,8 @@ namespace vOS
 
     private:
 
+        static const int max_cascades = 12;
+        unsigned int m_shadow_maps[max_cascades];
         MeshView* m_mesh_view;
         Shader* m_shadow_shader = nullptr;
         FrameBufferObject* m_shadow_framebuffer = nullptr;

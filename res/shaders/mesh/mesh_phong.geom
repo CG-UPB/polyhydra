@@ -34,6 +34,7 @@ out vec3 v_normal;
 out vec4 v_color;
 out vec4 v_pos_ls;
 flat out int v_visible;
+out float v_clipspace_z;
 
 out vec3 v_tri_dist;
 flat out int v_is_triangle;
@@ -54,6 +55,7 @@ void vertex(vec4 screen_pos, vec3 pos, vec3 normal, vec4 color, int visible, vec
     v_color = color;
     v_visible = visible;
     v_pos_ls = pos_ls;
+    v_clipspace_z = screen_pos.z;
     EmitVertex();
 }
 
