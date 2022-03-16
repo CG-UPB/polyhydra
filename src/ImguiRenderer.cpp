@@ -15,6 +15,9 @@
 #include "panels/LogWindow.h"
 #include "rendering/gl/Shader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace vOS
 {
     static void glfwErrorCallback(int error, const char *description)
@@ -93,9 +96,13 @@ namespace vOS
             return;
         }
 
+        GLFWimage images[1];
+        images[0].pixels = stbi_load("../res/logo.png", &images[0].width, &images[0].height, 0, 4);
+        glfwSetWindowIcon(m_window, 1, images);
+        stbi_image_free(images[0].pixels);
+
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1); // Enable vsync
-
         // Setup Input Class
         Input::setup(m_window);
         /*
