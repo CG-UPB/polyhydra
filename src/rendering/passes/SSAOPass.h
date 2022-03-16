@@ -46,7 +46,7 @@ namespace vOS
          *
          * @param options options to render
          */
-        void render_options(SSAOOptions* options);
+        void load_options_from_settings();
 
         /**
          * Main ambient occlusion pass, this updates the occlusion factor texture that is used in the mesh pass.
@@ -118,6 +118,8 @@ namespace vOS
         // configuration
         static const int s_max_samples = 64;
         static const int s_noise_size = 4;
+
+        float m_dot;
 
         // options
         SSAOOptions m_options;

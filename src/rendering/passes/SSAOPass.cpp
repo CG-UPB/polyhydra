@@ -3,7 +3,6 @@
 #include "../meshes/CommonMeshes.h"
 #include "SSAOPass.h"
 #include <random>
-#include "../../util/ModeEnum.h"
 
 namespace vOS
 {
@@ -110,7 +109,7 @@ namespace vOS
             // assign random distance from sphere center
             sample *= get_random_float(0.0, 1.0);
             // more samples distributed at the center of the sphere
-            float scale = (float) m_sample_kernel.size() / SSAOPass::s_max_samples;
+            float scale = (float) m_sample_kernel.size() / (float) SSAOPass::s_max_samples;
             scale = lerp(0.1, 1.0, std::pow(scale, 2.0f));
             sample *= scale;
             m_sample_kernel.push_back(sample);
@@ -141,7 +140,7 @@ namespace vOS
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
 
-    void SSAOPass::render_options(SSAOOptions* options)
+    void SSAOPass::load_options_from_settings()
     {
         int selected_option = GlobalViewerSettings::getInstance()->get_ssao_options();
         switch (selected_option) {
@@ -160,13 +159,14 @@ namespace vOS
             case CUSTOM:
                 load_options(GlobalViewerSettings::getInstance()->get_custom_options());
                 break;
+            default:
+                return;
         }
     }
 
     void SSAOPass::render(VertexArrayObject* vao, const RenderData& render_data, int mesh_id)
     {
-        // TODO: Move options rendering to a more appropriate place
-        render_options(&m_options);
+        load_options_from_settings();
         if (m_options.active)
         {
             auto pre_pass = m_mesh_view->m_pre_pass->get_framebuffer();

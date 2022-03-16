@@ -937,8 +937,8 @@ namespace vOS
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                //return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-                return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+                return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                //return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
                 return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:
