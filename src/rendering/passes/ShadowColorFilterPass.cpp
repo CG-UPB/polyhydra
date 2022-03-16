@@ -5,8 +5,8 @@
 
 namespace vOS
 {
-    ShadowColorFilterPass::ShadowColorFilterPass(MeshView *mesh_view, int width, int height):
-    m_mesh_view(mesh_view),
+    ShadowColorFilterPass::ShadowColorFilterPass(Renderer* renderer, int width, int height):
+    m_renderer(renderer),
     m_width(width),
     m_height(height)
     {
@@ -65,7 +65,7 @@ namespace vOS
         m_color_filter_shader->set_uniform_mat4f("u_light_view", light_view);
         m_color_filter_shader->set_uniform_mat4f("u_transform", l_transform);
 
-        auto opaque_depth = m_mesh_view->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT);
+        auto opaque_depth = m_renderer->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT);
         m_color_filter_shader->set_uniform_sampler2D("u_opaque_depth_texture", GL_TEXTURE0, opaque_depth);
 
         vao->draw();

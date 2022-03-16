@@ -7,7 +7,7 @@
 
 namespace vOS
 {
-    MeshPass::MeshPass(MeshView* mesh_view): m_mesh_view(mesh_view)
+    MeshPass::MeshPass(Renderer* renderer): m_renderer(renderer)
     {}
 
     void MeshPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
@@ -17,7 +17,7 @@ namespace vOS
         if(obj == nullptr)
             return;
 
-        glDisable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
 
@@ -75,8 +75,8 @@ namespace vOS
         m_mesh_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
         m_mesh_shader->set_uniform_mat4f("u_light_view", data.light.view);
         m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
-        m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
-        m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+        m_mesh_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
+        m_mesh_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
 
         bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
         float wireframe_size = settings->get_wireframe_size();
@@ -90,11 +90,11 @@ namespace vOS
         m_mesh_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
 
         // input textures
-        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
-        m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
-        m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2,m_mesh_view->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
-        m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE3,m_mesh_view->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
-        m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4,m_mesh_view->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
+        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0, m_renderer->m_pre_pass->get_framebuffer()->get_depth_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1, m_renderer->m_ssao_pass->get_blur_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2, m_renderer->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE3, m_renderer->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4, m_renderer->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
 
         // wireframe mode should always be non-rounded
         if (draw_wireframe)

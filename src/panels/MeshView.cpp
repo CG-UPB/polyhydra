@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <fstream>
+#include <functional>
 
 #include "imgui.h"
 #include "glm/gtx/transform.hpp"
@@ -28,44 +29,23 @@ namespace vOS
             m_viewportPanelHeight(height),
             m_lastDown(false),
             m_lastX(0.0),
-            m_lastY(0.0),
-            m_arcBallOn(false)
+            m_lastY(0.0)
     {
-        m_pre_pass = new PrePass(width, height);
-        m_shadow_pass = new ShadowMapPass(this, width * 2, height * 2);
-        m_transparent_shadow_pass = new TransparentShadowMapPass(width, height);
-        m_shadow_color_filter_pass = new ShadowColorFilterPass(this, width, height);
-        m_mesh_pass = new MeshPass(this);
-        m_ssao_pass = new SSAOPass(this, width, height);
-
         m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
-        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
         m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
-        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
-
-        m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
-        m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
+        m_renderer = new Renderer(width, height, m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        m_renderer->set_selection_callback(std::bind(&MeshView::querySelection, this, std::placeholders::_1, std::placeholders::_2));
 
         // Set Camera Viewport Size
         m_render_data.camera.set_viewport_size(width, height);
-
-        m_mover.set_references(&m_render_data.camera, &m_selection_hover_pass);
-
-        num_passes = 0;
-
-        dp_layer = 0;
+        m_mover.set_references(&m_render_data.camera, &m_renderer->m_selection_hover_pass);
     }
 
     MeshView::~MeshView()
     {
         delete m_meshFrameBuffer;
         delete m_screen_quad_frameBuffer;
-        delete m_selectionFrameBuffer;
-        delete m_pixel_buffer;
-        delete m_pre_pass;
-        delete m_mesh_pass;
-        delete m_transparency_pass_wb;
-        delete m_ssao_pass;
+        delete m_renderer;
     }
 
     void MeshView::handleResize()
@@ -80,52 +60,8 @@ namespace vOS
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_shadow_pass->resize_buffers(m_viewportPanelWidth * 2, m_viewportPanelHeight * 2);
-            m_shadow_color_filter_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_transparent_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
-            delete m_pixel_buffer;
-            m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
-
+            m_renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_render_data.camera.set_viewport_size(width, height);
-
-        }
-    }
-
-
-    void MeshView::renderMesh(int mesh_id)
-    {
-
-        // Get Mesh
-        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return;
-
-        MeshData& mesh_data = obj->get_data();
-
-        if (!mesh_data.m_visible)
-        {
-            return;
-        }
-
-
-        obj->update_vertex_buffer();
-
-        VertexArrayObject* vao = obj->get_vao();
-        if (mesh_data.m_rounding_activated)
-        {
-            vao = obj->get_mvb()->get_vao_rounded();
-        }
-
-        // render all passes
-        if (vao != nullptr)
-        {
-            m_mesh_pass->render(vao, m_render_data, mesh_id);
-            //m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
 
@@ -144,75 +80,39 @@ namespace vOS
         m_viewportPanelWidth = export_width;
         m_viewportPanelHeight = export_height;
 
-        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height,
-                                                           FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height,FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         auto export_framebuffer = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
 
-        m_pre_pass->resize_buffers(export_width, export_height);
-        m_ssao_pass->resize_buffers(export_width, export_height);
-
-        render_pre_pass();
-
-        if (GlobalViewerSettings::getInstance()->get_ambient_occlusion_activated())
-        {
-            render_ssao_pass();
-        }
-
-        export_framebuffer_ms->bind();
-
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        auto active_mesh = Window::instance().get_focused_mesh_object();
-        if (active_mesh != nullptr)
-        {
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-            {
-                auto mesh = m.second;
-                if (!mesh->get_data().m_visible)
-                {
-                    continue;
-                }
-
-                mesh->update_vertex_buffer();
-                VertexArrayObject* vao = mesh->get_vao();
-                if (mesh->get_data().m_rounding_activated)
-                {
-                    vao = mesh->get_mvb()->get_vao_rounded();
-                }
-
-                // render all passes
-                if (vao != nullptr)
-                {
-                    m_mesh_pass->render(vao, m_render_data, m.first);
-                    m_shape_pass.render(nullptr, m_render_data, m.first);
-                }
-            }
-        }
+        m_renderer->set_target_framebuffer(export_framebuffer_ms, export_framebuffer);
+        m_renderer->resize(export_width, export_height);
+        m_renderer->render(m_render_data, false);
 
         glFlush();
         glFinish();
 
         export_framebuffer_ms->unbind();
-
-        // restore the old width and height
-        m_viewportPanelWidth = prev_width;
-        m_viewportPanelHeight = prev_height;
-        m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-        m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-
-        // copy our multisampled framebuffer to the output framebuffer
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, export_framebuffer_ms, export_framebuffer);
-
         export_framebuffer->bind();
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
         int sWidth = export_framebuffer->get_width();
         int sHeight = export_framebuffer->get_height();
-        std::vector<char> buffer(4 * sWidth * sHeight);
+        std::vector<unsigned char> buffer(4 * sWidth * sHeight);
 
         glReadPixels(0, 0, sWidth, sHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+
+        // since we are rendering on a transparent background, we need to undo the pre-multiplication
+        for (size_t i = 0; i < buffer.size() / 4; i++)
+        {
+            float r = (float) ((int) buffer[i * 4]) / 255.0f;
+            float g = (float) ((int) buffer[i * 4 + 1]) / 255.0f;
+            float b = (float) ((int) buffer[i * 4 + 2]) / 255.0f;
+            float a = (float) ((int) buffer[i * 4 + 3]) / 255.0f;
+            float alpha = std::max(a, 0.00001f);
+            buffer[i * 4] = (unsigned char) ((int) ((r / alpha) * 255.0f));
+            buffer[i * 4 + 1] = (unsigned char) ((int) ((g / alpha) * 255.0f));
+            buffer[i * 4 + 2] = (unsigned char) ((int) ((b / alpha) * 255.0f));
+        }
 
         stbi_flip_vertically_on_write(true);
 
@@ -230,310 +130,14 @@ namespace vOS
 
         export_framebuffer->unbind();
 
+        // restore the old width and height
+        m_viewportPanelWidth = prev_width;
+        m_viewportPanelHeight = prev_height;
+        m_renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        m_renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+
         delete export_framebuffer_ms;
         delete export_framebuffer;
-    }
-
-
-    void MeshView::renderSelection()
-    {
-        // now render our mesh scene to the framebuffer texture
-        m_selectionFrameBuffer->bind();
-
-        // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-        // viewport[3] equals viewport height
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-
-        // read Pixel data/color from framebuffer
-        ImVec2 mouse_pos_in_window = {
-                ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
-                ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()
-        };
-        int x = (int) mouse_pos_in_window.x / 2;
-        int y = (int) (viewport[3] * 2 - (int) mouse_pos_in_window.y) / 2;
-
-        GLubyte* data = m_pixel_buffer->start_read(x, y, 1, 1);
-
-        if (data != nullptr)
-        {
-            // evaluate ID out of color
-            int type = data[0] & 3;
-            int id;
-            if (m_selection_pass.is_debug_mode())
-            {
-                id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
-            }
-            else
-            {
-                id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
-            }
-            querySelection(type, id);
-        }
-
-        m_pixel_buffer->finish_read();
-
-        m_current_frame = (m_current_frame + 1) % m_frame_limit;
-        if (m_current_frame == 0)
-        {
-            // we need to clear our framebuffer as well
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-            {
-                auto mesh = m.second;
-                m_selection_pass.render_mesh(mesh, m_render_data, m.first);
-            }
-        }
-        m_selectionFrameBuffer->unbind();
-
-        m_meshFrameBuffer->bind();
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            m_selection_hover_pass.render(nullptr, m_render_data, m.first);
-        }
-        m_meshFrameBuffer->unbind();
-    }
-
-    void MeshView::render_pre_pass()
-    {
-        m_pre_pass->get_framebuffer()->bind();
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_pre_pass->clear_position_buffer(m_render_data);
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-
-            if (!mesh->get_data().m_visible)
-            {
-                continue;
-            }
-            mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
-            if (mesh->get_data().m_rounding_activated)
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_pre_pass->render(vao, m_render_data, m.first);
-            }
-        }
-        // we generate a mipmap for the position, this is used for ssao
-        // this needs to happen every frame, since the fragment position values always change
-        glBindTexture(GL_TEXTURE_2D, m_pre_pass->get_framebuffer()->get_position_texture());
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        m_pre_pass->get_framebuffer()->unbind();
-    }
-
-    void MeshView::render_shadow_map()
-    {
-        // render opaque shadow map
-        m_shadow_pass->get_framebuffer()->bind();
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-
-        // calculate all cascade matrices
-        m_shadow_pass->clear_cascades();
-        int cascade_level = 1;
-        auto cam = m_render_data.camera;
-
-        float max = cam.far - cam.near;
-        for(int i = 0; i < cascade_level; i++)
-        {
-            float near = cam.near + (float)i * (max / (float)cascade_level);
-            float far = cam.near + (float)(i + 1) * (max / (float)cascade_level);
-            m_shadow_pass->calculate_cascade(cam.near, cam.far / 2);
-        }
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-            if (!mesh->get_data().m_visible)
-            {
-                continue;
-            }
-            mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
-            if (mesh->get_data().m_rounding_activated)
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_shadow_pass->render(vao, m_render_data, m.first);
-            }
-        }
-        m_shadow_color_filter_pass->get_framebuffer()->unbind();
-
-        // render transparent shadow map
-//        m_transparent_shadow_pass->get_framebuffer()->bind();
-//        glClearColor(0.0, 0.0, 0.0, 0.0);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-//        {
-//            auto mesh = m.second;
-//            if (!mesh->get_data().m_visible)
-//            {
-//                continue;
-//            }
-//            mesh->update_vertex_buffer();
-//            VertexArrayObject* vao = mesh->get_vao();
-//            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
-//            {
-//                vao = mesh->get_mvb()->get_vao_rounded();
-//            }
-//            if (vao != nullptr)
-//            {
-//                m_transparent_shadow_pass->render(vao, m_render_data, m.first);
-//            }
-//        }
-//        m_transparent_shadow_pass->get_framebuffer()->unbind();
-//
-//
-//        // calculate color filter for transparent shadows
-//        m_shadow_color_filter_pass->get_framebuffer()->bind();
-
-        //glClearColor(1.0, 1.0, 1.0, 0.0 );
-//        glClearColor(0.0, 0.0, 0.0, 0.0);
-//
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-//        {
-//            auto mesh = m.second;
-//            if (!mesh->get_data().m_visible)
-//            {
-//                continue;
-//            }
-//            mesh->update_vertex_buffer();
-//            VertexArrayObject* vao = mesh->get_vao();
-//            if (GlobalViewerSettings::getInstance()->m_get_current_rounding_active())
-//            {
-//                vao = mesh->get_mvb()->get_vao_rounded();
-//            }
-//            if (vao != nullptr)
-//            {
-//                m_shadow_color_filter_pass->render(vao, m_render_data, m.first);
-//            }
-//        }
-//        m_shadow_color_filter_pass->get_framebuffer()->unbind();
-//        glClearColor(0.0, 0.0, 0.0, 0.0);
-//        glEnable(GL_CULL_FACE);
-//        glDisable(GL_BLEND);
-//        glBlendEquation(GL_FUNC_ADD);
-//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    }
-
-    void MeshView::render_ssao_pass()
-    {
-        m_ssao_pass->render(nullptr, m_render_data, -1);
-    }
-
-    void MeshView::render_transparency_wb()
-    {
-        m_transparency_pass_wb->bind_transparent_buffer();
-        m_transparency_pass_wb->clear_framebuffer();
-        glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
-        glBlendFunci(0, GL_ONE, GL_ONE);
-        glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-        glBlendEquation(GL_FUNC_ADD);
-        //glDisable(GL_CULL_FACE);
-
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-
-            MeshData& mesh_data = mesh->get_data();
-
-            if (!mesh->get_data().m_visible)
-            {
-                continue;
-            }
-            mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
-            if (mesh_data.m_rounding_activated)
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_transparency_pass_wb->render(vao, m_render_data, m.first);
-            }
-        }
-        m_transparency_pass_wb->unbind_transparent_buffer();
-
-        glDepthFunc(GL_ALWAYS);
-        glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
-
-
-        m_meshFrameBuffer->bind();
-        m_transparency_pass_wb->render_composition();
-        m_meshFrameBuffer->unbind();
-    }
-
-    void MeshView::render_transparency_dp()
-    {
-        num_passes = GlobalViewerSettings::getInstance()->get_number_passes();
-        for (int i = 0; i < num_passes; i++)
-        {
-            if (i % 2 == 0)
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer0->bind();
-                dp_layer = m_transparency_pass_dp->m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
-            }
-            else
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer1->bind();
-                dp_layer = m_transparency_pass_dp->m_transparent_framebuffer1->get_texture(GL_COLOR_ATTACHMENT0);
-
-            }
-            glClearDepth(0.0f);
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-            // first render all meshes
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-            {
-                auto mesh = m.second;
-                MeshData& mesh_data = mesh->get_data();
-                if (!mesh->get_data().m_visible)
-                {
-                    continue;
-                }
-
-                mesh->update_vertex_buffer();
-                VertexArrayObject* vao = mesh->get_vao();
-                if (mesh_data.m_rounding_activated)
-                {
-                    vao = mesh->get_mvb()->get_vao_rounded();
-                }
-
-                if (vao != nullptr)
-                {
-                    m_transparency_pass_dp->render(vao, m_render_data, m.first, i);
-                }
-            }
-            if (i % 2 == 0)
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
-            }
-            else
-            {
-                m_transparency_pass_dp->m_transparent_framebuffer1->unbind();
-            }
-
-            m_transparency_pass_dp->render_composition(i, num_passes);
-
-        }
-
-
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -609,7 +213,7 @@ namespace vOS
                     }
                     else
                     {
-                        m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
+                        m_renderer->m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
                         if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -628,7 +232,7 @@ namespace vOS
                 {
                     int vertex_id = mesh->to_vertex_id(picked_id - from) - 1;
 
-                    m_selection_hover_pass.hover(m_render_data, m.first, type, vertex_id);
+                    m_renderer->m_selection_hover_pass.hover(m_render_data, m.first, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -646,7 +250,7 @@ namespace vOS
                 {
                     int edge_id = mesh->to_edge_id(picked_id - from) - 1;
 
-                    m_selection_hover_pass.hover(m_render_data, m.first, type, edge_id);
+                    m_renderer->m_selection_hover_pass.hover(m_render_data, m.first, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -685,7 +289,7 @@ namespace vOS
             {
                 m.second->get_mvb()->reset_hover();
             }
-            m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
+            m_renderer->m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
         }
 
         for (const auto& m: Window::instance().get_mesh_list())
@@ -695,47 +299,6 @@ namespace vOS
             {
                 m.second->get_mvb()->reset_hover();
             }
-        }
-    }
-
-
-    void MeshView::render_background()
-    {
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-
-        m_meshFrameBuffer->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, m_render_data, 0);
-        m_meshFrameBuffer->unbind();
-    }
-
-
-    void MeshView::render_meshes()
-    {
-        m_meshFrameBuffer->bind();
-        for (const auto& m: Window::instance().get_mesh_list())
-        {
-            renderMesh(m.first);
-        }
-        m_meshFrameBuffer->unbind();
-    }
-
-
-    void MeshView::render_transparency()
-    {
-        m_transparency = GlobalViewerSettings::getInstance()->get_transparency_mode();
-
-        switch (m_transparency)
-        {
-            case DEPTH_PEELING:
-                render_transparency_dp();
-                break;
-            case WEIGHTED_BLENDED :
-                render_transparency_wb();
         }
     }
 
@@ -756,74 +319,8 @@ namespace vOS
         // Update Mesh Mover
         m_mover.update();
 
-        // Render Meshes
-        render_pre_pass();
-
-        if (GlobalViewerSettings::getInstance()->get_mesh_mode() == ModeEnum::Only_Vertices)
-        {
-            render_background();
-            m_meshFrameBuffer->bind();
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-            {
-                auto mesh = m.second;
-                if (!mesh->get_data().m_visible)
-                {
-                    continue;
-                }
-                mesh->update_vertex_buffer();
-                if (mesh->get_vao() != nullptr)
-                {
-                    m_vertex_only_pass.render(nullptr, m_render_data, m.first);
-                }
-            }
-            m_meshFrameBuffer->unbind();
-        }
-        else
-        {
-            if (GlobalViewerSettings::getInstance()->get_ambient_occlusion_activated())
-            {
-                render_ssao_pass();
-            }
-
-            if (GlobalViewerSettings::getInstance()->get_shadows_activated())
-            {
-                render_shadow_map();
-            }
-
-
-            // Now render our mesh scene to the framebuffer texture
-            // Start with opaque objects
-            render_background();
-
-            render_meshes();
-
-
-            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_meshFrameBuffer,
-                                    m_screen_quad_frameBuffer);
-
-            // Render transparent objects
-            if (GlobalViewerSettings::getInstance()->get_transparency_activated())
-            {
-                render_transparency();
-            }
-
-            // Render Selection
-            if (GlobalViewerSettings::getInstance()->get_selection_activated())
-            {
-                renderSelection();
-            }
-        }
-
-        // set render states
-        glDisable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
-        glDisable(GL_BLEND);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_meshFrameBuffer,
-                                m_screen_quad_frameBuffer);
+        m_renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        m_renderer->render(m_render_data);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -927,7 +424,7 @@ namespace vOS
             }
         }
         ImGui::End();
-        m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
+        m_renderer->m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
     }
 
     unsigned int MeshView::get_selected_texture()
@@ -937,16 +434,16 @@ namespace vOS
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                return m_renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
                 //return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
-                return m_ssao_pass->get_ssao_texture();
+                return m_renderer->m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:
-                return m_ssao_pass->get_blur_texture();
+                return m_renderer->m_ssao_pass->get_blur_texture();
             case TRANSPARENCY_ACCUM:
-                return m_transparency_pass_wb->get_accum_texture();
+                return m_renderer->m_transparency_pass_wb->get_accum_texture();
             case TRANSPARENCY_REVEAL:
-                return m_transparency_pass_wb->get_reveal_texture();
+                return m_renderer->m_transparency_pass_wb->get_reveal_texture();
         }
         return -1;
     }

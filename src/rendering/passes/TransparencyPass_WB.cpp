@@ -11,8 +11,8 @@ namespace vOS
 {
     class MeshView;
 
-    TransparencyPass_WB::TransparencyPass_WB(MeshView *mesh_view, int width, int height):
-        m_mesh_view(mesh_view)
+    TransparencyPass_WB::TransparencyPass_WB(Renderer* renderer, int width, int height):
+            m_renderer(renderer)
     {
         m_transparency_shader = Shader::get("transparency_wb");
         m_composite_shader = Shader::get("composite_wb");
@@ -48,7 +48,7 @@ namespace vOS
     {
         m_transparent_framebuffer->bind();
 
-        m_depth_texture = m_mesh_view->m_screen_quad_frameBuffer->get_texture(GL_DEPTH_ATTACHMENT);
+        m_depth_texture = m_renderer->m_target->get_texture(GL_DEPTH_ATTACHMENT);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_texture, 0);
 
         glClearBufferfv(GL_COLOR, 0, &m_zeros[0]);
@@ -116,8 +116,8 @@ namespace vOS
         m_transparency_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
         m_transparency_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         m_transparency_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
-        m_transparency_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_screen_quad_frameBuffer->get_width());
-        m_transparency_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_screen_quad_frameBuffer->get_height());
+        m_transparency_shader->set_uniform_int("u_viewport_width", m_renderer->m_target->get_width());
+        m_transparency_shader->set_uniform_int("u_viewport_height", m_renderer->m_target->get_height());
         m_transparency_shader->set_uniform_float("u_spec_strength", obj->get_data().m_specular_strength);
         m_transparency_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
         m_transparency_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);

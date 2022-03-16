@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../../panels/MeshView.h"
+#include "../Renderer.h"
 #include "RenderPass.h"
 
 namespace vOS
 {
-    class MeshView;
+    class Renderer;
 
     /**
      * Renders Meshes according to its set mesh properties
@@ -14,7 +14,7 @@ namespace vOS
     {
     public:
 
-        explicit MeshPass(MeshView* mesh_view);
+        explicit MeshPass(Renderer* renderer);
         /**
          * Deconstructor
          */
@@ -24,6 +24,6 @@ namespace vOS
 
     private:
 
-        MeshView* m_mesh_view;
+        Renderer* m_renderer;
     };
 }

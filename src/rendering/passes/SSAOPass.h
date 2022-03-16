@@ -1,14 +1,12 @@
 #pragma once
 
-#include "../../panels/MeshView.h"
+#include "../Renderer.h"
 #include "RenderPass.h"
 #include "../../settings/GlobalViewerSettings.h"
 
 namespace vOS
 {
-    class MeshView;
-
-
+    class Renderer;
 
     /**
      * Screen-Space Ambient Occlusion rendering pass.
@@ -24,7 +22,7 @@ namespace vOS
          * @param initial_width framebuffer width
          * @param initial_height framebuffer height
          */
-        SSAOPass(MeshView* mesh_view, int initial_width, int initial_height);
+        SSAOPass(Renderer* renderer, int initial_width, int initial_height);
         ~SSAOPass();
 
         /**
@@ -126,7 +124,7 @@ namespace vOS
         int m_selected_preset = 1;
 
         // we keep a reference to access the pre-pass framebuffer
-        MeshView* m_mesh_view;
+        Renderer* m_renderer;
 
         // rendering
         std::vector<glm::vec3> m_sample_kernel;

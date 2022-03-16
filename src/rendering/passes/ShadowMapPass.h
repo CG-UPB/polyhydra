@@ -2,18 +2,19 @@
 #pragma once
 
 #include "RenderPass.h"
-#include "../../panels/MeshView.h"
+#include "../Renderer.h"
 
 
 namespace vOS
 {
+    class Renderer;
 
     class ShadowMapPass : public RenderPass
     {
 
     public:
 
-        ShadowMapPass(MeshView* mesh_view, int width, int height);
+        ShadowMapPass(Renderer* renderer, int width, int height);
         ~ShadowMapPass();
 
         void resize_buffers(int width, int height);
@@ -21,7 +22,7 @@ namespace vOS
         void calculate_cascade(float near, float far);
         void clear_cascades();
 
-        FrameBufferObject* get_framebuffer() const;
+        [[nodiscard]] FrameBufferObject* get_framebuffer() const;
         [[nodiscard]] unsigned int get_shadow_map() const;
 
         std::vector<glm::mat4> m_cascade_views;
@@ -29,7 +30,7 @@ namespace vOS
 
     private:
 
-        MeshView* m_mesh_view;
+        Renderer* m_renderer;
         Shader* m_shadow_shader = nullptr;
         FrameBufferObject* m_shadow_framebuffer = nullptr;
         float m_z_mult = 1.2f;

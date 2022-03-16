@@ -73,7 +73,8 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/panels/QualityPanel.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
         ${VOLUMESHOS_SRC}/rendering/MeshMover.cpp
-        ${VOLUMESHOS_SRC}/algorithms/Demo.cpp)
+        ${VOLUMESHOS_SRC}/algorithms/Demo.cpp
+        ${VOLUMESHOS_SRC}/rendering/Renderer.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

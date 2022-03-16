@@ -130,9 +130,9 @@ void main()
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
 
     float peel_alpha = (u_peel_depth - a_peel_depth);
-    if(v_Visible == 1 && peel_alpha <= 1.0 && peel_alpha >= 0.0)
+    if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
     {
-        alpha = (1 - (u_peel_depth - a_peel_depth)) * alpha;
+        alpha = (1.0 - (u_peel_depth - a_peel_depth)) * alpha;
     }
 
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
@@ -150,7 +150,7 @@ void main()
 
         // Override inverse color with preset selection color
         selection_color = mix(selection_color, u_selection_color.xyz, u_selection_color.w);
-        v_Color =vec4(selection_color, alpha);
+        v_Color = vec4(selection_color, alpha);
     }
 
     if (a_hovered != 0.0)

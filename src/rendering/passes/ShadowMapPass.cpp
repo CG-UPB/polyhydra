@@ -5,7 +5,7 @@
 
 namespace vOS
 {
-    ShadowMapPass::ShadowMapPass(MeshView *mesh_view, int width, int height) : m_mesh_view(mesh_view)
+    ShadowMapPass::ShadowMapPass(Renderer* renderer, int width, int height) : m_renderer(renderer)
     {
         m_shadow_shader = Shader::get("shadow_map");
 
@@ -96,8 +96,8 @@ namespace vOS
         m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.view);
         m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
 
-        m_shadow_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
-        m_shadow_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+        m_shadow_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
+        m_shadow_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
 
         vao->draw();
 
@@ -127,13 +127,13 @@ namespace vOS
 
     void ShadowMapPass::calculate_cascade(float near, float far)
     {
-        auto& cam = m_mesh_view->m_render_data.camera;
-        auto& light = m_mesh_view->m_render_data.light;
+        auto& cam = m_renderer->m_render_data.camera;
+        auto& light = m_renderer->m_render_data.light;
 
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(
                 (float)glm::radians(cam.zoom),
-                (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth,
+                (float)m_renderer->m_viewportPanelHeight / (float)m_renderer->m_viewportPanelWidth,
                 near,
                 far
                 );
@@ -144,7 +144,7 @@ namespace vOS
 
 
 //
-//        float ar = (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth;
+//        float ar = (float)m_renderer->m_viewportPanelHeight / (float)m_renderer->m_viewportPanelWidth;
 //
 //        float tan_half_hfov = tan(glm::radians(cam.zoom / 2.0f));
 //        float tan_half_vfov = tan(glm::radians((cam.zoom * ar) / 2.0f));
