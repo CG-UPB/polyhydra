@@ -77,13 +77,17 @@ namespace vOS
 
             // Advanced Settings
             //ImGui::SameLine();
+            std::string str_popup = "Advanced Settings Popup " + std::to_string(m.first);
+            char* char_type_popup = new char[str_popup.length()];
 
-            if (ImGui::Button("Advanced Settings"))
+            std::string str_popup1 = "Advanced Settings##" + std::to_string(m.first);
+            char* char_type_popup1 = new char[str_popup1.length()];
+            if (ImGui::Button(strcpy(char_type_popup1, str_popup1.c_str())))
             {
-                ImGui::OpenPopup("Advanced Settings Popup");
+                ImGui::OpenPopup(strcpy(char_type_popup, str_popup.c_str()));
             }
 
-            if (ImGui::BeginPopup("Advanced Settings Popup"))
+            if (ImGui::BeginPopup(strcpy(char_type_popup, str_popup.c_str())))
             {
                 if (ImGui::Button("Save")) {
                     NewFileDialog file_dialog;
