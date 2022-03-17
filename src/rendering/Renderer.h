@@ -43,7 +43,7 @@ namespace vOS
 
         void resize(int width, int height);
 
-        void render(RenderData& render_data, bool render_bg = true);
+        void render(RenderData* render_data, bool render_bg = true);
 
         void set_target_framebuffer(FrameBufferObject* target_ms, FrameBufferObject* target);
 
@@ -88,7 +88,7 @@ namespace vOS
 
         bool m_is_rendering_background = false;
 
-        RenderData m_render_data;
+        RenderData* m_render_data = nullptr;
 
         GlobalViewerSettings& m_settings;
 

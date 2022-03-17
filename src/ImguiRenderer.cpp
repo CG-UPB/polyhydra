@@ -97,7 +97,7 @@ namespace vOS
         }
 
         GLFWimage images[1];
-        images[0].pixels = stbi_load("../res/logo.png", &images[0].width, &images[0].height, 0, 4);
+        images[0].pixels = stbi_load("./res/logo.png", &images[0].width, &images[0].height, 0, 4);
         glfwSetWindowIcon(m_window, 1, images);
         stbi_image_free(images[0].pixels);
 

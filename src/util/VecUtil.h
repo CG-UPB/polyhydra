@@ -73,13 +73,13 @@ namespace vOS
         [[nodiscard]] static inline glm::vec3 normal_to_vec3(const Mesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface_handle)
         {
             auto normal = mesh.normal(halfface_handle);
-            return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
+            return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
         }
 
         [[nodiscard]] static inline glm::vec3 normal_to_vec3(const Mesh& mesh, int halfface_id)
         {
             auto normal = mesh.normal(OpenVolumeMesh::HalfFaceHandle{halfface_id});
-            return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
+            return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
         }
 
         [[nodiscard]] static inline std::array<glm::vec3, 2> edge_vertices(const Mesh& mesh, OpenVolumeMesh::EdgeHandle edge_handle)

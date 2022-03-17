@@ -85,7 +85,7 @@ namespace vOS
 
         m_renderer->set_target_framebuffer(export_framebuffer_ms, export_framebuffer);
         m_renderer->resize(export_width, export_height);
-        m_renderer->render(m_render_data, false);
+        m_renderer->render(&m_render_data, false);
 
         glFlush();
         glFinish();
@@ -320,7 +320,7 @@ namespace vOS
         m_mover.update();
 
         m_renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
-        m_renderer->render(m_render_data);
+        m_renderer->render(&m_render_data);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -434,8 +434,8 @@ namespace vOS
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                return m_renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-                //return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+                //return m_renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                return m_renderer->m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
                 return m_renderer->m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:

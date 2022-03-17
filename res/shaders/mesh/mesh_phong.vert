@@ -15,6 +15,7 @@ layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 12) in float a_is_selected;
 layout (location = 13) in float a_hovered;
 layout (location = 14) in vec3 a_vertex_normal;
+layout (location = 15) in float a_min_edge_length;
 
 const int NUM_CASCADES = 3;
 
@@ -90,7 +91,7 @@ void main()
     if (u_rounding)
     {
         float type = a_vertex_type_rounded;
-        float r = u_rounding_size * u_average_cell_size * 0.3;
+        float r = min(u_rounding_size * u_average_cell_size * 0.3, a_min_edge_length * 0.3);
         // this vertex lies on the inner triangle
         if (type == ROUNDED_VERTEX_TYPE_FACE)
         {

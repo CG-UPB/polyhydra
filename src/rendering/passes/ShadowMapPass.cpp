@@ -127,8 +127,8 @@ namespace vOS
 
     void ShadowMapPass::calculate_cascade(float near, float far)
     {
-        auto& cam = m_renderer->m_render_data.camera;
-        auto& light = m_renderer->m_render_data.light;
+        auto& cam = m_renderer->m_render_data->camera;
+        auto& light = m_renderer->m_render_data->light;
 
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(

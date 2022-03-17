@@ -52,7 +52,7 @@ namespace vOS
         m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
     }
 
-    void Renderer::render(RenderData& render_data, bool render_bg)
+    void Renderer::render(RenderData* render_data, bool render_bg)
     {
         m_render_data = render_data;
         m_is_rendering_background = render_bg;
@@ -63,13 +63,13 @@ namespace vOS
         m_target_ms->unbind();
 
         // Render Meshes
-        render_pre_pass(render_data);
+        render_pre_pass(*render_data);
 
         if (m_settings.get_mesh_mode() == ModeEnum::Only_Vertices)
         {
             if (render_bg)
             {
-                render_background(render_data);
+                render_background(*render_data);
             }
             m_target_ms->bind();
             for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
@@ -82,7 +82,7 @@ namespace vOS
                 mesh->update_vertex_buffer();
                 if (mesh->get_vao() != nullptr)
                 {
-                    m_vertex_only_pass.render(nullptr, render_data, m.first);
+                    m_vertex_only_pass.render(nullptr, *render_data, m.first);
                 }
             }
             m_target_ms->unbind();
@@ -91,12 +91,12 @@ namespace vOS
         {
             if (m_settings.get_ambient_occlusion_activated())
             {
-                render_ssao_pass(render_data);
+                render_ssao_pass(*render_data);
             }
 
             if (m_settings.get_shadows_activated())
             {
-                render_shadow_map(render_data);
+                render_shadow_map(*render_data);
             }
 
 
@@ -104,23 +104,23 @@ namespace vOS
             // Start with opaque objects
             if (render_bg)
             {
-                render_background(render_data);
+                render_background(*render_data);
             }
 
-            render_meshes(render_data);
+            render_meshes(*render_data);
 
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_target_ms,m_target);
 
             // Render transparent objects
             if (m_settings.get_transparency_activated())
             {
-                render_transparency(render_data);
+                render_transparency(*render_data);
             }
 
             // Render Selection
             if (m_settings.get_selection_activated())
             {
-                render_selection(render_data);
+                render_selection(*render_data);
             }
         }
 
@@ -303,7 +303,7 @@ namespace vOS
                 m_shadow_pass->render(vao, render_data, m.first);
             }
         }
-        m_shadow_color_filter_pass->get_framebuffer()->unbind();
+        m_shadow_pass->get_framebuffer()->unbind();
     }
 
     void Renderer::render_ssao_pass(RenderData& render_data)
