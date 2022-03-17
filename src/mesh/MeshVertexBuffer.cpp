@@ -7,6 +7,8 @@
 #include <type_traits>
 #include <limits>
 
+#define PI 3.14159265358979323846f
+
 namespace vOS
 {
     AttributeDefinitions MeshVertexBuffer::s_attribute_definitions{};
@@ -633,7 +635,7 @@ namespace vOS
                 glm::vec3 face_normal = halfface_normal_to_vec3(data.halfface_id);
                 glm::vec3 prev_face_normal = halfface_normal_to_vec3(prev_data.halfface_id);
 
-                float dihedral_angle = M_PI - VecUtil::get_angle(face_normal, prev_face_normal);
+                float dihedral_angle = PI - VecUtil::get_angle(face_normal, prev_face_normal);
                 corner_dihedral_angle_average += dihedral_angle;
 
                 glm::vec3 edge_face_center_average = (face_centers[data.halfface_id] + face_centers[prev_data.halfface_id]) * 0.5f;

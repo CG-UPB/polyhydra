@@ -3,13 +3,15 @@
 
 #include <cmath>
 
+#define PI 3.14159265358979323846f
+
 namespace vOS
 {
     CylinderMesh::CylinderMesh(int samples, float radius, float height)
     {
         std::vector<float> circle_vertices_2d;
         float half_height = height * 0.5f;
-        float step_size = (float) (2.0 * M_PI) / (float) samples;
+        float step_size = (float) (2.0 * PI) / (float) samples;
         for (int i = 0; i < samples; i++)
         {
             float angle = (float) i * step_size;
