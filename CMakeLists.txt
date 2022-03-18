@@ -76,7 +76,9 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
         ${VOLUMESHOS_SRC}/rendering/MeshMover.cpp
         ${VOLUMESHOS_SRC}/algorithms/Demo.cpp
-        ${VOLUMESHOS_SRC}/rendering/Renderer.cpp)
+        ${VOLUMESHOS_SRC}/rendering/Renderer.cpp
+        ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp
+        ${VOLUMESHOS_SRC}/util/UIUtil.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

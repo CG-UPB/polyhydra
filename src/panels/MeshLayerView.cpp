@@ -8,6 +8,7 @@
 #include <imgui_internal.h>
 #include "../util/Tooltips.h"
 #include "NewFileDialog.h"
+#include "../util/ImGuiUtil.h"
 
 namespace vOS
 {
@@ -32,15 +33,17 @@ namespace vOS
             ImGui::End();
             return;
         }
+
+        ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+
         // create a line for every loaded mesh
         int active_mesh = Window::instance().get_mesh_focus();
         for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
         {
+            ImGui::PushID(m.first);
             // name is "Mesh" with unique ID
             std::string str = "Mesh " + std::to_string(m.first);
-            char* char_type = new char[str.length()];
-
-            ImGui::RadioButton(strcpy(char_type, str.c_str()),&active_mesh, m.first);
+            ImGui::RadioButton(str.c_str(),&active_mesh, m.first);
             // if radiobutton is double-clicked, set actual mesh in focus
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
@@ -53,12 +56,11 @@ namespace vOS
             Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active now. The filter functions of "
                                         "the Toolbar will change only the active mesh");
 
-
+            ImGui::SameLine(ImGui::GetWindowWidth() - 135.0f);
 
             bool visible = Window::instance().get_mesh_visibility(m.first);
-            str = "##Visible " + std::to_string(m.first);
-            char_type = new char[str.length()];
-            ImGui::SameLine();ImGui::Checkbox(strcpy(char_type, str.c_str()), &visible);ImGui::SameLine();
+            ImGui::Checkbox("##Visible", &visible);
+            ImGui::SameLine();
             Window::instance().set_mesh_visibility(m.first, visible);
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 
@@ -69,26 +71,26 @@ namespace vOS
             m_color[1] = color.get_rgba().g;
             m_color[2] = color.get_rgba().b;
             m_color[3] = color.get_rgba().a;
-            str = "Color " + std::to_string(m.first);
-            char_type = new char[str.length()];
-            ImGui::ColorEdit4(strcpy(char_type, str.c_str()),m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
+            ImGui::ColorEdit4("Color",m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
             Window::instance().set_mesh_color(m.first, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
             // Advanced Settings
-            //ImGui::SameLine();
-            std::string str_popup = "Advanced Settings Popup " + std::to_string(m.first);
-            char* char_type_popup = new char[str_popup.length()];
-
-            std::string str_popup1 = "Advanced Settings##" + std::to_string(m.first);
-            char* char_type_popup1 = new char[str_popup1.length()];
-            if (ImGui::Button(strcpy(char_type_popup1, str_popup1.c_str())))
+            if (ImGuiUtil::icon_button("settings.png"))
             {
-                ImGui::OpenPopup(strcpy(char_type_popup, str_popup.c_str()));
+                ImGui::OpenPopup("Advanced Settings Popup");
             }
 
-            if (ImGui::BeginPopup(strcpy(char_type_popup, str_popup.c_str())))
+            ImGui::SetNextWindowSize({400.0f, 0.0f});
+            if (ImGui::BeginPopup("Advanced Settings Popup"))
             {
+                ImGuiUtil::push_bold_font();
+                ImGui::Text("Configuration");
+                ImGui::PopFont();
+                ImGuiUtil::add_padding_y(0.5f);
+
+                ImGuiUtil::icon("save.png", ImGui::GetFontSize(), true);
+                ImGui::SameLine();
                 if (ImGui::Button("Save")) {
                     NewFileDialog file_dialog;
 
@@ -96,13 +98,14 @@ namespace vOS
 
                     filename = file_dialog.saveMeshSettings("Save Mesh Settings File");
 
-                    if (filename != NULL)
+                    if (filename != nullptr)
                     {
                         Window::instance().rendering_mutex.unlock();
                         Window::instance().save_mesh_data(m.first, filename);
                         Window::instance().rendering_mutex.lock();
                     }
                 }
+                ImGui::SameLine();
                 // Load Mesh Settings to File
                 if (ImGui::Button("Load")) {
                     NewFileDialog file_dialog;
@@ -110,7 +113,7 @@ namespace vOS
                     char const *filename;
 
                     filename = file_dialog.loadMeshSettings("Save Mesh Settings File");
-                    if (filename != NULL)
+                    if (filename != nullptr)
                     {
                         Window::instance().rendering_mutex.unlock();
                         Window::instance().load_mesh_data(m.first, filename);
@@ -118,105 +121,61 @@ namespace vOS
                     }
                 }
 
+                ImGuiUtil::add_padding_y(0.5f);
+                ImGui::Separator();
+                ImGuiUtil::add_padding_y(0.5f);
+                ImGuiUtil::push_bold_font();
+                ImGui::Text("Material");
+                ImGui::PopFont();
+                ImGuiUtil::add_padding_y(0.5f);
+
                 // Phong Settings
+
+                float slider_width = 200.0f;
+                float padding_right = 20.0f;
 
                 int active_mesh = m.first;
                 // Ambient
                 ImGui::Text("Ambient:");
-                ImGui::SameLine();
                 float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
+                ImGui::SetNextItemWidth(slider_width);
+                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f);
                 Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
 
                 // Diffuse
                 ImGui::Text("Diffuse:");
-                ImGui::SameLine();
                 float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
+                ImGui::SetNextItemWidth(slider_width);
+                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f);
                 Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
 
                 // Specular
                 ImGui::Text("Specular:");
-                ImGui::SameLine();
                 float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
+                ImGui::SetNextItemWidth(slider_width);
+                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f);
                 Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
 
                 // Specular Exponent
                 ImGui::Text("Specular Exponent:");
-                ImGui::SameLine();
                 float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
+                ImGui::SetNextItemWidth(slider_width);
+                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f);
                 Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
                 ImGui::EndPopup();
             }
-//
-//            if (ImGui::CollapsingHeader("Advanced Settings")) {
-//                if (ImGui::BeginTable("split1", 1)) {
-//                    ImGui::TableNextColumn();
-//                    // Save Mesh Settings to File
-//                    if (ImGui::Button("Save")) {
-//                        NewFileDialog file_dialog;
-//
-//                        char const *filename;
-//
-//                        filename = file_dialog.saveMeshSettings("Save Mesh Settings File");
-//
-//                        Window::instance().rendering_mutex.unlock();
-//                        Window::instance().save_mesh_data(m.first, filename);
-//                        Window::instance().rendering_mutex.lock();
-//                    }
-//                    // Load Mesh Settings to File
-//                    if (ImGui::Button("Load")) {
-//                        NewFileDialog file_dialog;
-//
-//                        char const *filename;
-//
-//                        filename = file_dialog.loadMeshSettings("Save Mesh Settings File");
-//
-//                        Window::instance().rendering_mutex.unlock();
-//                        Window::instance().load_mesh_data(m.first, filename);
-//                        Window::instance().rendering_mutex.lock();
-//                    }
-//
-//                    // Phong Settings
-//
-//                    int active_mesh = m.first;
-//                    // Ambient
-//                    ImGui::Text("Ambient:");
-//                    ImGui::SameLine();
-//                    float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
-//                    ImGui::SliderFloat("Ambient", &ambient_value, 0.0f, 1.0f);
-//                    Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
-//
-//                    // Diffuse
-//                    ImGui::Text("Diffuse:");
-//                    ImGui::SameLine();
-//                    float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
-//                    ImGui::SliderFloat("Diffuse", &diffuse_value, 0.0f, 1.0f);
-//                    Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
-//
-//                    // Specular
-//                    ImGui::Text("Specular:");
-//                    ImGui::SameLine();
-//                    float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
-//                    ImGui::SliderFloat("Specular", &specular_value, 0.0f, 1.0f);
-//                    Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
-//
-//                    // Specular Exponent
-//                    ImGui::Text("Specular Exponent:");
-//                    ImGui::SameLine();
-//                    float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
-//                    ImGui::SliderFloat("Specular Exponent", &specular_exp, 0.0f, 10.0f);
-//                    Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
-//                    ImGui::EndTable();
-//                }
-//            }
-
+            ImGui::Separator();
+            ImGui::PopID();
         }
         Window::instance().rendering_mutex.unlock();
         Window::instance().set_mesh_focus(active_mesh);
         Window::instance().rendering_mutex.lock();
+
+        ImGui::PopStyleColor();
 
         ImGui::End();
     }

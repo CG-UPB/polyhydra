@@ -135,8 +135,6 @@ namespace vOS
 
                 }
             }
-
-
         }
         ImGui::End();
     }

@@ -38,7 +38,7 @@ namespace vOS
         bool m_open_file = false;
 
         bool m_selection_activated = false;
-        int m_current_selection_mode;
+        int m_current_selection_mode = Selection::Off;
         int m_manual_selection_type = 0;
         int m_previous_manual_selection_type = 0;
         int m_manual_selection_id = -1;

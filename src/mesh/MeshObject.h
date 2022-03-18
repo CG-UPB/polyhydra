@@ -151,7 +151,7 @@ namespace vOS
 
         //Rounding Variables
         bool m_rounding_activated = false;
-        float m_rounding_size = 0.3f;
+        float m_rounding_size = 0.0f;
     };
 
     class MeshObject

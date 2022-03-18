@@ -24,11 +24,12 @@ namespace vOS
 
 
     enum Selection{
-        ALL = 0,
+        Off = 0,
         Vertex = 1,
         Edge = 2,
         Face = 3,
-        CELL = 6
+        CELL = 4,
+        ALL = 5
     };
 
 }

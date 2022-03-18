@@ -4,23 +4,14 @@
 #include "../util/StringUtil.h"
 #include "MeshView.h"
 #include "../input/Input.h"
-#include "LogWindow.h"
 
 #include <cmath>
-#include <fstream>
 #include <functional>
 
 #include "imgui.h"
-#include "glm/gtx/transform.hpp"
-
-#include "../mesh/MeshObject.h"
-
-#include "../rendering/meshes/CommonMeshes.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-
 #include "stb_image_write.h"
-
 
 namespace vOS
 {
