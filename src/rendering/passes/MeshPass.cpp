@@ -72,11 +72,22 @@ namespace vOS
         m_mesh_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         m_mesh_shader->set_uniform_vec4f("u_selection_color", obj->get_data().m_selection_color.get_rgba());
         m_mesh_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
-        m_mesh_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
-        m_mesh_shader->set_uniform_mat4f("u_light_view", data.light.view);
-        m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
+
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+
+        // shadow maps
+        auto s = m_mesh_view->m_shadow_pass;
+        for(int i = 0; i < s->max_cascades; i++)
+        {
+            m_mesh_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) +"]", s->cascade_projections[i]);
+            m_mesh_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) +"]", s->cascade_views[i]);
+            m_mesh_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) +"]", s->cascade_ends[i]);
+        }
+
+        m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
+
+
 
         bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
         float wireframe_size = settings->get_wireframe_size();
@@ -92,9 +103,17 @@ namespace vOS
         // input textures
         m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
         m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
-        //m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2,m_mesh_view->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
-        m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE3,m_mesh_view->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
-        m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4,m_mesh_view->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
+        m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE2,m_mesh_view->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE3,m_mesh_view->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
+
+        // bind cascaded shadow map
+        std::vector<unsigned int> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
+                                              GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11,
+                                              GL_TEXTURE12, GL_TEXTURE13, GL_TEXTURE14, GL_TEXTURE15};
+        for(int i = 0; i < bindings.size(); i++)
+        {
+            m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", bindings[i],s->shadow_maps[i]);
+        }
 
         // wireframe mode should always be non-rounded
         if (draw_wireframe)

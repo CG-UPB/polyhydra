@@ -38,6 +38,7 @@ namespace vOS
         void set_custom_options(const SSAOOptions& s){ current_custom_options = s;};
         void set_wireframe_size(float size) { m_wireframe_size = size; };
         void set_vertex_only_size(float size) { m_vertex_only_size = size; };
+        void set_cascade_level(int level){m_current_cascade_level = level;};
 
         [[nodiscard]] bool get_selection_activated() const{return m_current_selection_activated;};
         [[nodiscard]] bool get_digging_activated() const{return m_current_digging_active;};
@@ -53,6 +54,8 @@ namespace vOS
         [[nodiscard]] SSAOOptions get_custom_options() const{return current_custom_options;};
         [[nodiscard]] float get_wireframe_size() const{return m_wireframe_size;};
         [[nodiscard]] float get_vertex_only_size() const{return m_vertex_only_size;};
+        [[nodiscard]] int get_cascade_level() const{return m_current_cascade_level;};
+
 
     private:
         GlobalViewerSettings();
@@ -64,7 +67,7 @@ namespace vOS
         int mesh_mode = Phong_Facenormals;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
         int m_current_number_passes = 12;
-        int m_current_cascade_level = 1;
+        int m_current_cascade_level = 2;
 
         // booleans for the render passes
         bool transparency_active = false;

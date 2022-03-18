@@ -10,32 +10,36 @@ namespace vOS
         m_shadow_shader = Shader::get("shadow_map");
 
         std::vector<FrameBufferAttachment> attachments =
-        {
-                FrameBufferAttachment{
-                        .internal_format    = GL_RGBA,
-                        .format             = GL_RGBA,
-                        .type               = GL_UNSIGNED_BYTE,
-                        .attachment         = GL_COLOR_ATTACHMENT0,
-                        .texture_filter     = GL_LINEAR,
-                        .texture_wrap       = GL_CLAMP_TO_EDGE
-                },
-        };
+                {
+                        FrameBufferAttachment{
+                                .internal_format    = GL_RGBA,
+                                .format             = GL_RGBA,
+                                .type               = GL_UNSIGNED_BYTE,
+                                .attachment         = GL_COLOR_ATTACHMENT0,
+                                .texture_filter     = GL_LINEAR,
+                                .texture_wrap       = GL_CLAMP_TO_EDGE
+                        },
+                };
         m_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
         unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
 
-        for(unsigned int i = 0; i < max_cascades; i++)
+        for (unsigned int i = 0; i < max_cascades; i++)
         {
-            glBindTexture(GL_TEXTURE_2D, m_shadow_maps[i]);
+            unsigned int tex[1];
+            glGenTextures(1, tex);
+            glBindTexture(GL_TEXTURE_2D, tex[0]);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            shadow_maps.push_back(tex[0]);
         }
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
-        glad_glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadow_maps[0], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
 
+        calculate_cascades(0.0, 0.0, 1);
 
     }
 
@@ -44,16 +48,13 @@ namespace vOS
         delete m_shadow_framebuffer;
     }
 
-//    void ShadowMapPass::bind_for_writing()
-//    {
-//
-//    }
+    void ShadowMapPass::bind_for_writing(int cascade_idx)
+    {
+        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[cascade_idx], 0);
 
-
-//    void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id, )
-//    {
-//
-//    }
+    }
 
     void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id)
     {
@@ -107,8 +108,9 @@ namespace vOS
         m_shadow_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
         m_shadow_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
 
+
         m_shadow_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
-        m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.view);
+        m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.projection);
         m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
 
         m_shadow_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
@@ -140,18 +142,44 @@ namespace vOS
         return m_shadow_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
     }
 
-    void ShadowMapPass::calculate_cascade(float near, float far)
+    void ShadowMapPass::calculate_cascades(float near, float far, int cascade_level)
     {
-        auto& cam = m_mesh_view->m_render_data.camera;
-        auto& light = m_mesh_view->m_render_data.light;
+        // calculate near and far plane for each cascade
+        for (int i = 1; i <= cascade_level; i++)
+        {
+            cascade_ends.push_back( (float) i / (float)cascade_level * far);
+        }
+
+        // calculate frustum coordiantes for each cascade
+        float n;
+        float f;
+        for (int i = 0; i < cascade_level; i++)
+        {
+            if (i == 0)
+            {
+                n = near;
+                f = cascade_ends[i + 1];
+            } else
+            {
+                n = cascade_ends[i];
+                f = cascade_ends[i + 1];
+            }
+            calculate_cascade(n, f, i);
+        }
+    }
+
+    void ShadowMapPass::calculate_cascade(float near, float far, int i)
+    {
+        auto &cam = m_mesh_view->m_render_data.camera;
+        auto &light = m_mesh_view->m_render_data.light;
 
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(
-                (float)glm::radians(cam.zoom),
-                (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth,
+                (float) glm::radians(cam.zoom),
+                (float) m_mesh_view->m_viewportPanelHeight / (float) m_mesh_view->m_viewportPanelWidth,
                 near,
                 far
-                );
+        );
 
 
         std::vector<glm::vec4> frustum_corners;
@@ -183,9 +211,10 @@ namespace vOS
         {
             for (unsigned int y = 0; y < 2; ++y)
             {
-                for(unsigned int z = 0; z < 2; ++z)
+                for (unsigned int z = 0; z < 2; ++z)
                 {
-                    glm::vec4 corner = inverse * glm::vec4(2.0f * (float)x - 1.0f, 2.0f * (float)y - 1.0f, 2.0f * (float)z - 1.0f, 1.0f);
+                    glm::vec4 corner = inverse * glm::vec4(2.0f * (float) x - 1.0f, 2.0f * (float) y - 1.0f,
+                                                           2.0f * (float) z - 1.0f, 1.0f);
                     frustum_corners.push_back(corner / corner.w);
                 }
             }
@@ -200,10 +229,8 @@ namespace vOS
 
         auto light_dir = glm::normalize(light.light_dir);
         light.position = center + light_dir;
-        //light.light_dir = center + light_dir;
         const auto light_view = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
-        //const auto light_view = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), light_dir, glm::vec3(0.0f, 1.0f, 0.0f));
-        light.view = light_view;
+        cascade_views.push_back(light_view);
 
         float min_x = std::numeric_limits<float>::max();
         float max_x = std::numeric_limits<float>::min();
@@ -239,15 +266,14 @@ namespace vOS
             max_z *= z_mult;
         }
         const glm::mat4 light_projection = glm::ortho(min_x, max_x, min_y, max_y, min_z, max_z);
-        light.projection = light_projection;
+        cascade_projections.push_back(light_projection);
     }
 
     void ShadowMapPass::clear_cascades()
     {
-        m_cascade_projections.clear();
-        m_cascade_views.clear();
+        cascade_ends.clear();
+        cascade_views.clear();
+        cascade_projections.clear();
     }
-
-
 
 }

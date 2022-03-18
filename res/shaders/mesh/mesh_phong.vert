@@ -129,7 +129,14 @@ void main()
 
     // Cascaded Shadowmap
     int cascade_level = 1;
-    (u_cascade_level < MAX_CASCADE_LEVEL) ? cascade_level = u_cascade_level : cascade_level = MAX_CASCADE_LEVEL;
+    if(u_cascade_level < MAX_CASCADE_LEVEL)
+    {
+        cascade_level = u_cascade_level;
+    }
+    else
+    {
+        cascade_level = MAX_CASCADE_LEVEL;
+    }
 
     for(int i = 0; i < cascade_level; i++)
     {

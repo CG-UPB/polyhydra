@@ -34,13 +34,13 @@ uniform float u_spec_exponent;
 
 uniform float peel_depth;
 uniform int u_cascade_level;
+uniform float u_cascade_ends[MAX_CASCADE_LEVEL];
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
-uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
-uniform float u_cascade_ends[MAX_CASCADE_LEVEL];
 uniform sampler2D u_transparent_shadow_texture;
 uniform sampler2D u_color_filter_texture;
+uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
 
 out vec4 FragColor;
 
@@ -86,7 +86,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
 
     for(int i = 0; i < 4; i++)
     {
-        if(texture(u_shadow_texture, proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
+        if(texture(u_shadow_texture[cascade_idx], proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
         {
             shadow += 0.25;
         }
@@ -207,7 +207,14 @@ void main()
         // calculate cascade level
         int cascade_idx = 0;
         int cascade_level = 1;
-        (u_cascade_level < MAX_CASCADE_LEVEL) ? cascade_level = u_cascade_level : cascade_level = MAX_CASCADE_LEVEL;
+        if(u_cascade_level < MAX_CASCADE_LEVEL)
+        {
+            cascade_level = u_cascade_level;
+        }
+        else
+        {
+            cascade_level = MAX_CASCADE_LEVEL;
+        }
         for(int i = 0; i < cascade_level; i++)
         {
             if(v_clipspace_z <= u_cascade_ends[i])
@@ -216,19 +223,19 @@ void main()
                 break;
             }
         }
-        shadow = shadow_calculation(v_pos_ls, bias, cascade_idx);
+        shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
 
-        float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
-        transparent_shadow = 0.0;
-        if (transparent_shadow != 0.0)
-        {
-            if (shadow == 0.0)
-            {
-                // if pixel only lays in transparent shadow, then apply color filter
-                light_color = light_color * color_filter(v_pos_ls);
-                shadow = 1.0;
-            }
-        }
+//        float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);
+//        transparent_shadow = 0.0;
+//        if (transparent_shadow != 0.0)
+//        {
+//            if (shadow == 0.0)
+//            {
+//                // if pixel only lays in transparent shadow, then apply color filter
+//                light_color = light_color * color_filter(v_pos_ls);
+//                shadow = 1.0;
+//            }
+//        }
     }
 
     // Phong Shading

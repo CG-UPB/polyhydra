@@ -337,37 +337,38 @@ namespace vOS
 
         // calculate all cascade matrices
         m_shadow_pass->clear_cascades();
-        int cascade_level = 1;
+        int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
+        cascade_level = 1;
         auto cam = m_render_data.camera;
+        m_shadow_pass->calculate_cascades(cam.near, cam.far, cascade_level);
 
-        float max = cam.far - cam.near;
         for(int i = 0; i < cascade_level; i++)
         {
-            float near = cam.near + (float)i * (max / (float)cascade_level);
-            float far = cam.near + (float)(i + 1) * (max / (float)cascade_level);
-            m_shadow_pass->calculate_cascade(cam.near, cam.far / 2);
+            m_shadow_pass->bind_for_writing(i);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            {
+                auto mesh = m.second;
+                if (!mesh->get_data().m_visible)
+                {
+                    continue;
+                }
+                mesh->update_vertex_buffer();
+                VertexArrayObject* vao = mesh->get_vao();
+                if (mesh->get_data().m_rounding_activated)
+                {
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
+                if (vao != nullptr)
+                {
+                    m_render_data.light.view = m_shadow_pass->cascade_views[i];
+                    m_render_data.light.projection = m_shadow_pass->cascade_projections[i];
+                    m_shadow_pass->render(vao, m_render_data, m.first);
+                }
+            }
         }
+        m_shadow_pass->get_framebuffer()->unbind();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
-        {
-            auto mesh = m.second;
-            if (!mesh->get_data().m_visible)
-            {
-                continue;
-            }
-            mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
-            if (mesh->get_data().m_rounding_activated)
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_shadow_pass->render(vao, m_render_data, m.first);
-            }
-        }
-        m_shadow_color_filter_pass->get_framebuffer()->unbind();
 
         // render transparent shadow map
 //        m_transparent_shadow_pass->get_framebuffer()->bind();
@@ -787,7 +788,7 @@ namespace vOS
 
             if (GlobalViewerSettings::getInstance()->get_shadows_activated())
             {
-                //render_shadow_map();
+                render_shadow_map();
             }
 
 
