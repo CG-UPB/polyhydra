@@ -22,7 +22,7 @@ namespace vOS
         {
             std::string message = "Failed to load texture: ";
             message.append(file_path.string());
-            throw std::exception(message.c_str());
+            throw std::runtime_error(message.c_str());
         }
         int src_format = m_n_channels == 4 ? GL_RGBA : GL_RGB;
         glGenTextures(1, &m_texture_id);

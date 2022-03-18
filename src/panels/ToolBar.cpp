@@ -139,7 +139,7 @@ namespace vOS
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
         ImGui::Combo("  ", &m_manual_selection_type, element_selection_types,
                      IM_ARRAYSIZE(element_selection_types), IM_ARRAYSIZE(element_selection_types));
-        ImGui::Text("");
+        ImGui::Text(" ");
         ImGui::SetNextItemWidth(slider_width);
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
         ImGui::InputInt("##ManualSelectionID", &m_manual_selection_id);
@@ -254,7 +254,7 @@ namespace vOS
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
-                ImGui::Text("");
+                ImGui::Text(" ");
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::Checkbox("Lock", &m_slicer_locked);
                 Window::instance().set_mesh_slice_level(active_mesh, m_slider_slicer);
