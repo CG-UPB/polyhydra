@@ -28,10 +28,10 @@ namespace vOS
         [[nodiscard]] unsigned int get_shadow_map() const;
 
         static const int max_cascades = 12;
-        std::vector<unsigned int> shadow_maps;
-        std::vector<float> cascade_ends;
-        std::vector<glm::mat4> cascade_views;
-        std::vector<glm::mat4> cascade_projections;
+        unsigned int shadow_maps[max_cascades];
+        float cascade_ends[max_cascades];
+        glm::mat4 cascade_views[max_cascades];
+        glm::mat4 cascade_projections[max_cascades];
 
     private:
         MeshView* m_mesh_view;

@@ -7,6 +7,8 @@ namespace vOS
 {
     ShadowMapPass::ShadowMapPass(MeshView *mesh_view, int width, int height) : m_mesh_view(mesh_view)
     {
+        clear_cascades();
+
         m_shadow_shader = Shader::get("shadow_map");
 
         std::vector<FrameBufferAttachment> attachments =
@@ -23,24 +25,22 @@ namespace vOS
         m_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
         unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
 
-        for (unsigned int i = 0; i < max_cascades; i++)
+        for(unsigned int i = 0; i < max_cascades; i++)
         {
             unsigned int tex[1];
             glGenTextures(1, tex);
             glBindTexture(GL_TEXTURE_2D, tex[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_LINEAR);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            shadow_maps.push_back(tex[0]);
+            shadow_maps[i] = tex[0];
         }
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
-
-        calculate_cascades(0.0, 0.0, 1);
-
     }
 
     ShadowMapPass::~ShadowMapPass()
@@ -147,7 +147,7 @@ namespace vOS
         // calculate near and far plane for each cascade
         for (int i = 1; i <= cascade_level; i++)
         {
-            cascade_ends.push_back( (float) i / (float)cascade_level * far);
+            cascade_ends[i-1] = (float) i / (float)cascade_level * far;
         }
 
         // calculate frustum coordiantes for each cascade
@@ -158,11 +158,11 @@ namespace vOS
             if (i == 0)
             {
                 n = near;
-                f = cascade_ends[i + 1];
+                f = cascade_ends[i];
             } else
             {
-                n = cascade_ends[i];
-                f = cascade_ends[i + 1];
+                n = cascade_ends[i - 1];
+                f = cascade_ends[i];
             }
             calculate_cascade(n, f, i);
         }
@@ -170,8 +170,8 @@ namespace vOS
 
     void ShadowMapPass::calculate_cascade(float near, float far, int i)
     {
-        auto &cam = m_mesh_view->m_render_data.camera;
-        auto &light = m_mesh_view->m_render_data.light;
+        auto& cam = m_mesh_view->m_render_data.camera;
+        auto& light = m_mesh_view->m_render_data.light;
 
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(
@@ -229,8 +229,7 @@ namespace vOS
 
         auto light_dir = glm::normalize(light.light_dir);
         light.position = center + light_dir;
-        const auto light_view = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
-        cascade_views.push_back(light_view);
+        cascade_views[i] = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
         float min_x = std::numeric_limits<float>::max();
         float max_x = std::numeric_limits<float>::min();
@@ -241,7 +240,7 @@ namespace vOS
 
         for (auto &c: frustum_corners)
         {
-            auto transformed_corner = light_view * c;
+            auto transformed_corner = cascade_views[i] * c;
             min_x = std::min(min_x, transformed_corner.x);
             max_x = std::max(max_x, transformed_corner.x);
             min_y = std::min(min_y, transformed_corner.y);
@@ -265,15 +264,14 @@ namespace vOS
         {
             max_z *= z_mult;
         }
-        const glm::mat4 light_projection = glm::ortho(min_x, max_x, min_y, max_y, min_z, max_z);
-        cascade_projections.push_back(light_projection);
+        cascade_projections[i] = glm::ortho(min_x, max_x, min_y, max_y, min_z, max_z);
     }
 
     void ShadowMapPass::clear_cascades()
     {
-        cascade_ends.clear();
-        cascade_views.clear();
-        cascade_projections.clear();
+        std::fill_n(cascade_ends, max_cascades, 0.0);
+        std::fill_n(cascade_views, max_cascades, glm::mat4(0));
+        std::fill_n(cascade_projections, max_cascades, glm::mat4(0));
     }
 
 }
