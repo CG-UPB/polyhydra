@@ -20,7 +20,7 @@ namespace vOS
                                 .attachment         = GL_COLOR_ATTACHMENT0,
                                 .texture_filter     = GL_LINEAR,
                                 .texture_wrap       = GL_CLAMP_TO_EDGE
-                        },
+                        }
                 };
         m_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
         unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
@@ -33,14 +33,22 @@ namespace vOS
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             shadow_maps[i] = tex[0];
         }
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
+
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        if(status != GL_FRAMEBUFFER_COMPLETE)
+        {
+            std::cout << "Error: " << status << std::endl;
+            exit(1);
+        }
     }
 
     ShadowMapPass::~ShadowMapPass()
@@ -58,6 +66,8 @@ namespace vOS
 
     void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id)
     {
+        int i = cascade_idx;
+
         // Get Mesh
         MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
         if (obj == nullptr)
@@ -109,8 +119,11 @@ namespace vOS
         m_shadow_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
 
 
-        m_shadow_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
-        m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.projection);
+//        m_shadow_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
+//        m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.projection);
+//        m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
+        m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
+        m_shadow_shader->set_uniform_mat4f("u_light_view", cascade_views[i]);
         m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
 
         m_shadow_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
@@ -130,6 +143,25 @@ namespace vOS
     void ShadowMapPass::resize_buffers(int width, int height)
     {
         m_shadow_framebuffer->resize(width, height);
+        glDeleteTextures((int) max_cascades,  shadow_maps);
+        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
+
+        for(unsigned int i = 0; i < max_cascades; i++)
+        {
+            unsigned int tex[1];
+            glGenTextures(1, tex);
+            glBindTexture(GL_TEXTURE_2D, tex[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            shadow_maps[i] = tex[0];
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
     }
 
     FrameBufferObject *ShadowMapPass::get_framebuffer() const
@@ -228,7 +260,8 @@ namespace vOS
         center /= frustum_corners.size();
 
         auto light_dir = glm::normalize(light.light_dir);
-        light.position = center + light_dir;
+        //light.position = center + light_dir;
+        light_positions[i] = center + light_dir;
         cascade_views[i] = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
         float min_x = std::numeric_limits<float>::max();
@@ -272,6 +305,6 @@ namespace vOS
         std::fill_n(cascade_ends, max_cascades, 0.0);
         std::fill_n(cascade_views, max_cascades, glm::mat4(0));
         std::fill_n(cascade_projections, max_cascades, glm::mat4(0));
+        std::fill_n(light_positions, max_cascades, glm::vec3(0));
     }
-
 }

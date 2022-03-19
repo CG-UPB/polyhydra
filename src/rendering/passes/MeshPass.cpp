@@ -87,8 +87,6 @@ namespace vOS
 
         m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
 
-
-
         bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
         float wireframe_size = settings->get_wireframe_size();
         bool use_vertex_normals = settings->get_mesh_mode() == Phong_Vertexnormals;
@@ -110,9 +108,11 @@ namespace vOS
         std::vector<unsigned int> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
                                               GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11,
                                               GL_TEXTURE12, GL_TEXTURE13, GL_TEXTURE14, GL_TEXTURE15};
-        for(int i = 0; i < bindings.size(); i++)
+        for(int i = 0; i < s->max_cascades; i++)
         {
-            m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", bindings[i],s->shadow_maps[i]);
+            //m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", bindings[i],s->shadow_maps[i]);
+            glActiveTexture(bindings[i]);
+            glBindTexture(GL_TEXTURE_2D,  s->shadow_maps[i]);
         }
 
         // wireframe mode should always be non-rounded

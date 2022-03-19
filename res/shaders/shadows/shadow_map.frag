@@ -48,6 +48,6 @@ void main()
         discard;
     }
     FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
-    FragColor = vec4(0.4, 0.9, 0.1, 1.0);
+    //FragColor = vec4(0.4, 0.9, 0.1, 1.0);
 
 }

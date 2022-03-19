@@ -1,6 +1,7 @@
 #version 330 core
 
 #define FLT_MAX 3.402823466e+38
+const int MAX_CASCADE_LEVEL = 12;
 
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 8) out;

@@ -223,6 +223,7 @@ void main()
                 break;
             }
         }
+        cascade_idx = 0;
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
 
 //        float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);

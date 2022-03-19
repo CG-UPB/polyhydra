@@ -300,7 +300,7 @@ namespace vOS
     {
         m_pre_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
         m_pre_pass->clear_position_buffer(m_render_data);
         for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
         {
@@ -332,7 +332,6 @@ namespace vOS
     void MeshView::render_shadow_map()
     {
         // render opaque shadow map
-        m_shadow_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
 
         // calculate all cascade matrices
@@ -344,7 +343,10 @@ namespace vOS
 
         for(int i = 0; i < cascade_level; i++)
         {
+            m_shadow_pass->get_framebuffer()->bind();
+            m_shadow_pass->set_cascade_index(i);
             m_shadow_pass->bind_for_writing(i);
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
             {
@@ -361,14 +363,11 @@ namespace vOS
                 }
                 if (vao != nullptr)
                 {
-                    m_render_data.light.view = m_shadow_pass->cascade_views[i];
-                    m_render_data.light.projection = m_shadow_pass->cascade_projections[i];
                     m_shadow_pass->render(vao, m_render_data, m.first);
                 }
             }
+            m_shadow_pass->get_framebuffer()->unbind();
         }
-        m_shadow_pass->get_framebuffer()->unbind();
-
 
         // render transparent shadow map
 //        m_transparent_shadow_pass->get_framebuffer()->bind();
@@ -939,7 +938,8 @@ namespace vOS
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
                 //return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-                return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+                //return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
+                return m_shadow_pass->shadow_maps[0];
             case SSAO_PRE:
                 return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:
