@@ -1,6 +1,6 @@
 #version 330 core
 
-const int MAX_CASCADE_LEVEL = 12;
+const int MAX_CASCADE_LEVEL = 8;
 
 in vec3 v_pos;
 in vec3 v_normal;
@@ -224,6 +224,7 @@ void main()
             }
         }
         cascade_idx = 0;
+        //cascade_idx = 0;
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
 
 //        float transparent_shadow = transparent_shadow_calculation(v_pos_ls, bias);

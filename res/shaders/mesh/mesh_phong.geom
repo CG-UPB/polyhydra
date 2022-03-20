@@ -1,7 +1,7 @@
 #version 330 core
 
 #define FLT_MAX 3.402823466e+38
-const int MAX_CASCADE_LEVEL = 12;
+const int MAX_CASCADE_LEVEL = 8;
 
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 8) out;
@@ -33,7 +33,7 @@ uniform mat4 u_view;
 out vec3 v_pos;
 out vec3 v_normal;
 out vec4 v_color;
-out vec4 v_pos_ls;
+out vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 flat out int v_visible;
 out float v_clipspace_z;
 

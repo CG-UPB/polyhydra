@@ -28,7 +28,7 @@ namespace vOS
         [[nodiscard]] FrameBufferObject* get_framebuffer() const;
         [[nodiscard]] unsigned int get_shadow_map() const;
 
-        static const int max_cascades = 12;
+        static const int max_cascades = 8;
         int cascade_idx = 0;
         unsigned int shadow_maps[max_cascades];
         float cascade_ends[max_cascades];

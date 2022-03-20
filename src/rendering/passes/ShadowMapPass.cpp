@@ -27,9 +27,9 @@ namespace vOS
 
         for(unsigned int i = 0; i < max_cascades; i++)
         {
-            unsigned int tex[1];
-            glGenTextures(1, tex);
-            glBindTexture(GL_TEXTURE_2D, tex[0]);
+            unsigned int tex;
+            glGenTextures(1, &tex);
+            glBindTexture(GL_TEXTURE_2D, tex);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -37,7 +37,7 @@ namespace vOS
 //            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            shadow_maps[i] = tex[0];
+            shadow_maps[i] = tex;
         }
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);

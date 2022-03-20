@@ -72,6 +72,8 @@ namespace vOS
         m_mesh_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         m_mesh_shader->set_uniform_vec4f("u_selection_color", obj->get_data().m_selection_color.get_rgba());
         m_mesh_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+        m_mesh_shader->set_uniform_int("u_cascade_level", settings->get_cascade_level());
+
 
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
@@ -106,13 +108,10 @@ namespace vOS
 
         // bind cascaded shadow map
         std::vector<unsigned int> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
-                                              GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11,
-                                              GL_TEXTURE12, GL_TEXTURE13, GL_TEXTURE14, GL_TEXTURE15};
+                                              GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
         for(int i = 0; i < s->max_cascades; i++)
         {
-            //m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", bindings[i],s->shadow_maps[i]);
-            glActiveTexture(bindings[i]);
-            glBindTexture(GL_TEXTURE_2D,  s->shadow_maps[i]);
+            m_mesh_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],s->shadow_maps[i]);
         }
 
         // wireframe mode should always be non-rounded
