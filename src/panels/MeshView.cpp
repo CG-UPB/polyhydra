@@ -337,7 +337,7 @@ namespace vOS
         // calculate all cascade matrices
         m_shadow_pass->clear_cascades();
         int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
-        cascade_level = 1;
+        cascade_level = 5;
         auto cam = m_render_data.camera;
         m_shadow_pass->calculate_cascades(cam.near, cam.far, cascade_level);
 

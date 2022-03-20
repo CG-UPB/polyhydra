@@ -58,10 +58,7 @@ namespace vOS
 
     void ShadowMapPass::bind_for_writing(int cascade_idx)
     {
-        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
-        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[cascade_idx], 0);
-
     }
 
     void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id)
@@ -80,7 +77,6 @@ namespace vOS
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_CLAMP);
 
-        m_shadow_framebuffer->bind();
         m_shadow_shader->bind();
 
 
@@ -132,7 +128,6 @@ namespace vOS
         vao->draw();
 
         m_shadow_shader->unbind();
-        m_shadow_framebuffer->unbind();
 
         glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);

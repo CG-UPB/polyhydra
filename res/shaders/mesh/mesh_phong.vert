@@ -1,6 +1,7 @@
 #version 330 core
 
-const int MAX_CASCADE_LEVEL = 12;
+const int MAX_CASCADE_LEVEL = 8;
+const int HALF_MAX_CASCADE_LEVEL = MAX_CASCADE_LEVEL / 2;
 
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
@@ -21,7 +22,8 @@ layout (location = 14) in vec3 a_vertex_normal;
 out vec3 v_Pos;
 out vec3 v_Normal;
 out vec4 v_Color;
-out vec4 v_LightSpacePos[MAX_CASCADE_LEVEL];
+out mat4 v_LightSpacePos0;
+out mat4 v_LightSpacePos1;
 out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
@@ -127,22 +129,24 @@ void main()
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(view_transform))) * normal;
 
-    // Cascaded Shadowmap
-    int cascade_level = 1;
-    if(u_cascade_level < MAX_CASCADE_LEVEL)
-    {
-        cascade_level = u_cascade_level;
-    }
-    else
-    {
-        cascade_level = MAX_CASCADE_LEVEL;
-    }
+    // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
+    mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
+    v_LightSpacePos0[0] = light_space_mat * vec4(pos, 1.0);
+    light_space_mat = u_light_projection[1] * u_light_view[1] * u_light_transform;
+    v_LightSpacePos0[1] = light_space_mat * vec4(pos, 1.0);
+    light_space_mat = u_light_projection[2] * u_light_view[2] * u_light_transform;
+    v_LightSpacePos0[2] = light_space_mat * vec4(pos, 1.0);
+    light_space_mat = u_light_projection[3] * u_light_view[3] * u_light_transform;
+    v_LightSpacePos0[3] = light_space_mat * vec4(pos, 1.0);
+    light_space_mat = u_light_projection[4] * u_light_view[4] * u_light_transform;
+    v_LightSpacePos1[0] = light_space_mat * vec4(pos, 1.0);
+    light_space_mat = u_light_projection[5] * u_light_view[5] * u_light_transform;
+    v_LightSpacePos1[1] = light_space_mat * vec4(pos, 1.0);
+    light_space_mat = u_light_projection[6] * u_light_view[6] * u_light_transform;
+    v_LightSpacePos1[2] = light_space_mat * vec4(pos, 1.0);
+    light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
+    v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
 
-    for(int i = 0; i < cascade_level; i++)
-    {
-        mat4 light_space_mat = u_light_projection[i] * u_light_view[i] * u_light_transform;
-        v_LightSpacePos[i] = light_space_mat * vec4(pos, 1.0);
-    }
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
 
     float peel_alpha = (u_peel_depth - a_peel_depth);
