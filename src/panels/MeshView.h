@@ -47,6 +47,7 @@ namespace vOS
         static const int SSAO_BLUR              = 3;
         static const int TRANSPARENCY_ACCUM     = 4;
         static const int TRANSPARENCY_REVEAL    = 5;
+        static const int SHADOW_MAP             = 6;
 
         static const int SELECTION_TYPE_VERTEX = 1;
         static const int SELECTION_TYPE_EDGE = 2;
@@ -71,6 +72,7 @@ namespace vOS
         // selected texture for rendering (mostly for debugging)
         int m_viewport_texture = FINAL_IMAGE;
         int m_transparency = WEIGHTED_BLENDED;
+        int m_shadow_map_cascade_level_debug = 0;
 
         // Other Rendering Components
         MeshMover m_mover;

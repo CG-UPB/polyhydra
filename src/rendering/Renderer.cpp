@@ -211,10 +211,13 @@ namespace vOS
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            for (const auto [mesh_id, mesh] : Window::instance().get_mesh_list())
             {
-                auto mesh = m.second;
-                m_selection_pass.render_mesh(mesh, render_data, m.first);
+                if (!mesh->get_data().m_visible)
+                {
+                    continue;
+                }
+                m_selection_pass.render_mesh(mesh, render_data, mesh_id);
             }
         }
         m_selectionFrameBuffer->unbind();

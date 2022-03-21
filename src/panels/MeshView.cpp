@@ -413,6 +413,15 @@ namespace vOS
             {
                 m_viewport_texture = TRANSPARENCY_REVEAL;
             }
+            if (ImGui::RadioButton("Shadow Map", m_viewport_texture == SHADOW_MAP))
+            {
+                m_viewport_texture = SHADOW_MAP;
+            }
+            if (m_viewport_texture == SHADOW_MAP)
+            {
+                int max = GlobalViewerSettings::getInstance()->get_cascade_level();
+                ImGui::SliderInt("Cascade Level", &m_shadow_map_cascade_level_debug, 0, max - 1);
+            }
         }
         ImGui::End();
         m_renderer->m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
@@ -425,8 +434,7 @@ namespace vOS
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                //return m_renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
-                return m_renderer->m_shadow_pass->shadow_maps[0];
+                return m_renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
                 return m_renderer->m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:
@@ -435,6 +443,8 @@ namespace vOS
                 return m_renderer->m_transparency_pass_wb->get_accum_texture();
             case TRANSPARENCY_REVEAL:
                 return m_renderer->m_transparency_pass_wb->get_reveal_texture();
+            case SHADOW_MAP:
+                return m_renderer->m_shadow_pass->shadow_maps[m_shadow_map_cascade_level_debug];
         }
         return -1;
     }
