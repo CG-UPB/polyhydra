@@ -92,9 +92,17 @@ namespace vOS
         m_mesh_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
 
 
-        float bias_min = 0.003;
-        float bias_max = 0.008;
+        float bias_min = 0.000005;
+        float bias_max = 0.004;
         float bias_modifier = 0.1;
+
+//        if(ImGui::Begin("Shadow"))
+//        {
+//            ImGui::SliderFloat("bias_min", &bias_min, 0.000001, 0.005f);
+//            ImGui::SliderFloat("bias_max", &bias_max, 0.00005f, 0.005f);
+//            ImGui::End();
+//        }
+
         m_mesh_shader->set_uniform_float("u_bias_min", bias_min);
         m_mesh_shader->set_uniform_float("u_bias_max", bias_max);
         m_mesh_shader->set_uniform_float("u_bias_modifier", bias_modifier);

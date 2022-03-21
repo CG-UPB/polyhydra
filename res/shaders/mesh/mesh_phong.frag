@@ -221,7 +221,7 @@ void main()
         }
         for(int i = 0; i < cascade_level ; ++i)
         {
-            if(v_clipspace_z <= u_cascade_ends[i] - 5.0)
+            if(v_clipspace_z <= u_cascade_ends[i])
             {
                 cascade_idx = i;
                 i = cascade_level;
@@ -234,7 +234,7 @@ void main()
         }
 
         // calculate bias (depending on cascade level)
-        float bias = max(u_bias_max * (max(0.0, dot(n, l))), u_bias_min);
+        float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
 
         //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
 

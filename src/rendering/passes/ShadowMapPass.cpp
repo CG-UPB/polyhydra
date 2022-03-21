@@ -270,7 +270,7 @@ namespace vOS
         float max_y = std::numeric_limits<float>::min();
         float min_z = std::numeric_limits<float>::max();
         float max_z = std::numeric_limits<float>::min();
-        float a = 5.0f;
+        float a = 10.0f;
 
         for (auto &c: frustum_corners)
         {
