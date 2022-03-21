@@ -41,6 +41,7 @@ namespace vOS
             constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
             shadow_maps[i] = tex;
+
         }
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
@@ -84,10 +85,7 @@ namespace vOS
 
 
         // Transform
-        glm::mat4 light_projection = data.light.projection;
-        glm::mat4 light_view = data.light.view;
         glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
-        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations
@@ -118,12 +116,9 @@ namespace vOS
         m_shadow_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
 
 
-//        m_shadow_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
-//        m_shadow_shader->set_uniform_mat4f("u_light_view", data.light.projection);
-//        m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
         m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
         m_shadow_shader->set_uniform_mat4f("u_light_view", cascade_views[i]);
-        m_shadow_shader->set_uniform_mat4f("u_transform", l_transform);
+        m_shadow_shader->set_uniform_mat4f("u_transform", transform);
 
         m_shadow_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
         m_shadow_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
@@ -146,18 +141,22 @@ namespace vOS
 
         for(unsigned int i = 0; i < max_cascades; i++)
         {
-            unsigned int tex[1];
-            glGenTextures(1, tex);
-            glBindTexture(GL_TEXTURE_2D, tex[0]);
+            unsigned int tex;
+            glGenTextures(1, &tex);
+            glBindTexture(GL_TEXTURE_2D, tex);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            shadow_maps[i] = tex[0];
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+            constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+            shadow_maps[i] = tex;
         }
+
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
     }

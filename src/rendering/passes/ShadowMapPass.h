@@ -2,13 +2,12 @@
 #pragma once
 
 #include "RenderPass.h"
+#include "../../panels/MeshView.h"
 #include <vector>
-#include "../Renderer.h"
 
 
 namespace vOS
 {
-    class Renderer;
 
     class ShadowMapPass : public RenderPass
     {
@@ -38,7 +37,6 @@ namespace vOS
         glm::vec3 light_positions[max_cascades];
 
     private:
-
         Renderer* m_renderer;
         Shader* m_shadow_shader = nullptr;
         FrameBufferObject* m_shadow_framebuffer = nullptr;

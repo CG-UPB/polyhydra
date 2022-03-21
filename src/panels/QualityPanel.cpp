@@ -90,6 +90,12 @@ namespace vOS
             GlobalViewerSettings::getInstance()->set_shadows_activated(shadows);
             ImGui::SameLine();
             Tooltips::HelpMarkerWithQuestionMark("This checkbox activates shadows");
+            if(shadows)
+            {
+                int cascades = GlobalViewerSettings::getInstance()->get_cascade_level();
+                ImGui::SliderInt("Cascades", &cascades, 1, 8);
+                GlobalViewerSettings::getInstance()->set_cascade_level(cascades);
+            }
 
             if (mesh_mode == Wireframe || mesh_mode == Only_Vertices)
             {
