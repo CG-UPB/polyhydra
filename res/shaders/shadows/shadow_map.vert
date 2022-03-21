@@ -13,6 +13,9 @@ layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 12) in float a_is_selected;
+layout (location = 13) in float a_hovered;
+layout (location = 14) in vec3 a_vertex_normal;
+layout (location = 15) in float a_min_edge_length;
 
 const int NUM_CASCADES = 3;
 
@@ -23,7 +26,7 @@ flat out int v_isTriangle;
 uniform bool u_rounding;
 uniform float u_rounding_size;
 uniform float u_cell_size;
-uniform int u_peel_depth;
+uniform float u_peel_depth;
 uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;
@@ -74,7 +77,7 @@ void main()
     if (u_rounding)
     {
         float type = a_vertex_type_rounded;
-        float r = u_rounding_size * u_average_cell_size * 0.3;
+        float r = min(u_rounding_size * u_average_cell_size * 0.3, a_min_edge_length * 0.3);
         // this vertex lies on the inner triangle
         if (type == ROUNDED_VERTEX_TYPE_FACE)
         {

@@ -114,6 +114,7 @@ namespace vOS
         m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->get_mesh_mode() == Wireframe);
         m_shadow_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
         m_shadow_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
+        m_shadow_shader->set_uniform_float("u_wireframe_size", settings->get_wireframe_size());
 
 
         m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
@@ -123,7 +124,15 @@ namespace vOS
         m_shadow_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
         m_shadow_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
 
-        vao->draw();
+        if(settings->get_mesh_mode() == Wireframe)
+        {
+            obj->get_mvb()->get_vao_by_face()->draw();
+        }
+        else
+        {
+            vao->draw();
+        }
+
 
         m_shadow_shader->unbind();
 
