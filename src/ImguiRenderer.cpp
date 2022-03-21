@@ -14,6 +14,7 @@
 #include "Window.h"
 #include "panels/LogWindow.h"
 #include "rendering/gl/Shader.h"
+#include "util/UIUtil.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -37,11 +38,13 @@ namespace vOS
         initImGui();
         initImGuiStyle();
         Shader::load_all();
+        UIUtil::load_all();
     }
 
     ImguiRenderer::~ImguiRenderer()
     {
         Shader::delete_all();
+        UIUtil::delete_all();
         VertexArrayObject::clean_up();
 
         // Cleanup
@@ -97,7 +100,7 @@ namespace vOS
         }
 
         GLFWimage images[1];
-        images[0].pixels = stbi_load("../res/logo.png", &images[0].width, &images[0].height, 0, 4);
+        images[0].pixels = stbi_load("../res/icons/logo.png", &images[0].width, &images[0].height, 0, 4);
         glfwSetWindowIcon(m_window, 1, images);
         stbi_image_free(images[0].pixels);
 
@@ -145,9 +148,6 @@ namespace vOS
 
     void ImguiRenderer::initImGuiStyle()
     {
-        // Font
-        FS_NAMESPACE::path fontPath = FileManager::get_resource_path() / "fonts" / "Roboto-Regular.ttf";
-        ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 18.0f);
         ImGuiStyle& style = ImGui::GetStyle();
 
         // Rounding
@@ -157,7 +157,7 @@ namespace vOS
         style.PopupRounding = 6.0f;
         style.WindowPadding = {20.0f, 20.0f};
         style.FramePadding = {10.0f, 4.0f};
-        style.ItemSpacing = {12.0f, 6.0f};
+        style.ItemSpacing = {12.0f, 10.0f};
         style.TabRounding = 4.0f;
         style.FrameBorderSize = 1.0f;
         style.TabBorderSize = 1.0f;

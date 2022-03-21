@@ -18,7 +18,6 @@ namespace vOS
             bool active = true;
             float size = 0.3f;
         } rounding;
-
         Camera camera;
         Light light;
     };

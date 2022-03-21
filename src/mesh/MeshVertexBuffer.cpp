@@ -5,6 +5,9 @@
 #include "MeshProperties.h"
 #include <unordered_set>
 #include <type_traits>
+#include <limits>
+
+#define PI 3.14159265358979323846f
 
 namespace vOS
 {
@@ -28,6 +31,7 @@ namespace vOS
         define_attribute(Attribute::SELECTION, {12, 1, false}, mesh_vaos);
         define_attribute(Attribute::HOVERED, {13, 1, false}, mesh_vaos);
         define_attribute(Attribute::VERTEX_NORMAL, {14, 3, false}, mesh_vaos);
+        define_attribute(Attribute::MIN_EDGE_LEN, {15, 1, false}, mesh_vaos);
 
         auto sphere_vaos = {VAO::SPHERE};
         define_attribute(Attribute::POSITION, {0, 3, false}, sphere_vaos);
@@ -226,9 +230,15 @@ namespace vOS
 
         // same for the edges, only add them once for the selection
         int num_selection_edges = 0;
+        float min_edge_length = std::numeric_limits<float>::max();
         for (auto ce_it: mesh.cell_edges(cell))
         {
             auto[v0, v1] = mesh.edge_vertices(ce_it);
+            auto edge_len = (float) mesh.length(ce_it);
+            if (edge_len < min_edge_length)
+            {
+                min_edge_length = edge_len;
+            }
             add_from_to_vertex(mesh, v0, v1);
             m_selection_map.edge_ids.push_back(ce_it.idx());
             VecUtil::push_vec3(get_attrib_array(VAO::CYLINDER, Attribute::CELL_CENTER), cell_center);
@@ -237,6 +247,7 @@ namespace vOS
             get_attrib_array(VAO::CYLINDER, Attribute::IS_ISOLATED).push_back(0.0f);
             num_selection_edges++;
         }
+        m_min_edge_lengths[cell.idx()] = min_edge_length;
         add_cell_index_and_count(VAO::CYLINDER, cell.idx(), m_vertex_offset_cylinder, num_selection_edges);
         m_vertex_offset_cylinder += num_selection_edges;
 
@@ -368,6 +379,7 @@ namespace vOS
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_TRIANGLE).push_back(is_triangle);
                 get_attrib_array(VAO::MESH_FACE, Attribute::SELECTION).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::HOVERED).push_back(0.0f);
+                get_attrib_array(VAO::MESH_FACE, Attribute::MIN_EDGE_LEN).push_back(min_edge_length);
                 cell_vertex_count++;
             }
 
@@ -426,6 +438,7 @@ namespace vOS
     {
         auto& cell_center = m_cell_centers[data.cell_id];
         auto peel_depth = m_peel_depths[data.cell_id];
+        auto min_edge_length = m_min_edge_lengths[data.cell_id];
         unsigned int index = data.vertex_types.size();
         VecUtil::push_vec3(data.vertex_positions, pos);
         VecUtil::push_vec3(data.vertex_halfface_normals, hf_norm);
@@ -442,6 +455,7 @@ namespace vOS
         data.dihedral_angle.push_back(dihedral_angle);
         data.selection.push_back(0.0f);
         data.hovered.push_back(0.0f);
+        data.min_edge_lengths.push_back(min_edge_length);
         return index;
     }
 
@@ -464,7 +478,7 @@ namespace vOS
         // which we don't want
         for (auto chf_it: mesh.cell_halffaces(cell))
         {
-            face_normals[chf_it.idx()] = VecUtil::normal_to_vec3(mesh, chf_it);
+            face_normals[chf_it.idx()] = halfface_normal_to_vec3(chf_it.idx());
             glm::vec3 center(0.0f);
             int num_vertices = 0;
             // first, get the center of the halfface
@@ -621,7 +635,7 @@ namespace vOS
                 glm::vec3 face_normal = halfface_normal_to_vec3(data.halfface_id);
                 glm::vec3 prev_face_normal = halfface_normal_to_vec3(prev_data.halfface_id);
 
-                float dihedral_angle = M_PI - VecUtil::get_angle(face_normal, prev_face_normal);
+                float dihedral_angle = PI - VecUtil::get_angle(face_normal, prev_face_normal);
                 corner_dihedral_angle_average += dihedral_angle;
 
                 glm::vec3 edge_face_center_average = (face_centers[data.halfface_id] + face_centers[prev_data.halfface_id]) * 0.5f;
@@ -801,6 +815,7 @@ namespace vOS
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::SELECTION, cell_data.selection);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::HOVERED, cell_data.hovered);
         add_attribute_data(VAO::MESH_ROUNDED, Attribute::VERTEX_NORMAL, cell_data.vertex_normals);
+        add_attribute_data(VAO::MESH_ROUNDED, Attribute::MIN_EDGE_LEN, cell_data.min_edge_lengths);
         m_current_rounded_index += (int) cell_data.vertex_positions.size() / 3;
     }
 
@@ -1109,13 +1124,13 @@ namespace vOS
     glm::vec3 MeshVertexBuffer::halfface_normal_to_vec3(int halfface_id)
     {
         auto normal = m_normals[OpenVolumeMesh::HalfFaceHandle{halfface_id}];
-        return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
+        return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
     }
 
     glm::vec3 MeshVertexBuffer::vertex_normal_to_vec3(int vertex_id)
     {
         auto normal = m_normals[OpenVolumeMesh::VertexHandle{vertex_id}];
-        return {std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]};
+        return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
     }
 
     void MeshVertexBuffer::update_vertex_arrays()

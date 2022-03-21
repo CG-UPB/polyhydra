@@ -154,15 +154,15 @@ namespace vOS
 
     // these are necessary for the linker to find the templated function types, otherwise we would need to implement
     // the template function in the header file, which would cause some problems
-    template void VertexArrayObject::add_attribute<float>(const std::vector<float>& data, int location, int element_count, bool per_instance = false);
-    template void VertexArrayObject::add_attribute<int>(const std::vector<int>& data, int location, int element_count, bool per_instance = false);
-    template void VertexArrayObject::add_attribute<unsigned int>(const std::vector<unsigned int>& data, int location, int element_count, bool per_instance = false);
+    template void VertexArrayObject::add_attribute<float>(const std::vector<float>&, int, int, bool);
+    template void VertexArrayObject::add_attribute<int>(const std::vector<int>&, int, int, bool);
+    template void VertexArrayObject::add_attribute<unsigned int>(const std::vector<unsigned int>&, int, int, bool);
 
-    template void VertexArrayObject::update_attribute<float>(const std::vector<float>& data, int location);
-    template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location);
-    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location);
+    template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int);
+    template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int);
+    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>&, int);
 
-    template void VertexArrayObject::update_attribute<float>(const std::vector<float>& data, int location, int offset, int size);
-    template void VertexArrayObject::update_attribute<int>(const std::vector<int>& data, int location, int offset, int size);
-    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>& data, int location, int offset, int size);
+    template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int, int, int);
+    template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int, int, int);
+    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>&, int, int, int);
 }

@@ -58,11 +58,10 @@ void main()
     {
         // transform kernel sample to tangent space
         vec3 sample_pos = TBN * u_sample_kernel[i];
-        sample_pos = frag_pos + sample_pos * u_radius;
+        sample_pos = (frag_pos + normal * 0.01) + sample_pos * u_radius;
 
         // transform sample to screen space, so we can look up the depth of our sample in the texture
-        vec4 offset = vec4(sample_pos, 1.0);
-        offset = u_projection * offset;
+        vec4 offset = u_projection * vec4(sample_pos, 1.0);
         offset.xyz /= offset.w;
         offset.xyz = offset.xyz * 0.5 + 0.5;
 
@@ -80,7 +79,7 @@ void main()
 
         // the exponent changes the aggressivenes of the mip-mapping
         // the higher the exponent, the earlier we sample from lower mips, the less cache misses we have
-        float level = floor(pow(1.0 + sample_dist, 10.0));
+        float level = floor(pow(1.0 + sample_dist, 6.0));
 
         // now get the depth value of our sample
         vec3 sample_xyz = get_position(offset.xy, level);

@@ -71,6 +71,7 @@ namespace vOS
         std::vector<float> selection;
         std::vector<float> hovered;
         std::vector<float> vertex_normals;
+        std::vector<float> min_edge_lengths;
         std::vector<unsigned int> indices;
     };
 
@@ -91,7 +92,7 @@ namespace vOS
     {
         POSITION, FACE_NORMAL, CELL_CENTER, PEEL_DEPTH, IS_DIGGED, COLOR, IS_ISOLATED, IS_TRIANGLE, VERTEX_TYPE,
         FACE_CENTER, TO_VERTEX, DIHEDRAL_ANGLE, SELECTION, SELECTION_VERTEX_POSITION, SELECTION_FROM_VERTEX,
-        SELECTION_TO_VERTEX, HOVERED, VERTEX_NORMAL,
+        SELECTION_TO_VERTEX, HOVERED, VERTEX_NORMAL, MIN_EDGE_LEN,
         NUM_VALUES
     };
 
@@ -341,6 +342,7 @@ namespace vOS
 
         // to be used for rounded cells as well, no need to calculate twice
         std::unordered_map<int, glm::vec3> m_cell_centers;
+        std::unordered_map<int, float> m_min_edge_lengths;
         std::unordered_map<int, float> m_peel_depths;
 
         struct VertexAttributeMap

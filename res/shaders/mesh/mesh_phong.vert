@@ -18,6 +18,7 @@ layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 12) in float a_is_selected;
 layout (location = 13) in float a_hovered;
 layout (location = 14) in vec3 a_vertex_normal;
+layout (location = 15) in float a_min_edge_length;
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -94,7 +95,7 @@ void main()
     if (u_rounding)
     {
         float type = a_vertex_type_rounded;
-        float r = u_rounding_size * u_average_cell_size * 0.3;
+        float r = min(u_rounding_size * u_average_cell_size * 0.3, a_min_edge_length * 0.3);
         // this vertex lies on the inner triangle
         if (type == ROUNDED_VERTEX_TYPE_FACE)
         {
@@ -150,9 +151,9 @@ void main()
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
 
     float peel_alpha = (u_peel_depth - a_peel_depth);
-    if(v_Visible == 1 && peel_alpha <= 1.0 && peel_alpha >= 0.0)
+    if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
     {
-        alpha = (1 - (u_peel_depth - a_peel_depth)) * alpha;
+        alpha = (1.0 - (u_peel_depth - a_peel_depth)) * alpha;
     }
 
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
@@ -170,7 +171,7 @@ void main()
 
         // Override inverse color with preset selection color
         selection_color = mix(selection_color, u_selection_color.xyz, u_selection_color.w);
-        v_Color =vec4(selection_color, alpha);
+        v_Color = vec4(selection_color, alpha);
     }
 
     if (a_hovered != 0.0)

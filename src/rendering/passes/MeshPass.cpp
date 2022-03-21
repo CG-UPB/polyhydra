@@ -7,7 +7,7 @@
 
 namespace vOS
 {
-    MeshPass::MeshPass(MeshView* mesh_view): m_mesh_view(mesh_view)
+    MeshPass::MeshPass(Renderer* renderer): m_renderer(renderer)
     {}
 
     void MeshPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
@@ -17,9 +17,21 @@ namespace vOS
         if(obj == nullptr)
             return;
 
-        glDisable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
-        glCullFace(GL_BACK);
+        auto settings = GlobalViewerSettings::getInstance();
+        bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
+        float wireframe_size = settings->get_wireframe_size();
+        bool use_vertex_normals = settings->get_mesh_mode() == Phong_Vertexnormals;
+
+        if (draw_wireframe)
+        {
+            glDisable(GL_CULL_FACE);
+        }
+        else
+        {
+            glEnable(GL_CULL_FACE);
+            glFrontFace(GL_CCW);
+            glCullFace(GL_BACK);
+        }
 
         glDisable(GL_BLEND);
 //        glEnable(GL_BLEND);
@@ -50,8 +62,6 @@ namespace vOS
         glm::vec3 light_pos(glm::normalize(mvp_ti * data.light.light_dir));
 
 
-        auto settings = GlobalViewerSettings::getInstance();
-
         // Shader uniforms
         m_mesh_shader->set_uniform_mat4f("u_transform", data.camera.world * obj->get_data().get_transform());
         m_mesh_shader->set_uniform_mat4f("u_projection", data.camera.projection);
@@ -78,8 +88,8 @@ namespace vOS
         m_mesh_shader->set_uniform_int("u_cascade_level", settings->get_cascade_level() - 1);
 
 
-        m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
-        m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+        m_mesh_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
+        m_mesh_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
 
 
         float bias_min = 0.0006;
@@ -91,7 +101,7 @@ namespace vOS
 
 
         // shadow maps
-        auto s = m_mesh_view->m_shadow_pass;
+        auto s = m_renderer->m_shadow_pass;
         for(int i = 0; i < s->max_cascades; i++)
         {
             m_mesh_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) +"]", s->cascade_projections[i]);
@@ -100,10 +110,11 @@ namespace vOS
         }
 
         m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
-
-        bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
-        float wireframe_size = settings->get_wireframe_size();
-        bool use_vertex_normals = settings->get_mesh_mode() == Phong_Vertexnormals;
+        m_mesh_shader->set_uniform_mat4f("u_light_projection", data.light.projection);
+        m_mesh_shader->set_uniform_mat4f("u_light_view", data.light.view);
+        m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
+        m_mesh_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
+        m_mesh_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
 
         // settings
         m_mesh_shader->set_uniform_bool("u_draw_wireframe", draw_wireframe);
@@ -113,6 +124,11 @@ namespace vOS
         m_mesh_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
 
         // input textures
+        m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0, m_renderer->m_pre_pass->get_framebuffer()->get_depth_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1, m_renderer->m_ssao_pass->get_blur_texture());
+        m_mesh_shader->set_uniform_sampler2D("u_shadow_texture", GL_TEXTURE2, m_renderer->m_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE3, m_renderer->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));
+        m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE4, m_renderer->m_shadow_color_filter_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0));
         m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,m_mesh_view->m_pre_pass->get_framebuffer()->get_depth_texture());
         m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,m_mesh_view->m_ssao_pass->get_blur_texture());
         m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE2,m_mesh_view->m_transparent_shadow_pass->get_framebuffer()->get_texture(GL_DEPTH_ATTACHMENT));

@@ -3,7 +3,6 @@
 #include "../meshes/CommonMeshes.h"
 #include "SSAOPass.h"
 #include <random>
-#include "../../util/ModeEnum.h"
 
 namespace vOS
 {
@@ -34,8 +33,8 @@ namespace vOS
             .z_bias         = 0.02
     };
 
-    SSAOPass::SSAOPass(MeshView* mesh_view, int initial_width, int initial_height) :
-            m_mesh_view(mesh_view), m_options(SSAOPass::QUALITY_SSAO)
+    SSAOPass::SSAOPass(Renderer* renderer, int initial_width, int initial_height) :
+            m_renderer(renderer), m_options(SSAOPass::QUALITY_SSAO)
     {
         // we only need one channel for the occlusion factor
         std::vector<FrameBufferAttachment> ssao_attachments = {
@@ -110,7 +109,7 @@ namespace vOS
             // assign random distance from sphere center
             sample *= get_random_float(0.0, 1.0);
             // more samples distributed at the center of the sphere
-            float scale = (float) m_sample_kernel.size() / SSAOPass::s_max_samples;
+            float scale = (float) m_sample_kernel.size() / (float) SSAOPass::s_max_samples;
             scale = lerp(0.1, 1.0, std::pow(scale, 2.0f));
             sample *= scale;
             m_sample_kernel.push_back(sample);
@@ -141,7 +140,7 @@ namespace vOS
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
 
-    void SSAOPass::render_options(SSAOOptions* options)
+    void SSAOPass::load_options_from_settings()
     {
         int selected_option = GlobalViewerSettings::getInstance()->get_ssao_options();
         switch (selected_option) {
@@ -160,16 +159,17 @@ namespace vOS
             case CUSTOM:
                 load_options(GlobalViewerSettings::getInstance()->get_custom_options());
                 break;
+            default:
+                return;
         }
     }
 
     void SSAOPass::render(VertexArrayObject* vao, const RenderData& render_data, int mesh_id)
     {
-        // TODO: Move options rendering to a more appropriate place
-        render_options(&m_options);
+        load_options_from_settings();
         if (m_options.active)
         {
-            auto pre_pass = m_mesh_view->m_pre_pass->get_framebuffer();
+            auto pre_pass = m_renderer->m_pre_pass->get_framebuffer();
             // main ssao pass
             m_ssao_framebuffer->bind();
             glClear(GL_COLOR_BUFFER_BIT);
@@ -186,8 +186,8 @@ namespace vOS
             m_ssao_shader->set_uniform_sampler2D("u_noise", GL_TEXTURE2, m_noise_texture);
             m_ssao_shader->set_uniform_int("u_noise_size", s_noise_size);
             // general
-            m_ssao_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
-            m_ssao_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+            m_ssao_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
+            m_ssao_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
             m_ssao_shader->set_uniform_mat4f("u_projection", render_data.camera.projection);
             m_ssao_shader->set_uniform_mat4f("u_view", render_data.camera.view);
             m_ssao_shader->set_uniform_float("u_far", render_data.camera.far);
@@ -199,8 +199,8 @@ namespace vOS
             glClear(GL_COLOR_BUFFER_BIT);
             m_ssao_blur_shader->bind();
             // general
-            m_ssao_blur_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
-            m_ssao_blur_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+            m_ssao_blur_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
+            m_ssao_blur_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
             m_ssao_blur_shader->set_uniform_float("u_far", render_data.camera.far);
             // blur related
             m_ssao_blur_shader->set_uniform_sampler2D("u_ssao_input", GL_TEXTURE0, get_ssao_texture());

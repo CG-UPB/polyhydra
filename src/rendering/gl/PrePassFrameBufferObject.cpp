@@ -20,7 +20,7 @@ namespace vOS
                     },
                     // normal
                     FrameBufferAttachment{
-                            .internal_format    = GL_RGBA16F,
+                            .internal_format    = GL_RGBA32F,
                             .format             = GL_RGBA,
                             .type               = GL_FLOAT,
                             .attachment         = GL_COLOR_ATTACHMENT0,
@@ -28,7 +28,7 @@ namespace vOS
                     },
                     // position
                     FrameBufferAttachment{
-                            .internal_format    = GL_RGBA16F,
+                            .internal_format    = GL_RGBA32F,
                             .format             = GL_RGBA,
                             .type               = GL_FLOAT,
                             .attachment         = GL_COLOR_ATTACHMENT1,

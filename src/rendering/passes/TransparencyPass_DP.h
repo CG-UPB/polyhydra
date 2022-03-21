@@ -1,16 +1,16 @@
 #pragma once
 
-#include "../../panels/MeshView.h"
+#include "../Renderer.h"
 #include "RenderPass.h"
 
 namespace vOS
 {
-    class MeshView;
+    class Renderer;
 
     class TransparencyPass_DP : public RenderPass
     {
     public:
-        explicit TransparencyPass_DP(MeshView *mesh_view, int width, int height);
+        explicit TransparencyPass_DP(Renderer* renderer, int width, int height);
         ~TransparencyPass_DP();
 
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
@@ -32,7 +32,7 @@ namespace vOS
 
         void update_draw_texture();
 
-        MeshView* m_mesh_view = nullptr;
+        Renderer* m_renderer = nullptr;
         Shader* m_transparency_shader = nullptr;
         Shader* m_composite_shader = nullptr;
         VertexArrayObject* m_vao;
@@ -45,7 +45,7 @@ namespace vOS
         float m_min = 0.01f;
         float m_max = 3000.0f;
 
-
+        bool m_cullface = true;
 
 
     };

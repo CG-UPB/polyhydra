@@ -149,12 +149,12 @@ namespace vOS
             if (m_ui_color_mode == UI_COLOR_MODE_LIGHT)
             {
                 m_imgui_renderer->load_light_mode();
-                m_mesh_view->m_background_pass.set_background_color({1.0f, 1.0f, 1.0f, 1.0f});
+                m_mesh_view->m_renderer->m_background_pass.set_background_color({1.0f, 1.0f, 1.0f, 1.0f});
             }
             else if (m_ui_color_mode == UI_COLOR_MODE_DARK)
             {
                 m_imgui_renderer->load_dark_mode();
-                m_mesh_view->m_background_pass.set_background_color({0.2f, 0.2f, 0.2f, 1.0f});
+                m_mesh_view->m_renderer->m_background_pass.set_background_color({0.2f, 0.2f, 0.2f, 1.0f});
             }
             m_update_ui_color_mode = false;
         }
@@ -712,7 +712,7 @@ namespace vOS
         MeshObject* mesh_obj = get_mesh_obj(m_focused_mesh);
         if (mesh_obj != nullptr)
         {
-            //m_mesh_view->set_zoom_point(mesh_obj->get_mesh_offset());
+            //m_renderer->set_zoom_point(mesh_obj->get_mesh_offset());
         }
         rendering_mutex.unlock();
     }

@@ -1,16 +1,16 @@
 #pragma once
 
-#include "../../panels/MeshView.h"
+#include "../Renderer.h"
 #include "RenderPass.h"
 
 namespace vOS
 {
-    class MeshView;
+    class Renderer;
 
     class TransparencyPass_WB : public RenderPass
     {
     public:
-        explicit TransparencyPass_WB(MeshView *mesh_view, int width, int height);
+        explicit TransparencyPass_WB(Renderer* renderer, int width, int height);
         ~TransparencyPass_WB();
 
         void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
@@ -35,7 +35,7 @@ namespace vOS
         glm::vec4 m_zeros = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
         glm::vec4 m_ones =glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        MeshView* m_mesh_view = nullptr;
+        Renderer* m_renderer = nullptr;
 
         Shader* m_transparency_shader = nullptr;
         Shader* m_composite_shader = nullptr;
