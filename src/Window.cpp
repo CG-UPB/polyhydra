@@ -886,7 +886,7 @@ namespace vOS
 
     void Window::load_mesh_data(int mesh_id)
     {
-        std::string filename = "";
+        std::string filename;
 
         rendering_mutex.lock();
 
@@ -906,7 +906,7 @@ namespace vOS
 
     }
 
-    void Window::load_mesh_data(int mesh_id, std::string json_file_path)
+    void Window::load_mesh_data(int mesh_id, const std::string& json_file_path)
     {
         rendering_mutex.lock();
 
@@ -926,7 +926,7 @@ namespace vOS
 
                 // Close stream
                 i.close();
-            }catch(std::exception e){
+            }catch(std::exception& e){
                 std::cout << " Error loading " << json_file_path << std::endl;
             }
         }

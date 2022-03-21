@@ -105,7 +105,7 @@ namespace vOS
         stbi_image_free(images[0].pixels);
 
         glfwMakeContextCurrent(m_window);
-        glfwSwapInterval(0); // Enable vsync
+        glfwSwapInterval(1); // Enable vsync
         // Setup Input Class
         Input::setup(m_window);
         /*

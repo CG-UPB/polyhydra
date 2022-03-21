@@ -384,7 +384,7 @@ namespace vOS {
          * @param mesh_id
          * @param json_file_path
          */
-        void load_mesh_data(int mesh_id, std::string json_file_path);
+        void load_mesh_data(int mesh_id, const std::string& json_file_path);
 
         /**
          * Loads Json File of the same name as the given mesh from internal persistent data folder
