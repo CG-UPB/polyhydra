@@ -17,8 +17,6 @@ layout (location = 13) in float a_hovered;
 layout (location = 14) in vec3 a_vertex_normal;
 layout (location = 15) in float a_min_edge_length;
 
-const int NUM_CASCADES = 3;
-
 out vec3 v_Pos;
 flat out int v_Visible;
 flat out int v_isTriangle;

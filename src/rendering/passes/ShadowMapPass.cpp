@@ -115,6 +115,7 @@ namespace vOS
         m_shadow_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
         m_shadow_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         m_shadow_shader->set_uniform_float("u_wireframe_size", settings->get_wireframe_size());
+        m_shadow_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
 
 
         m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
