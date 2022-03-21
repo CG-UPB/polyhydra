@@ -218,7 +218,6 @@ namespace vOS
         // Call the Selection Callback Function
         if (element_type == 3)
         {
-            std::cout << "Ja\n";
             m_on_face_selection(mesh_id, element_handle_id, true);
         }
         else if (element_type == 1)
