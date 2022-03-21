@@ -331,13 +331,15 @@ namespace vOS
 
     void MeshView::render_shadow_map()
     {
+
+
         // render opaque shadow map
         glClearColor(0.0, 0.0, 0.0, 0.0);
 
         // calculate all cascade matrices
         m_shadow_pass->clear_cascades();
         int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
-        cascade_level = 5;
+
         auto cam = m_render_data.camera;
         m_shadow_pass->calculate_cascades(cam.near, cam.far, cascade_level);
 
@@ -939,7 +941,7 @@ namespace vOS
             case SELECTION:
                 //return m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
                 //return m_shadow_pass->get_framebuffer()->get_texture(GL_COLOR_ATTACHMENT0);
-                return m_shadow_pass->shadow_maps[0];
+                return m_shadow_pass->shadow_maps[m_shadow_debug];
             case SSAO_PRE:
                 return m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:

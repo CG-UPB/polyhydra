@@ -94,7 +94,7 @@ namespace vOS
         // selected texture for rendering (mostly for debugging)
         int m_viewport_texture = FINAL_IMAGE;
         int m_transparency = WEIGHTED_BLENDED;
-
+        int m_shadow_debug = 0;
 
         // render passes
         BackgroundPass m_background_pass;

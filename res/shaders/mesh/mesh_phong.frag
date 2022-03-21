@@ -35,6 +35,12 @@ uniform float u_spec_exponent;
 uniform float peel_depth;
 uniform int u_cascade_level;
 uniform float u_cascade_ends[MAX_CASCADE_LEVEL];
+uniform mat4 u_view;
+
+uniform float u_bias_min;
+uniform float u_bias_max;
+uniform float u_bias_modifier;
+
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
@@ -196,16 +202,14 @@ void main()
 
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
-    vec3 l = normalize(u_light_pos - v_pos);
+    vec3 l = normalize(u_light_pos);
 
     float shadow = 0.0;
     if (u_draw_shadows)
     {
         // shadow calculation
-        // calculate bias
-        float bias = max(0.008 * (1.0 - max(0.0, dot(n, l))), 0.005);
         // calculate cascade level
-        int cascade_idx = 0;
+        int cascade_idx = -1;
         int cascade_level = 1;
         if(u_cascade_level < MAX_CASCADE_LEVEL)
         {
@@ -215,15 +219,25 @@ void main()
         {
             cascade_level = MAX_CASCADE_LEVEL;
         }
-        for(int i = 0; i < cascade_level; i++)
+        for(int i = 0; i < cascade_level ; ++i)
         {
-            if(v_clipspace_z <= u_cascade_ends[i])
+            if(v_clipspace_z <= u_cascade_ends[i] - 5.0)
             {
                 cascade_idx = i;
+                i = cascade_level;
                 break;
             }
         }
-        cascade_idx = 0;
+        if(cascade_idx == -1)
+        {
+            cascade_idx = u_cascade_level;
+        }
+
+        // calculate bias (depending on cascade level)
+        float bias = max(u_bias_max * (max(0.0, dot(n, l))), u_bias_min);
+
+        //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
+
         //cascade_idx = 0;
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
 

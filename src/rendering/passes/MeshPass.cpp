@@ -45,7 +45,10 @@ namespace vOS
         auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
 
         glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
-        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
+        //glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
+        glm::mat3 mvp_ti = glm::mat3(glm::transpose(glm::inverse(view_transform)));
+        glm::vec3 light_pos(glm::normalize(mvp_ti * data.light.light_dir));
+
 
         auto settings = GlobalViewerSettings::getInstance();
 
@@ -72,11 +75,20 @@ namespace vOS
         m_mesh_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
         m_mesh_shader->set_uniform_vec4f("u_selection_color", obj->get_data().m_selection_color.get_rgba());
         m_mesh_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
-        m_mesh_shader->set_uniform_int("u_cascade_level", settings->get_cascade_level());
+        m_mesh_shader->set_uniform_int("u_cascade_level", settings->get_cascade_level() - 1);
 
 
         m_mesh_shader->set_uniform_int("u_viewport_width", m_mesh_view->m_viewportPanelWidth);
         m_mesh_shader->set_uniform_int("u_viewport_height", m_mesh_view->m_viewportPanelHeight);
+
+
+        float bias_min = 0.0006;
+        float bias_max = 0.005;
+        float bias_modifier = 0.1;
+        m_mesh_shader->set_uniform_float("u_bias_min", bias_min);
+        m_mesh_shader->set_uniform_float("u_bias_max", bias_max);
+        m_mesh_shader->set_uniform_float("u_bias_modifier", bias_modifier);
+
 
         // shadow maps
         auto s = m_mesh_view->m_shadow_pass;

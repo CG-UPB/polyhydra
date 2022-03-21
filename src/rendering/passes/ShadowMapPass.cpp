@@ -33,10 +33,13 @@ namespace vOS
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+            constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
             shadow_maps[i] = tex;
         }
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
@@ -138,7 +141,7 @@ namespace vOS
     void ShadowMapPass::resize_buffers(int width, int height)
     {
         m_shadow_framebuffer->resize(width, height);
-        glDeleteTextures((int) max_cascades,  shadow_maps);
+        glDeleteTextures((int) max_cascades,  &shadow_maps[0]);
         unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
 
         for(unsigned int i = 0; i < max_cascades; i++)
@@ -172,9 +175,13 @@ namespace vOS
     void ShadowMapPass::calculate_cascades(float near, float far, int cascade_level)
     {
         // calculate near and far plane for each cascade
-        for (int i = 1; i <= cascade_level; i++)
+//        for (int i = 1; i <= cascade_level; i++)
+//        {
+//            cascade_ends[i-1] = (float) i / (float)cascade_level * far;
+//        }
+        for (int i = cascade_level; i >= 1; i--)
         {
-            cascade_ends[i-1] = (float) i / (float)cascade_level * far;
+            cascade_ends[cascade_level - i] = (float)(1.0f / pow(2, (float)(i - 1))) * far;
         }
 
         // calculate frustum coordiantes for each cascade
@@ -208,16 +215,13 @@ namespace vOS
                 far
         );
 
-
         std::vector<glm::vec4> frustum_corners;
         const auto inverse = glm::inverse(proj * cam.view);
 
-
-//
 //        float ar = (float)m_mesh_view->m_viewportPanelHeight / (float)m_mesh_view->m_viewportPanelWidth;
 //
-//        float tan_half_hfov = tan(glm::radians(cam.zoom / 2.0f));
-//        float tan_half_vfov = tan(glm::radians((cam.zoom * ar) / 2.0f));
+//        float tan_half_hfov = tanf(glm::radians(cam.zoom / 2.0f));
+//        float tan_half_vfov = tanf(glm::radians((cam.zoom * ar) / 2.0f));
 //
 //        float xn = near * tan_half_hfov;
 //        float xf = far * tan_half_hfov;
@@ -233,6 +237,7 @@ namespace vOS
 //        frustum_corners.emplace_back(-xf, yf, far, 1.0);
 //        frustum_corners.emplace_back(xf, -yf, far, 1.0);
 //        frustum_corners.emplace_back(-xf, -yf, far, 1.0);
+//
 
         for (unsigned int x = 0; x < 2; ++x)
         {
@@ -265,19 +270,20 @@ namespace vOS
         float max_y = std::numeric_limits<float>::min();
         float min_z = std::numeric_limits<float>::max();
         float max_z = std::numeric_limits<float>::min();
+        float a = 5.0f;
 
         for (auto &c: frustum_corners)
         {
             auto transformed_corner = cascade_views[i] * c;
-            min_x = std::min(min_x, transformed_corner.x);
-            max_x = std::max(max_x, transformed_corner.x);
-            min_y = std::min(min_y, transformed_corner.y);
-            max_y = std::max(max_y, transformed_corner.y);
-            min_z = std::min(min_z, transformed_corner.z);
-            max_z = std::max(max_z, transformed_corner.z);
+            min_x = std::min(min_x, transformed_corner.x - a);
+            max_x = std::max(max_x, transformed_corner.x + a);
+            min_y = std::min(min_y, transformed_corner.y - a);
+            max_y = std::max(max_y, transformed_corner.y + a);
+            min_z = std::min(min_z, transformed_corner.z - a);
+            max_z = std::max(max_z, transformed_corner.z + a);
         }
 
-        const float z_mult = m_z_mult;
+        const float z_mult = 5.0;
         if (min_z < 0)
         {
             min_z *= z_mult;

@@ -67,7 +67,7 @@ namespace vOS
         int mesh_mode = Phong_Facenormals;
         int m_current_transparency_mode = WEIGHTED_BLENDED;
         int m_current_number_passes = 12;
-        int m_current_cascade_level = 2;
+        int m_current_cascade_level = 3;
 
         // booleans for the render passes
         bool transparency_active = false;
