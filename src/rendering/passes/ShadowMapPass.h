@@ -1,10 +1,7 @@
-
 #pragma once
 
 #include "RenderPass.h"
 #include "../../panels/MeshView.h"
-#include <vector>
-
 
 namespace vOS
 {
@@ -19,7 +16,7 @@ namespace vOS
 
         void resize_buffers(int width, int height);
         void bind_for_writing(int cascade_idx);
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
         void calculate_cascade(float near, float far, int  i);
         void calculate_cascades(float near, float far, int cascade_levels);
         void set_cascade_index(int idx){cascade_idx = idx;};

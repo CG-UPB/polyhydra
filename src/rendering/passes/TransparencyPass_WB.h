@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Renderer.h"
 #include "RenderPass.h"
+#include "../Renderer.h"
 
 namespace vOS
 {
@@ -13,7 +13,7 @@ namespace vOS
         explicit TransparencyPass_WB(Renderer* renderer, int width, int height);
         ~TransparencyPass_WB();
 
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
         void render_composition();
         void resize_buffers(int width, int height);
         void clear_framebuffer() const;

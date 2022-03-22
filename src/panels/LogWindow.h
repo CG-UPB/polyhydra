@@ -1,10 +1,8 @@
 #pragma once
 
+#include "vospch.h"
+
 #include "../ImguiRenderer.h"
-#include "imgui.h"
-#include <cstdarg>
-#include <string.h>
-#include <vector>
 
 namespace vOS
 {
@@ -15,12 +13,13 @@ namespace vOS
     class LogWindow final: public WindowPanel
     {
         public:
-            ~LogWindow();
+
+            ~LogWindow() override = default;
             /**
              * static Singleton method to get the class-object
              * @return the class-object
              */
-            static LogWindow* getInstance();
+            static std::shared_ptr<LogWindow> getInstance();
 
             /**
              * clears the LogWindow - deletes all thats in the buffer
@@ -50,7 +49,7 @@ namespace vOS
              * @param fmt std::string which should be written on the LogWindwo
              * @param level criticality of the message
              */
-            void addLog(std::string fmt, int level = 0);
+            void addLog(const std::string& fmt, int level = 0);
 
             /**
              *  This method is used to draw the LogWindow in every loop. It creates all the buttons and the lines of text
@@ -65,17 +64,17 @@ namespace vOS
             LogWindow();
 
             // this variable holds the class-object for the Singleton
-            static LogWindow* instance;
+            static std::shared_ptr<LogWindow> s_instance;
 
             // Variables that are used for Buffering and filtering
-            ImGuiTextBuffer Buf;
-            ImGuiTextFilter filter;
-            ImVector<int>   lineOffsets;
-            std::string levels[4];
+            ImGuiTextBuffer m_buffer;
+            ImGuiTextFilter m_filter;
+            ImVector<int>   m_line_offsets;
+            std::string     m_levels[4];
 
             // autoscroll is a feature that could be activated
-            bool autoScroll;
+            bool m_auto_scroll;
             // not working: but the message should be written in colors - bugging with autoscroll feature
-            std::vector<ImVec4> colors;
+            std::vector<ImVec4> m_colors;
     };
 }

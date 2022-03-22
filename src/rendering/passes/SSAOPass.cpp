@@ -1,8 +1,6 @@
 
-#include "glad/glad.h"
-#include "../meshes/CommonMeshes.h"
 #include "SSAOPass.h"
-#include <random>
+#include "../meshes/CommonMeshes.h"
 
 namespace vOS
 {
@@ -164,7 +162,7 @@ namespace vOS
         }
     }
 
-    void SSAOPass::render(VertexArrayObject* vao, const RenderData& render_data, int mesh_id)
+    void SSAOPass::render(VertexArrayObject* vao, const RenderData& render_data, std::shared_ptr<MeshObject> mesh)
     {
         load_options_from_settings();
         if (m_options.active)

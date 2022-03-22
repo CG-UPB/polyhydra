@@ -1,11 +1,6 @@
-//
-// Created by projektgruppe on 14.01.22.
-//
 
 #include "MeshLayerView.h"
 #include "../Window.h"
-#include "imgui.h"
-#include <imgui_internal.h>
 #include "../util/Tooltips.h"
 #include "NewFileDialog.h"
 #include "../util/ImGuiUtil.h"
@@ -38,18 +33,18 @@ namespace vOS
 
         // create a line for every loaded mesh
         int active_mesh = Window::instance().get_mesh_focus();
-        for(const std::pair<int, MeshObject*> m : Window::instance().get_mesh_list())
+        for(const auto& [id, mesh] : Window::instance().get_mesh_list())
         {
-            ImGui::PushID(m.first);
+            ImGui::PushID(id);
             // name is "Mesh" with unique ID
-            std::string str = "Mesh " + std::to_string(m.first);
-            ImGui::RadioButton(str.c_str(),&active_mesh, m.first);
+            std::string str = "Mesh " + std::to_string(id);
+            ImGui::RadioButton(str.c_str(),&active_mesh, id);
             // if radiobutton is double-clicked, set actual mesh in focus
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
                 LogWindow::getInstance()->addLog("New Focus Mesh");
                 Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_focus(m.first);
+                Window::instance().set_mesh_focus(id);
                 Window::instance().rendering_mutex.lock();
             }
 
@@ -58,21 +53,21 @@ namespace vOS
 
             ImGui::SameLine(ImGui::GetWindowWidth() - 135.0f);
 
-            bool visible = Window::instance().get_mesh_visibility(m.first);
+            bool visible = Window::instance().get_mesh_visibility(id);
             ImGui::Checkbox("##Visible", &visible);
             ImGui::SameLine();
-            Window::instance().set_mesh_visibility(m.first, visible);
+            Window::instance().set_mesh_visibility(id, visible);
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 
 
-            Color color = Window::instance().get_mesh_color(m.first);
+            Color color = Window::instance().get_mesh_color(id);
             float m_color[4];
             m_color[0] = color.get_rgba().r;
             m_color[1] = color.get_rgba().g;
             m_color[2] = color.get_rgba().b;
             m_color[3] = color.get_rgba().a;
             ImGui::ColorEdit4("Color",m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
-            Window::instance().set_mesh_color(m.first, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
+            Window::instance().set_mesh_color(id, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
             // Advanced Settings
@@ -101,7 +96,7 @@ namespace vOS
                     if (filename != nullptr)
                     {
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().save_mesh_data(m.first, filename);
+                        Window::instance().save_mesh_data(id, filename);
                         Window::instance().rendering_mutex.lock();
                     }
                 }
@@ -116,7 +111,7 @@ namespace vOS
                     if (filename != nullptr)
                     {
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().load_mesh_data(m.first, filename);
+                        Window::instance().load_mesh_data(id, filename);
                         Window::instance().rendering_mutex.lock();
                     }
                 }
@@ -134,7 +129,7 @@ namespace vOS
                 float slider_width = 200.0f;
                 float padding_right = 20.0f;
 
-                int active_mesh = m.first;
+                int active_mesh = id;
                 // Ambient
                 ImGui::Text("Ambient:");
                 float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);

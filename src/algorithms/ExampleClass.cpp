@@ -65,7 +65,6 @@ void ExampleClass::set_mesh_data()
     hand_color.r -= 0.5f;
     hand_color.b += 0.8f;
     window.set_mesh_color(guy, hand_color);
-    window.set_mesh_rendering_mode(guy, "mesh_wireframe");
     window.set_mesh_slice_level(guy, 0.5f);
     window.set_mesh_peel_level(guy, 1);
     window.set_mesh_cell_size(guy, 0.6f);

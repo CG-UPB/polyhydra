@@ -1,12 +1,8 @@
 #pragma once
 
-#include <OpenVolumeMesh/Core/GeometryKernel.hh>
-#include <OpenVolumeMesh/Attribs/NormalAttrib.hh>
+#include "vospch.h"
+
 #include "../rendering/gl/VertexArrayObject.h"
-#include "glm/gtx/transform.hpp"
-#include <map>
-#include <unordered_map>
-#include <chrono>
 
 namespace vOS
 {

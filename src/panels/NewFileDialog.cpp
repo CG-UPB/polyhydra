@@ -1,19 +1,19 @@
-//
-// Created by projektgruppe on 26.01.22.
-//
 
 #include "NewFileDialog.h"
-namespace vOS {
 
-    NewFileDialog::NewFileDialog() {
+namespace vOS
+{
+
+    NewFileDialog::NewFileDialog()
+    {
         // empty constructor
     }
 
-    char const *NewFileDialog::openDialog(const char * filedialog)
+    char const* NewFileDialog::openDialog(const char* filedialog)
     {
 
         // Variable for the filename
-        char const * lTheOpenFileName;
+        char const* lTheOpenFileName;
 
         // opens the open file dialog - for more information see https://github.com/native-toolkit/tinyfiledialogs
         lTheOpenFileName = tinyfd_openFileDialog(
@@ -25,7 +25,7 @@ namespace vOS {
                 0);
 
         // error message if the file dialog was used wrong
-        if (! lTheOpenFileName)
+        if (!lTheOpenFileName)
         {
             tinyfd_messageBox(
                     "Info",
@@ -38,9 +38,9 @@ namespace vOS {
         return lTheOpenFileName;
     }
 
-    char const *NewFileDialog::saveDialog(const char * filedialog, std::string default_name)
+    char const* NewFileDialog::saveDialog(const char* filedialog, std::string default_name)
     {
-        char const * lTheSaveFileName;
+        char const* lTheSaveFileName;
         // opens the save file dialog - for more information see https://github.com/native-toolkit/tinyfiledialogs
         lTheSaveFileName = tinyfd_saveFileDialog(
                 filedialog,
@@ -50,7 +50,7 @@ namespace vOS {
                 NULL);
 
         // error message if the file dialog was used wrong
-        if (! lTheSaveFileName)
+        if (!lTheSaveFileName)
         {
             tinyfd_messageBox(
                     "Information",
@@ -65,12 +65,11 @@ namespace vOS {
     }
 
 
-
-    char const *NewFileDialog::loadMeshSettings(const char *filedialog)
+    char const* NewFileDialog::loadMeshSettings(const char* filedialog)
     {
 
         // Variable for the filename
-        char const * lTheOpenFileName;
+        char const* lTheOpenFileName;
 
         // opens the open file dialog - for more information see https://github.com/native-toolkit/tinyfiledialogs
         lTheOpenFileName = tinyfd_openFileDialog(
@@ -82,7 +81,7 @@ namespace vOS {
                 0);
 
         // error message if the file dialog was used wrong
-        if (! lTheOpenFileName)
+        if (!lTheOpenFileName)
         {
             tinyfd_messageBox(
                     "Info",
@@ -95,9 +94,9 @@ namespace vOS {
         return lTheOpenFileName;
     }
 
-    char const *NewFileDialog::saveMeshSettings(const char *filedialog)
+    char const* NewFileDialog::saveMeshSettings(const char* filedialog)
     {
-        char const * lTheSaveFileName;
+        char const* lTheSaveFileName;
         // opens the save file dialog - for more information see https://github.com/native-toolkit/tinyfiledialogs
         lTheSaveFileName = tinyfd_saveFileDialog(
                 filedialog,
@@ -107,7 +106,7 @@ namespace vOS {
                 NULL);
 
         // error message if the file dialog was used wrong
-        if (! lTheSaveFileName)
+        if (!lTheSaveFileName)
         {
             tinyfd_messageBox(
                     "Information",

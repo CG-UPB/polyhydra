@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Renderer.h"
 #include "RenderPass.h"
+#include "../Renderer.h"
 #include "../../settings/GlobalViewerSettings.h"
 
 namespace vOS
@@ -53,7 +53,7 @@ namespace vOS
          * @param render_data current render data to access uniform data
          * @param mesh_id can be -1, since we don't need it here
          */
-        void render(VertexArrayObject *vao, const RenderData &render_data, int mesh_id) override;
+        void render(VertexArrayObject *vao, const RenderData &render_data, std::shared_ptr<MeshObject> mesh) override;
 
         /**
          * Use this method to resize the ssao frame buffers in case the screen resolution changes.

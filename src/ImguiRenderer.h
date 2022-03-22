@@ -1,10 +1,8 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
+#include "vospch.h"
 
-#include <string>
-#include <vector>
-#include "rendering/gl/FrameBufferObject.h"
+#include <GLFW/glfw3.h>
 
 namespace vOS
 {

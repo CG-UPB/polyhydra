@@ -1,7 +1,6 @@
-#include "GLFW/glfw3.h"
+
 #include "Input.h"
-#include <functional>
-#include "../Window.h"
+#include "GLFW/glfw3.h"
 
 namespace vOS
 {
@@ -95,32 +94,6 @@ namespace vOS
             mov = glm::normalize(mov);
         }
         m_movement_vector = mov;
-
-        // TODO: Remove?
-//        // Single Action Keys ( only trigger when key is pressed )
-//        if (action == GLFW_PRESS)
-//        {
-//
-//            // Do Action Depending on Input Key
-//            // Rendering Mode Switches
-//            // Occupied Letters: I, O, P, L
-//            if (rebind == GLFW_KEY_I)
-//            {
-//                //Window::instance().set_mesh_rendering_mode("mesh_phong");
-//            }
-//            else if (rebind == GLFW_KEY_O)
-//            {
-//                Window::instance().set_mesh_rendering_mode("mesh_wireframe");
-//            }
-//            else if (rebind == GLFW_KEY_P)
-//            {
-//                Window::instance().set_mesh_rendering_mode("mesh_flat");
-//            }
-//            else if (rebind == GLFW_KEY_L)
-//            {
-//                Window::instance().set_mesh_rendering_mode("mesh_normal");
-//            }
-//        }
     }
 
     void Input::glw_callback_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset)

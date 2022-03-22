@@ -16,7 +16,7 @@ namespace vOS
         SelectionPass();
 
         ~SelectionPass() = default;
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
         /**
          * Renders specific Mesh
@@ -24,7 +24,7 @@ namespace vOS
          * @param data
          * @param mesh_id
          */
-        void render_mesh(MeshObject* mesh, RenderData& data, int mesh_id);
+        void render_mesh(const std::shared_ptr<MeshObject>& mesh, RenderData& data);
         void set_debug_mode(bool mode);
         [[nodiscard]] bool is_debug_mode() const;
 

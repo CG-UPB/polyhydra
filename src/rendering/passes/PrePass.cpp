@@ -1,17 +1,11 @@
 
-#include "glad/glad.h"
-#include "../../Window.h"
 #include "PrePass.h"
+#include "../../Window.h"
 
 namespace vOS
 {
-    void PrePass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void PrePass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
-        // Get Mesh
-        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
-        if(obj == nullptr)
-            return;
-
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
@@ -25,21 +19,21 @@ namespace vOS
 
         pre_phong_shader->bind();
 
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations
-        float cell_size = obj->get_data().m_cell_size;
-        float peel_depth = obj->get_data().m_peel_level;
-        float slice_depth = obj->get_data().m_slice_level;
+        float cell_size = mesh->get_data().cell_size;
+        float peel_depth = mesh->get_data().peel_level;
+        float slice_depth = mesh->get_data().slice_level;
 
-        auto bb = obj->get_transformed_bb(view_transform);
+        auto bb = mesh->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
         // View Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
-        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
+        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
         glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
         glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
@@ -52,16 +46,16 @@ namespace vOS
         pre_phong_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         pre_phong_shader->set_uniform_vec3f("u_light_color", data.light.color);
         pre_phong_shader->set_uniform_float("u_cell_size", cell_size);
-        pre_phong_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
+        pre_phong_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
         pre_phong_shader->set_uniform_float("u_peel_depth", peel_depth);
         pre_phong_shader->set_uniform_float("u_slice_depth", slice_depth);
         pre_phong_shader->set_uniform_vec3f("u_min", min);
         pre_phong_shader->set_uniform_vec3f("u_max", max);
         pre_phong_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        pre_phong_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-        pre_phong_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
-        pre_phong_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
-        pre_phong_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+        pre_phong_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+        pre_phong_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+        pre_phong_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
+        pre_phong_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
         vao->draw();
         

@@ -1,6 +1,4 @@
 
-#include "glad/glad.h"
-
 #include "BackgroundPass.h"
 #include "../meshes/CommonMeshes.h"
 
@@ -22,7 +20,7 @@ namespace vOS
         delete m_vao;
     }
 
-    void BackgroundPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void BackgroundPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         // Parameters are ignored, as they are not necessary
 

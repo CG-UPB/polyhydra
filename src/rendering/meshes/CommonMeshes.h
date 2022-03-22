@@ -1,6 +1,7 @@
 #pragma once
 
-#include <vector>
+#include "vospch.h"
+
 #include "IcoSphereMesh.h"
 #include "ClosedCylinderMesh.h"
 #include "CylinderMesh.h"

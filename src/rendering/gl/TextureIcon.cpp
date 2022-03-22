@@ -1,10 +1,6 @@
 
-#include <glad/glad.h>
-
-#include "stb_image.h"
-
 #include "TextureIcon.h"
-#include <exception>
+#include "stb_image.h"
 
 namespace vOS
 {

@@ -40,7 +40,7 @@ namespace vOS
         [[nodiscard]] static const Shape& get_shape(unsigned int shape_id);
 
 
-        void render(VertexArrayObject* vao, const RenderData &data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData &data, std::shared_ptr<MeshObject> mesh) override;
 
     private:
         // List of all Shapes

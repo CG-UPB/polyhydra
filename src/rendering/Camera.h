@@ -1,13 +1,6 @@
-//
-// Created by projektgruppe on 06.03.22.
-//
+#pragma once
 
-#include "glm/gtx/transform.hpp"
-
-#ifndef VOLUMESHOS_CAMERA_H
-#define VOLUMESHOS_CAMERA_H
-
-
+#include "vospch.h"
 
 namespace vOS {
 
@@ -111,4 +104,3 @@ namespace vOS {
     };
 
 }
-#endif //VOLUMESHOS_CAMERA_H

@@ -20,7 +20,7 @@ namespace vOS
          */
         ~SelectionHoverPass();
 
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
         /**
          * Highlights given Element identified by ID, type and Mesh ID
@@ -32,9 +32,8 @@ namespace vOS
          */
         void hover(const RenderData& data, int mesh_id, int type, int id);
 
-        int get_hovered_mesh_object() {return m_hovered_mesh;};
+        int get_hovered_mesh_object() const {return m_hovered_mesh;};
 
-        glm::vec3 m_zoom_point;
     private:
 
         /**

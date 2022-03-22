@@ -1,13 +1,6 @@
-//
-// Created by projektgruppe on 06.03.22.
-//
 
 #include "Camera.h"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
 #include "../input/Input.h"
-#include "../util/VecUtil.h"
-#include <iostream>
 
 namespace vOS
 {

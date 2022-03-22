@@ -1,9 +1,6 @@
-//
-// Created by projektgruppe on 08.03.22.
-//
 #pragma once
-#include "glm/gtx/transform.hpp"
 
+#include "vospch.h"
 
 namespace vOS {
 

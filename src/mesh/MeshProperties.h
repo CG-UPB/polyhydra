@@ -1,7 +1,6 @@
 #pragma once
 
-#include <OpenVolumeMesh/Core/GeometryKernel.hh>
-#include "glm/gtx/transform.hpp"
+#include "vospch.h"
 
 namespace vOS
 {

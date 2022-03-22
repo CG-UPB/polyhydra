@@ -1,5 +1,4 @@
 
-#include "glad/glad.h"
 #include "Cylinder.h"
 #include "../meshes/CommonMeshes.h"
 

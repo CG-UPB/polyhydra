@@ -106,7 +106,7 @@ void Demo::code_demo_ui()
         time += 0.05f;
 
         // Set Camera Target to the midpoint of Mesh Object
-        auto mesh_position = window->get_focused_mesh_object()->get_data().m_position;
+        auto mesh_position = window->get_focused_mesh_object()->get_data().position;
 
         window->camera_look_at(mesh_position.x, mesh_position.y, mesh_position.z);
 

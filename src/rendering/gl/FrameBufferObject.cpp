@@ -1,12 +1,5 @@
 
-#include "glad/glad.h"
-
 #include "FrameBufferObject.h"
-
-#include <iostream>
-#include <utility>
-#include <string>
-#include <stdexcept>
 
 namespace vOS
 {
@@ -74,7 +67,7 @@ namespace vOS
             int max_supported_samples;
             glGetIntegerv(GL_MAX_SAMPLES, &max_supported_samples);
             s_num_samples = std::min(max_supported_samples, 4);
-            std::cout << "Using " << s_num_samples << " MSAA samples" << std::endl;
+            Log::info("Using " + std::to_string(s_num_samples) + " MSAA samples");
         }
         init(width, height);
     }

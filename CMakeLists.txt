@@ -78,7 +78,9 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/algorithms/Demo.cpp
         ${VOLUMESHOS_SRC}/rendering/Renderer.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp
-        ${VOLUMESHOS_SRC}/util/UIUtil.cpp)
+        ${VOLUMESHOS_SRC}/util/UIUtil.cpp
+        ${VOLUMESHOS_SRC}/util/stb.cpp
+        ${VOLUMESHOS_SRC}/util/Log.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 
@@ -88,6 +90,9 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(ext/json-develop)
 
 find_package(Filesystem REQUIRED Experimental Final)
+
+target_precompile_headers(volumeshOS PRIVATE ${VOLUMESHOS_SRC}/vospch.h)
+target_include_directories(volumeshOS PRIVATE ${VOLUMESHOS_SRC})
 
 target_link_libraries(volumeshOS ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
 target_compile_definitions(volumeshOS PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})

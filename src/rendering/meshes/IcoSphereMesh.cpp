@@ -1,6 +1,5 @@
 
 #include "IcoSphereMesh.h"
-#include <cmath>
 
 namespace vOS
 {

@@ -1,6 +1,6 @@
+
 #include "ToolBar.h"
 #include "../input/Input.h"
-#include "imgui.h"
 #include "MeshView.h"
 #include "NewFileDialog.h"
 #include "../util/Tooltips.h"
@@ -78,29 +78,6 @@ namespace vOS
 //        Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use. For more "
 //                                             "extensive explanations take a look in the documentation");
         GlobalViewerSettings::getInstance()->set_mesh_mode(mesh_mode);
-
-
-        if (old_mode != mesh_mode)
-        {
-            for (const std::pair<int, MeshObject *> m: Window::instance().get_mesh_list())
-            {
-                if (mesh_mode == Wireframe)
-                {
-                    Window::instance().rendering_mutex.unlock();
-                    Window::instance().set_mesh_rendering_mode(m.first, "mesh_wireframe");
-                    Window::instance().rendering_mutex.lock();
-                } else
-                {
-                    if (Window::instance().get_mesh_rendering_mode(Window::instance().get_mesh_focus()) ==
-                        "mesh_wireframe")
-                    {
-                        Window::instance().rendering_mutex.unlock();
-                        Window::instance().set_mesh_rendering_mode(m.first, "mesh_phong");
-                        Window::instance().rendering_mutex.lock();
-                    }
-                }
-            }
-        }
 
         ImGuiUtil::add_padding_y(0.5f);
         ImGui::Separator();
@@ -186,8 +163,8 @@ namespace vOS
                 if (active_mesh >= 0)
                 {
                     auto mesh = Window::instance().get_mesh_obj(active_mesh);
-                    auto pos = mesh->get_data().m_position;
-                    auto scl = mesh->get_data().m_scale;
+                    auto pos = mesh->get_data().position;
+                    auto scl = mesh->get_data().scale;
                     m_mesh_position[0] = pos.x;
                     m_mesh_position[1] = pos.y;
                     m_mesh_position[2] = pos.z;

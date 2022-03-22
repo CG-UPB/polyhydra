@@ -1,10 +1,6 @@
 
 #include "ClosedCylinderMesh.h"
 
-#include <cmath>
-
-#define PI 3.14159265358979323846f
-
 namespace vOS
 {
     ClosedCylinderMesh::ClosedCylinderMesh(int samples, float radius, float height)

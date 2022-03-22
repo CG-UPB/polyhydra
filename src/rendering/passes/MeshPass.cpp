@@ -1,22 +1,13 @@
 
-#include <iostream>
-#include "glad/glad.h"
-#include "../../Window.h"
 #include "MeshPass.h"
-#include "../../util/VecUtil.h"
 
 namespace vOS
 {
     MeshPass::MeshPass(Renderer* renderer): m_renderer(renderer)
     {}
 
-    void MeshPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void MeshPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
-        // Get MeshObject
-        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
-        if(obj == nullptr)
-            return;
-
         auto settings = GlobalViewerSettings::getInstance();
         bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
         float wireframe_size = settings->get_wireframe_size();
@@ -48,13 +39,13 @@ namespace vOS
         m_mesh_shader->bind();
 
         // Transform
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
-        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
+        glm::mat4 l_transform = data.light.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
         // View Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
-        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
+        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
         glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
         //glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
@@ -63,28 +54,28 @@ namespace vOS
 
 
         // Shader uniforms
-        m_mesh_shader->set_uniform_mat4f("u_transform", data.camera.world * obj->get_data().get_transform());
+        m_mesh_shader->set_uniform_mat4f("u_transform", data.camera.world * mesh->get_data().get_transform());
         m_mesh_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_mesh_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_mesh_shader->set_uniform_vec3f("u_light_pos", light_pos);
         m_mesh_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_mesh_shader->set_uniform_vec3f("u_light_color", data.light.color);
-        m_mesh_shader->set_uniform_float("u_cell_size", obj->get_data().m_cell_size);
-        m_mesh_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
-        m_mesh_shader->set_uniform_float("u_peel_depth", obj->get_data().m_peel_level);
-        m_mesh_shader->set_uniform_float("u_slice_depth", obj->get_data().m_slice_level);
-        m_mesh_shader->set_uniform_vec3f("u_min", obj->get_transformed_bb(view_transform).first);
-        m_mesh_shader->set_uniform_vec3f("u_max", obj->get_transformed_bb(view_transform).second);
-        m_mesh_shader->set_uniform_vec3f("u_slice_direction", obj->get_slice_dir(view_transform, -glm::normalize(data.camera.get_front())));
-        m_mesh_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-        m_mesh_shader->set_uniform_float("u_spec_strength", obj->get_data().m_specular_strength);
-        m_mesh_shader->set_uniform_float("u_spec_exponent", obj->get_data().m_specular_exponent);
-        m_mesh_shader->set_uniform_float("u_ambient_strength", obj->get_data().m_ambient_strength);
-        m_mesh_shader->set_uniform_float("u_diffuse_strength", obj->get_data().m_diffuse_strength);
-        m_mesh_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
-        m_mesh_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
-        m_mesh_shader->set_uniform_vec4f("u_selection_color", obj->get_data().m_selection_color.get_rgba());
-        m_mesh_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+        m_mesh_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+        m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
+        m_mesh_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+        m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+        m_mesh_shader->set_uniform_vec3f("u_min", mesh->get_transformed_bb(view_transform).first);
+        m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_transformed_bb(view_transform).second);
+        m_mesh_shader->set_uniform_vec3f("u_slice_direction", mesh->get_slice_dir(view_transform, -glm::normalize(data.camera.get_front())));
+        m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+        m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
+        m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
+        m_mesh_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
+        m_mesh_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
+        m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+        m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
+        m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color.get_rgba());
+        m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
         m_mesh_shader->set_uniform_int("u_cascade_level", settings->get_cascade_level() - 1);
 
 
@@ -144,7 +135,7 @@ namespace vOS
         // wireframe mode should always be non-rounded
         if (draw_wireframe)
         {
-            obj->get_mvb()->get_vao_by_face()->draw();
+            mesh->get_mvb()->get_vao_by_face()->draw();
         }
         else
         {

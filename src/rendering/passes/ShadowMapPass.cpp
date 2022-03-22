@@ -1,6 +1,4 @@
 
-#include "glad/glad.h"
-#include "../../Window.h"
 #include "ShadowMapPass.h"
 
 namespace vOS
@@ -65,14 +63,10 @@ namespace vOS
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[cascade_idx], 0);
     }
 
-    void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, int mesh_id)
+    void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, std::shared_ptr<MeshObject> mesh)
     {
         int i = cascade_idx;
 
-        // Get Mesh
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return;
         glDisable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
         glEnable(GL_DEPTH_TEST);
@@ -85,21 +79,21 @@ namespace vOS
 
 
         // Transform
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations
-        float cell_size = obj->get_data().m_cell_size;
-        float peel_depth = obj->get_data().m_peel_level;
-        float slice_depth = obj->get_data().m_slice_level;
+        float cell_size = mesh->get_data().cell_size;
+        float peel_depth = mesh->get_data().peel_level;
+        float slice_depth = mesh->get_data().slice_level;
 
-        auto bb = obj->get_transformed_bb(view_transform);
+        auto bb = mesh->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
         // View Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
-        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
+        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
         auto settings = GlobalViewerSettings::getInstance();
 
@@ -110,12 +104,12 @@ namespace vOS
         m_shadow_shader->set_uniform_vec3f("u_min", min);
         m_shadow_shader->set_uniform_vec3f("u_max", max);
         m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_shadow_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
         m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->get_mesh_mode() == Wireframe);
-        m_shadow_shader->set_uniform_bool("u_rounding", obj->get_data().m_rounding_activated);
-        m_shadow_shader->set_uniform_float("u_rounding_size", obj->get_data().m_rounding_size);
+        m_shadow_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+        m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
         m_shadow_shader->set_uniform_float("u_wireframe_size", settings->get_wireframe_size());
-        m_shadow_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+        m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
 
         m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
@@ -127,7 +121,7 @@ namespace vOS
 
         if(settings->get_mesh_mode() == Wireframe)
         {
-            obj->get_mvb()->get_vao_by_face()->draw();
+            mesh->get_mvb()->get_vao_by_face()->draw();
         }
         else
         {
