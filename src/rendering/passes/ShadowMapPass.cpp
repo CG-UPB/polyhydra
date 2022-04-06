@@ -73,7 +73,7 @@ namespace vOS
         MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
         if (obj == nullptr)
             return;
-        glDisable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);

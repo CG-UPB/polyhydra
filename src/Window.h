@@ -546,7 +546,7 @@ namespace vOS {
          * @param mode : 0 = 1 Free Movement , 1 = Orbital Movement
          * @param orbital_radius : Range for Orbital Movement
          */
-        void camera_mode(int mode, float orbital_radius = 10);
+        void camera_mode(Mode mode);
 
         // IO //////////////////////////////////////////////////////////////////////////////////////////////////////////
 

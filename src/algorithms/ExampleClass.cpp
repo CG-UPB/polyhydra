@@ -165,7 +165,7 @@ void ExampleClass::selection_demonstration_ui(){
         static bool mode = false;
         std::cout << mode << std::endl;
         if(mode)
-            Window::instance().camera_mode(1, 10);
+            Window::instance().camera_mode(FLY);
         else
             Window::instance().camera_mode(0);
         mode = !mode;
