@@ -29,7 +29,7 @@ namespace vOS
         // set up the initial camera position, direction and orientation of the mesh
         world = glm::mat4(1.0f);
 
-        orientation = glm::quatLookAt(glm::vec3{1.0f, 0.0f, 0.0f}, m_world_up);
+        orientation = glm::quatLookAt( m_camera_front, m_world_up);
 
         set_mode(FLY);
     }
@@ -55,19 +55,11 @@ namespace vOS
 
         auto euler_angles = glm::degrees(glm::eulerAngles(orientation));
 
-        if (euler_angles.x > 89.0f)
-        {
-            euler_angles.x = 89.0f;
-        }
-        if (euler_angles.x < -89.0f)
-        {
-            euler_angles.x = -89.0f;
-        }
-
         glm::vec3 front;
-        front.x = cos(glm::radians(euler_angles.y)) * cos(glm::radians(euler_angles.x));
-        front.y = sin(glm::radians(euler_angles.x));
-        front.z = sin(glm::radians(euler_angles.y)) * cos(glm::radians(euler_angles.x));
+        front.x = (float)sin(glm::radians(euler_angles.y));
+        front.y = -(float)(sin(glm::radians(euler_angles.x)) * cos(glm::radians(euler_angles.y)));
+        front.z = -(float)(cos(glm::radians(euler_angles.x)) * cos(glm::radians(euler_angles.y)));
+
         m_camera_front = glm::normalize(front);
         m_camera_right = glm::normalize(glm::cross(m_camera_front, m_world_up));
         m_camera_up = glm::normalize(glm::cross(m_camera_right, m_camera_front));
@@ -92,7 +84,7 @@ namespace vOS
 
     void Camera::handle_input()
     {
-        // If left ctrl key is pressed, the object move mode is activbe which requires the camera stand still
+        // If left ctrl key is pressed, the object move mode is active which requires the camera stand still
         bool ignore_input = Input::controll_pressed();
         if(ignore_input)
             return;
@@ -201,7 +193,15 @@ namespace vOS
             x_offset *= m_sensitivity;
             y_offset *= m_sensitivity;
 
+            //rotate around x_axis
+            orientation = glm::normalize(glm::rotate(orientation, glm::radians(1.0f * x_offset), m_camera_up));
+            //rotate around y_axis
+            orientation = glm::normalize(glm::rotate(orientation, -glm::radians(1.0f * y_offset), m_camera_right));
 
+            //TODO: Make sure vertical angle does not get higher than 89° or lower than -89°
+
+            auto euler_angles = glm::degrees(glm::eulerAngles(orientation));
+            std::cout << euler_angles.y << std::endl;
         }
         else if (m_mode == ORBIT)
         {
@@ -214,14 +214,7 @@ namespace vOS
 
     void Camera::set_mode(Mode mode)
     {
-        if (mode == FLY)
-        {
-
-        }
-        else if(mode == ORBIT)
-        {
-
-        }
+        m_mode = mode;
     }
 
     void Camera::look_at(glm::vec3 target)
