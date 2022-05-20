@@ -88,7 +88,7 @@ void main()
     {
         v_Visible = 0;
     }
-
+    
     // Roundings
     vec3 position = a_pos;
     float alpha = u_object_color.a;

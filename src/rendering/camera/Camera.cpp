@@ -18,7 +18,8 @@ namespace vOS
         set_viewport_size(800, 600);
 
         // Init Position etc
-        position = glm::vec3{0.0f, 0.0f, 10.0f};
+        position = glm::vec3{0.0f, 0.0f, 20.0f};
+        target = glm::vec3{0.0f, 0.0f , 0.0f};
         m_camera_front = glm::vec3{0.0f, 0.0f, -1.0f};
         m_camera_up = glm::vec3{0.0f, 1.0f, 0.0f};
 
@@ -55,12 +56,8 @@ namespace vOS
         delta = current_frame - last_frame;
         last_frame = current_frame;
 
-        auto euler_angles = glm::degrees(glm::eulerAngles(orientation));
 
-        glm::vec3 front;
-        front.x = (float)sin(glm::radians(euler_angles.y));
-        front.y = -(float)(sin(glm::radians(euler_angles.x)) * cos(glm::radians(euler_angles.y)));
-        front.z = -(float)(cos(glm::radians(euler_angles.x)) * cos(glm::radians(euler_angles.y)));
+        glm::vec3 front = target - position;
 
 //        m_camera_front = glm::normalize(front);
 //        m_camera_right = glm::normalize(glm::cross(m_camera_front, m_camera_up));
@@ -74,13 +71,11 @@ namespace vOS
         );
 
         // Calculate View Matrix with camera front vector offset as target
-        view = glm::lookAt(
-                position,
-                position + m_camera_front,
-                m_camera_up
-        );
-
-        orientation = glm::quat(glm::radians(euler_angles));
+//        view = glm::lookAt(
+//                position,
+//                position + m_camera_front,
+//                m_camera_up
+//        );
 
     }
 
@@ -208,15 +203,7 @@ namespace vOS
             x_offset *= m_sensitivity;
             y_offset *= m_sensitivity;
 
-            //rotate around x_axis
-            orientation = glm::normalize(glm::rotate(orientation, glm::radians(1.0f * x_offset), m_camera_up));
-            //rotate around y_axis
-            orientation = glm::normalize(glm::rotate(orientation, -glm::radians(1.0f * y_offset), m_camera_right));
 
-            //TODO: Make sure vertical angle does not get higher than 89° or lower than -89°
-
-            auto euler_angles = glm::degrees(glm::eulerAngles(orientation));
-            std::cout << euler_angles.y << std::endl;
         }
         else if (m_mode == ORBIT)
         {
