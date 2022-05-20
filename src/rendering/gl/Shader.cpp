@@ -1,10 +1,5 @@
 
-#include "glad/glad.h"
-
 #include "Shader.h"
-
-#include <iostream>
-
 #include "../../fs/FileManager.h"
 #include "../../util/StringUtil.h"
 
@@ -110,7 +105,7 @@ namespace vOS
             int loc = glGetUniformLocation(m_shaderID, name.c_str());
             if (loc == -1)
             {
-                std::cout << "Unused uniform: " << name << std::endl;
+                //std::cout << "Unused uniform: " << name << std::endl;
             }
             m_locations.emplace(name, loc);
         }

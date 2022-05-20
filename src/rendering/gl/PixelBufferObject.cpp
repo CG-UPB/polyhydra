@@ -1,6 +1,4 @@
 
-#include "glad/glad.h"
-
 #include "PixelBufferObject.h"
 
 namespace vOS

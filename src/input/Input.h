@@ -1,7 +1,6 @@
-#include <map>
-#include <functional>
+#pragma once
 
-#include "glm/gtx/transform.hpp"
+#include "vospch.h"
 
 class GLFWwindow;
 

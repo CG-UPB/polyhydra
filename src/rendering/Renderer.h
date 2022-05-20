@@ -1,10 +1,10 @@
 #pragma once
 
-#include <utility>
+#include "vospch.h"
 
+#include "gl/FrameBufferObject.h"
 #include "../rendering/gl/PixelBufferObject.h"
 #include "../rendering/gl/PrePassFrameBufferObject.h"
-#include "gl/FrameBufferObject.h"
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/BackgroundPass.h"
@@ -49,7 +49,7 @@ namespace vOS
 
     private:
 
-        void render_mesh(RenderData& render_data, int mesh_id);
+        void render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh);
         void render_selection(RenderData& render_data);
         void render_pre_pass(RenderData& render_data);
         void render_shadow_map(RenderData& render_data);

@@ -15,7 +15,7 @@ namespace vOS
         ~TransparentShadowMapPass();
 
         void resize_buffers(int width, int height);
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
         FrameBufferObject* get_framebuffer() const;
         [[nodiscard]] unsigned int get_shadow_map() const;

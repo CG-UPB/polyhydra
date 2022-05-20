@@ -1,9 +1,11 @@
 #pragma once
 
+#include "vospch.h"
+
+#include "mesh/MeshObject.h"
 #include "../gl/VertexArrayObject.h"
-#include "../gl/Shader.h"
 #include "../gl/FrameBufferObject.h"
-#include "glm/gtx/transform.hpp"
+#include "../gl/Shader.h"
 #include "../Camera.h"
 #include "../Light.h"
 
@@ -14,10 +16,6 @@ namespace vOS
      */
     struct RenderData
     {
-        struct {
-            bool active = true;
-            float size = 0.3f;
-        } rounding;
         Camera camera;
         Light light;
     };
@@ -30,6 +28,6 @@ namespace vOS
          * @param render_data
          * @param mesh_id
          */
-        virtual void render(VertexArrayObject* vao, const RenderData& render_data, int mesh_id) = 0;
+        virtual void render(VertexArrayObject* vao, const RenderData& render_data, std::shared_ptr<MeshObject> mesh) = 0;
     };
 }

@@ -1,22 +1,12 @@
-//
-// Created by jan on 15.10.21.
-//
 
 #include "Window.h"
-#include <memory>
-#include <mutex>
-#include <list>
-#include "input/Input.h"
-#include <utility>
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
-#include "iostream"
 
+#include "input/Input.h"
 #include "panels/LogWindow.h"
 #include "panels/MeshView.h"
-#include "ImguiRenderer.h"
 #include "panels/CustomUIPanel.h"
-#include "rendering/passes/ShapePass.h"
 #include "panels/NewFileDialog.h"
+#include "rendering/passes/ShapePass.h"
 
 namespace vOS
 {
@@ -36,29 +26,24 @@ namespace vOS
     Window::Window()
     {
         // Create Custom UI Panel Object
-        m_custom_ui = new CustomUIPanel();
-    }
-
-    Window::~Window()
-    {
-        // Empty
+        m_custom_ui = std::make_unique<CustomUIPanel>();
     }
 
     void Window::initPanels()
     {
         // Initializes Panels
-        m_mesh_view = new MeshView(720, 480);
+        m_mesh_view = std::make_unique<MeshView>(720, 480);
         m_log_window = LogWindow::getInstance();
-        m_mesh_layer_view = new MeshLayerView();
-        m_toolbar = new ToolBar();
-        m_quality_panel = new QualityPanel();
+        m_mesh_layer_view = std::make_unique<MeshLayerView>();
+        m_toolbar = std::make_unique<ToolBar>();
+        m_quality_panel = std::make_unique<QualityPanel>();
     }
 
     void Window::setup()
     {
         m_window_open = true;
         // Create ImguiRenderer for Imgui communication
-        m_imgui_renderer = new ImguiRenderer(1280, 720, "volumeshOS");
+        m_imgui_renderer = std::make_unique<ImguiRenderer>(1280, 720, "volumeshOS");
 
         // Create default UI Panels
         initPanels();
@@ -98,13 +83,6 @@ namespace vOS
         remove_all_meshes();
 
         rendering_mutex.lock();
-        // Destroy Imgui Elements
-        delete m_mesh_view;
-        delete m_custom_ui;
-
-        if (m_imgui_renderer != nullptr)
-            delete m_imgui_renderer;
-
         m_window_open = false;
         rendering_mutex.unlock();
     }
@@ -218,7 +196,6 @@ namespace vOS
         // Call the Selection Callback Function
         if (element_type == 3)
         {
-            std::cout << "Ja\n";
             m_on_face_selection(mesh_id, element_handle_id, true);
         }
         else if (element_type == 1)
@@ -269,7 +246,7 @@ namespace vOS
     {
         rendering_mutex.lock();
         // Get MeshObject
-        MeshObject* mesh = get_mesh_obj(mesh_id);
+        std::shared_ptr<MeshObject> mesh = get_mesh_obj(mesh_id);
 
         // Unselect all elements
         if (mesh != nullptr)
@@ -281,9 +258,9 @@ namespace vOS
     {
         rendering_mutex.lock();
         // Unselect all elements of all meshes
-        for (std::pair<int, MeshObject*> element: m_mesh_objects)
+        for (const auto& [id, element] : m_mesh_objects)
         {
-            element.second->unselect_all();
+            element->unselect_all();
         }
         rendering_mutex.unlock();
     }
@@ -302,29 +279,12 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::set_mesh_rendering_mode(std::string mode)
-    {
-        set_mesh_rendering_mode(0, mode);
-    }
-
-    void Window::set_mesh_rendering_mode(int mesh_id, std::string mode)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_rendering_mode = std::move(mode);
-    }
-
-    std::string Window::get_mesh_rendering_mode(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_rendering_mode;
-    }
-
-    void Window::set_face_color(int mesh_id, int ovm_face_id, Color color)
+    void Window::set_face_color(int mesh_id, int ovm_face_id, const Color& color)
     {
         get_mesh_obj(mesh_id)->set_face_color(ovm_face_id, color);
     }
 
-    void Window::set_cell_color(int mesh_id, int ovm_cell_id, Color color)
+    void Window::set_cell_color(int mesh_id, int ovm_cell_id, const Color& color)
     {
         get_mesh_obj(mesh_id)->get_mvb()->set_cell_color(ovm_cell_id, color.r, color.g, color.b, color.a);
     }
@@ -354,29 +314,29 @@ namespace vOS
         set_mesh_color(0, color);
     }
 
-    void Window::set_mesh_color(int mesh_id, Color color)
+    void Window::set_mesh_color(int mesh_id, const Color& color)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_color = color;
+        get_mesh_obj(mesh_id)->get_data().color = color;
     }
 
     Color Window::get_mesh_color(int mesh_id)
     {
         // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_color;
+        return get_mesh_obj(mesh_id)->get_data().color;
     }
 
 
-    void Window::set_mesh_selection_color(int mesh_id, Color color)
+    void Window::set_mesh_selection_color(int mesh_id, const Color& color)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_selection_color = color;
+        get_mesh_obj(mesh_id)->get_data().selection_color = color;
     }
 
     Color Window::get_mesh_selection_color(int mesh_id)
     {
         // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_selection_color;
+        return get_mesh_obj(mesh_id)->get_data().selection_color;
     }
 
     void Window::set_mesh_visibility(bool visible)
@@ -388,13 +348,13 @@ namespace vOS
     void Window::set_mesh_visibility(int mesh_id, bool visible)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_visible = visible;
+        get_mesh_obj(mesh_id)->get_data().visible = visible;
     }
 
     bool Window::get_mesh_visibility(int mesh_id)
     {
         // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_visible;
+        return get_mesh_obj(mesh_id)->get_data().visible;
     }
 
     void Window::set_mesh_slice_level(float slice_level)
@@ -405,25 +365,25 @@ namespace vOS
     void Window::set_mesh_slice_level(int mesh_id, float slice_level)
     {
         // Change MeshObject Data
-            get_mesh_obj(mesh_id)->get_data().m_slice_level = slice_level;
+            get_mesh_obj(mesh_id)->get_data().slice_level = slice_level;
     }
 
     float Window::get_mesh_slice_level(int mesh_id)
     {
         // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_slice_level;
+        return get_mesh_obj(mesh_id)->get_data().slice_level;
     }
 
     void Window::set_mesh_slice_locked(int mesh_id, bool locked)
     {
         // Change MeshObject Data
-            get_mesh_obj(mesh_id)->get_data().m_slice_locked = locked;
+            get_mesh_obj(mesh_id)->get_data().slice_locked = locked;
     }
 
     bool Window::get_mesh_slice_locked(int mesh_id)
     {
         // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_slice_locked;
+        return get_mesh_obj(mesh_id)->get_data().slice_locked;
     }
 
     void Window::set_mesh_peel_level(float peel_level)
@@ -434,13 +394,13 @@ namespace vOS
     void Window::set_mesh_peel_level(int mesh_id, float peel_level)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_peel_level = peel_level;
+        get_mesh_obj(mesh_id)->get_data().peel_level = peel_level;
     }
 
     float Window::get_mesh_peel_level(int mesh_id)
     {
         // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_peel_level;
+        return get_mesh_obj(mesh_id)->get_data().peel_level;
     }
 
     void Window::set_mesh_cell_size(float cell_size)
@@ -451,151 +411,133 @@ namespace vOS
     void Window::set_mesh_cell_size(int mesh_id, float cell_size)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_cell_size = cell_size;
+        get_mesh_obj(mesh_id)->get_data().cell_size = cell_size;
     }
 
     float Window::get_mesh_cell_size(int mesh_id)
     {
         // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().m_cell_size;
+        return get_mesh_obj(mesh_id)->get_data().cell_size;
     }
 
 
     void Window::set_mesh_specular_exponent(int mesh_id, float exp)
     {
-        get_mesh_obj(mesh_id)->get_data().m_specular_exponent = exp;
+        get_mesh_obj(mesh_id)->get_data().specular_exponent = exp;
     }
 
     float Window::get_mesh_specular_exponent(int mesh_id)
     {
-        return get_mesh_obj(mesh_id)->get_data().m_specular_exponent;
+        return get_mesh_obj(mesh_id)->get_data().specular_exponent;
     }
 
     void Window::set_mesh_specular_strength(int mesh_id, float strength)
     {
-        get_mesh_obj(mesh_id)->get_data().m_specular_strength = strength;
+        get_mesh_obj(mesh_id)->get_data().specular_strength = strength;
     }
 
     float Window::get_mesh_specular_strength(int mesh_id)
     {
-        return get_mesh_obj(mesh_id)->get_data().m_specular_strength;
+        return get_mesh_obj(mesh_id)->get_data().specular_strength;
     }
 
     void Window::set_mesh_ambient_strength(int mesh_id, float strength)
     {
-        get_mesh_obj(mesh_id)->get_data().m_ambient_strength = strength;
+        get_mesh_obj(mesh_id)->get_data().ambient_strength = strength;
     }
 
     float Window::get_mesh_ambient_strength(int mesh_id)
     {
-        return get_mesh_obj(mesh_id)->get_data().m_ambient_strength;
+        return get_mesh_obj(mesh_id)->get_data().ambient_strength;
     }
 
     void Window::set_mesh_diffuse_strength(int mesh_id, float strength)
     {
-        get_mesh_obj(mesh_id)->get_data().m_diffuse_strength = strength;
+        get_mesh_obj(mesh_id)->get_data().diffuse_strength = strength;
     }
 
     float Window::get_mesh_diffuse_strength(int mesh_id)
     {
-        return get_mesh_obj(mesh_id)->get_data().m_diffuse_strength;
+        return get_mesh_obj(mesh_id)->get_data().diffuse_strength;
     }
 
     void Window::set_mesh_position(int mesh_id, float x, float y, float z)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_position = glm::vec3(x, y, z);
+        get_mesh_obj(mesh_id)->get_data().position = glm::vec3(x, y, z);
     }
 
     void Window::set_mesh_scale(int mesh_id, float scale)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_scale = glm::vec3(scale, scale, scale);
+        get_mesh_obj(mesh_id)->get_data().scale = glm::vec3(scale, scale, scale);
     }
 
     void Window::set_mesh_rounding_size(int mesh_id, float r_size)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_rounding_size = r_size;
+        get_mesh_obj(mesh_id)->get_data().rounding_size = r_size;
     }
 
     void Window::set_mesh_rounding_activated(int mesh_id, bool r_active)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().m_rounding_activated = r_active;
+        get_mesh_obj(mesh_id)->get_data().rounding_active = r_active;
     }
 
 
     float Window::get_mesh_rounding_size(int mesh_id)
     {
-        return get_mesh_obj(mesh_id)->get_data().m_rounding_size;
+        return get_mesh_obj(mesh_id)->get_data().rounding_size;
     }
 
 
     bool Window::get_mesh_rounding_activated(int mesh_id)
     {
-        return get_mesh_obj(mesh_id)->get_data().m_rounding_activated;
+        return get_mesh_obj(mesh_id)->get_data().rounding_active;
     }
 
     void Window::set_custom_imgui(void_callback vc)
     {
         rendering_mutex.lock();
         // Set Temporary Function
-        m_temporary_new_custom_ui_function = vc;
+        m_temporary_new_custom_ui_function = std::move(vc);
         m_new_custom_ui_function_set = true;
         rendering_mutex.unlock();
     }
 
-    std::vector<int>* Window::get_all_mesh_ids() {
-        // Create ID vector
-        std::vector<int>* ids = new std::vector<int>();
-
-        // Copy all existing indizes into the ID vector
-        for(auto pair : m_mesh_objects){
-            ids->push_back(pair.first);
-        }
-
-        return ids;
-    }
-
-
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh, int index)
+    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh, int mesh_id)
     {
         rendering_mutex.lock();
         // Create MeshObject
-        auto* mesh_obj = new MeshObject();
-        mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
-        // Set its Data
-        mesh_obj->set_data(MeshData());
-        // Set its Mesh
-        mesh_obj->set_mesh(mesh);
+        auto new_mesh_obj = std::make_shared<MeshObject>(mesh_id);
+        new_mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
+        new_mesh_obj->set_mesh(mesh);
 
-        // Check if index of mesh already exist: yes -> replace it, no -> just insert it
-        auto search = m_mesh_objects.find(index);
+        // Check if mesh_id of mesh already exist: yes -> replace it, no -> just insert it
+        auto search = m_mesh_objects.find(mesh_id);
         if (search != m_mesh_objects.end())
         {
-            // Delete old pointer
-            delete search->second;
-            search->second = mesh_obj;
+            search->second = std::move(new_mesh_obj);
         }
         else
         {
             // Insert Mesh
-            m_mesh_objects.emplace(index, mesh_obj);
+            m_mesh_objects.emplace(mesh_id, std::move(new_mesh_obj));
         }
 
         // If no other Mesh exists, focus the newly added Mesh
         if (m_mesh_objects.size() == 1) {
             rendering_mutex.unlock();
-            set_mesh_focus(index);
+            set_mesh_focus(mesh_id);
             rendering_mutex.lock();
         }
         // Calculate Offsets
         int offset = 0;
-        for (const auto& mesh_obj: m_mesh_objects)
+        for (const auto& [id, mesh_obj] : m_mesh_objects)
         {
-            mesh_obj.second->set_selection_offset(offset);
-            offset = std::get<1>(mesh_obj.second->selection_offset()) + 1;
+            mesh_obj->set_selection_offset(offset);
+            offset = std::get<1>(mesh_obj->selection_offset()) + 1;
         }
         rendering_mutex.unlock();
     }
@@ -604,41 +546,40 @@ namespace vOS
     {
         rendering_mutex.lock();
         // Generate Index
-        int index = m_total_number_of_loaded_meshes++;
+        int mesh_id = m_total_number_of_loaded_meshes++;
 
         // Create MeshObject
-        auto* mesh_obj = new MeshObject();
-        mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
-        mesh_obj->set_data(MeshData());
-        mesh_obj->set_mesh(mesh);
+        auto new_mesh_obj = std::make_shared<MeshObject>(mesh_id);
+        new_mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
+        new_mesh_obj->set_mesh(mesh);
 
         // Add mesh to our map
-        m_mesh_objects.emplace(index, mesh_obj);
+        m_mesh_objects.emplace(mesh_id, std::move(new_mesh_obj));
 
         // If no other Mesh exists, focus the newly added Mesh
         if (m_mesh_objects.size() == 1) {
 
             rendering_mutex.unlock();
-            set_mesh_focus(index);
+            set_mesh_focus(mesh_id);
             rendering_mutex.lock();
         }
 
         // Calculate Offsets
         int offset = 0;
-        for (const auto& mesh_obj: m_mesh_objects)
+        for (const auto& [id, mesh_obj] : m_mesh_objects)
         {
-            mesh_obj.second->set_selection_offset(offset);
-            offset = std::get<1>(mesh_obj.second->selection_offset()) + 1;
+            mesh_obj->set_selection_offset(offset);
+            offset = std::get<1>(mesh_obj->selection_offset()) + 1;
         }
         rendering_mutex.unlock();
-        return index;
+        return mesh_id;
     }
 
     void Window::remove_mesh(int index)
     {
         rendering_mutex.lock();
         // Get MeshObject
-        auto* mesh_obj = get_mesh_obj(index);
+        auto mesh_obj = get_mesh_obj(index);
 
         if (mesh_obj == nullptr)
         {
@@ -653,9 +594,9 @@ namespace vOS
         {
             int new_active_mesh = -1;
             // Find the first element in our map
-            for (auto obj: m_mesh_objects)
+            for (const auto& [id, obj] : m_mesh_objects)
             {
-                new_active_mesh = obj.first;
+                new_active_mesh = id;
                 break;
             }
             // Set new active mesh
@@ -669,9 +610,6 @@ namespace vOS
 
         m_mesh_objects.erase(iterator);
 
-        // Delete Object
-        delete mesh_obj;
-
         rendering_mutex.unlock();
     }
 
@@ -681,8 +619,8 @@ namespace vOS
         std::vector<int> all_ids;
 
         // Iterate all Meshes to get_rgb their IDs
-        for(auto obj : m_mesh_objects){
-            all_ids.push_back(obj.first);
+        for(const auto& [id, obj] : m_mesh_objects){
+            all_ids.push_back(id);
         }
 
         // Delete all Meshes by their ID
@@ -709,7 +647,7 @@ namespace vOS
             m_focused_mesh = index;
         }
         // Focus Camera
-        MeshObject* mesh_obj = get_mesh_obj(m_focused_mesh);
+        auto mesh_obj = get_mesh_obj(m_focused_mesh);
         if (mesh_obj != nullptr)
         {
             //m_renderer->set_zoom_point(mesh_obj->get_mesh_offset());
@@ -717,18 +655,18 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    int Window::get_mesh_focus()
+    int Window::get_mesh_focus() const
     {
         return m_focused_mesh;
     }
 
-    MeshObject* Window::get_mesh_obj(int index)
+    std::shared_ptr<MeshObject> Window::get_mesh_obj(int index)
     {
         return m_mesh_objects.find(index) != m_mesh_objects.end() ? m_mesh_objects[index] : nullptr;
     }
 
 
-    void Window::take_screenshot(std::string filepath)
+    void Window::take_screenshot(const std::string& filepath)
     {
         rendering_mutex.lock();
         this->m_mesh_view->m_take_screenshot(filepath);
@@ -832,12 +770,12 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::save_mesh_data(int mesh_id, std::string json_file_path)
+    void Window::save_mesh_data(int mesh_id, const std::string& json_file_path)
     {
         rendering_mutex.lock();
 
         // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        auto mesh_obj = get_mesh_obj(mesh_id);
         // Save MeshObject Data
         if (mesh_obj != nullptr)
         {
@@ -864,12 +802,12 @@ namespace vOS
 
     void Window::save_mesh_data(int mesh_id)
     {
-        std::string filename = "";
+        std::string filename;
 
         rendering_mutex.lock();
 
         // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        auto mesh_obj = get_mesh_obj(mesh_id);
         // Get MeshObject name
         if (mesh_obj != nullptr)
         {
@@ -886,12 +824,12 @@ namespace vOS
 
     void Window::load_mesh_data(int mesh_id)
     {
-        std::string filename = "";
+        std::string filename;
 
         rendering_mutex.lock();
 
         // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        auto mesh_obj = get_mesh_obj(mesh_id);
         // Get MeshObject name
         if (mesh_obj != nullptr)
         {
@@ -906,12 +844,12 @@ namespace vOS
 
     }
 
-    void Window::load_mesh_data(int mesh_id, std::string json_file_path)
+    void Window::load_mesh_data(int mesh_id, const std::string& json_file_path)
     {
         rendering_mutex.lock();
 
         // Get MeshObject
-        MeshObject* mesh_obj = get_mesh_obj(mesh_id);
+        auto mesh_obj = get_mesh_obj(mesh_id);
         // Save MeshObject Data
         if (mesh_obj != nullptr)
         {
@@ -926,7 +864,7 @@ namespace vOS
 
                 // Close stream
                 i.close();
-            }catch(std::exception e){
+            }catch(std::exception& e){
                 std::cout << " Error loading " << json_file_path << std::endl;
             }
         }
@@ -954,13 +892,13 @@ namespace vOS
         return !m_mesh_objects.empty();
     }
 
-    bool Window::is_ready()
+    bool Window::is_ready() const
     {
         return m_initialized;
     }
 
 
-    bool Window::is_closed()
+    bool Window::is_closed() const
     {
         return !m_window_open;
     }

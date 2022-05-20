@@ -1,7 +1,4 @@
 
-#include <iostream>
-#include "glad/glad.h"
-
 #include "ShapePass.h"
 #include "../../Window.h"
 
@@ -19,15 +16,10 @@ namespace vOS
         }
     }
 
-    void ShapePass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void ShapePass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
-        // Get MeshObject
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return;
-
         // Translate
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
 
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);

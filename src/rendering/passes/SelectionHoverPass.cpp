@@ -1,10 +1,6 @@
 
-#include "glad/glad.h"
-
 #include "SelectionHoverPass.h"
-
 #include "../meshes/CommonMeshes.h"
-#include <cmath>
 #include "../../Window.h"
 
 namespace vOS
@@ -19,8 +15,6 @@ namespace vOS
         m_quad_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
         m_quad_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
         m_edge_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
-        // Default zoom point
-        m_zoom_point = glm::vec3(0,0,0);
     }
 
     SelectionHoverPass::~SelectionHoverPass()
@@ -30,15 +24,10 @@ namespace vOS
         delete m_quad_vao;
     }
 
-    void SelectionHoverPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void SelectionHoverPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
-        // Get Mesh
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return;
-
         // If no element is hovered, return
-        if (m_hovered_type == SELECTION_TYPE_NONE || m_hovered_mesh != mesh_id)
+        if (m_hovered_type == SELECTION_TYPE_NONE || m_hovered_mesh != mesh->get_id())
         {
             return;
         }
@@ -50,7 +39,7 @@ namespace vOS
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
         // Transform Data
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
 
         if (m_hovered_type == SELECTION_TYPE_FACE)
         {
@@ -80,7 +69,7 @@ namespace vOS
                 m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
                 m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
                 m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
-                m_quad_circle_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+                m_quad_circle_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
                 m_quad_vao->draw();
                 m_quad_circle_shader->unbind();
             }
@@ -100,8 +89,8 @@ namespace vOS
                 m_edge_hover_shader->set_uniform_vec4f("u_color", color);
                 m_edge_hover_shader->set_uniform_vec3f("u_from_vertex", m_hovered_edge_from);
                 m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
-                m_edge_hover_shader->set_uniform_float("u_cell_size", obj->get_data().m_cell_size);
-                m_edge_hover_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+                m_edge_hover_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+                m_edge_hover_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
                 m_edge_vao->draw();
                 m_edge_hover_shader->unbind();
             }
@@ -122,7 +111,7 @@ namespace vOS
         m_hovered_mesh = mesh_id;
 
         // Get MeshObject
-        MeshObject* mesh = Window::instance().get_mesh_obj(mesh_id);
+        auto mesh = Window::instance().get_mesh_obj(mesh_id);
         if(mesh == nullptr)
             return;
 
@@ -155,8 +144,6 @@ namespace vOS
                 m_hovered_vertex_position.y = pos[1];
                 m_hovered_vertex_position.z = pos[2];
                 m_hovered_vertex_position.w = 1.0f;
-
-                m_zoom_point = mesh_transform * m_hovered_vertex_position;
             }
         }
         else if (m_hovered_type == SELECTION_TYPE_EDGE)
@@ -176,9 +163,6 @@ namespace vOS
                 m_hovered_edge_to.x = v1[0];
                 m_hovered_edge_to.y = v1[1];
                 m_hovered_edge_to.z = v1[2];
-
-                m_zoom_point = glm::vec3(mesh_transform * glm::vec4((m_hovered_edge_from + m_hovered_edge_to) / 2.0f, 1.0f));
-
             }
         }
     }
@@ -258,56 +242,7 @@ namespace vOS
             auto mesh_transform = mesh.get_data().get_transform();
             auto center = mesh.m_mesh->barycenter(face);
             auto pos = mesh_transform * glm::vec4(center[0], center[1], center[2], 1.0f);
-            m_zoom_point = glm::vec3(pos);
-
         }
         return res;
     }
-
-    /*
-    SelectionHoverPass::HoverMeshData SelectionHoverPass::get_edge_mesh_data(MeshObject& mesh, const RenderData& data, int mesh_id, int edge_id)
-    {
-        HoverMeshData res;
-
-        // Get Mesh
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return res;
-
-        float width = 0.003;
-
-        OpenVolumeMesh::EdgeHandle edge(edge_id);
-        auto edge_vertices = mesh.m_mesh->edge_vertices(edge);
-        auto v0 = mesh.m_mesh->vertex(edge_vertices[0]);
-        auto v1 = mesh.m_mesh->vertex(edge_vertices[1]);
-        glm::vec3 pos0 = glm::vec3(v0[0], v0[1], v0[2]);
-        glm::vec3 pos1 = glm::vec3(v1[0], v1[1], v1[2]);
-        auto mat = data.camera.projection * data.camera.view * data.camera.world * obj->get_data().get_transform();
-        auto p0_transformed = mat * glm::vec4(pos0, 1.0f);
-        auto p1_transformed = mat * glm::vec4(pos1, 1.0f);
-        glm::vec3 edge_normal = glm::normalize(glm::cross(glm::vec3(p1_transformed - p0_transformed), glm::vec3(0.0, 0.0, 1.0)));
-
-        add_vertex(pos0 - width * edge_normal, res.vertices);
-        add_vertex(pos1 - width * edge_normal, res.vertices);
-        add_vertex(pos0 + width * edge_normal, res.vertices);
-        add_vertex(pos1 + width * edge_normal, res.vertices);
-
-        res.indices.push_back(0);
-        res.indices.push_back(1);
-        res.indices.push_back(2);
-
-        res.indices.push_back(2);
-        res.indices.push_back(3);
-        res.indices.push_back(0);
-
-        return res;
-    }
-
-    void SelectionHoverPass::add_vertex(const glm::vec3& vertex, std::vector<float>& vertices)
-    {
-        vertices.push_back(vertex.x);
-        vertices.push_back(vertex.y);
-        vertices.push_back(vertex.z);
-    }
-     */
 }

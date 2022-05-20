@@ -1,10 +1,7 @@
+
 #include "QualityPanel.h"
 #include "../input/Input.h"
-#include "imgui.h"
-#include "MeshView.h"
-#include "NewFileDialog.h"
 #include "../util/Tooltips.h"
-
 
 namespace vOS
 {

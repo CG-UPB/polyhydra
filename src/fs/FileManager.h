@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string>
-#include FS_HEADER
+#include "vospch.h"
 
 namespace vOS
 {

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "RenderPass.h"
+#include "../gl/PrePassFrameBufferObject.h"
 
 namespace vOS
 {
@@ -17,7 +18,7 @@ namespace vOS
         void resize_buffers(int width, int height);
         void clear_position_buffer(const RenderData& data);
 
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
         [[nodiscard]] PrePassFrameBufferObject* get_framebuffer() const;
 

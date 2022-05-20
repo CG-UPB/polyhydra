@@ -1,9 +1,8 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
+#include "vospch.h"
+
 #include "../rendering/gl/TextureIcon.h"
-#include "imgui.h"
 
 namespace vOS
 {

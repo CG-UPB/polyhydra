@@ -1,9 +1,6 @@
-
 #pragma once
 
-#include <cmath>
-#include <glm/vec3.hpp>
-#include <OpenVolumeMesh/Core/GeometryKernel.hh>
+#include "vospch.h"
 
 namespace vOS
 {

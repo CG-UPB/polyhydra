@@ -1,11 +1,7 @@
-#include "SelectionPass.h"
-#include "glad/glad.h"
 
+#include "SelectionPass.h"
 #include "MeshPass.h"
 #include "../meshes/CommonMeshes.h"
-#include "../../settings/GlobalViewerSettings.h"
-#include "../../Window.h"
-#include "../../util/ModeEnum.h"
 
 namespace vOS {
     SelectionPass::SelectionPass(): m_selection_shader(Shader::selection_face())
@@ -16,11 +12,8 @@ namespace vOS {
         m_selection_cylinder_shader = Shader::selection_edge_shader();
     }
 
-    void SelectionPass::render(VertexArrayObject* vao, const RenderData &data, int mesh_id)
+    void SelectionPass::render(VertexArrayObject* vao, const RenderData &data, std::shared_ptr<MeshObject> mesh)
     {
-        // Get MeshObject
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-
         // GL Setup
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
@@ -31,21 +24,21 @@ namespace vOS {
         glDisable(GL_BLEND);
 
         // Transform Data
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations
-        float cell_size = obj->get_data().m_cell_size;
-        int peel_depth = obj->get_data().m_peel_level;
-        float slice_depth = obj->get_data().m_slice_level;
+        float cell_size = mesh->get_data().cell_size;
+        int peel_depth = mesh->get_data().peel_level;
+        float slice_depth = mesh->get_data().slice_level;
 
-        auto bb = obj->get_transformed_bb(view_transform);
+        auto bb = mesh->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
         // View Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
-        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
+        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
         // Get Selection Mode
         // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
@@ -67,7 +60,7 @@ namespace vOS {
         m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
         m_selection_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_selection_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_selection_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
+        m_selection_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
         m_selection_shader->set_uniform_bool("u_debug_mode", m_debug);
         m_selection_shader->set_uniform_bool("u_faces_selectable", faces_selectable);
         m_selection_shader->set_uniform_float("u_cell_size", cell_size);
@@ -76,7 +69,7 @@ namespace vOS {
         m_selection_shader->set_uniform_vec3f("u_min", min);
         m_selection_shader->set_uniform_vec3f("u_max", max);
         m_selection_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_selection_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
+        m_selection_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
 
         vao->draw();
 
@@ -94,7 +87,7 @@ namespace vOS {
             m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", transform);
             m_selection_cylinder_shader->set_uniform_mat4f("u_projection", data.camera.projection);
             m_selection_cylinder_shader->set_uniform_mat4f("u_view", data.camera.view);
-            m_selection_cylinder_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
+            m_selection_cylinder_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
             m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
             m_selection_cylinder_shader->set_uniform_int("u_peel_depth", peel_depth);
@@ -102,8 +95,8 @@ namespace vOS {
             m_selection_cylinder_shader->set_uniform_vec3f("u_min", min);
             m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
             m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-            m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-            m_selection_cylinder_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+            m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+            m_selection_cylinder_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
             m_cylinder_vao->draw_instanced(m_num_edges);
 
@@ -123,7 +116,7 @@ namespace vOS {
             m_selection_sphere_shader->set_uniform_mat4f("u_projection", data.camera.projection);
             m_selection_sphere_shader->set_uniform_mat4f("u_view", data.camera.view);
             m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", data.camera.position);
-            m_selection_sphere_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
+            m_selection_sphere_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
             m_selection_sphere_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
             m_selection_sphere_shader->set_uniform_int("u_peel_depth", peel_depth);
@@ -131,8 +124,8 @@ namespace vOS {
             m_selection_sphere_shader->set_uniform_vec3f("u_min", min);
             m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
             m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-            m_selection_sphere_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-            m_selection_sphere_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
+            m_selection_sphere_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+            m_selection_sphere_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
 
 
@@ -142,23 +135,18 @@ namespace vOS {
         }
     }
 
-    void SelectionPass::render_mesh(MeshObject* mesh, RenderData& data, int mesh_id)
+    void SelectionPass::render_mesh(const std::shared_ptr<MeshObject>& mesh, RenderData& data)
     {
-        // Get MeshObject
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
-            return;
-
         if (mesh != nullptr && mesh->get_vao() != nullptr)
         {
             // Set Variables from Mesh Data
             int offset = std::get<0>(mesh->selection_offset());
-            obj->get_data().m_selection_offset = offset;
+            mesh->get_data().selection_id_offset = offset;
             m_sphere_vao = mesh->get_sphere_vao();
             m_num_vertices = mesh->get_num_visible_vertices();
             m_cylinder_vao = mesh->get_cylinder_vao();
             m_num_edges = mesh->get_num_visible_edges();
-            render(mesh->get_vao(), data, mesh_id);
+            render(mesh->get_vao(), data, mesh);
         }
     }
 

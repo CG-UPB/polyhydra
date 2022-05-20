@@ -107,8 +107,6 @@ namespace vOS {
         Window &window = Window::instance();
         window.set_custom_imgui(std::bind(&TestClass::ui, this));
         window.add_mesh(&myMesh);
-
-        window.load_mesh_data(0);
     }
 
 
@@ -162,8 +160,6 @@ namespace vOS {
         // VOS Window
         Window &window = Window::instance();
         window.add_mesh(&mesh);
-
-        window.load_mesh_data(0);
     }
 
 
@@ -177,7 +173,5 @@ namespace vOS {
         Window &window = Window::instance();
         window.add_mesh(&m_mesh);
         window.add_mesh(&m_mesh1);
-
-        //window.load_mesh_data(0);
     }
 }

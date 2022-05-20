@@ -1,10 +1,6 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include FS_HEADER
-#include "glm/mat4x4.hpp"
+#include "vospch.h"
 
 namespace vOS
 {

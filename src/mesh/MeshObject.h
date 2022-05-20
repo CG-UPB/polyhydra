@@ -1,13 +1,8 @@
 #pragma once
 
-#include <OpenVolumeMesh/Geometry/VectorT.hh>
-#include <OpenVolumeMesh/Core/GeometryKernel.hh>
-#include <utility>
-#include <vector>
-#include <map>
-#include <unordered_set>
+#include "vospch.h"
+
 #include "../rendering/gl/VertexArrayObject.h"
-#include "glm/gtx/transform.hpp"
 #include "MeshVertexBuffer.h"
 #include "nlohmann/json.hpp"
 #include "../util/VecUtil.h"
@@ -37,47 +32,34 @@ namespace vOS
 
     struct MeshData
     {
-        MeshData() : m_color(0.76f, 0.76f, 0.76f, 1), m_selection_color(0.76f, 0.76f, 0.76f, 0), m_visible(true), m_rendering_mode("mesh_phong")
-        {
-            m_peel_level = 0;
-            m_slice_level = 0;
-            m_cell_size = 1;
-
-            m_ambient_strength = 1.0f;
-            m_diffuse_strength = 1.0f;
-            m_specular_strength = 0.3f;
-            m_specular_exponent = 8.0f;
-        }
-
          [[nodiscard]] nlohmann::json to_json()
          {
             nlohmann::json j;
 
             // Phong Data
-            j["phong_spec_strength"] = m_specular_strength;
-            j["phon_spec_exponent"] = m_specular_exponent;
-            j["phong_ambient_strength"] = m_ambient_strength;
-            j["phong_diffuse_strength"] = m_diffuse_strength;
+            j["phong_spec_strength"] = specular_strength;
+            j["phong_spec_exponent"] = specular_exponent;
+            j["phong_ambient_strength"] = ambient_strength;
+            j["phong_diffuse_strength"] = diffuse_strength;
 
             // Toolbox Data
-            j["tool_slice_level"] = m_slice_level;
-            j["tool_slice_locked"] = m_slice_locked;
-            j["tool_peel_level"] = m_peel_level;
-            j["tool_cell_size"] = m_cell_size;
+            j["tool_slice_level"] = slice_level;
+            j["tool_slice_locked"] = slice_locked;
+            j["tool_peel_level"] = peel_level;
+            j["tool_cell_size"] = cell_size;
 
              // Rendering Data
-             j["rendering_default_color"] = {m_color.r, m_color.g, m_color.b, m_color.a};
-             j["rendering_visible"] = m_visible;
-             j["rendering_mode"] = m_rendering_mode;
-             j["rendering_selection_color"] =  {m_selection_color.r, m_selection_color.g, m_selection_color.b, m_selection_color.a};
+             j["rendering_default_color"] = {color.r, color.g, color.b, color.a};
+             j["rendering_visible"] = visible;
+             j["rendering_selection_color"] =  {selection_color.r, selection_color.g, selection_color.b, selection_color.a};
 
              // Transform Data
-             j["transform_position"] = {m_position.x, m_position.y, m_position.z};
-             j["transform_scale"] = {m_scale.x, m_scale.y, m_scale.z};
+             j["transform_position"] = {position.x, position.y, position.z};
+             j["transform_scale"] = {scale.x, scale.y, scale.z};
 
              // Roundings
-             j["roundings activated"] = m_rounding_activated;
-             j["rounding size"] = m_rounding_size;
+             j["roundings activated"] = rounding_active;
+             j["rounding size"] = rounding_size;
 
             return j;
          }
@@ -85,82 +67,75 @@ namespace vOS
          void load_from_json(nlohmann::json j)
          {
              // Phong Data
-             m_specular_strength = j["phong_spec_strength"];
-             m_specular_exponent = j["phon_spec_exponent"];
-             m_ambient_strength = j["phong_ambient_strength"];
-             m_diffuse_strength = j["phong_diffuse_strength"];
+             specular_strength = j["phong_spec_strength"];
+             specular_exponent = j["phong_spec_exponent"];
+             ambient_strength = j["phong_ambient_strength"];
+             diffuse_strength = j["phong_diffuse_strength"];
 
              // Toolbox Data
-             m_slice_level = j["tool_slice_level"];
-             m_slice_locked = j["tool_slice_locked"];
-             m_peel_level = j["tool_peel_level"];
-             m_cell_size = j["tool_cell_size"];
+             slice_level = j["tool_slice_level"];
+             slice_locked = j["tool_slice_locked"];
+             peel_level = j["tool_peel_level"];
+             cell_size = j["tool_cell_size"];
 
              // Rendering Data
              auto color_vec = j["rendering_default_color"];
-             m_color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
-             m_visible = j["rendering_visible"];
-             m_rendering_mode = j["rendering_mode"];
+             color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
+             visible = j["rendering_visible"];
              color_vec = j["rendering_selection_color"];
-             m_selection_color =  Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
+             selection_color =  Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
 
 
              // Transform Data
              auto pos_vec = j["transform_position"];
-             m_position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
+             position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
              auto scale_vec = j["transform_scale"];
-             m_scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
+             scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
 
              // Roundings
-             m_rounding_activated = j["roundings activated"];
-             m_rounding_size = j["rounding size"];
+             rounding_active = j["roundings activated"];
+             rounding_size = j["rounding size"];
          }
 
         [[nodiscard]] glm::mat4 get_transform() const
         {
-            glm::mat4 pos = glm::translate(m_position);
-            glm::mat4 scl = glm::scale(m_scale * scale_normalization);
-            return pos * scl * glm::translate(-m_offset);
+            glm::mat4 pos = glm::translate(position);
+            glm::mat4 scl = glm::scale(scale * scale_normalization);
+            return pos * scl * glm::translate(-position_offset);
         }
 
         // Rendering Variables
-        Color m_color;
-        Color m_selection_color;
-        bool m_visible;
-        std::string m_rendering_mode;
-
-        float m_ambient_strength;
-        float m_diffuse_strength;
-        float m_specular_strength;
-        float m_specular_exponent;
+        Color color                 = {0.76f, 0.76f, 0.76f, 1.0f};
+        Color selection_color       = {0.76f, 0.76f, 0.76f, 0.0f};
+        float ambient_strength      = 1.0f;
+        float diffuse_strength      = 1.0f;
+        float specular_strength     = 0.3f;
+        float specular_exponent     = 8.0f;
 
         // Toolbox Variables
-        float m_peel_level;
-        bool m_slice_locked = false;
-        float m_slice_level;
-        float m_cell_size;
-        int m_selection_offset = 0;
-        float scale_normalization = 1.0f;
-
-        std::string rendering_mode;
+        float peel_level            = 0.0f;
+        float slice_level           = 0.0f;
+        float cell_size             = 1.0f;
+        bool slice_locked           = false;
+        bool rounding_active        = false;
+        float rounding_size         = 0.0f;
 
         // Transform Variables
-        glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 m_scale = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 m_offset = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 position          = {0.0f, 0.0f, 0.0f};
+        glm::vec3 scale             = {1.0f, 1.0f, 1.0f};
+        glm::vec3 position_offset   = {0.0f, 0.0f, 0.0f};
+        float scale_normalization   = 1.0f;
 
-        //Rounding Variables
-        bool m_rounding_activated = false;
-        float m_rounding_size = 0.0f;
+        // Other
+        bool visible                = true;
+        int selection_id_offset     = 0;
     };
 
     class MeshObject
     {
     public:
 
-        MeshObject();
-
-        explicit MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, std::string name);
+        explicit MeshObject(int id);
 
         ~MeshObject();
 
@@ -207,9 +182,6 @@ namespace vOS
          * @return
          */
         bool is_element_selected(int id, int type);
-
-        void set_data(MeshData data)
-        { m_data = std::move(data); }
 
         /**
          * Uses OVM FileManager to load Mesh from file
@@ -288,13 +260,13 @@ namespace vOS
          */
         glm::vec3 &get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir);
 
-        MeshData &get_data()
+        MeshData& get_data()
         { return m_data; }
 
 
 
-        void set_mesh_name(std::string str){mesh_name = str;}
-        std::string get_mesh_name(){return mesh_name;}
+        void set_mesh_name(const std::string& name){ m_mesh_name = name;}
+        std::string get_mesh_name() { return m_mesh_name; }
 
         /**
          * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
@@ -311,7 +283,8 @@ namespace vOS
         [[nodiscard]] VertexArrayObject *get_cylinder_vao() const;
         [[nodiscard]] VertexArrayObject *get_sphere_vao() const;
 
-
+        [[nodiscard]] int get_id() const
+        { return m_id; }
 
     private:
         /**
@@ -332,24 +305,15 @@ namespace vOS
 
         const int key_multiplier = 1000000;
 
-        std::string mesh_name = "default";
+        std::string m_mesh_name = "default";
 
         int m_max_peel_depth = 0;
 
         bool m_just_locked;
 
-        bool m_should_update;
-
-        std::vector<float> m_vert_colors;
-
-        std::vector<float> m_face_colors;
-
-        std::unordered_set<int> m_selected_faces;
-
         std::unordered_set<int> m_selected_vertices;
-
         std::unordered_set<int> m_selected_edges;
-
+        std::unordered_set<int> m_selected_faces;
         std::unordered_set<int> m_selected_cells;
 
         std::map<int, int> m_created_shapes;
@@ -367,5 +331,6 @@ namespace vOS
 
         MeshData m_data;
 
+        int m_id;
     };
 }

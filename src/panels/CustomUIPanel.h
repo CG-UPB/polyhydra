@@ -1,11 +1,7 @@
-//
-// Created by projektgruppe on 23.11.21.
-//
+#pragma once
 
-#ifndef VOLUMESHOS_CUSTOMUIPANEL_H
-#define VOLUMESHOS_CUSTOMUIPANEL_H
+#include "vospch.h"
 
-#include <functional>
 #include "../ImguiRenderer.h"
 
 namespace vOS
@@ -38,6 +34,3 @@ namespace vOS
         std::function<void()> m_custom_callback_function = empty_callback_function;
     };
 }
-
-
-#endif //VOLUMESHOS_CUSTOMUIPANEL_H

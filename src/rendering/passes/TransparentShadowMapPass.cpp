@@ -1,5 +1,4 @@
 
-#include "glad/glad.h"
 #include "../../Window.h"
 #include "TransparentShadowMapPass.h"
 
@@ -32,13 +31,8 @@ namespace vOS
         delete m_transparent_shadow_framebuffer;
     }
 
-    void TransparentShadowMapPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void TransparentShadowMapPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
-        // Get Mesh
-        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
-        if(obj == nullptr)
-            return;
-
         glDisable( GL_CULL_FACE );
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
@@ -50,11 +44,11 @@ namespace vOS
 
         glm::mat4 light_projection = data.light.projection;
         glm::mat4 light_view = data.light.view;
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
-        glm::mat4 l_transform = data.light.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
+        glm::mat4 l_transform = data.light.world * mesh->get_data().get_transform();
 
         // Shader uniforms
-        m_transparent_shadow_shader->set_uniform_vec4f("u_object_color", obj->get_data().m_color.get_rgba());
+        m_transparent_shadow_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
         m_transparent_shadow_shader->set_uniform_mat4f("u_light_projection", light_projection);
         m_transparent_shadow_shader->set_uniform_mat4f("u_light_view", light_view);
         m_transparent_shadow_shader->set_uniform_mat4f("u_transform", l_transform);

@@ -1,23 +1,18 @@
 
-#include <glad/glad.h>
-
-#include <utility>
-#include <iostream>
+#include "ImguiRenderer.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "ImguiRenderer.h"
-#include "input/Input.h"
-#include "fs/FileManager.h"
 #include "Window.h"
+#include "input/Input.h"
+#include "util/UIUtil.h"
+#include "fs/FileManager.h"
 #include "panels/LogWindow.h"
 #include "rendering/gl/Shader.h"
-#include "util/UIUtil.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <stb_image.h>
 
 namespace vOS
 {
@@ -105,7 +100,7 @@ namespace vOS
         stbi_image_free(images[0].pixels);
 
         glfwMakeContextCurrent(m_window);
-        glfwSwapInterval(0); // Enable vsync
+        glfwSwapInterval(1); // Enable vsync
         // Setup Input Class
         Input::setup(m_window);
         /*

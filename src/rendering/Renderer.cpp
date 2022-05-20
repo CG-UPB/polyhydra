@@ -1,6 +1,4 @@
 
-#include "glad/glad.h"
-
 #include "Renderer.h"
 
 namespace vOS
@@ -72,17 +70,16 @@ namespace vOS
                 render_background(*render_data);
             }
             m_target_ms->bind();
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
             {
-                auto mesh = m.second;
-                if (!mesh->get_data().m_visible)
+                if (mesh == nullptr || !mesh->get_data().visible)
                 {
                     continue;
                 }
                 mesh->update_vertex_buffer();
                 if (mesh->get_vao() != nullptr)
                 {
-                    m_vertex_only_pass.render(nullptr, *render_data, m.first);
+                    m_vertex_only_pass.render(nullptr, *render_data, mesh);
                 }
             }
             m_target_ms->unbind();
@@ -135,33 +132,33 @@ namespace vOS
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms,m_target);
     }
 
-    void Renderer::render_mesh(RenderData& render_data, int mesh_id)
+    void Renderer::render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh)
     {
-        // Get Mesh
-        MeshObject* obj = Window::instance().get_mesh_obj(mesh_id);
-        if (obj == nullptr)
+        if (mesh == nullptr)
+        {
             return;
+        }
 
-        MeshData& mesh_data = obj->get_data();
+        MeshData& mesh_data = mesh->get_data();
 
-        if (!mesh_data.m_visible)
+        if (!mesh_data.visible)
         {
             return;
         }
 
 
-        obj->update_vertex_buffer();
+        mesh->update_vertex_buffer();
 
-        VertexArrayObject* vao = obj->get_vao();
-        if (mesh_data.m_rounding_activated)
+        VertexArrayObject* vao = mesh->get_vao();
+        if (mesh_data.rounding_active)
         {
-            vao = obj->get_mvb()->get_vao_rounded();
+            vao = mesh->get_mvb()->get_vao_rounded();
         }
 
         // render all passes
         if (vao != nullptr)
         {
-            m_mesh_pass->render(vao, render_data, mesh_id);
+            m_mesh_pass->render(vao, render_data, mesh);
             //m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
@@ -211,21 +208,21 @@ namespace vOS
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (const auto [mesh_id, mesh] : Window::instance().get_mesh_list())
+            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
             {
-                if (!mesh->get_data().m_visible)
+                if (!mesh->get_data().visible)
                 {
                     continue;
                 }
-                m_selection_pass.render_mesh(mesh, render_data, mesh_id);
+                m_selection_pass.render_mesh(mesh, render_data);
             }
         }
         m_selectionFrameBuffer->unbind();
 
         m_target_ms->bind();
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
         {
-            m_selection_hover_pass.render(nullptr, render_data, m.first);
+            m_selection_hover_pass.render(nullptr, render_data, mesh);
         }
         m_target_ms->unbind();
     }
@@ -241,23 +238,21 @@ namespace vOS
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_pre_pass->clear_position_buffer(render_data);
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
         {
-            auto mesh = m.second;
-
-            if (!mesh->get_data().m_visible)
+            if (!mesh->get_data().visible)
             {
                 continue;
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (mesh->get_data().m_rounding_activated)
+            if (mesh->get_data().rounding_active)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
             if (vao != nullptr)
             {
-                m_pre_pass->render(vao, render_data, m.first);
+                m_pre_pass->render(vao, render_data, mesh);
             }
         }
         // we generate a mipmap for the position, this is used for ssao
@@ -287,22 +282,21 @@ namespace vOS
             m_shadow_pass->bind_for_writing(i);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
             {
-                auto mesh = m.second;
-                if (!mesh->get_data().m_visible)
+                if (!mesh->get_data().visible)
                 {
                     continue;
                 }
                 mesh->update_vertex_buffer();
                 VertexArrayObject* vao = mesh->get_vao();
-                if (mesh->get_data().m_rounding_activated)
+                if (mesh->get_data().rounding_active)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
                 if (vao != nullptr)
                 {
-                    m_shadow_pass->render(vao, render_data, m.first);
+                    m_shadow_pass->render(vao, render_data, mesh);
                 }
             }
             m_shadow_pass->get_framebuffer()->unbind();
@@ -311,7 +305,7 @@ namespace vOS
 
     void Renderer::render_ssao_pass(RenderData& render_data)
     {
-        m_ssao_pass->render(nullptr, render_data, -1);
+        m_ssao_pass->render(nullptr, render_data, nullptr);
     }
 
     void Renderer::render_transparency_wb(RenderData& render_data)
@@ -325,25 +319,23 @@ namespace vOS
         glBlendEquation(GL_FUNC_ADD);
         //glDisable(GL_CULL_FACE);
 
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
         {
-            auto mesh = m.second;
-
             MeshData& mesh_data = mesh->get_data();
 
-            if (!mesh->get_data().m_visible)
+            if (!mesh->get_data().visible)
             {
                 continue;
             }
             mesh->update_vertex_buffer();
             VertexArrayObject* vao = mesh->get_vao();
-            if (mesh_data.m_rounding_activated)
+            if (mesh_data.rounding_active)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
             if (vao != nullptr)
             {
-                m_transparency_pass_wb->render(vao, render_data, m.first);
+                m_transparency_pass_wb->render(vao, render_data, mesh);
             }
         }
         m_transparency_pass_wb->unbind_transparent_buffer();
@@ -376,25 +368,24 @@ namespace vOS
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             // first render all meshes
-            for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
             {
-                auto mesh = m.second;
                 MeshData& mesh_data = mesh->get_data();
-                if (!mesh->get_data().m_visible)
+                if (!mesh->get_data().visible)
                 {
                     continue;
                 }
 
                 mesh->update_vertex_buffer();
                 VertexArrayObject* vao = mesh->get_vao();
-                if (mesh_data.m_rounding_activated)
+                if (mesh_data.rounding_active)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
 
                 if (vao != nullptr)
                 {
-                    m_transparency_pass_dp->render(vao, render_data, m.first, i);
+                    m_transparency_pass_dp->render(vao, render_data, mesh, i);
                 }
             }
             if (i % 2 == 0)
@@ -420,7 +411,7 @@ namespace vOS
 
         m_target_ms->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, render_data, 0);
+        m_background_pass.render(nullptr, render_data, nullptr);
         m_target_ms->unbind();
     }
 
@@ -428,9 +419,9 @@ namespace vOS
     void Renderer::render_meshes(RenderData& render_data)
     {
         m_target_ms->bind();
-        for (const auto& m: Window::instance().get_mesh_list())
+        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
         {
-            render_mesh(render_data, m.first);
+            render_mesh(render_data, mesh);
         }
         m_target_ms->unbind();
     }

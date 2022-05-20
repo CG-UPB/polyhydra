@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Renderer.h"
 #include "RenderPass.h"
+#include "../Renderer.h"
 
 namespace vOS
 {
@@ -20,7 +20,7 @@ namespace vOS
          */
         ~MeshPass() = default;
 
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
 
     private:

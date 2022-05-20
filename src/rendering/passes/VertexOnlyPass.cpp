@@ -1,6 +1,6 @@
 
 #include "VertexOnlyPass.h"
-#include "glad/glad.h"
+
 #include "../../mesh/MeshObject.h"
 #include "../../Window.h"
 
@@ -11,11 +11,8 @@ namespace vOS
         m_vertex_only_shader = Shader::vertex_only_shader();
     }
 
-    void VertexOnlyPass::render(VertexArrayObject* vao, const RenderData& data, int mesh_id)
+    void VertexOnlyPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
-        // Get MeshObject
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
-
         // GL Setup
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
@@ -26,21 +23,21 @@ namespace vOS
         glDisable(GL_BLEND);
 
         // Transform Data
-        glm::mat4 transform = data.camera.world * obj->get_data().get_transform();
+        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
         // Cell operations
-        float cell_size = obj->get_data().m_cell_size;
-        int peel_depth = obj->get_data().m_peel_level;
-        float slice_depth = obj->get_data().m_slice_level;
+        float cell_size = mesh->get_data().cell_size;
+        float peel_depth = mesh->get_data().peel_level;
+        float slice_depth = mesh->get_data().slice_level;
 
-        auto bb = obj->get_transformed_bb(view_transform);
+        auto bb = mesh->get_transformed_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
         // View Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
-        auto slice_direction = obj->get_slice_dir(view_transform, view_dir);
+        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
         glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
 
@@ -52,19 +49,19 @@ namespace vOS
         m_vertex_only_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_vertex_only_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_vertex_only_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
-        m_vertex_only_shader->set_uniform_int("u_selection_offset", obj->get_data().m_selection_offset);
+        m_vertex_only_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
         m_vertex_only_shader->set_uniform_float("u_cell_size", cell_size);
-        m_vertex_only_shader->set_uniform_int("u_peel_depth", peel_depth);
+        m_vertex_only_shader->set_uniform_int("u_peel_depth", (int) peel_depth);
         m_vertex_only_shader->set_uniform_float("u_slice_depth", slice_depth);
         m_vertex_only_shader->set_uniform_vec3f("u_min", min);
         m_vertex_only_shader->set_uniform_vec3f("u_max", max);
         m_vertex_only_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_vertex_only_shader->set_uniform_bool("u_slice_locked", obj->get_data().m_slice_locked);
-        m_vertex_only_shader->set_uniform_float("u_average_cell_size", obj->get_mvb()->get_average_cell_size());
-        m_vertex_only_shader->set_uniform_vec4f("u_color", obj->get_data().m_color.get_rgba());
+        m_vertex_only_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+        m_vertex_only_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+        m_vertex_only_shader->set_uniform_vec4f("u_color", mesh->get_data().color.get_rgba());
         m_vertex_only_shader->set_uniform_float("u_size", size);
 
-        obj->get_mvb()->get_vertex_only_vao()->draw_instanced(obj->get_num_visible_vertices());
+        mesh->get_mvb()->get_vertex_only_vao()->draw_instanced(mesh->get_num_visible_vertices());
 
         m_vertex_only_shader->unbind();
     }

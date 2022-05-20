@@ -1,15 +1,9 @@
-//
-// Created by projektgruppe on 06.03.22.
-//
+#pragma once
 
-#include "glm/gtx/transform.hpp"
+#include "vospch.h"
+
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
-
-#ifndef VOLUMESHOS_CAMERA_H
-#define VOLUMESHOS_CAMERA_H
-
-
 
 namespace vOS {
 
@@ -91,4 +85,3 @@ namespace vOS {
     };
 
 }
-#endif //VOLUMESHOS_CAMERA_H

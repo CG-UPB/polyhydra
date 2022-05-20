@@ -1,12 +1,6 @@
-//
-// Created by projektgruppe on 08.03.22.
-//
 
 #include "Light.h"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
 #include "../input/Input.h"
-#include <iostream>
 
 namespace vOS
 {

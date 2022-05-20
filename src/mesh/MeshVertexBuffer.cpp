@@ -3,11 +3,6 @@
 #include "../rendering/meshes/CommonMeshes.h"
 #include "../util/VecUtil.h"
 #include "MeshProperties.h"
-#include <unordered_set>
-#include <type_traits>
-#include <limits>
-
-#define PI 3.14159265358979323846f
 
 namespace vOS
 {
@@ -172,7 +167,7 @@ namespace vOS
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::steady_clock::now() - m_loading_start
             ).count();
-            std::cout << "Loading mesh took " << (float) duration / 1000.0f << " seconds" << std::endl;
+            Log::info("Loading mesh took " + std::to_string((float) duration / 1000.0f) + " seconds");
         }
     }
 

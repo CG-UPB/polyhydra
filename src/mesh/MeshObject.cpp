@@ -1,30 +1,17 @@
+
 #include "MeshObject.h"
 
-#include <OpenVolumeMesh/Attribs/OpenVolumeMeshStatus.hh>
-#include <OpenVolumeMesh/Attribs/NormalAttrib.hh>
-#include <OpenVolumeMesh/Attribs/ColorAttrib.hh>
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
 #include "../panels/LogWindow.h"
-#include <array>
-#include <utility>
 #include "../Window.h"
-#include "../rendering/meshes/CommonMeshes.h"
 #include "MeshProperties.h"
 
 namespace vOS
 {
 
-    MeshObject::MeshObject()
+    MeshObject::MeshObject(int id) : m_id(id)
     {
         // empty mesh
         m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
-        m_should_update = false;
-    }
-
-    MeshObject::MeshObject(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh, std::string name) : MeshObject()
-    {
-        set_mesh(mesh);
-        mesh_name = std::move(name);
     }
 
     void MeshObject::load_from_file(const std::string& file_path)
@@ -32,7 +19,6 @@ namespace vOS
         // open OVM FileManager
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.readFile(file_path, *m_mesh);
-        m_should_update = true;
     }
 
     void MeshObject::write_to_file(const std::string &file_path) const
@@ -289,7 +275,7 @@ namespace vOS
         }
         auto [min, max] = VecUtil::get_bounding_box(vertices);
         glm::vec3 diameter = max - min;
-        m_data.m_offset = min + (diameter * 0.5f);
+        m_data.position_offset = min + (diameter * 0.5f);
         // all meshes should have the same screen size, regardless of their actual size
         m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
     }
@@ -450,7 +436,7 @@ namespace vOS
     std::pair<glm::vec3,glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
     {
 
-        if (m_data.m_slice_locked)
+        if (m_data.slice_locked)
         {
             return m_transformed_bb;
         }
@@ -507,7 +493,7 @@ namespace vOS
 
     glm::vec3 &MeshObject::get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir)
     {
-        if (!m_data.m_slice_locked)
+        if (!m_data.slice_locked)
         {
             m_just_locked = true;
             m_slice_dir = view_dir;

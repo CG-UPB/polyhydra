@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include "vospch.h"
 
 namespace vOS
 {

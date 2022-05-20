@@ -1,10 +1,5 @@
 
-#include "glad/glad.h"
-
 #include "VertexArrayObject.h"
-
-#include <iostream>
-#include <type_traits>
 #include "../meshes/CommonMeshes.h"
 
 namespace vOS

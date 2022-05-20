@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vospch.h"
+
 #include "../rendering/gl/PixelBufferObject.h"
 #include "../rendering/gl/PrePassFrameBufferObject.h"
 #include "../ImguiRenderer.h"

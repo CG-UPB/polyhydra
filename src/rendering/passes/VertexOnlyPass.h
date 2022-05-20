@@ -12,7 +12,7 @@ namespace vOS
 
         VertexOnlyPass();
 
-        void render(VertexArrayObject* vao, const RenderData& data, int mesh_id) override;
+        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
     private:
 

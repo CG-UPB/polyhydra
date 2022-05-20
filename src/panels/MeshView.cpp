@@ -1,17 +1,9 @@
 
-#include "glad/glad.h"
-
-#include "../util/StringUtil.h"
 #include "MeshView.h"
+#include "../util/StringUtil.h"
 #include "../input/Input.h"
 
-#include <cmath>
-#include <functional>
-
-#include "imgui.h"
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include <stb_image_write.h>
 
 namespace vOS
 {
@@ -141,9 +133,8 @@ namespace vOS
         int face_id_mesh = -1;
         int hovered_mesh_id = -1;
 
-        for (const auto& m: Window::instance().get_mesh_list())
+        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
         {
-            auto mesh = m.second;
             int from = std::get<0>(mesh->selection_offset());
             int to = std::get<1>(mesh->selection_offset());
 
@@ -152,14 +143,14 @@ namespace vOS
                 m_hovered_element_id = picked_id;
                 m_hovered_element_type = type;
 
-                hovered_mesh_id = m.first;
+                hovered_mesh_id = id;
                 any_mesh_hovered = true;
 
                 auto& settings = *GlobalViewerSettings::getInstance();
 
                 if (type == SELECTION_TYPE_FACE)
                 {
-                    face_id_mesh = m.first;
+                    face_id_mesh = id;
                     int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                     auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
                     auto ch = mesh->m_mesh->incident_cell(chf);
@@ -197,14 +188,14 @@ namespace vOS
                                 // Select element via Window class, to activate Callback function
                                 // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                                 Window::instance().rendering_mutex.unlock();
-                                Window::instance().select_element(m.first, ch.idx(), 6);
+                                Window::instance().select_element(id, ch.idx(), 6);
                                 Window::instance().rendering_mutex.lock();
                             }
                         }
                     }
                     else
                     {
-                        m_renderer->m_selection_hover_pass.hover(m_render_data, m.first, type, face_id);
+                        m_renderer->m_selection_hover_pass.hover(m_render_data, id, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
                         if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -212,7 +203,7 @@ namespace vOS
                             // Select element via Window class, to activate Callback function
                             // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                             Window::instance().rendering_mutex.unlock();
-                            Window::instance().select_element(m.first, face_id, type);
+                            Window::instance().select_element(id, face_id, type);
                             Window::instance().rendering_mutex.lock();
                         }
                     }
@@ -223,7 +214,7 @@ namespace vOS
                 {
                     int vertex_id = mesh->to_vertex_id(picked_id - from) - 1;
 
-                    m_renderer->m_selection_hover_pass.hover(m_render_data, m.first, type, vertex_id);
+                    m_renderer->m_selection_hover_pass.hover(m_render_data, id, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -231,7 +222,7 @@ namespace vOS
                         // Select element via Window class, to activate Callback function
                         // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().select_element(m.first, vertex_id, type);
+                        Window::instance().select_element(id, vertex_id, type);
                         Window::instance().rendering_mutex.lock();
                     }
 
@@ -241,7 +232,7 @@ namespace vOS
                 {
                     int edge_id = mesh->to_edge_id(picked_id - from) - 1;
 
-                    m_renderer->m_selection_hover_pass.hover(m_render_data, m.first, type, edge_id);
+                    m_renderer->m_selection_hover_pass.hover(m_render_data, id, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -249,7 +240,7 @@ namespace vOS
                         // Select element via Window class, to activate Callback function
                         // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
                         Window::instance().rendering_mutex.unlock();
-                        Window::instance().select_element(m.first, edge_id, type);
+                        Window::instance().select_element(id, edge_id, type);
                         Window::instance().rendering_mutex.lock();
                     }
                     mesh->get_mvb()->reset_hover();
@@ -350,9 +341,9 @@ namespace vOS
         }
 
         // display mesh loading percentage
-        for (const std::pair<int, MeshObject*> m: Window::instance().get_mesh_list())
+        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
         {
-            auto mvb = m.second->get_mvb();
+            auto mvb = mesh->get_mvb();
             if (mvb != nullptr && !mvb->is_loading_finished())
             {
                 ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
