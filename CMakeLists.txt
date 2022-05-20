@@ -70,17 +70,17 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp
-        ${VOLUMESHOS_SRC}/rendering/Camera.cpp
+        ${VOLUMESHOS_SRC}/rendering/camera/Camera.cpp
         ${VOLUMESHOS_SRC}/rendering/Light.cpp
         ${VOLUMESHOS_SRC}/panels/QualityPanel.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/MeshMover.cpp
+        ${VOLUMESHOS_SRC}/rendering/camera/MeshMover.cpp
         #${VOLUMESHOS_SRC}/algorithms/Demo.cpp
         ${VOLUMESHOS_SRC}/rendering/Renderer.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp
         ${VOLUMESHOS_SRC}/util/UIUtil.cpp
         ${VOLUMESHOS_SRC}/util/stb.cpp
-        ${VOLUMESHOS_SRC}/util/Log.cpp)
+        ${VOLUMESHOS_SRC}/util/Log.cpp src/rendering/camera/TrackBall.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

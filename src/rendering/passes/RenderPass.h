@@ -6,7 +6,7 @@
 #include "../gl/VertexArrayObject.h"
 #include "../gl/FrameBufferObject.h"
 #include "../gl/Shader.h"
-#include "../Camera.h"
+#include "rendering/camera/Camera.h"
 #include "../Light.h"
 
 namespace vOS

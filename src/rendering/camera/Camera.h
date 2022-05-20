@@ -5,13 +5,14 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
 
+#include "TrackBall.h"
+
 namespace vOS {
 
     enum Mode
     {
         FLY,
-        ORBIT,
-        SET
+        ORBIT
     };
 
 /**
@@ -22,10 +23,10 @@ namespace vOS {
     public:
         Camera();
 
-        glm::vec3 get_viewport_size() const;
-
         void set_viewport_size(float width, float height);
         void set_mode(Mode mode);
+
+        glm::vec2 get_viewport_size() const;
 
         void update();
 
@@ -66,6 +67,10 @@ namespace vOS {
         float zoom = 45.0f;
 
     private:
+
+        void handle_trackball_movement(const glm::vec2 start_position, const glm::vec2& end_position);
+
+        TrackBall m_trackball;
 
         Mode m_mode = FLY;
 

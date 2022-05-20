@@ -1,7 +1,7 @@
 
 #include "MeshMover.h"
-#include "../input/Input.h"
-#include "../Window.h"
+#include "input/Input.h"
+#include "Window.h"
 
 
 namespace vOS
@@ -95,7 +95,8 @@ namespace vOS
             distance = distance < 0.01f ? 0.01f : distance;
 
             // Normalize Mouse Coordinates by screen size and distance from camera to object
-            screen_difference = screen_difference / (m_camera->get_viewport_size() / distance);
+            glm::vec3 size(m_camera->get_viewport_size().x, m_camera->get_viewport_size().y, 1.0f);
+            screen_difference = screen_difference / (size / distance);
 
             // Convert Mouse Coordinate to Camera Space
             glm::vec3 cam_space =

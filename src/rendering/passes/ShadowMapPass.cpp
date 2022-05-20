@@ -68,7 +68,7 @@ namespace vOS
         int i = cascade_idx;
 
         // Get Mesh
-        MeshObject *obj = Window::instance().get_mesh_obj(mesh_id);
+        std::shared_ptr<MeshObject> obj = Window::instance().get_mesh_obj(mesh->get_id());
         if (obj == nullptr)
             return;
         glEnable(GL_CULL_FACE);

@@ -1,12 +1,18 @@
 
 #include "Camera.h"
-#include "../input/Input.h"
-
+#include "input/Input.h"
+#include "../../util/VecUtil.h"
 
 namespace vOS
 {
 
-    Camera::Camera()
+    /**
+     * 1) Trackball
+     *
+     */
+
+    Camera::Camera():
+        m_trackball(*this, 1.0f)
     {
 
         set_viewport_size(800, 600);
@@ -21,10 +27,13 @@ namespace vOS
 
         // set up the initial camera position, direction and orientation of the mesh
         world = glm::mat4(1.0f);
+        view = glm::lookAt(
+                position,
+                target,
+                m_camera_up
+        );
 
-        orientation = glm::quatLookAt( m_camera_front, m_world_up);
-
-        set_mode(FLY);
+        set_mode(ORBIT);
     }
 
     void Camera::set_viewport_size(float width, float height)
@@ -53,9 +62,9 @@ namespace vOS
         front.y = -(float)(sin(glm::radians(euler_angles.x)) * cos(glm::radians(euler_angles.y)));
         front.z = -(float)(cos(glm::radians(euler_angles.x)) * cos(glm::radians(euler_angles.y)));
 
-        m_camera_front = glm::normalize(front);
-        m_camera_right = glm::normalize(glm::cross(m_camera_front, m_world_up));
-        m_camera_up = glm::normalize(glm::cross(m_camera_right, m_camera_front));
+//        m_camera_front = glm::normalize(front);
+//        m_camera_right = glm::normalize(glm::cross(m_camera_front, m_camera_up));
+//        m_camera_up = glm::normalize(glm::cross(m_camera_right, m_camera_front));
 
         projection = glm::perspective(
                 glm::radians(zoom),
@@ -121,10 +130,12 @@ namespace vOS
                 float x_offset = xpos - last_x;
                 float y_offset = last_y - ypos;
 
+                handle_trackball_movement({last_x, last_y}, {xpos, ypos});
+
                 last_x = xpos;
                 last_y = ypos;
 
-                handle_mouse_movement(x_offset, y_offset);
+                //handle_mouse_movement(x_offset, y_offset);
             } else
             {
                 last_x = xpos;
@@ -133,29 +144,40 @@ namespace vOS
         }
 
         // 3 Dimensional Movement
-        if (ImGui::IsWindowFocused())
+//        if (ImGui::IsWindowFocused())
+//        {
+//
+//            // X for Horizontal Movement
+//            // Y for Vertical Movement
+//            // Z for Forward Movement
+//            glm::vec3 input_vector = {Input::get_wasd_movement_vector_X() * m_horizontal_speed,
+//                                      Input::get_wasd_movement_vector_Y() * m_vertical_speed,
+//                                      Input::get_wasd_movement_vector_Z() * m_vertical_speed};
+//            input_vector *= delta;
+//            if (m_mode == FLY)
+//            {
+//                // Add the movement vector to the position
+//                glm::vec3 mov_vector = input_vector.x * m_camera_right +
+//                                       input_vector.y * m_camera_up +
+//                                       input_vector.z * m_camera_front;
+//
+//                position += mov_vector;
+//            }
+//            else if (m_mode == ORBIT)
+//            {
+//
+//            }
+//        }
+    }
+
+    void Camera::handle_trackball_movement(const glm::vec2 start_position, const glm::vec2& end_position)
+    {
+        //Log::warn("start x: " + std::to_string(start_position.x) + ", start y: " + std::to_string(start_position.y));
+        //Log::warn("end x: " + std::to_string(end_position.x) + ", end y: " + std::to_string(end_position.y));
+        if (start_position.x != end_position.x || start_position.y != end_position.y)
         {
-
-            // X for Horizontal Movement
-            // Y for Vertical Movement
-            // Z for Forward Movement
-            glm::vec3 input_vector = {Input::get_wasd_movement_vector_X() * m_horizontal_speed,
-                                      Input::get_wasd_movement_vector_Y() * m_vertical_speed,
-                                      Input::get_wasd_movement_vector_Z() * m_vertical_speed};
-            input_vector *= delta;
-            if (m_mode == FLY)
-            {
-                // Add the movement vector to the position
-                glm::vec3 mov_vector = input_vector.x * m_camera_right +
-                                       input_vector.y * m_camera_up +
-                                       input_vector.z * m_camera_front;
-
-                position += mov_vector;
-            }
-            else if (m_mode == ORBIT)
-            {
-
-            }
+            m_trackball.move_from_to(start_position, end_position);
+            VecUtil::print_mat(view);
         }
     }
 
@@ -215,9 +237,9 @@ namespace vOS
         return;
     }
 
-    glm::vec3 Camera::get_viewport_size() const
+    glm::vec2 Camera::get_viewport_size() const
     {
-        return {m_screen_width, m_screen_height, 1};
+        return glm::vec2{m_screen_width, m_screen_height};
     }
 
     const glm::vec3& Camera::get_front() const
