@@ -53,7 +53,7 @@ namespace vOS
          * @param render_data current render data to access uniform data
          * @param mesh_id can be -1, since we don't need it here
          */
-        void render(VertexArrayObject *vao, const RenderData &render_data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData &render_data, std::shared_ptr<MeshObject> mesh) override;
 
         /**
          * Use this method to resize the ssao frame buffers in case the screen resolution changes.
@@ -128,10 +128,10 @@ namespace vOS
 
         // rendering
         std::vector<glm::vec3> m_sample_kernel;
-        FrameBufferObject* m_ssao_framebuffer;
-        FrameBufferObject* m_blur_framebuffer;
-        Shader* m_ssao_shader;
-        Shader* m_ssao_blur_shader;
+        std::shared_ptr<FrameBufferObject> m_ssao_framebuffer;
+        std::shared_ptr<FrameBufferObject> m_blur_framebuffer;
+        std::shared_ptr<Shader> m_ssao_shader;
+        std::shared_ptr<Shader> m_ssao_blur_shader;
         unsigned int m_noise_texture;
     };
 }

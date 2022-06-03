@@ -30,13 +30,8 @@ namespace vOS
                         .texture_wrap       = GL_CLAMP_TO_EDGE
                 }
         };
-        m_transparent_framebuffer = new FrameBufferObject(width, height, transparent_attachments);
+        m_transparent_framebuffer = std::make_shared<FrameBufferObject>(width, height, transparent_attachments);
         generate_transparency_framebuffer(width, height);
-    }
-
-    TransparencyPass_WB::~TransparencyPass_WB()
-    {
-        delete m_transparent_framebuffer;
     }
 
     void TransparencyPass_WB::generate_transparency_framebuffer(int width, int height)
@@ -57,7 +52,7 @@ namespace vOS
 
     }
 
-    void TransparencyPass_WB::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void TransparencyPass_WB::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         m_transparency_shader->bind();
 

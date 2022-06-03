@@ -24,25 +24,25 @@ namespace vOS
          * @param shader_name name of the shader (convention: filename without extension)
          * @return the shader instance
          */
-        static Shader* get(const std::string& shader_name);
+        static std::shared_ptr<Shader> get(const std::string& shader_name);
 
         /**
          * Utility shaders.
          */
-        static Shader* background_shader() { return get("background"); }
-        static Shader* basic_shape_shader() { return get("basic_shape"); }
-        static Shader* quad_circle_shader() { return get("quad_circle"); }
-        static Shader* flat_color_shader() { return get("flat_color"); }
-        static Shader* vertex_only_shader() { return get("vertex_only"); };
+        static std::shared_ptr<Shader> background_shader() { return get("background"); }
+        static std::shared_ptr<Shader> basic_shape_shader() { return get("basic_shape"); }
+        static std::shared_ptr<Shader> quad_circle_shader() { return get("quad_circle"); }
+        static std::shared_ptr<Shader> flat_color_shader() { return get("flat_color"); }
+        static std::shared_ptr<Shader> vertex_only_shader() { return get("vertex_only"); };
 
         /**
          * Selection shaders.
          */
-        static Shader* selection_face() { return get("selection_face"); }
-        static Shader* selection_vertex_shader() { return get("selection_vertex"); }
-        static Shader* selection_edge_shader() { return get("selection_edge"); }
-        static Shader* edge_hover_shader() { return get("edge_hover"); }
-        static Shader* pre_mesh_phong_shader() { return get("pre_mesh_phong"); }
+        static std::shared_ptr<Shader> selection_face() { return get("selection_face"); }
+        static std::shared_ptr<Shader> selection_vertex_shader() { return get("selection_vertex"); }
+        static std::shared_ptr<Shader> selection_edge_shader() { return get("selection_edge"); }
+        static std::shared_ptr<Shader> edge_hover_shader() { return get("edge_hover"); }
+        static std::shared_ptr<Shader> pre_mesh_phong_shader() { return get("pre_mesh_phong"); }
 
         /**
          * Binds this shader for opengl. A shader must be bound to draw something or to set the shader uniforms.
@@ -146,6 +146,9 @@ namespace vOS
 
     private:
 
+        // all loaded shaders by name
+        static std::unordered_map<std::string, std::shared_ptr<Shader>> s_shaders;
+
         /**
          * Creates a new shader object from the given resource paths.
          *
@@ -154,10 +157,6 @@ namespace vOS
          * @param geometryPath geometry resource path (may be empty)
          */
         Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath);
-        ~Shader() = default;
-
-        // all loaded shaders by name
-        static std::unordered_map<std::string, Shader*> s_shaders;
 
         // opengl program id
         unsigned int m_shaderID;

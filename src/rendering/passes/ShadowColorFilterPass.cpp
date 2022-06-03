@@ -24,16 +24,10 @@ namespace vOS
 
             },
         };
-        m_color_filter_framebuffer  = new FrameBufferObject(width, height, attachments);
-
+        m_color_filter_framebuffer = std::make_shared<FrameBufferObject>(width, height, attachments);
     }
 
-    ShadowColorFilterPass::~ShadowColorFilterPass()
-    {
-        delete m_color_filter_framebuffer;
-    }
-
-    void ShadowColorFilterPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void ShadowColorFilterPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         glDisable( GL_CULL_FACE );
         glEnable(GL_DEPTH_TEST);
@@ -72,7 +66,7 @@ namespace vOS
         m_color_filter_framebuffer->resize(width, height);
     }
 
-    FrameBufferObject* ShadowColorFilterPass::get_framebuffer() const
+    std::shared_ptr<FrameBufferObject> ShadowColorFilterPass::get_framebuffer() const
     {
         return m_color_filter_framebuffer;
     }

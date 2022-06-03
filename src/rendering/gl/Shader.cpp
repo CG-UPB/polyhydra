@@ -1,11 +1,10 @@
 
 #include "Shader.h"
 #include "../../fs/FileManager.h"
-#include "../../util/StringUtil.h"
 
 namespace vOS
 {
-    std::unordered_map<std::string, Shader*> Shader::s_shaders;
+    std::unordered_map<std::string, std::shared_ptr<Shader>> Shader::s_shaders;
 
     Shader::Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath)
     {
@@ -171,7 +170,7 @@ namespace vOS
         glUniform4f(get_uniform(name), value.x, value.y, value.z, value.w);
     }
 
-    Shader* Shader::get(const std::string& shader_name)
+    std::shared_ptr<Shader> Shader::get(const std::string& shader_name)
     {
         auto shader = s_shaders.find(shader_name);
         if (shader == s_shaders.end())
@@ -240,39 +239,39 @@ namespace vOS
         // we have collected all shader paths, so load them all
         for (auto& shader_source_path : shader_source_paths)
         {
-            s_shaders[shader_source_path.first] = new Shader(
+            s_shaders[shader_source_path.first] = std::shared_ptr<Shader>(new Shader(
                     shader_source_path.second.vertex,
                     shader_source_path.second.fragment,
                     shader_source_path.second.geometry
-            );
+            ));
         }
 
         // manually load the pre pass shader, since only the fragment shader is different from the phong shader
         FS_NAMESPACE::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
         FS_NAMESPACE::path transparency_path = FileManager::get_resource_path() / shader_path / "transparency";
 
-        s_shaders["pre_mesh_phong"] = new Shader(
+        s_shaders["pre_mesh_phong"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 pre_mesh_phong_path / "pre_mesh_phong.frag",
                 pre_mesh_phong_path / "mesh_phong.geom"
-        );
-        s_shaders["transparency_wb"] = new Shader(
+        ));
+        s_shaders["transparency_wb"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 transparency_path / "transparency_wb.frag",
                 pre_mesh_phong_path / "mesh_phong.geom"
-        );
-        s_shaders["transparency_dp"] = new Shader(
+        ));
+        s_shaders["transparency_dp"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 transparency_path / "transparency_dp.frag",
                 pre_mesh_phong_path / "mesh_phong.geom"
-        );
+        ));
     }
 
     void Shader::delete_all()
     {
         for (auto& shader : s_shaders)
         {
-            delete shader.second;
+            delete shader.second.get();
         }
     }
 }

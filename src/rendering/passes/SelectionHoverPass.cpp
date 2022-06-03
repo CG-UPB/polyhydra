@@ -12,19 +12,12 @@ namespace vOS
         m_quad_circle_shader = Shader::quad_circle_shader();
         m_edge_hover_shader = Shader::edge_hover_shader();
         // Create VAOs
-        m_quad_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
+        m_quad_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXY::vertices(), CommonMeshes::PlaneXY::indices());
         m_quad_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
-        m_edge_vao = new VertexArrayObject(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
+        m_edge_vao = std::make_unique<VertexArrayObject>(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
     }
 
-    SelectionHoverPass::~SelectionHoverPass()
-    {
-        // Delete arrays
-        delete m_face_vao;
-        delete m_quad_vao;
-    }
-
-    void SelectionHoverPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void SelectionHoverPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         // If no element is hovered, return
         if (m_hovered_type == SELECTION_TYPE_NONE || m_hovered_mesh != mesh->get_id())
@@ -125,7 +118,7 @@ namespace vOS
             if (m_face_vao == nullptr)
             {
                 // Create new VAO from Data
-                m_face_vao = new VertexArrayObject(mesh_data.vertices, mesh_data.indices);
+                m_face_vao = std::make_unique<VertexArrayObject>(mesh_data.vertices, mesh_data.indices);
             }
             else
             {
@@ -139,7 +132,7 @@ namespace vOS
             if (vertex.is_valid())
             {
                 // Get Vertex Position
-                auto pos = mesh->m_mesh->vertex(vertex);
+                auto pos = mesh->get_ovm()->vertex(vertex);
                 m_hovered_vertex_position.x = pos[0];
                 m_hovered_vertex_position.y = pos[1];
                 m_hovered_vertex_position.z = pos[2];
@@ -153,9 +146,9 @@ namespace vOS
             if (edge.is_valid())
             {
                 // Get Edge Vertices
-                auto edge_vertices = mesh->m_mesh->edge_vertices(edge);
-                auto v0 = mesh->m_mesh->vertex(edge_vertices[0]);
-                auto v1 = mesh->m_mesh->vertex(edge_vertices[1]);
+                auto edge_vertices = mesh->get_ovm()->edge_vertices(edge);
+                auto v0 = mesh->get_ovm()->vertex(edge_vertices[0]);
+                auto v1 = mesh->get_ovm()->vertex(edge_vertices[1]);
                 // Get Edge Vertex Positions
                 m_hovered_edge_from.x = v0[0];
                 m_hovered_edge_from.y = v0[1];
@@ -177,9 +170,9 @@ namespace vOS
             OpenVolumeMesh::VectorT<double,3> midpoint = OpenVolumeMesh::VectorT<double,3>(0,0,0);
             // Get all Vertices and remember amount of vertices
             int num_vertices = 0;
-            for (auto v_h : mesh.m_mesh->face_vertices(face))
+            for (auto v_h : mesh.get_ovm()->face_vertices(face))
             {
-                auto vertex = mesh.m_mesh->vertex(v_h);
+                auto vertex = mesh.get_ovm()->vertex(v_h);
                 res.vertices.push_back(vertex[0]);
                 res.vertices.push_back(vertex[1]);
                 res.vertices.push_back(vertex[2]);
@@ -240,7 +233,7 @@ namespace vOS
 
             // Set other mesh data
             auto mesh_transform = mesh.get_data().get_transform();
-            auto center = mesh.m_mesh->barycenter(face);
+            auto center = mesh.get_ovm()->barycenter(face);
             auto pos = mesh_transform * glm::vec4(center[0], center[1], center[2], 1.0f);
         }
         return res;

@@ -14,10 +14,6 @@ namespace vOS
          * Constructor
          */
         BackgroundPass();
-        /**
-         * Deconstructor
-         */
-        ~BackgroundPass();
 
         /**
          * Sets the background color
@@ -30,7 +26,7 @@ namespace vOS
          */
         [[nodiscard]] const glm::vec4& get_background_color() const;
 
-        void render(VertexArrayObject* vao, const RenderData &data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData &data, std::shared_ptr<MeshObject> mesh) override;
 
     private:
 
@@ -40,8 +36,8 @@ namespace vOS
         glm::vec4 m_top_color;
         glm::vec4 m_bottom_color;
         // A simple plane mesh that is always visible but behind all other objects
-        VertexArrayObject* m_vao;
+        std::unique_ptr<VertexArrayObject> m_vao;
         // Simple gradient shader
-        Shader* m_background_shader;
+        std::shared_ptr<Shader> m_background_shader;
     };
 }

@@ -10,17 +10,12 @@ namespace vOS
         m_bottom_color(glm::vec4(0.8, 0.8, 0.8, 1.0))
     {
         // Create plane mesh
-        m_vao = new VertexArrayObject(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f), CommonMeshes::PlaneXY::indices());
+        m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f), CommonMeshes::PlaneXY::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
         m_background_shader = Shader::background_shader();
     }
 
-    BackgroundPass::~BackgroundPass()
-    {
-        delete m_vao;
-    }
-
-    void BackgroundPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void BackgroundPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         // Parameters are ignored, as they are not necessary
 

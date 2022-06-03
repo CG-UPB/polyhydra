@@ -125,9 +125,7 @@ namespace vOS
     {
     public:
 
-        explicit MeshVertexBuffer(Mesh* mesh);
-
-        ~MeshVertexBuffer();
+        explicit MeshVertexBuffer(std::shared_ptr<Mesh> mesh);
 
         /**
          * converts selection id of vertices to OVM id
@@ -156,11 +154,11 @@ namespace vOS
 
         std::vector<float>& get_original_vertices();
 
-        VertexArrayObject* get_vao_by_face();
+        std::shared_ptr<VertexArrayObject> get_vao_by_face();
 
-        VertexArrayObject* get_vao_rounded();
+        std::shared_ptr<VertexArrayObject> get_vao_rounded();
 
-        VertexArrayObject* get_vertex_only_vao();
+        std::shared_ptr<VertexArrayObject> get_vertex_only_vao();
 
         [[nodiscard]] float get_average_cell_size() const;
 
@@ -199,9 +197,9 @@ namespace vOS
 
         void hover_cell(int cell_id);
 
-        VertexArrayObject* get_sphere_vao();
+        std::shared_ptr<VertexArrayObject> get_sphere_vao();
 
-        VertexArrayObject* get_cylinder_vao();
+        std::shared_ptr<VertexArrayObject> get_cylinder_vao();
 
         void set_cell_digged(int cell_id, bool digged);
 
@@ -234,7 +232,7 @@ namespace vOS
 
         void build_vertex_arrays();
 
-        void add_cell_rounded(Mesh& mesh, Cell cell);
+        void add_cell_rounded(std::shared_ptr<Mesh> mesh, Cell cell);
 
         unsigned int add_vertex_data_to_cell_data(
                 RoundedCellData& data,
@@ -250,14 +248,14 @@ namespace vOS
 
         void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2) const;
 
-        void add_cell_by_faces(Mesh& mesh, Cell cell);
+        void add_cell_by_faces(const std::shared_ptr<Mesh>& mesh, Cell cell);
 
-        void add_face_indices(Mesh& mesh, HalffaceData& face) const;
+        void add_face_indices(HalffaceData& face) const;
 
-        void add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from,
+        void add_from_to_vertex(const std::shared_ptr<Mesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
                                 const OpenVolumeMesh::VertexHandle& to);
 
-        static std::vector<float> get_vertices(Mesh& mesh);
+        static std::vector<float> get_vertices(const std::shared_ptr<Mesh>& mesh);
 
         [[nodiscard]] inline glm::vec3 halfface_normal_to_vec3(int halfface_id);
 
@@ -267,7 +265,7 @@ namespace vOS
 
         std::vector<float>& get_attrib_array(VAO vao, Attribute attribute);
 
-        void add_vao_attributes(VertexArrayObject* vao, VAO vao_id);
+        void add_vao_attributes(const std::shared_ptr<VertexArrayObject>& vao, VAO vao_id);
 
         std::pair<int, int>& get_halfface_index_and_count(VAO vao, int halfface_id);
 
@@ -309,7 +307,7 @@ namespace vOS
         void update_vertex_arrays();
 
         // ovm references
-        Mesh& m_mesh;
+        std::shared_ptr<Mesh> m_mesh;
         OpenVolumeMesh::NormalAttrib<Mesh> m_normals;
 
         // loading stats
@@ -321,11 +319,11 @@ namespace vOS
         // vertex arrays
         struct
         {
-            VertexArrayObject* face = nullptr;
-            VertexArrayObject* rounded = nullptr;
-            VertexArrayObject* selection_sphere = nullptr;
-            VertexArrayObject* selection_cylinder = nullptr;
-            VertexArrayObject* vertex_only = nullptr;
+            std::shared_ptr<VertexArrayObject> face                 = nullptr;
+            std::shared_ptr<VertexArrayObject> rounded              = nullptr;
+            std::shared_ptr<VertexArrayObject> selection_sphere     = nullptr;
+            std::shared_ptr<VertexArrayObject> selection_cylinder   = nullptr;
+            std::shared_ptr<VertexArrayObject> vertex_only          = nullptr;
         } m_vao;
 
         // ovm ids, in the order that we render them
@@ -350,7 +348,7 @@ namespace vOS
 
         std::vector<AttributeUpdateData> m_vao_update_data;
         std::unordered_map<int, VertexAttributeMap> m_attributes{};
-        std::unordered_map<int, std::vector<VertexArrayObject*>> m_vertex_arrays{};
+        std::unordered_map<int, std::vector<std::shared_ptr<VertexArrayObject>>> m_vertex_arrays{};
 
         std::vector<float> m_original_vertices;
         std::vector<unsigned int> m_indices_face;

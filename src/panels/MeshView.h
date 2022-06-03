@@ -30,7 +30,6 @@ namespace vOS
     public:
 
         MeshView(int width, int height);
-        ~MeshView() override;
         void show() override;
         void m_take_screenshot(const std::string& filename);
 
@@ -66,9 +65,9 @@ namespace vOS
         int m_viewportPanelHeight;
 
         // opengl rendering
-        Renderer* m_renderer = nullptr;
-        FrameBufferObject* m_meshFrameBuffer = nullptr;
-        FrameBufferObject* m_screen_quad_frameBuffer = nullptr;
+        std::shared_ptr<Renderer> m_renderer = nullptr;
+        std::shared_ptr<FrameBufferObject> m_meshFrameBuffer = nullptr;
+        std::shared_ptr<FrameBufferObject> m_screen_quad_frameBuffer = nullptr;
         RenderData m_render_data;
 
         // selected texture for rendering (mostly for debugging)

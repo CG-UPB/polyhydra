@@ -16,7 +16,7 @@ namespace vOS
         SelectionPass();
 
         ~SelectionPass() = default;
-        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
         /**
          * Renders specific Mesh
@@ -33,16 +33,16 @@ namespace vOS
         bool m_debug = false;
 
         // Shaders
-        Shader* m_selection_shader;
-        Shader* m_selection_sphere_shader;
-        Shader* m_selection_cylinder_shader;
+        std::shared_ptr<Shader> m_selection_shader;
+        std::shared_ptr<Shader> m_selection_sphere_shader;
+        std::shared_ptr<Shader> m_selection_cylinder_shader;
 
         // Mesh Information
         int m_num_vertices;
         int m_num_edges;
         // VAOs
-        VertexArrayObject* m_sphere_vao;
-        VertexArrayObject* m_cylinder_vao;
+        std::shared_ptr<VertexArrayObject> m_sphere_vao;
+        std::shared_ptr<VertexArrayObject> m_cylinder_vao;
     };
 }
 

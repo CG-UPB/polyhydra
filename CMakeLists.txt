@@ -62,7 +62,6 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/algorithms/ExampleClass.h
         ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_WB.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_DP.cpp
-        ${VOLUMESHOS_SRC}/rendering/gl/PrePassFrameBufferObject.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparentShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowColorFilterPass.cpp

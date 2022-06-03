@@ -28,6 +28,6 @@ namespace vOS
          * @param render_data
          * @param mesh_id
          */
-        virtual void render(VertexArrayObject* vao, const RenderData& render_data, std::shared_ptr<MeshObject> mesh) = 0;
+        virtual void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& render_data, std::shared_ptr<MeshObject> mesh) = 0;
     };
 }

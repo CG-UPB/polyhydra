@@ -22,16 +22,11 @@ namespace vOS
                 .texture_comp_mode  = GL_NONE
             }
         };
-        m_transparent_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
+        m_transparent_shadow_framebuffer = std::make_shared<FrameBufferObject>(width, height, attachments);
 
     }
 
-    TransparentShadowMapPass::~TransparentShadowMapPass()
-    {
-        delete m_transparent_shadow_framebuffer;
-    }
-
-    void TransparentShadowMapPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void TransparentShadowMapPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         glDisable( GL_CULL_FACE );
         glEnable(GL_DEPTH_TEST);
@@ -67,7 +62,7 @@ namespace vOS
         m_transparent_shadow_framebuffer->resize(width, height);
     }
 
-    FrameBufferObject* TransparentShadowMapPass::get_framebuffer() const
+    std::shared_ptr<FrameBufferObject> TransparentShadowMapPass::get_framebuffer() const
     {
         return m_transparent_shadow_framebuffer;
     }

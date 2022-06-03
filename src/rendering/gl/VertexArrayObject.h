@@ -14,11 +14,6 @@ namespace vOS
         static void draw_screen_quad();
 
         /**
-         * Clean up resources.
-         */
-        static void clean_up();
-
-        /**
          * Creates a new VertexArrayObject from vertices and indices.
          *
          * @param vertices vector of vertices, aligned like so [x0, y0, z0, x1, y1, z1, ...]
@@ -87,7 +82,7 @@ namespace vOS
 
     private:
 
-        static VertexArrayObject* s_screen_quad;
+        static std::unique_ptr<VertexArrayObject> s_screen_quad;
 
         // number of vertex indices
         int m_numIndices;

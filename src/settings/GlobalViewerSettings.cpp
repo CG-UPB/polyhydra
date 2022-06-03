@@ -2,22 +2,15 @@
 
 namespace vOS
 {
-    GlobalViewerSettings* GlobalViewerSettings::instance = 0;
+    std::shared_ptr<GlobalViewerSettings> GlobalViewerSettings::instance = nullptr;
 
     // Singleton
-    GlobalViewerSettings* GlobalViewerSettings::getInstance()
+    std::shared_ptr<GlobalViewerSettings> GlobalViewerSettings::getInstance()
     {
-        if (instance == 0)
+        if (instance == nullptr)
         {
-            instance = new GlobalViewerSettings();
+            instance = std::make_shared<GlobalViewerSettings>();
         }
-
         return instance;
-
     }
-
-    GlobalViewerSettings::GlobalViewerSettings() {
-
-    }
-
 }

@@ -1,37 +1,29 @@
 
 #include "Renderer.h"
 
+#include <utility>
+
 namespace vOS
 {
 
-    Renderer::Renderer(int width, int height, FrameBufferObject* initial_target_ms, FrameBufferObject* initial_target):
+    Renderer::Renderer(int width, int height, std::shared_ptr<FrameBufferObject> initial_target_ms, std::shared_ptr<FrameBufferObject> initial_target):
         m_viewportPanelWidth(width), m_viewportPanelHeight(height), m_settings(*GlobalViewerSettings::getInstance())
     {
-        m_target_ms = initial_target_ms;
-        m_target = initial_target;
+        m_target_ms = std::move(initial_target_ms);
+        m_target = std::move(initial_target);
 
-        m_pre_pass = new PrePass(width, height);
-        m_shadow_pass = new ShadowMapPass(this, width * 2, height * 2);
-        m_transparent_shadow_pass = new TransparentShadowMapPass(width, height);
-        m_shadow_color_filter_pass = new ShadowColorFilterPass(this, width, height);
-        m_mesh_pass = new MeshPass(this);
-        m_ssao_pass = new SSAOPass(this, width, height);
+        m_pre_pass = std::make_shared<PrePass>(width, height);
+        m_shadow_pass = std::make_shared<ShadowMapPass>(this, width * 2, height * 2);
+        m_transparent_shadow_pass = std::make_shared<TransparentShadowMapPass>(width, height);
+        m_shadow_color_filter_pass = std::make_shared<ShadowColorFilterPass>(this, width, height);
+        m_mesh_pass = std::make_shared<MeshPass>(this);
+        m_ssao_pass = std::make_shared<SSAOPass>(this, width, height);
 
-        m_selectionFrameBuffer = new FrameBufferObject(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
-        m_pixel_buffer = new PixelBufferObject(2, width / 2, height / 2);
+        m_selectionFrameBuffer = std::make_shared<FrameBufferObject>(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
+        m_pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
 
-        m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
-        m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
-    }
-
-    Renderer::~Renderer()
-    {
-        delete m_selectionFrameBuffer;
-        delete m_pixel_buffer;
-        delete m_pre_pass;
-        delete m_mesh_pass;
-        delete m_transparency_pass_wb;
-        delete m_ssao_pass;
+        m_transparency_pass_wb = std::make_shared<TransparencyPass_WB>(this, width, height);
+        m_transparency_pass_dp = std::make_shared<TransparencyPass_DP>(this, width, height);
     }
 
     void Renderer::resize(int width, int height)
@@ -46,8 +38,7 @@ namespace vOS
         m_shadow_color_filter_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
         m_transparent_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
         m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
-        delete m_pixel_buffer;
-        m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
+        m_pixel_buffer = std::make_shared<PixelBufferObject>(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
     }
 
     void Renderer::render(RenderData* render_data, bool render_bg)
@@ -106,7 +97,7 @@ namespace vOS
 
             render_meshes(*render_data);
 
-            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_target_ms,m_target);
+            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_target_ms, m_target);
 
             // Render transparent objects
             if (m_settings.get_transparency_activated())
@@ -149,7 +140,7 @@ namespace vOS
 
         mesh->update_vertex_buffer();
 
-        VertexArrayObject* vao = mesh->get_vao();
+        auto vao = mesh->get_vao();
         if (mesh_data.rounding_active)
         {
             vao = mesh->get_mvb()->get_vao_rounded();
@@ -245,7 +236,7 @@ namespace vOS
                 continue;
             }
             mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
+            auto vao = mesh->get_vao();
             if (mesh->get_data().rounding_active)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
@@ -289,7 +280,7 @@ namespace vOS
                     continue;
                 }
                 mesh->update_vertex_buffer();
-                VertexArrayObject* vao = mesh->get_vao();
+                auto vao = mesh->get_vao();
                 if (mesh->get_data().rounding_active)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
@@ -328,7 +319,7 @@ namespace vOS
                 continue;
             }
             mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
+            auto vao = mesh->get_vao();
             if (mesh_data.rounding_active)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
@@ -377,7 +368,7 @@ namespace vOS
                 }
 
                 mesh->update_vertex_buffer();
-                VertexArrayObject* vao = mesh->get_vao();
+                auto vao = mesh->get_vao();
                 if (mesh_data.rounding_active)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
@@ -442,7 +433,7 @@ namespace vOS
         }
     }
 
-    void Renderer::set_target_framebuffer(FrameBufferObject* target_ms, FrameBufferObject* target)
+    void Renderer::set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target)
     {
         m_target_ms = target_ms;
         m_target = target;

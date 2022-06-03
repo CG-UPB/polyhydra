@@ -137,10 +137,6 @@ namespace vOS
 
         explicit MeshObject(int id);
 
-        ~MeshObject();
-
-        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *m_mesh;
-
         // Selection Functionality
         std::unordered_set<int>& get_all_selected_faces()
         { return m_selected_faces; }
@@ -153,8 +149,6 @@ namespace vOS
 
         std::unordered_set<int>& get_all_selected_cells()
         { return m_selected_cells; }
-
-        MeshVertexBuffer* get_mesh_vertex_buffer(){return m_mvb;}
 
         /**
          * Adds a shape on selected element (vertex, edge, face)
@@ -239,7 +233,7 @@ namespace vOS
 
         glm::vec3& get_mesh_offset();
 
-        [[nodiscard]] VertexArrayObject* get_vao() const;
+        [[nodiscard]] std::shared_ptr<VertexArrayObject> get_vao() const;
 
         glm::vec3 get_min();
 
@@ -275,16 +269,18 @@ namespace vOS
          * @return the instanced sphere vao for this mesh
          */
 
-        [[nodiscard]] MeshVertexBuffer* get_mvb() const;
+        [[nodiscard]] std::shared_ptr<MeshVertexBuffer> get_mvb() const;
 
         [[nodiscard]] int get_num_visible_vertices() const;
         [[nodiscard]] int get_num_visible_edges() const;
 
-        [[nodiscard]] VertexArrayObject *get_cylinder_vao() const;
-        [[nodiscard]] VertexArrayObject *get_sphere_vao() const;
+        [[nodiscard]] std::shared_ptr<VertexArrayObject> get_cylinder_vao() const;
+        [[nodiscard]] std::shared_ptr<VertexArrayObject> get_sphere_vao() const;
 
         [[nodiscard]] int get_id() const
         { return m_id; }
+
+        [[nodiscard]] std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> get_ovm() const;
 
     private:
         /**
@@ -303,6 +299,8 @@ namespace vOS
          */
         [[nodiscard]] int calculate_selection_size() const;
 
+        std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> m_mesh;
+
         const int key_multiplier = 1000000;
 
         std::string m_mesh_name = "default";
@@ -318,7 +316,6 @@ namespace vOS
 
         std::map<int, int> m_created_shapes;
 
-
         std::tuple<int, int> m_selection_offset;
 
         std::pair<glm::vec3, glm::vec3> m_transformed_bb;
@@ -327,7 +324,7 @@ namespace vOS
 
         glm::vec3 m_slice_dir;
 
-        MeshVertexBuffer *m_mvb = nullptr;
+        std::shared_ptr<MeshVertexBuffer> m_mvb = nullptr;
 
         MeshData m_data;
 

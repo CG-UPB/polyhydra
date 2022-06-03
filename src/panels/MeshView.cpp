@@ -14,21 +14,14 @@ namespace vOS
             m_lastX(0.0),
             m_lastY(0.0)
     {
-        m_meshFrameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
-        m_screen_quad_frameBuffer = new FrameBufferObject(width, height, FrameBufferObject::RGBA_AND_DEPTH);
-        m_renderer = new Renderer(width, height, m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        m_meshFrameBuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        m_screen_quad_frameBuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
+        m_renderer = std::make_shared<Renderer>(width, height, m_meshFrameBuffer, m_screen_quad_frameBuffer);
         m_renderer->set_selection_callback(std::bind(&MeshView::querySelection, this, std::placeholders::_1, std::placeholders::_2));
 
         // Set Camera Viewport Size
         m_render_data.camera.set_viewport_size(width, height);
         m_mover.set_references(&m_render_data.camera, &m_renderer->m_selection_hover_pass);
-    }
-
-    MeshView::~MeshView()
-    {
-        delete m_meshFrameBuffer;
-        delete m_screen_quad_frameBuffer;
-        delete m_renderer;
     }
 
     void MeshView::handleResize()
@@ -63,8 +56,8 @@ namespace vOS
         m_viewportPanelWidth = export_width;
         m_viewportPanelHeight = export_height;
 
-        auto export_framebuffer_ms = new FrameBufferObject(export_width, export_height,FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
-        auto export_framebuffer = new FrameBufferObject(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
+        auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
 
         m_renderer->set_target_framebuffer(export_framebuffer_ms, export_framebuffer);
         m_renderer->resize(export_width, export_height);
@@ -118,9 +111,6 @@ namespace vOS
         m_viewportPanelHeight = prev_height;
         m_renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
         m_renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-
-        delete export_framebuffer_ms;
-        delete export_framebuffer;
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -153,7 +143,7 @@ namespace vOS
                     face_id_mesh = id;
                     int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
                     auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
-                    auto ch = mesh->m_mesh->incident_cell(chf);
+                    auto ch = mesh->get_ovm()->incident_cell(chf);
                     mesh->get_mvb()->hover_halfface(halfface_id);
                     face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(chf).idx();
 
@@ -169,7 +159,7 @@ namespace vOS
                     {
                         if (chf.is_valid())
                         {
-                            auto cell = mesh->m_mesh->incident_cell(chf);
+                            auto cell = mesh->get_ovm()->incident_cell(chf);
                             mesh->get_mvb()->hover_cell(cell.idx());
                         }
 

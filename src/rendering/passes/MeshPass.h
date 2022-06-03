@@ -20,7 +20,7 @@ namespace vOS
          */
         ~MeshPass() = default;
 
-        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
 
     private:

@@ -36,8 +36,7 @@ namespace vOS
     {
     public:
 
-        Renderer(int width, int height, FrameBufferObject* initial_target_ms, FrameBufferObject* initial_target);
-        ~Renderer();
+        Renderer(int width, int height, std::shared_ptr<FrameBufferObject> initial_target_ms, std::shared_ptr<FrameBufferObject> initial_target);
 
         void set_selection_callback(SelectionCallback callback) { m_selection_callback = std::move(callback); };
 
@@ -45,7 +44,7 @@ namespace vOS
 
         void render(RenderData* render_data, bool render_bg = true);
 
-        void set_target_framebuffer(FrameBufferObject* target_ms, FrameBufferObject* target);
+        void set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target);
 
     private:
 
@@ -61,23 +60,25 @@ namespace vOS
         void render_transparency_dp(RenderData& render_data);
         void query_selection(int type, int id);
 
-        FrameBufferObject* m_target_ms = nullptr;
-        FrameBufferObject* m_target = nullptr;
-        FrameBufferObject* m_selectionFrameBuffer = nullptr;
-        PixelBufferObject* m_pixel_buffer = nullptr;
+        // render buffers
+        std::shared_ptr<FrameBufferObject> m_target_ms                          = nullptr;
+        std::shared_ptr<FrameBufferObject> m_target                             = nullptr;
+        std::shared_ptr<FrameBufferObject> m_selectionFrameBuffer               = nullptr;
+        std::shared_ptr<PixelBufferObject> m_pixel_buffer                       = nullptr;
 
+        // render passes
+        std::shared_ptr<PrePass> m_pre_pass                                     = nullptr;
+        std::shared_ptr<ShadowMapPass> m_shadow_pass                            = nullptr;
+        std::shared_ptr<ShadowColorFilterPass> m_shadow_color_filter_pass       = nullptr;
+        std::shared_ptr<TransparentShadowMapPass> m_transparent_shadow_pass     = nullptr;
+        std::shared_ptr<MeshPass> m_mesh_pass                                   = nullptr;
+        std::shared_ptr<SSAOPass> m_ssao_pass                                   = nullptr;
+        std::shared_ptr<TransparencyPass_WB> m_transparency_pass_wb             = nullptr;
+        std::shared_ptr<TransparencyPass_DP> m_transparency_pass_dp             = nullptr;
         BackgroundPass m_background_pass;
-        PrePass* m_pre_pass = nullptr;
-        ShadowMapPass* m_shadow_pass = nullptr;
-        ShadowColorFilterPass* m_shadow_color_filter_pass = nullptr;
-        TransparentShadowMapPass* m_transparent_shadow_pass = nullptr;
-        MeshPass* m_mesh_pass = nullptr;
-        SSAOPass* m_ssao_pass = nullptr;
         ShapePass m_shape_pass;
         SelectionPass m_selection_pass;
         SelectionHoverPass m_selection_hover_pass;
-        TransparencyPass_WB* m_transparency_pass_wb = nullptr;
-        TransparencyPass_DP* m_transparency_pass_dp = nullptr;
         VertexOnlyPass m_vertex_only_pass;
 
         int m_frame_limit = 4;

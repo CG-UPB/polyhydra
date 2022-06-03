@@ -6,7 +6,7 @@ namespace vOS
     MeshPass::MeshPass(Renderer* renderer): m_renderer(renderer)
     {}
 
-    void MeshPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void MeshPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         auto settings = GlobalViewerSettings::getInstance();
         bool draw_wireframe = settings->get_mesh_mode() == Wireframe;

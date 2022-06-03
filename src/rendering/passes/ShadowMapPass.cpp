@@ -20,10 +20,10 @@ namespace vOS
                                 .texture_wrap       = GL_CLAMP_TO_EDGE
                         }
                 };
-        m_shadow_framebuffer = new FrameBufferObject(width, height, attachments);
+        m_shadow_framebuffer = std::make_shared<FrameBufferObject>(width, height, attachments);
         unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
 
-        for(unsigned int i = 0; i < max_cascades; i++)
+        for (unsigned int i = 0; i < max_cascades; i++)
         {
             unsigned int tex;
             glGenTextures(1, &tex);
@@ -53,17 +53,12 @@ namespace vOS
         }
     }
 
-    ShadowMapPass::~ShadowMapPass()
-    {
-        delete m_shadow_framebuffer;
-    }
-
     void ShadowMapPass::bind_for_writing(int cascade_idx)
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[cascade_idx], 0);
     }
 
-    void ShadowMapPass::render(VertexArrayObject *vao, const RenderData &data, std::shared_ptr<MeshObject> mesh)
+    void ShadowMapPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData &data, std::shared_ptr<MeshObject> mesh)
     {
         int i = cascade_idx;
 
@@ -165,7 +160,7 @@ namespace vOS
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
     }
 
-    FrameBufferObject *ShadowMapPass::get_framebuffer() const
+    std::shared_ptr<FrameBufferObject> ShadowMapPass::get_framebuffer() const
     {
         return m_shadow_framebuffer;
     }

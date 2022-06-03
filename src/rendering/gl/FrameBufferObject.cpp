@@ -192,7 +192,7 @@ namespace vOS
         return m_height;
     }
 
-    void FrameBufferObject::copy(int attachment, int mask, const FrameBufferObject* src, const FrameBufferObject* dest)
+    void FrameBufferObject::copy(int attachment, int mask, const std::shared_ptr<FrameBufferObject> src, const std::shared_ptr<FrameBufferObject> dest)
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, src->get_id());
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->get_id());

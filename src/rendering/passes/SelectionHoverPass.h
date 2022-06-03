@@ -15,12 +15,8 @@ namespace vOS
          * Constructor
          */
         SelectionHoverPass();
-        /**
-         * Deconstructor
-         */
-        ~SelectionHoverPass();
 
-        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
         /**
          * Highlights given Element identified by ID, type and Mesh ID
@@ -32,7 +28,7 @@ namespace vOS
          */
         void hover(const RenderData& data, int mesh_id, int type, int id);
 
-        int get_hovered_mesh_object() const {return m_hovered_mesh;};
+        [[nodiscard]] int get_hovered_mesh_object() const {return m_hovered_mesh;};
 
     private:
 
@@ -67,9 +63,9 @@ namespace vOS
         int m_hovered_mesh = -1;
 
         // Element Shaders
-        Shader* m_flat_color_shader;
-        Shader* m_quad_circle_shader;
-        Shader* m_edge_hover_shader;
+        std::shared_ptr<Shader> m_flat_color_shader;
+        std::shared_ptr<Shader> m_quad_circle_shader;
+        std::shared_ptr<Shader> m_edge_hover_shader;
         // Hover Color
         glm::vec4 m_hover_color;
         // Hovered Element Information
@@ -78,8 +74,8 @@ namespace vOS
         glm::vec3 m_hovered_edge_to;
 
         // Vertex Array Objects
-        VertexArrayObject* m_face_vao = nullptr;
-        VertexArrayObject* m_quad_vao = nullptr;
-        VertexArrayObject* m_edge_vao = nullptr;
+        std::unique_ptr<VertexArrayObject> m_face_vao = nullptr;
+        std::unique_ptr<VertexArrayObject> m_quad_vao = nullptr;
+        std::unique_ptr<VertexArrayObject> m_edge_vao = nullptr;
     };
 }

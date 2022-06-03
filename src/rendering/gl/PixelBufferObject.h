@@ -47,6 +47,6 @@ namespace vOS
         unsigned int m_width;
         unsigned int m_height;
         unsigned int m_num_buffers;
-        unsigned int* m_pbo_ids;
+        std::unique_ptr<unsigned int> m_pbo_ids;
     };
 }

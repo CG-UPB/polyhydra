@@ -16,7 +16,7 @@ namespace vOS
         }
     }
 
-    void ShapePass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void ShapePass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         // Translate
         glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();

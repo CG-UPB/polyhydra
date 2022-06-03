@@ -11,7 +11,7 @@ namespace vOS
         m_vertex_only_shader = Shader::vertex_only_shader();
     }
 
-    void VertexOnlyPass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void VertexOnlyPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         // GL Setup
         glEnable(GL_CULL_FACE);

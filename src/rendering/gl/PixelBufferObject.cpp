@@ -8,11 +8,11 @@ namespace vOS
         m_width(width),
         m_height(height)
     {
-        m_pbo_ids = new unsigned int[num_buffers];
-        glGenBuffers((int) num_buffers, m_pbo_ids);
+        m_pbo_ids = std::make_unique<unsigned int>(num_buffers);
+        glGenBuffers((int) num_buffers, m_pbo_ids.get());
         for (int i = 0; i < num_buffers; i++)
         {
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids[i]);
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids.get()[i]);
             glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 4, nullptr, GL_STREAM_READ);
         }
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -20,8 +20,7 @@ namespace vOS
 
     PixelBufferObject::~PixelBufferObject()
     {
-        glDeleteBuffers((int) m_num_buffers, m_pbo_ids);
-        delete[] m_pbo_ids;
+        glDeleteBuffers((int) m_num_buffers, m_pbo_ids.get());
     }
 
     uint8_t* PixelBufferObject::start_read(int x, int y, int width, int height)
@@ -33,11 +32,11 @@ namespace vOS
         int next_index = (m_current_index + 1) % (int) m_num_buffers;
 
         // start reading from the previous pbo
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids[m_current_index]);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids.get()[m_current_index]);
         glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
         // now read the actual data from the next pbo
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids[next_index]);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo_ids.get()[next_index]);
         return (uint8_t*) glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
     }
 

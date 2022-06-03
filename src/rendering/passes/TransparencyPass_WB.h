@@ -11,9 +11,8 @@ namespace vOS
     {
     public:
         explicit TransparencyPass_WB(Renderer* renderer, int width, int height);
-        ~TransparencyPass_WB();
 
-        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
         void render_composition();
         void resize_buffers(int width, int height);
         void clear_framebuffer() const;
@@ -35,12 +34,10 @@ namespace vOS
         glm::vec4 m_zeros = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
         glm::vec4 m_ones =glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        Renderer* m_renderer = nullptr;
-
-        Shader* m_transparency_shader = nullptr;
-        Shader* m_composite_shader = nullptr;
-
-        FrameBufferObject* m_transparent_framebuffer = nullptr;
+        std::shared_ptr<Renderer> m_renderer;
+        std::shared_ptr<Shader> m_transparency_shader;
+        std::shared_ptr<Shader> m_composite_shader;
+        std::shared_ptr<FrameBufferObject> m_transparent_framebuffer;
 
         float m_alpha_pow = 1.0f;
         float m_pow = 1.0f;

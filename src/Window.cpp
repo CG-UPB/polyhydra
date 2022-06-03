@@ -293,7 +293,7 @@ namespace vOS
     {
         rendering_mutex.lock();
         auto ovm_face_handle = OpenVolumeMesh::FaceHandle(ovm_face_id);
-        int ovm_halfface_id = get_mesh_obj(mesh_id)->m_mesh->face_halffaces(ovm_face_handle)[0].idx();
+        int ovm_halfface_id = get_mesh_obj(mesh_id)->get_ovm()->face_halffaces(ovm_face_handle)[0].idx();
         auto col = get_mesh_obj(mesh_id)->get_mvb()->get_halfface_color(ovm_halfface_id);
         Color color = Color(col.r, col.g, col.b, col.a);
         rendering_mutex.unlock();

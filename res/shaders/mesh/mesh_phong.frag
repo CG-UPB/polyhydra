@@ -200,6 +200,59 @@ void main()
         discard;
     }
 
+#if 0 // show wireframe on top of the mesh, comment out the other wireframe stuff on top or this won't work
+    bool fragment_in_wireframe = true;
+    float size_factor = 0.0015 * u_wireframe_size;
+    if (v_use_lookup_path == 1)
+    {
+        // these triangles are very likely not visible, since we don't draw 2/3rds of those anyway
+        if (v_is_triangle == 0)
+        {
+            fragment_in_wireframe = false;
+        }
+        else
+        {
+            float dist0 = frag_distance_to_screenspace_line(uv, v_a_adir.xy, v_a_adir.zw);
+            float dist1 = frag_distance_to_screenspace_line(uv, v_b_bdir.xy, v_b_bdir.zw);
+            if (v_a_adir.xy != v_b_bdir.xy)
+            {
+                float dist2 = frag_distance_to_screenspace_line(uv, v_a_adir.xy, normalize(v_b_bdir.xy - v_a_adir.xy));
+                float min_dist_to_edge = min(min(dist0, dist1), dist2);
+                if (min_dist_to_edge > size_factor)
+                {
+                    fragment_in_wireframe = false;
+                }
+            }
+            else
+            {
+                float min_dist_to_edge = min(dist0, dist1);
+                if (min_dist_to_edge > size_factor)
+                {
+                    fragment_in_wireframe = false;
+                }
+            }
+        }
+    }
+    else
+    {
+        float min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+        if (min_dist_to_edge > size_factor)
+        {
+            fragment_in_wireframe = false;
+        }
+        // here, we discard 2 of our 3 edges that we added in our triangulation, since only want to draw the original edges
+        if (v_is_triangle == 0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z) && v_tri_dist.y > size_factor)
+        {
+            fragment_in_wireframe = false;
+        }
+    }
+    if (fragment_in_wireframe)
+    {
+        FragColor = vec4(u_object_color.rgb * 0.5, 1.0);
+        return;
+    }
+#endif
+
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);

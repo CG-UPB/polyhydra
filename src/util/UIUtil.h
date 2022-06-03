@@ -11,9 +11,8 @@ namespace vOS
     public:
 
         static void load_all();
-        static void delete_all();
 
-        static TextureIcon* get_icon(const std::string& name);
+        static std::shared_ptr<TextureIcon> get_icon(const std::string& name);
 
         static ImFont* get_regular_font();
         static ImFont* get_bold_font();
@@ -23,6 +22,6 @@ namespace vOS
         static ImFont* s_regular;
         static ImFont* s_bold;
 
-        static std::unordered_map<std::string, TextureIcon*> s_icons;
+        static std::unordered_map<std::string, std::shared_ptr<TextureIcon>> s_icons;
     };
 }

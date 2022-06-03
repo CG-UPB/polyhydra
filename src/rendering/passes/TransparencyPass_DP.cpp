@@ -38,7 +38,7 @@ namespace vOS
                     .texture_comp_mode  = GL_NONE
             }
         };
-        m_transparent_framebuffer0 = new FrameBufferObject(width, height, transparent_attachments0);
+        m_transparent_framebuffer0 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments0);
 
         std::vector<FrameBufferAttachment> transparent_attachments1 =
         {
@@ -63,18 +63,9 @@ namespace vOS
                         .texture_comp_mode  = GL_NONE
                 }
         };
-        m_transparent_framebuffer1 = new FrameBufferObject(width, height, transparent_attachments1);
+        m_transparent_framebuffer1 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments1);
 
         //update_draw_texture();
-    }
-
-    TransparencyPass_DP::~TransparencyPass_DP()
-    {
-        delete m_transparent_framebuffer0;
-        delete m_transparent_framebuffer1;
-
-        delete m_vao;
-
     }
 
     void TransparencyPass_DP::clean_up_framebuffer()
@@ -82,7 +73,7 @@ namespace vOS
 
     }
 
-    void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh, int pass)
+    void TransparencyPass_DP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh, int pass)
     {
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
@@ -119,7 +110,7 @@ namespace vOS
         }
     }
 
-    void TransparencyPass_DP::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void TransparencyPass_DP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;

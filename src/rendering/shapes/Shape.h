@@ -141,7 +141,7 @@ namespace vOS
          *
          * @return Shader* shader of the shape
          */
-        [[nodiscard]] Shader* get_shader() const
+        [[nodiscard]] std::shared_ptr<Shader> get_shader() const
         {
             return m_shader;
         }
@@ -163,7 +163,7 @@ namespace vOS
     protected:
 
         // default shader
-        Shader* m_shader = Shader::basic_shape_shader();
+        std::shared_ptr<Shader> m_shader = Shader::basic_shape_shader();
 
     private:
 

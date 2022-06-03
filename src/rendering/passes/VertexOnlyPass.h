@@ -12,10 +12,10 @@ namespace vOS
 
         VertexOnlyPass();
 
-        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
     private:
 
-        Shader* m_vertex_only_shader = nullptr;
+        std::shared_ptr<Shader> m_vertex_only_shader = nullptr;
     };
 }

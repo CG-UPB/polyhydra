@@ -22,7 +22,7 @@ namespace vOS
     class GlobalViewerSettings
     {
     public:
-        static GlobalViewerSettings* getInstance();
+        static std::shared_ptr<GlobalViewerSettings> getInstance();
 
         void set_selection_activated(bool activated){ m_current_selection_activated = activated;};
         void set_selection_mode(int mode){ m_current_selection_mode = mode;};
@@ -58,8 +58,8 @@ namespace vOS
 
 
     private:
-        GlobalViewerSettings();
-        static GlobalViewerSettings* instance;
+
+        static std::shared_ptr<GlobalViewerSettings> instance;
         bool m_current_selection_activated = false;
         int m_current_selection_mode = Selection::ALL;
         bool m_isolation_started = false;

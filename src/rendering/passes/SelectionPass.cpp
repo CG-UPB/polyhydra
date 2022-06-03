@@ -4,7 +4,7 @@
 #include "../meshes/CommonMeshes.h"
 
 namespace vOS {
-    SelectionPass::SelectionPass(): m_selection_shader(Shader::selection_face())
+    SelectionPass::SelectionPass()
     {
         // Get Shaders
         m_selection_shader = Shader::selection_face();
@@ -12,7 +12,7 @@ namespace vOS {
         m_selection_cylinder_shader = Shader::selection_edge_shader();
     }
 
-    void SelectionPass::render(VertexArrayObject* vao, const RenderData &data, std::shared_ptr<MeshObject> mesh)
+    void SelectionPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData &data, std::shared_ptr<MeshObject> mesh)
     {
         // GL Setup
         glEnable(GL_CULL_FACE);

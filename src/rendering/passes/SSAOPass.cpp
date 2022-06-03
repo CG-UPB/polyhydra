@@ -56,8 +56,8 @@ namespace vOS
         };
 
         // create frame buffers and load the shaders we need
-        m_ssao_framebuffer = new FrameBufferObject(initial_width, initial_height, ssao_attachments);
-        m_blur_framebuffer = new FrameBufferObject(initial_width, initial_height, blur_attachments);
+        m_ssao_framebuffer = std::make_shared<FrameBufferObject>(initial_width, initial_height, ssao_attachments);
+        m_blur_framebuffer = std::make_shared<FrameBufferObject>(initial_width, initial_height, blur_attachments);
         m_ssao_shader = Shader::get("ssao");
         m_ssao_blur_shader = Shader::get("ssao_blur");
 
@@ -68,8 +68,6 @@ namespace vOS
 
     SSAOPass::~SSAOPass()
     {
-        delete m_ssao_framebuffer;
-        delete m_blur_framebuffer;
         glDeleteTextures(1, &m_noise_texture);
     }
 
@@ -162,7 +160,7 @@ namespace vOS
         }
     }
 
-    void SSAOPass::render(VertexArrayObject* vao, const RenderData& render_data, std::shared_ptr<MeshObject> mesh)
+    void SSAOPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& render_data, std::shared_ptr<MeshObject> mesh)
     {
         load_options_from_settings();
         if (m_options.active)

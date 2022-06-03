@@ -13,20 +13,19 @@ namespace vOS
     public:
 
         ShadowColorFilterPass(Renderer* renderer, int width, int height);
-        ~ShadowColorFilterPass();
 
         void resize_buffers(int width, int height);
-        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
-        [[nodiscard]] FrameBufferObject* get_framebuffer() const;
+        [[nodiscard]] std::shared_ptr<FrameBufferObject> get_framebuffer() const;
         [[nodiscard]] unsigned int get_shadow_map() const;
 
     private:
         unsigned int m_width;
         unsigned int m_height;
 
-        Renderer* m_renderer = nullptr;
-        Shader* m_color_filter_shader = nullptr;
-        FrameBufferObject* m_color_filter_framebuffer = nullptr;
+        std::shared_ptr<Renderer> m_renderer;
+        std::shared_ptr<Shader> m_color_filter_shader;
+        std::shared_ptr<FrameBufferObject> m_color_filter_framebuffer;
     };
 }

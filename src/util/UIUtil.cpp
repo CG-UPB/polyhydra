@@ -5,7 +5,7 @@
 
 namespace vOS
 {
-    std::unordered_map<std::string, TextureIcon*> UIUtil::s_icons;
+    std::unordered_map<std::string, std::shared_ptr<TextureIcon>> UIUtil::s_icons;
     ImFont* UIUtil::s_regular = nullptr;
     ImFont* UIUtil::s_bold = nullptr;
 
@@ -19,7 +19,7 @@ namespace vOS
                 continue;
             }
             std::string file_name = file.path().filename().string();
-            auto* icon = new TextureIcon(file.path());
+            auto icon = std::make_shared<TextureIcon>(file.path());
             s_icons[file_name] = icon;
         }
         FS_NAMESPACE::path font_path = FileManager::get_resource_path() / "fonts";
@@ -30,15 +30,7 @@ namespace vOS
         ImGui::GetIO().FontDefault = s_regular;
     }
 
-    void UIUtil::delete_all()
-    {
-        for (auto& icon : s_icons)
-        {
-            delete icon.second;
-        }
-    }
-
-    TextureIcon* UIUtil::get_icon(const std::string& name)
+    std::shared_ptr<TextureIcon> UIUtil::get_icon(const std::string& name)
     {
         auto icon = s_icons.find(name);
         if (icon == s_icons.end())

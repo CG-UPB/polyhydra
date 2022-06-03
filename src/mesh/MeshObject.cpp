@@ -11,7 +11,7 @@ namespace vOS
     MeshObject::MeshObject(int id) : m_id(id)
     {
         // empty mesh
-        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
+        m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
     }
 
     void MeshObject::load_from_file(const std::string& file_path)
@@ -240,7 +240,7 @@ namespace vOS
     void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh)
     {
         // copy given mesh
-        m_mesh = new OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
+        m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
         m_mesh->assign(mesh);
         MeshProperties::setup_mesh_properties(*m_mesh);
 
@@ -250,8 +250,7 @@ namespace vOS
         // calculates the amount of ids the mesh needs
         calculate_mesh_offset();
 
-        delete m_mvb;
-        m_mvb = new MeshVertexBuffer(m_mesh);
+        m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
     }
 
     void MeshObject::update_vertex_buffer()
@@ -387,19 +386,24 @@ namespace vOS
         return m_mesh_offset_from_center;
     }
 
-    VertexArrayObject* MeshObject::get_vao() const
+    std::shared_ptr<VertexArrayObject> MeshObject::get_vao() const
     {
         return m_mvb->get_vao_by_face();
     }
 
-    VertexArrayObject* MeshObject::get_sphere_vao() const
+    std::shared_ptr<VertexArrayObject> MeshObject::get_sphere_vao() const
     {
         return m_mvb->get_sphere_vao();
     }
 
-    VertexArrayObject* MeshObject::get_cylinder_vao() const
+    std::shared_ptr<VertexArrayObject> MeshObject::get_cylinder_vao() const
     {
         return m_mvb->get_cylinder_vao();
+    }
+
+    std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> MeshObject::get_ovm() const
+    {
+        return m_mesh;
     }
 
     int MeshObject::calculate_selection_size() const
@@ -513,12 +517,7 @@ namespace vOS
         return m_max_peel_depth;
     }
 
-    MeshObject::~MeshObject()
-    {
-        delete m_mvb;
-    }
-
-    MeshVertexBuffer *MeshObject::get_mvb() const {
+    std::shared_ptr<MeshVertexBuffer> MeshObject::get_mvb() const {
         return m_mvb;
     }
 

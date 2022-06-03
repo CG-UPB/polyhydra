@@ -12,16 +12,15 @@ namespace vOS
     public:
 
         TransparentShadowMapPass(int width, int height);
-        ~TransparentShadowMapPass();
 
         void resize_buffers(int width, int height);
-        void render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
 
-        FrameBufferObject* get_framebuffer() const;
+        [[nodiscard]] std::shared_ptr<FrameBufferObject> get_framebuffer() const;
         [[nodiscard]] unsigned int get_shadow_map() const;
 
     private:
-        Shader* m_transparent_shadow_shader = nullptr;
-        FrameBufferObject* m_transparent_shadow_framebuffer = nullptr;
+        std::shared_ptr<Shader> m_transparent_shadow_shader;
+        std::shared_ptr<FrameBufferObject> m_transparent_shadow_framebuffer;
     };
 }

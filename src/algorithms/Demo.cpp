@@ -174,7 +174,7 @@ void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
     if(selected)
     {
         auto mesh_object = window->get_mesh_obj(mesh_id);
-        auto ovm_mesh = mesh_object->m_mesh;
+        auto ovm_mesh = mesh_object->get_ovm();
 
         // Calculate Unit triangle size from object bounding box
         m_mesh_scalar_value = (std::abs(mesh_object->get_max().x - mesh_object->get_min().x)

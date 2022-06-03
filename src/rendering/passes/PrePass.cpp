@@ -4,7 +4,7 @@
 
 namespace vOS
 {
-    void PrePass::render(VertexArrayObject* vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void PrePass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
@@ -65,12 +65,7 @@ namespace vOS
     PrePass::PrePass(int width, int height)
     {
         m_clear_position_shader = Shader::get("pre_far");
-        m_pre_pass_framebuffer = new PrePassFrameBufferObject(width, height);
-    }
-
-    PrePass::~PrePass()
-    {
-        delete m_pre_pass_framebuffer;
+        m_pre_pass_framebuffer = std::make_shared<PrePassFrameBufferObject>(width, height);
     }
 
     void PrePass::resize_buffers(int width, int height)
@@ -78,7 +73,7 @@ namespace vOS
         m_pre_pass_framebuffer->resize(width, height);
     }
 
-    PrePassFrameBufferObject* PrePass::get_framebuffer() const
+    std::shared_ptr<PrePassFrameBufferObject> PrePass::get_framebuffer() const
     {
         return m_pre_pass_framebuffer;
     }
