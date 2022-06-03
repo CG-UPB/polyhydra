@@ -47,8 +47,8 @@ namespace vOS
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
-    MeshVertexBuffer::MeshVertexBuffer(Mesh* mesh):
-        m_mesh(*mesh), m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
+    MeshVertexBuffer::MeshVertexBuffer(std::shared_ptr<Mesh> mesh):
+        m_mesh(mesh), m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
     {
         // first update the normal face attribute for all faces
         m_normals.update_vertex_normals();
@@ -56,34 +56,25 @@ namespace vOS
         m_loading_start = std::chrono::steady_clock::now();
     }
 
-    MeshVertexBuffer::~MeshVertexBuffer()
-    {
-        delete m_vao.face;
-        delete m_vao.rounded;
-        delete m_vao.selection_sphere;
-        delete m_vao.selection_cylinder;
-        delete m_vao.vertex_only;
-    }
-
     void MeshVertexBuffer::build_vertex_arrays()
     {
         auto& positions_by_face = get_attrib_array(VAO::MESH_FACE, Attribute::POSITION);
-        m_vao.face = new VertexArrayObject(positions_by_face, m_indices_face);
+        m_vao.face = std::make_shared<VertexArrayObject>(positions_by_face, m_indices_face);
         add_vao_attributes(m_vao.face, VAO::MESH_FACE);
 
         auto& positions_rounded = get_attrib_array(VAO::MESH_ROUNDED, Attribute::POSITION);
-        m_vao.rounded = new VertexArrayObject(positions_rounded, m_indices_rounded);
+        m_vao.rounded = std::make_shared<VertexArrayObject>(positions_rounded, m_indices_rounded);
         add_vao_attributes(m_vao.rounded, VAO::MESH_ROUNDED);
 
-        m_vao.selection_sphere = new VertexArrayObject(CommonMeshes::Sphere::selection_sphere().vertices(),
+        m_vao.selection_sphere = std::make_shared<VertexArrayObject>(CommonMeshes::Sphere::selection_sphere().vertices(),
                                                        CommonMeshes::Sphere::selection_sphere().indices());
         add_vao_attributes(m_vao.selection_sphere, VAO::SPHERE);
 
-        m_vao.selection_cylinder = new VertexArrayObject(CommonMeshes::Cylinder::edge_cylinder().vertices(),
+        m_vao.selection_cylinder = std::make_shared<VertexArrayObject>(CommonMeshes::Cylinder::edge_cylinder().vertices(),
                                                          CommonMeshes::Cylinder::edge_cylinder().indices());
         add_vao_attributes(m_vao.selection_cylinder, VAO::CYLINDER);
 
-        m_vao.vertex_only = new VertexArrayObject(CommonMeshes::Sphere::vertices(),CommonMeshes::Sphere::indices());
+        m_vao.vertex_only = std::make_shared<VertexArrayObject>(CommonMeshes::Sphere::vertices(),CommonMeshes::Sphere::indices());
         add_vao_attributes(m_vao.vertex_only, VAO::SPHERE);
     }
 
@@ -100,7 +91,7 @@ namespace vOS
         VecUtil::push_buffer(data, get_attrib_array(vao, attribute));
     }
 
-    void MeshVertexBuffer::add_vao_attributes(VertexArrayObject* vao, VAO vao_id)
+    void MeshVertexBuffer::add_vao_attributes(const std::shared_ptr<VertexArrayObject>& vao, VAO vao_id)
     {
         auto& vao_locations = s_attribute_definitions.of(vao_id);
         for (auto& data : vao_locations)
@@ -152,7 +143,7 @@ namespace vOS
         {
             return;
         }
-        if (m_current_loading_cell_it->is_valid() && m_current_loading_cell_it != m_mesh.cells_end())
+        if (m_current_loading_cell_it->is_valid() && m_current_loading_cell_it != m_mesh->cells_end())
         {
             add_cell_by_faces(m_mesh, *m_current_loading_cell_it);
             add_cell_rounded(m_mesh, *m_current_loading_cell_it);
@@ -162,7 +153,7 @@ namespace vOS
         else
         {
             m_is_loading_finished = true;
-            m_average_cell_size /= (float) m_mesh.n_cells();
+            m_average_cell_size /= (float) m_mesh->n_cells();
             build_vertex_arrays();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::steady_clock::now() - m_loading_start
@@ -178,21 +169,21 @@ namespace vOS
 
     float MeshVertexBuffer::get_loading_percentage()
     {
-        return ((float) m_num_loaded_cells / (float) m_mesh.n_cells()) * 100.0f;
+        return ((float) m_num_loaded_cells / (float) m_mesh->n_cells()) * 100.0f;
     }
 
-    void MeshVertexBuffer::add_cell_by_faces(Mesh& mesh, Cell cell)
+    void MeshVertexBuffer::add_cell_by_faces(const std::shared_ptr<Mesh>& mesh, Cell cell)
     {
-        auto peel_property = mesh.request_cell_property<int>(MeshProperties::PROP_PEEL_DEPTH);
+        auto peel_property = mesh->request_cell_property<int>(MeshProperties::PROP_PEEL_DEPTH);
 
         std::vector<HalffaceData> halffaces;
         std::vector<glm::vec3> vertices;
 
         // add every vertex only once for the selection, no need to render them twice
         int num_selection_vertices = 0;
-        for (auto cv_it: mesh.cell_vertices(cell))
+        for (auto cv_it: mesh->cell_vertices(cell))
         {
-            auto v_pos = VecUtil::pos_to_vec3(mesh, cv_it);
+            auto v_pos = VecUtil::pos_to_vec3(*mesh, cv_it);
             vertices.push_back(v_pos);
             VecUtil::push_vec3(get_attrib_array(VAO::SPHERE, Attribute::SELECTION_VERTEX_POSITION), v_pos);
             m_selection_map.vertex_ids.push_back(cv_it.idx());
@@ -226,10 +217,10 @@ namespace vOS
         // same for the edges, only add them once for the selection
         int num_selection_edges = 0;
         float min_edge_length = std::numeric_limits<float>::max();
-        for (auto ce_it: mesh.cell_edges(cell))
+        for (auto ce_it: mesh->cell_edges(cell))
         {
-            auto[v0, v1] = mesh.edge_vertices(ce_it);
-            auto edge_len = (float) mesh.length(ce_it);
+            auto[v0, v1] = mesh->edge_vertices(ce_it);
+            auto edge_len = (float) mesh->length(ce_it);
             if (edge_len < min_edge_length)
             {
                 min_edge_length = edge_len;
@@ -249,7 +240,7 @@ namespace vOS
         int cell_vertex_offset = m_vertex_offset_face;
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
-        for (auto chf_it: mesh.cell_halffaces(cell))
+        for (auto chf_it: mesh->cell_halffaces(cell))
         {
             HalffaceData halfface_data;
             int halfface_id = chf_it.idx();
@@ -258,15 +249,15 @@ namespace vOS
             // Count the amount of Vertices this Face has
             std::vector<glm::vec3> halfface_vertices;
             std::vector<glm::vec3> vertex_normals;
-            for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
+            for (auto hfhe_it: mesh->halfface_halfedges(chf_it))
             {
                 // get the corresponding edge vertex
-                auto vertex = mesh.from_vertex_handle(hfhe_it);
+                auto vertex = mesh->from_vertex_handle(hfhe_it);
                 auto face = vOS::Mesh::face_handle(chf_it);
-                bool is_boundary = mesh.is_boundary(face);
+                bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
                 vertex_normals.push_back(vertex_normal);
-                halfface_vertices.push_back(VecUtil::pos_to_vec3(mesh, vertex));
+                halfface_vertices.push_back(VecUtil::pos_to_vec3(*mesh, vertex));
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
@@ -288,7 +279,7 @@ namespace vOS
                 halfface_data.halfface_ids.push_back(halfface_id);
 
                 // Add face data
-                add_face_indices(mesh, halfface_data);
+                add_face_indices(halfface_data);
                 m_num_vertices_face += (int) halfface_vertices.size();
                 m_face_centers.emplace(halfface_id, barycenter / 3.0f);
                 m_face_normals.emplace(halfface_id, normal);
@@ -346,7 +337,7 @@ namespace vOS
                     center_vertex_normal_average += v_data.vertex_normal;
                 }
                 halfface_data.vertices[0].vertex_normal = glm::normalize(center_vertex_normal_average);
-                add_face_indices(mesh, halfface_data);
+                add_face_indices(halfface_data);
                 m_num_vertices_face += (int) halfface_data.vertices.size();
                 halffaces.push_back(halfface_data);
             }
@@ -388,7 +379,7 @@ namespace vOS
         add_cell_index_and_count(VAO::MESH_FACE, cell.idx(), cell_vertex_offset, cell_vertex_count);
     }
 
-    void MeshVertexBuffer::add_face_indices(Mesh& mesh, HalffaceData& face) const
+    void MeshVertexBuffer::add_face_indices(HalffaceData& face) const
     {
         switch (face.vertices.size())
         {
@@ -461,7 +452,7 @@ namespace vOS
         data.indices.push_back(m_current_rounded_index + i1);
     }
 
-    void MeshVertexBuffer::add_cell_rounded(Mesh& mesh, Cell cell)
+    void MeshVertexBuffer::add_cell_rounded(std::shared_ptr<Mesh> mesh, Cell cell)
     {
         int cell_vertex_offset = m_vertex_offset_rounded;
 
@@ -471,15 +462,15 @@ namespace vOS
         // start with the halffaces, because with them, we can navigate inside the current cell without other cells
         // if we would instead take the halfedges of a vertex for example, they would include other cells,
         // which we don't want
-        for (auto chf_it: mesh.cell_halffaces(cell))
+        for (auto chf_it: mesh->cell_halffaces(cell))
         {
             face_normals[chf_it.idx()] = halfface_normal_to_vec3(chf_it.idx());
             glm::vec3 center(0.0f);
             int num_vertices = 0;
             // first, get the center of the halfface
-            for (auto hfv_it: mesh.halfface_vertices(chf_it))
+            for (auto hfv_it: mesh->halfface_vertices(chf_it))
             {
-                center += VecUtil::pos_to_vec3(mesh, hfv_it);
+                center += VecUtil::pos_to_vec3(*mesh, hfv_it);
                 num_vertices++;
             }
             face_centers[chf_it.idx()] = center / (float) num_vertices;
@@ -487,10 +478,10 @@ namespace vOS
             // the current cell. And additionally, they need to be in order, meaning all edges that lie next to each other
             // in our vector must share the same halfface. Basically, imagine a halfface circle around each vertex.
             // This is important when we want to calculate the edge normals, for example.
-            for (auto hfhe_it: mesh.halfface_halfedges(chf_it))
+            for (auto hfhe_it: mesh->halfface_halfedges(chf_it))
             {
                 // this is the corner vertex we are currently looking at
-                auto from_vertex = mesh.from_vertex_handle(hfhe_it);
+                auto from_vertex = mesh->from_vertex_handle(hfhe_it);
                 // since we are iterating over the halfedges, we can get vertices twice, so just check the next one
                 if (cell_vertices.find(from_vertex.idx()) != cell_vertices.end())
                 {
@@ -505,7 +496,7 @@ namespace vOS
                 // to -----*
                 cell_vertices[from_vertex.idx()].push_back({
                        from_vertex.idx(),
-                       mesh.to_vertex_handle(hfhe_it).idx(),
+                       mesh->to_vertex_handle(hfhe_it).idx(),
                        hfhe_it.idx(),
                        chf_it.idx()
                 });
@@ -520,7 +511,7 @@ namespace vOS
                     //     /        |        \
                     //  /       *------->      \
                     // *------------*------------*
-                    current_halfface = mesh.adjacent_halfface_in_cell(current_halfface, current_halfedge);
+                    current_halfface = mesh->adjacent_halfface_in_cell(current_halfface, current_halfedge);
                     // exit condition, we have closed the loop
                     if (current_halfface == chf_it)
                     {
@@ -528,18 +519,18 @@ namespace vOS
                     }
                     // now that we have our next halfface, we need to find the associated halfedge that starts at
                     // the corner vertex within the halfface
-                    for (auto chfe_it: mesh.halfface_edges(current_halfface))
+                    for (auto chfe_it: mesh->halfface_edges(current_halfface))
                     {
-                        auto [he0, he1] = mesh.edge_halfedges(chfe_it);
-                        auto from0 = mesh.from_vertex_handle(he0);
-                        auto from1 = mesh.from_vertex_handle(he1);
+                        auto [he0, he1] = mesh->edge_halfedges(chfe_it);
+                        auto from0 = mesh->from_vertex_handle(he0);
+                        auto from1 = mesh->from_vertex_handle(he1);
                         if (from0 == from_vertex && current_halfedge != he0)
                         {
                             // we have found our halfedge
                             current_halfedge = he0;
                             cell_vertices[from_vertex.idx()].push_back({
                                    from_vertex.idx(),
-                                   mesh.to_vertex_handle(current_halfedge).idx(),
+                                   mesh->to_vertex_handle(current_halfedge).idx(),
                                    current_halfedge.idx(),
                                    current_halfface.idx()
                             });
@@ -551,7 +542,7 @@ namespace vOS
                             current_halfedge = he1;
                             cell_vertices[from_vertex.idx()].push_back({
                                    from_vertex.idx(),
-                                   mesh.to_vertex_handle(current_halfedge).idx(),
+                                   mesh->to_vertex_handle(current_halfedge).idx(),
                                    current_halfedge.idx(),
                                    current_halfface.idx()
                             });
@@ -612,7 +603,7 @@ namespace vOS
             // the outgoing halfedges and halffaces in a circle around the corner
             const auto& vertex_data = it.second;
             glm::vec3 corner_normal(0.0f);
-            glm::vec3 corner_pos = VecUtil::pos_to_vec3(mesh, vertex_id);
+            glm::vec3 corner_pos = VecUtil::pos_to_vec3(*mesh, vertex_id);
             glm::vec3 corner_face_center_average(0.0f);
             float corner_dihedral_angle_average = 0.0f;
             for (size_t i = 0; i < vertex_data.size(); i++)
@@ -621,8 +612,8 @@ namespace vOS
                 auto& data = vertex_data[(i + 1) % vertex_data.size()];
                 auto& next_data = vertex_data[i];
 
-                glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(mesh, data.to_vertex_id);
-                glm::vec3 next_to_vertex_pos = VecUtil::pos_to_vec3(mesh, next_data.to_vertex_id);
+                glm::vec3 to_vertex_pos = VecUtil::pos_to_vec3(*mesh, data.to_vertex_id);
+                glm::vec3 next_to_vertex_pos = VecUtil::pos_to_vec3(*mesh, next_data.to_vertex_id);
 
                 corner_normal += glm::cross(to_vertex_pos - corner_pos, next_to_vertex_pos - corner_pos);
                 corner_face_center_average += face_centers[data.halfface_id];
@@ -652,7 +643,7 @@ namespace vOS
                 total_cell_vertex_count++;
 
                 auto face = vOS::Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
-                bool is_boundary = mesh.is_boundary(face);
+                bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex_id) : -face_normal;
 
                 // face vertex
@@ -814,37 +805,37 @@ namespace vOS
         m_current_rounded_index += (int) cell_data.vertex_positions.size() / 3;
     }
 
-    void MeshVertexBuffer::add_from_to_vertex(Mesh& mesh, const OpenVolumeMesh::VertexHandle& from,
+    void MeshVertexBuffer::add_from_to_vertex(const std::shared_ptr<Mesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
                                               const OpenVolumeMesh::VertexHandle& to)
     {
         VecUtil::push_vec3(
                 get_attrib_array(VAO::CYLINDER, Attribute::SELECTION_FROM_VERTEX),
-                VecUtil::pos_to_vec3(mesh, from)
+                VecUtil::pos_to_vec3(*mesh, from)
         );
         VecUtil::push_vec3(
                 get_attrib_array(VAO::CYLINDER, Attribute::SELECTION_TO_VERTEX),
-                VecUtil::pos_to_vec3(mesh, to)
+                VecUtil::pos_to_vec3(*mesh, to)
         );
     }
 
-    std::vector<float> MeshVertexBuffer::get_vertices(Mesh& mesh)
+    std::vector<float> MeshVertexBuffer::get_vertices(const std::shared_ptr<Mesh>& mesh)
     {
         std::vector<float> vertices;
-        vertices.reserve(mesh.n_vertices() * 3);
-        for (auto v_it : mesh.vertices())
+        vertices.reserve(mesh->n_vertices() * 3);
+        for (auto v_it : mesh->vertices())
         {
-            VecUtil::push_vec3(vertices, VecUtil::pos_to_vec3(mesh, v_it));
+            VecUtil::push_vec3(vertices, VecUtil::pos_to_vec3(*mesh, v_it));
         }
         return vertices;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_vao_by_face()
+    std::shared_ptr<VertexArrayObject> MeshVertexBuffer::get_vao_by_face()
     {
         update_vertex_arrays();
         return m_vao.face;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_vao_rounded()
+    std::shared_ptr<VertexArrayObject> MeshVertexBuffer::get_vao_rounded()
     {
         update_vertex_arrays();
         return m_vao.rounded;
@@ -882,13 +873,13 @@ namespace vOS
         return m_original_vertices;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_cylinder_vao()
+    std::shared_ptr<VertexArrayObject> MeshVertexBuffer::get_cylinder_vao()
     {
         update_vertex_arrays();
         return m_vao.selection_cylinder;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_sphere_vao()
+    std::shared_ptr<VertexArrayObject> MeshVertexBuffer::get_sphere_vao()
     {
         update_vertex_arrays();
         return m_vao.selection_sphere;
@@ -906,7 +897,7 @@ namespace vOS
 
     void MeshVertexBuffer::set_face_color(int face_id, float r, float g, float b, float a)
     {
-        auto [hf0, hf1] = m_mesh.face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
+        auto [hf0, hf1] = m_mesh->face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
         glm::vec4 value = {r, g, b, a};
         if (hf0.is_valid())
         {
@@ -922,7 +913,7 @@ namespace vOS
 
     void MeshVertexBuffer::set_face_selection(int face_id, bool selected)
     {
-        auto [hf0, hf1] = m_mesh.face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
+        auto [hf0, hf1] = m_mesh->face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
         float value = selected ? 1.0f : 0.0f;
         if (hf0.is_valid())
         {
@@ -1110,7 +1101,7 @@ namespace vOS
         return m_average_cell_size;
     }
 
-    VertexArrayObject* MeshVertexBuffer::get_vertex_only_vao()
+    std::shared_ptr<VertexArrayObject> MeshVertexBuffer::get_vertex_only_vao()
     {
         update_vertex_arrays();
         return m_vao.vertex_only;
@@ -1119,13 +1110,21 @@ namespace vOS
     glm::vec3 MeshVertexBuffer::halfface_normal_to_vec3(int halfface_id)
     {
         auto normal = m_normals[OpenVolumeMesh::HalfFaceHandle{halfface_id}];
-        return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
+        return glm::normalize(glm::vec3{
+            std::isnan(normal[0]) ? 0.0 : normal[0],
+            std::isnan(normal[1]) ? 0.0 : normal[1],
+            std::isnan(normal[2]) ? 0.0 : normal[2]
+        });
     }
 
     glm::vec3 MeshVertexBuffer::vertex_normal_to_vec3(int vertex_id)
     {
         auto normal = m_normals[OpenVolumeMesh::VertexHandle{vertex_id}];
-        return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
+        return glm::normalize(glm::vec3{
+            std::isnan(normal[0]) ? 0.0 : normal[0],
+            std::isnan(normal[1]) ? 0.0 : normal[1],
+            std::isnan(normal[2]) ? 0.0 : normal[2]
+        });
     }
 
     void MeshVertexBuffer::update_vertex_arrays()
@@ -1155,7 +1154,7 @@ namespace vOS
             auto& attrib_array = get_attrib_array(data.vao, data.attribute);
             int size = count * attrib_definition.element_count;
             int buffer_index = offset * attrib_definition.element_count;
-            for (auto* vao : m_vertex_arrays[static_cast<int>(data.vao)])
+            for (const auto& vao : m_vertex_arrays[static_cast<int>(data.vao)])
             {
                 if (data.fill_all)
                 {
