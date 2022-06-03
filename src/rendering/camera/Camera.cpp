@@ -175,12 +175,12 @@ namespace vOS {
         if (m_mode == FLY)
         {
             set_mode(ORBIT);
-            look_at(new_orbit_target);
+            animated_look_at(new_orbit_target);
         }
         else if(m_mode == ORBIT)
         {
             set_mode(FLY);
-            look_at(position + glm::normalize(target - position));
+            animated_look_at(position + glm::normalize(target - position));
         }
     }
 
@@ -199,26 +199,43 @@ namespace vOS {
         if(!animation)
         {
             animation = true;
-            animation_start = target;
-            animation_end = new_target;
+            animation_start_target = target;
+            animation_end_target = new_target;
+            animation_start_position = position;
+            auto pos_dir = glm::normalize(new_target - position);
+            if(m_mode == ORBIT && glm::length(target - position) < glm::length(new_target -position))
+            {
+                animation_end_position = animation_end_target - pos_dir * glm::length(target - position);
+            }
+            else
+            {
+                animation_end_position = position;
+            }
         }
     }
 
     void Camera::animation_step()
     {
+        int steps = 15;
         if(animation)
         {
-            glm::vec3 step = animation_end - animation_start ;
-            step /= 10;
-            glm::vec3 remain = animation_end - target;
+            glm::vec3 target_step = animation_end_target - animation_start_target ;
+            target_step /= steps;
 
-            if(glm::length(step) >= glm::length(remain))
+            glm::vec3 position_step = animation_end_position - animation_start_position;
+            position_step /= steps;
+
+            glm::vec3 remain = animation_end_target - target;
+
+            if(glm::length(target_step) >= glm::length(remain))
             {
-                look_at(animation_end);
+                position = animation_end_position;
+                look_at(animation_end_target);
                 animation = false;
             } else
             {
-                look_at(target + step);
+                position = position + position_step;
+                look_at(target + target_step);
             }
         }
     }

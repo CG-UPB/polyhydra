@@ -94,8 +94,10 @@ namespace vOS {
         float m_screen_height = 0;
         float m_zoom_strength = 3.5;
 
-        glm::vec3 animation_start = {0.0f, 0.0f , 0.0f};;
-        glm::vec3 animation_end = {0.0f, 0.0f , 0.0f};;
+        glm::vec3 animation_start_target = {0.0f, 0.0f , 0.0f};
+        glm::vec3 animation_end_target = {0.0f, 0.0f , 0.0f};
+        glm::vec3 animation_start_position = {0.0f, 0.0f , 0.0f};
+        glm::vec3 animation_end_position = {0.0f, 0.0f , 0.0f};
     };
 
 }
