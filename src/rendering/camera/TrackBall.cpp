@@ -47,8 +47,7 @@ namespace vOS
                                 0.0f);
         p.y = -p.y;
         // calculate position on trackball
-        float op_squared = p.x * p.x + p.y * p.y;
-        if(op_squared <= 1.0f)
+        if(auto op_squared = p.x * p.x + p.y * p.y; op_squared <= 1.0f)
         {
             p.z = sqrt(1.0f - op_squared);
         }

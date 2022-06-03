@@ -2,8 +2,7 @@
 #include "Input.h"
 #include "GLFW/glfw3.h"
 
-namespace vOS
-{
+namespace vOS {
     // Static Variables
     bool Input::m_ignore_keyboard_commands;
     bool Input::m_accept_inputs;
@@ -11,9 +10,9 @@ namespace vOS
     glm::vec3 Input::m_movement_vector;
     glm::vec2 Input::m_scroll_offset;
     std::map<int, int> Input::m_keybinds;
-    GLFWwindow* Input::m_window;
+    GLFWwindow *Input::m_window;
 
-    void Input::setup(GLFWwindow* window)
+    void Input::setup(GLFWwindow *window)
     {
         m_window = window;
 
@@ -96,7 +95,7 @@ namespace vOS
         m_movement_vector = mov;
     }
 
-    void Input::glw_callback_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset)
+    void Input::glw_callback_mouse_scroll(GLFWwindow *window, double xoffset, double yoffset)
     {
         if (!m_accept_inputs || m_ignore_mouse_commands)
             return;
@@ -108,7 +107,6 @@ namespace vOS
     {
         m_scroll_offset = {0.0f, 0.0f};
     }
-
 
     // use the ImGui methods for this, since the glfw callback is not called every frame, which causes lags while moving the mouse
     bool Input::mouse_pressed()
@@ -123,6 +121,11 @@ namespace vOS
     bool Input::controll_pressed()
     {
         return key_pressed(GLFW_KEY_LEFT_CONTROL);
+    }
+
+    bool Input::camera_mode_switch_pressed()
+    {
+        return key_pressed(GLFW_KEY_M);
     }
 
     float Input::get_wasd_movement_vector_X()

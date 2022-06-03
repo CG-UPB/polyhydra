@@ -36,9 +36,9 @@ namespace vOS {
 
         void look_at(glm::vec3 target);
 
-        [[nodiscard]] const glm::vec3& get_front() const;
-        [[nodiscard]] const glm::vec3& get_up() const;
-        [[nodiscard]] const glm::vec3& get_right() const;
+        [[nodiscard]] glm::vec3 get_front() const;
+        [[nodiscard]] glm::vec3 get_up() const;
+        [[nodiscard]] glm::vec3 get_right() const;
 
         // Matrices
         glm::mat4 world;
@@ -69,7 +69,7 @@ namespace vOS {
 
     private:
 
-        void handle_trackball_movement(const glm::vec2 start_position, const glm::vec2& end_position);
+        void handle_trackball_movement(const glm::vec2& start_position, const glm::vec2& end_position);
 
         TrackBall m_trackball;
 

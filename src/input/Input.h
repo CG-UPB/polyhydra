@@ -89,6 +89,8 @@ namespace vOS {
 
         static bool controll_pressed();
 
+        static bool camera_mode_switch_pressed();
+
         // reset the current scroll offset for the next frame
         static void reset_offset();
 
