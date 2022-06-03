@@ -27,9 +27,14 @@ void main()
 {
     float edge_length = length(u_to_vertex - u_from_vertex) * u_cell_size;
     vec3 edge_dir = normalize(u_to_vertex - u_from_vertex);
-    float rot_angle = acos(dot(UP, edge_dir));
-    vec3 rot_axis = normalize(cross(UP, edge_dir));
-    mat4 rotation = inverse(get_rotation_matrix(rot_axis, rot_angle));
+    mat4 rotation = mat4(1.0);
+    float dot_p = dot(UP, edge_dir);
+    if (abs(dot_p) < 1.0)
+    {
+        float rot_angle = acos(dot_p);
+        vec3 rot_axis = normalize(cross(UP, edge_dir));
+        rotation = inverse(get_rotation_matrix(rot_axis, rot_angle));
+    }
 
     vec3 offset = u_from_vertex + (u_to_vertex - u_from_vertex) * 0.5;
     vec4 normalization = vec4(1.0, 0.0, 0.0, 1.0);

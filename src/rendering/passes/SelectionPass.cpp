@@ -79,7 +79,7 @@ namespace vOS {
         {
             // Draw cylinders for each Edge
             glDisable(GL_CULL_FACE);
-            glDepthMask(GL_FALSE);
+            //glDepthMask(GL_FALSE);
 
             m_selection_cylinder_shader->bind();
 

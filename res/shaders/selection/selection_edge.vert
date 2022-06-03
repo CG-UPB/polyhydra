@@ -75,9 +75,14 @@ void main()
 
     float edge_length = length(to - from);
     vec3 edge_dir = normalize(to - from);
-    float rot_angle = acos(dot(CYLINDER_UP, edge_dir));
-    vec3 rot_axis = normalize(cross(CYLINDER_UP, edge_dir));
-    mat4 rotation = inverse(get_rotation_matrix(rot_axis, rot_angle));
+    mat4 rotation = mat4(1.0);
+    float dot_p = dot(CYLINDER_UP, edge_dir);
+    if (abs(dot_p) < 1.0)
+    {
+        float rot_angle = acos(dot_p);
+        vec3 rot_axis = normalize(cross(CYLINDER_UP, edge_dir));
+        rotation = inverse(get_rotation_matrix(rot_axis, rot_angle));
+    }
 
     vec3 offset = from + (to - from) * 0.5;
     vec4 normalization = vec4(1.0, 0.0, 0.0, 1.0);
