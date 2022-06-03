@@ -25,16 +25,19 @@ namespace vOS {
 
         void set_viewport_size(float width, float height);
         void set_mode(Mode mode);
+        Mode get_mode();
+        void switch_mode(glm::vec3 new_orbit_target = {0.0f, 0.0f, 0.0f});
 
-        glm::vec2 get_viewport_size() const;
+        [[nodiscard]] glm::vec2 get_viewport_size() const;
 
         void update();
-
-        void handle_input();
-        void handle_mouse_scroll(float y_offset);
+        void handle_mouse_scroll(glm::vec2 scroll);
         void handle_mouse_movement(float x_offset, float y_offset);
+        void handle_key_movement(glm::vec3 movement_vector);
 
-        void look_at(glm::vec3 target);
+        void animated_look_at(glm::vec3 new_target);
+        void animation_step();
+        void look_at(glm::vec3 new_target);
 
         [[nodiscard]] glm::vec3 get_front() const;
         [[nodiscard]] glm::vec3 get_up() const;
@@ -67,6 +70,8 @@ namespace vOS {
 
         float zoom = 45.0f;
 
+        bool animation = false;
+
     private:
 
         void handle_trackball_movement(const glm::vec2& start_position, const glm::vec2& end_position);
@@ -88,6 +93,9 @@ namespace vOS {
         float m_screen_width = 0;
         float m_screen_height = 0;
         float m_zoom_strength = 3.5;
+
+        glm::vec3 animation_start = {0.0f, 0.0f , 0.0f};;
+        glm::vec3 animation_end = {0.0f, 0.0f , 0.0f};;
     };
 
 }

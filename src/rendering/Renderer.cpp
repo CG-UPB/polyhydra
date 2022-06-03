@@ -1,11 +1,12 @@
 
 #include "Renderer.h"
+#include "input/Input.h"
 
 namespace vOS
 {
 
-    Renderer::Renderer(int width, int height, FrameBufferObject* initial_target_ms, FrameBufferObject* initial_target):
-        m_viewportPanelWidth(width), m_viewportPanelHeight(height), m_settings(*GlobalViewerSettings::getInstance())
+    Renderer::Renderer(int width, int height, FrameBufferObject *initial_target_ms, FrameBufferObject *initial_target) :
+            m_viewportPanelWidth(width), m_viewportPanelHeight(height), m_settings(*GlobalViewerSettings::getInstance())
     {
         m_target_ms = initial_target_ms;
         m_target = initial_target;
@@ -22,6 +23,8 @@ namespace vOS
 
         m_transparency_pass_wb = new TransparencyPass_WB(this, width, height);
         m_transparency_pass_dp = new TransparencyPass_DP(this, width, height);
+        last_x = width / 2.0f;
+        last_y = height / 2.0f;
     }
 
     Renderer::~Renderer()
@@ -36,8 +39,8 @@ namespace vOS
 
     void Renderer::resize(int width, int height)
     {
-        m_viewportPanelWidth = (int) width;
-        m_viewportPanelHeight = (int) height;
+        m_viewportPanelWidth = width;
+        m_viewportPanelHeight = height;
         m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
         m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
         m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
@@ -48,9 +51,11 @@ namespace vOS
         m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
         delete m_pixel_buffer;
         m_pixel_buffer = new PixelBufferObject(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
+        last_x = width / 2.0f;
+        last_y = height / 2.0f;
     }
 
-    void Renderer::render(RenderData* render_data, bool render_bg)
+    void Renderer::render(RenderData *render_data, bool render_bg)
     {
         m_render_data = render_data;
         m_is_rendering_background = render_bg;
@@ -59,6 +64,9 @@ namespace vOS
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_target_ms->unbind();
+
+        // handle input
+        handle_camera_input();
 
         // Render Meshes
         render_pre_pass(*render_data);
@@ -70,7 +78,7 @@ namespace vOS
                 render_background(*render_data);
             }
             m_target_ms->bind();
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+            for (const auto &[id, mesh]: Window::instance().get_mesh_list())
             {
                 if (mesh == nullptr || !mesh->get_data().visible)
                 {
@@ -83,8 +91,7 @@ namespace vOS
                 }
             }
             m_target_ms->unbind();
-        }
-        else
+        } else
         {
             if (m_settings.get_ambient_occlusion_activated())
             {
@@ -106,7 +113,7 @@ namespace vOS
 
             render_meshes(*render_data);
 
-            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_target_ms,m_target);
+            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_target_ms, m_target);
 
             // Render transparent objects
             if (m_settings.get_transparency_activated())
@@ -129,17 +136,128 @@ namespace vOS
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms,m_target);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms, m_target);
     }
 
-    void Renderer::render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh)
+    void Renderer::handle_camera_input()
+    {
+        Input::update();
+
+        auto &cam = m_render_data->camera;
+
+        if (cam.animation)
+        {
+            cam.animation_step();
+            cam.update();
+            return;
+        }
+        // If left ctrl key is pressed, the object move mode is active which requires the camera stand still
+        bool ignore_input = Input::key_pressed(GLFW_KEY_LEFT_CONTROL);
+        if (ignore_input)
+            return;
+
+        if (Input::mouse_double_clicked())
+        {
+            auto mesh_id = m_selection_hover_pass.get_hovered_mesh_object();
+
+            if (mesh_id >= 0)
+            {
+                auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
+                if(Input::key_down(GLFW_KEY_LEFT_CONTROL))
+                {
+                    auto transform = cam.world * mesh->get_data().get_transform();
+                    auto pos_mesh_space = glm::vec4(m_selection_hover_pass.hover_position , 1.0f);
+                    //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
+                    new_target = glm::vec3(transform * pos_mesh_space);
+                }else
+                {
+                    new_target = mesh->get_data().position;
+                }
+
+                auto extended_target = cam.position + glm::length(glm::vec3(new_target) - cam.position) * glm::normalize(cam.target - cam.position);
+                if(cam.get_mode() == FLY)
+                {
+                    cam.switch_mode(extended_target);
+                }
+                cam.animated_look_at(new_target);
+                Window::instance().set_mesh_focus(mesh_id);
+            }
+        }
+
+        if (Input::key_pressed(GLFW_KEY_M))
+        {
+            auto mesh_id = Window::instance().get_mesh_focus();
+            glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
+            if(mesh_id >= 0)
+            {
+                auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                new_target = mesh->get_data().position;
+            }
+            cam.switch_mode(new_target);
+        }
+
+        ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+        ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+        vMin.x += ImGui::GetWindowPos().x;
+        vMin.y += ImGui::GetWindowPos().y;
+        vMax.x += ImGui::GetWindowPos().x;
+        vMax.y += ImGui::GetWindowPos().y;
+
+        // mouse movement
+        auto mouse_coords = Input::get_mouse_coords();
+        auto xpos = mouse_coords.x;
+        auto ypos = mouse_coords.y;
+        auto is_down = Input::mouse_pressed();
+
+        if (!ImGui::IsWindowHovered() || !ImGui::IsWindowFocused())
+        {
+            if (!is_down)
+            {
+                last_x = xpos;
+                last_y = ypos;
+            }
+            return;
+        }
+
+        // mouse scroll
+        cam.handle_mouse_scroll(Input::get_scroll_offset());
+
+        if (xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
+        {
+            if (is_down)
+            {
+
+                float x_offset = xpos - last_x;
+                float y_offset = last_y - ypos;
+
+                last_x = xpos;
+                last_y = ypos;
+
+                cam.handle_mouse_movement(x_offset, y_offset);
+            } else
+            {
+                last_x = xpos;
+                last_y = ypos;
+            }
+        }
+
+        if (ImGui::IsWindowFocused())
+        {
+            cam.handle_key_movement(Input::get_wasd_movement_vector());
+        }
+
+        cam.update();
+    }
+
+    void Renderer::render_mesh(RenderData &render_data, const std::shared_ptr<MeshObject> &mesh)
     {
         if (mesh == nullptr)
         {
             return;
         }
 
-        MeshData& mesh_data = mesh->get_data();
+        MeshData &mesh_data = mesh->get_data();
 
         if (!mesh_data.visible)
         {
@@ -149,7 +267,7 @@ namespace vOS
 
         mesh->update_vertex_buffer();
 
-        VertexArrayObject* vao = mesh->get_vao();
+        VertexArrayObject *vao = mesh->get_vao();
         if (mesh_data.rounding_active)
         {
             vao = mesh->get_mvb()->get_vao_rounded();
@@ -163,7 +281,7 @@ namespace vOS
         }
     }
 
-    void Renderer::render_selection(RenderData& render_data)
+    void Renderer::render_selection(RenderData &render_data)
     {
         // now render our mesh scene to the framebuffer texture
         m_selectionFrameBuffer->bind();
@@ -181,7 +299,7 @@ namespace vOS
         int x = (int) mouse_pos_in_window.x / 2;
         int y = (int) (viewport[3] * 2 - (int) mouse_pos_in_window.y) / 2;
 
-        GLubyte* data = m_pixel_buffer->start_read(x, y, 1, 1);
+        GLubyte *data = m_pixel_buffer->start_read(x, y, 1, 1);
 
         if (data != nullptr)
         {
@@ -191,8 +309,7 @@ namespace vOS
             if (m_selection_pass.is_debug_mode())
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
-            }
-            else
+            } else
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
             }
@@ -208,7 +325,7 @@ namespace vOS
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+            for (const auto &[id, mesh]: Window::instance().get_mesh_list())
             {
                 if (!mesh->get_data().visible)
                 {
@@ -220,7 +337,7 @@ namespace vOS
         m_selectionFrameBuffer->unbind();
 
         m_target_ms->bind();
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+        for (const auto &[id, mesh]: Window::instance().get_mesh_list())
         {
             m_selection_hover_pass.render(nullptr, render_data, mesh);
         }
@@ -232,20 +349,20 @@ namespace vOS
         m_selection_callback(type, id);
     }
 
-    void Renderer::render_pre_pass(RenderData& render_data)
+    void Renderer::render_pre_pass(RenderData &render_data)
     {
         m_pre_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_pre_pass->clear_position_buffer(render_data);
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+        for (const auto &[id, mesh]: Window::instance().get_mesh_list())
         {
             if (!mesh->get_data().visible)
             {
                 continue;
             }
             mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
+            VertexArrayObject *vao = mesh->get_vao();
             if (mesh->get_data().rounding_active)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
@@ -263,7 +380,7 @@ namespace vOS
         m_pre_pass->get_framebuffer()->unbind();
     }
 
-    void Renderer::render_shadow_map(RenderData& render_data)
+    void Renderer::render_shadow_map(RenderData &render_data)
     {
         // render opaque shadow map
         glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -272,24 +389,24 @@ namespace vOS
         m_shadow_pass->clear_cascades();
         int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
 
-        auto& cam = render_data.camera;
+        auto &cam = render_data.camera;
         m_shadow_pass->calculate_cascades(cam.near, cam.far, cascade_level);
 
-        for(int i = 0; i < cascade_level; i++)
+        for (int i = 0; i < cascade_level; i++)
         {
             m_shadow_pass->get_framebuffer()->bind();
             m_shadow_pass->set_cascade_index(i);
             m_shadow_pass->bind_for_writing(i);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+            for (const auto &[id, mesh]: Window::instance().get_mesh_list())
             {
                 if (!mesh->get_data().visible)
                 {
                     continue;
                 }
                 mesh->update_vertex_buffer();
-                VertexArrayObject* vao = mesh->get_vao();
+                VertexArrayObject *vao = mesh->get_vao();
                 if (mesh->get_data().rounding_active)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
@@ -303,12 +420,12 @@ namespace vOS
         }
     }
 
-    void Renderer::render_ssao_pass(RenderData& render_data)
+    void Renderer::render_ssao_pass(RenderData &render_data)
     {
         m_ssao_pass->render(nullptr, render_data, nullptr);
     }
 
-    void Renderer::render_transparency_wb(RenderData& render_data)
+    void Renderer::render_transparency_wb(RenderData &render_data)
     {
         m_transparency_pass_wb->bind_transparent_buffer();
         m_transparency_pass_wb->clear_framebuffer();
@@ -319,16 +436,16 @@ namespace vOS
         glBlendEquation(GL_FUNC_ADD);
         //glDisable(GL_CULL_FACE);
 
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+        for (const auto &[id, mesh]: Window::instance().get_mesh_list())
         {
-            MeshData& mesh_data = mesh->get_data();
+            MeshData &mesh_data = mesh->get_data();
 
             if (!mesh->get_data().visible)
             {
                 continue;
             }
             mesh->update_vertex_buffer();
-            VertexArrayObject* vao = mesh->get_vao();
+            VertexArrayObject *vao = mesh->get_vao();
             if (mesh_data.rounding_active)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
@@ -350,7 +467,7 @@ namespace vOS
         m_target_ms->unbind();
     }
 
-    void Renderer::render_transparency_dp(RenderData& render_data)
+    void Renderer::render_transparency_dp(RenderData &render_data)
     {
         int num_passes = m_settings.get_number_passes();
         for (int i = 0; i < num_passes; i++)
@@ -358,8 +475,7 @@ namespace vOS
             if (i % 2 == 0)
             {
                 m_transparency_pass_dp->m_transparent_framebuffer0->bind();
-            }
-            else
+            } else
             {
                 m_transparency_pass_dp->m_transparent_framebuffer1->bind();
             }
@@ -368,16 +484,16 @@ namespace vOS
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             // first render all meshes
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+            for (const auto &[id, mesh]: Window::instance().get_mesh_list())
             {
-                MeshData& mesh_data = mesh->get_data();
+                MeshData &mesh_data = mesh->get_data();
                 if (!mesh->get_data().visible)
                 {
                     continue;
                 }
 
                 mesh->update_vertex_buffer();
-                VertexArrayObject* vao = mesh->get_vao();
+                VertexArrayObject *vao = mesh->get_vao();
                 if (mesh_data.rounding_active)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
@@ -391,8 +507,7 @@ namespace vOS
             if (i % 2 == 0)
             {
                 m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
-            }
-            else
+            } else
             {
                 m_transparency_pass_dp->m_transparent_framebuffer1->unbind();
             }
@@ -401,7 +516,7 @@ namespace vOS
     }
 
 
-    void Renderer::render_background(RenderData& render_data)
+    void Renderer::render_background(RenderData &render_data)
     {
 
         glEnable(GL_DEPTH_TEST);
@@ -416,10 +531,10 @@ namespace vOS
     }
 
 
-    void Renderer::render_meshes(RenderData& render_data)
+    void Renderer::render_meshes(RenderData &render_data)
     {
         m_target_ms->bind();
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+        for (const auto &[id, mesh]: Window::instance().get_mesh_list())
         {
             render_mesh(render_data, mesh);
         }
@@ -427,7 +542,7 @@ namespace vOS
     }
 
 
-    void Renderer::render_transparency(RenderData& render_data)
+    void Renderer::render_transparency(RenderData &render_data)
     {
         int m_transparency = m_settings.get_transparency_mode();
         switch (m_transparency)
@@ -442,7 +557,7 @@ namespace vOS
         }
     }
 
-    void Renderer::set_target_framebuffer(FrameBufferObject* target_ms, FrameBufferObject* target)
+    void Renderer::set_target_framebuffer(FrameBufferObject *target_ms, FrameBufferObject *target)
     {
         m_target_ms = target_ms;
         m_target = target;

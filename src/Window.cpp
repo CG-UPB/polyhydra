@@ -639,7 +639,6 @@ namespace vOS
         if(index < 0)
             return;
 
-        rendering_mutex.lock();
         // Get MeshObject
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
@@ -652,7 +651,6 @@ namespace vOS
         {
             //m_renderer->set_zoom_point(mesh_obj->get_mesh_offset());
         }
-        rendering_mutex.unlock();
     }
 
     int Window::get_mesh_focus() const

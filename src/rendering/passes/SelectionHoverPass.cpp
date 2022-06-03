@@ -131,6 +131,26 @@ namespace vOS
             {
                 m_face_vao->update_vertices(mesh_data.vertices, mesh_data.indices);
             }
+
+            glm::vec3 v = {0.0f, 0.0f, 0.0f};
+            for(int i = 0; i < mesh_data.vertices.size(); i++)
+            {
+                auto x = i % 3;
+                switch(x)
+                {
+                    case 0:
+                        v.x += mesh_data.vertices[i];
+                        break;
+                    case 1:
+                        v.y += mesh_data.vertices[i];
+                        break;
+                    case 2:
+                        v.z += mesh_data.vertices[i];
+                        break;
+                }
+            }
+            v /= mesh_data.vertices.size() / 3;
+            hover_position = v;
         }
         else if (m_hovered_type == SELECTION_TYPE_VERTEX)
         {
@@ -145,6 +165,7 @@ namespace vOS
                 m_hovered_vertex_position.z = pos[2];
                 m_hovered_vertex_position.w = 1.0f;
             }
+            hover_position = m_hovered_vertex_position;
         }
         else if (m_hovered_type == SELECTION_TYPE_EDGE)
         {
@@ -163,6 +184,10 @@ namespace vOS
                 m_hovered_edge_to.x = v1[0];
                 m_hovered_edge_to.y = v1[1];
                 m_hovered_edge_to.z = v1[2];
+
+                hover_position.x = (m_hovered_edge_from.x + m_hovered_edge_to.x) / 2;
+                hover_position.y = (m_hovered_edge_from.y + m_hovered_edge_to.y) / 2;
+                hover_position.z = (m_hovered_edge_from.z + m_hovered_edge_to.z) / 2;
             }
         }
     }

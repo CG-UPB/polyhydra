@@ -51,8 +51,8 @@ namespace vOS {
 
     void Camera::update()
     {
-        Input::update();
-        handle_input();
+        //Input::update();
+        //handle_input();
 
         // Frame Delta
         auto current_frame = (float) ImGui::GetTime();
@@ -73,104 +73,23 @@ namespace vOS {
         );
     }
 
-    void Camera::handle_input()
+    void Camera::handle_key_movement(glm::vec3 movement_vector)
     {
-        // If left ctrl key is pressed, the object move mode is active which requires the camera stand still
-        bool ignore_input = Input::controll_pressed();
-        if (ignore_input)
-            return;
-
-        if (Input::camera_mode_switch_pressed())
+        movement_vector *= delta * 10;
+        if (m_mode == FLY)
         {
-            if (m_mode == FLY)
-            {
-                m_mode = ORBIT;
-                target = glm::vec3(0.0f, 0.0f, 0.0f);
-            }
-            else
-            {
-                m_mode = FLY;
-            }
-        }
+            // Add the movement vector to the position
+            glm::vec3 mov_vector = movement_vector.x * glm::normalize(get_right()) +
+                                   movement_vector.y * glm::normalize(m_world_up) +
+                                   movement_vector.z * glm::normalize(target - position);
 
-        ImVec2 vMin = ImGui::GetWindowContentRegionMin();
-        ImVec2 vMax = ImGui::GetWindowContentRegionMax();
-        vMin.x += ImGui::GetWindowPos().x;
-        vMin.y += ImGui::GetWindowPos().y;
-        vMax.x += ImGui::GetWindowPos().x;
-        vMax.y += ImGui::GetWindowPos().y;
+            glm::vec3 view_dir = glm::normalize(target - position);
+            position += mov_vector;
+            target = position + view_dir;
 
-        // mouse movement
-        auto xpos = (float) Input::get_mouse_X();
-        auto ypos = (float) Input::get_mouse_Y();
-        auto is_down = Input::mouse_pressed();
-
-        if (!ImGui::IsWindowHovered() || !ImGui::IsWindowFocused())
-        {
-            if (!is_down)
-            {
-                last_x = xpos;
-                last_y = ypos;
-            }
-            return;
-        }
-
-        // mouse scroll
-        handle_mouse_scroll((float) Input::get_scroll_offset_Y());
-
-        if (xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
-        {
-            if (is_down)
-            {
-                if (first_mouse)
-                {
-                    last_x = xpos;
-                    last_y = ypos;
-                    first_mouse = false;
-                }
-
-                float x_offset = xpos - last_x;
-                float y_offset = last_y - ypos;
-
-                //handle_trackball_movement({last_x, last_y}, {xpos, ypos});
-
-                last_x = xpos;
-                last_y = ypos;
-
-                handle_mouse_movement(x_offset, y_offset);
-            } else
-            {
-                last_x = xpos;
-                last_y = ypos;
-            }
-        }
-
-        // 3 Dimensional Movement
-        if (ImGui::IsWindowFocused())
+        } else if (m_mode == ORBIT)
         {
 
-            // X for Horizontal Movement
-            // Y for Vertical Movement
-            // Z for Forward Movement
-            glm::vec3 input_vector = {Input::get_wasd_movement_vector_X(),
-                                      Input::get_wasd_movement_vector_Y(),
-                                      Input::get_wasd_movement_vector_Z()};
-            input_vector *= delta * 10;
-            if (m_mode == FLY)
-            {
-                // Add the movement vector to the position
-                glm::vec3 mov_vector = input_vector.x * glm::normalize(get_right()) +
-                                       input_vector.y * glm::normalize(m_world_up) +
-                                       input_vector.z * glm::normalize(target - position);
-
-                glm::vec3 view_dir = glm::normalize(target - position);
-                position += mov_vector;
-                target = position + view_dir;
-
-            } else if (m_mode == ORBIT)
-            {
-
-            }
         }
     }
 
@@ -185,8 +104,9 @@ namespace vOS {
         }
     }
 
-    void Camera::handle_mouse_scroll(float y_offset)
+    void Camera::handle_mouse_scroll(glm::vec2 scroll)
     {
+        auto y_offset = scroll.y;
         if (m_mode == FLY)
         {
             zoom -= m_zoom_strength * y_offset;
@@ -200,7 +120,11 @@ namespace vOS {
             }
         } else if (m_mode == ORBIT)
         {
-            position = position - y_offset * glm::normalize(position - target);
+            auto step =  y_offset * glm::normalize(target - position);
+            if(glm::length(target - (position + step) ) >= 1)
+            {
+                position += step;
+            }
         }
     }
 
@@ -244,12 +168,59 @@ namespace vOS {
             rotation_mat_y = glm::rotate(rotation_mat_y, angle_y, get_right());
             position = (rotation_mat_y * (pos - tgt)) + tgt;
         }
+    }
 
+    void Camera::switch_mode(glm::vec3 new_orbit_target)
+    {
+        if (m_mode == FLY)
+        {
+            set_mode(ORBIT);
+            look_at(new_orbit_target);
+        }
+        else if(m_mode == ORBIT)
+        {
+            set_mode(FLY);
+            look_at(position + glm::normalize(target - position));
+        }
     }
 
     void Camera::set_mode(Mode mode)
     {
-        m_mode = mode;
+       m_mode = mode;
+    }
+
+    Mode Camera::get_mode()
+    {
+        return m_mode;
+    }
+
+    void Camera::animated_look_at(glm::vec3 new_target)
+    {
+        if(!animation)
+        {
+            animation = true;
+            animation_start = target;
+            animation_end = new_target;
+        }
+    }
+
+    void Camera::animation_step()
+    {
+        if(animation)
+        {
+            glm::vec3 step = animation_end - animation_start ;
+            step /= 10;
+            glm::vec3 remain = animation_end - target;
+
+            if(glm::length(step) >= glm::length(remain))
+            {
+                look_at(animation_end);
+                animation = false;
+            } else
+            {
+                look_at(target + step);
+            }
+        }
     }
 
     void Camera::look_at(glm::vec3 new_target)

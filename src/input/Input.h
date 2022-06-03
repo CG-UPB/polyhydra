@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vospch.h"
+#include "GLFW/glfw3.h"
 
 class GLFWwindow;
 
@@ -27,6 +28,8 @@ namespace vOS {
          * @return
          */
         static bool key_pressed(int imgui_key_id);
+
+        static bool key_down(int imgui_key_id);
         /**
          * Everytime <from> is pressed, <to> will be called
          */
@@ -54,42 +57,13 @@ namespace vOS {
          */
         static bool mouse_pressed();
 
-        /**
-         * X coordinate of Mouse
-         */
-        static double get_mouse_X();
+        static bool mouse_double_clicked();
 
-        /**
-         * Y coordinate of Mouse
-         */
-        static double get_mouse_Y();
+        static glm::vec2 get_mouse_coords();
 
-        /**
-         * X Scroll offset of Mouse Wheel
-         */
-        static double get_scroll_offset_X();
+        static glm::vec2 get_scroll_offset();
 
-        /**
-         * Y Scroll offset of Mouse Wheel
-         */
-        static double get_scroll_offset_Y();
-
-        /**
-         * Movement vector X direction
-         */
-        static float get_wasd_movement_vector_X();
-        /**
-         * Movement vector Y direction
-         */
-        static float get_wasd_movement_vector_Y();
-        /**
-         * Movement vector Z direction
-         */
-        static float get_wasd_movement_vector_Z();
-
-        static bool controll_pressed();
-
-        static bool camera_mode_switch_pressed();
+        static glm::vec3 get_wasd_movement_vector();
 
         // reset the current scroll offset for the next frame
         static void reset_offset();
