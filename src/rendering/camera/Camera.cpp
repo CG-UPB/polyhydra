@@ -175,7 +175,7 @@ namespace vOS {
         if (m_mode == FLY)
         {
             set_mode(ORBIT);
-            look_at(new_orbit_target);
+            animated_look_at(new_orbit_target);
         }
         else if(m_mode == ORBIT)
         {
