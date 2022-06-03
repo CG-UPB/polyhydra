@@ -7,7 +7,7 @@
 
 int main()
 {
-    //Demo demo;
+//    Demo demo;
 
     //ExampleClass cl;
     //cl.initialize();

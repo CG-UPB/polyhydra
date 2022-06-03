@@ -18,7 +18,7 @@
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
-#include "../rendering/MeshMover.h"
+#include "rendering/camera/MeshMover.h"
 #include "../Window.h"
 #include "../util/ModeEnum.h"
 #include "../rendering/Renderer.h"

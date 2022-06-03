@@ -62,7 +62,11 @@ namespace vOS
     {
         int i = cascade_idx;
 
-        glDisable(GL_CULL_FACE);
+        // Get Mesh
+        std::shared_ptr<MeshObject> obj = Window::instance().get_mesh_obj(mesh->get_id());
+        if (obj == nullptr)
+            return;
+        glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);

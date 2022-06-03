@@ -1,7 +1,6 @@
 
 #include "Renderer.h"
-
-#include <utility>
+#include "input/Input.h"
 
 namespace vOS
 {
@@ -24,12 +23,14 @@ namespace vOS
 
         m_transparency_pass_wb = std::make_shared<TransparencyPass_WB>(this, width, height);
         m_transparency_pass_dp = std::make_shared<TransparencyPass_DP>(this, width, height);
+        last_x = width / 2.0f;
+        last_y = height / 2.0f;
     }
 
     void Renderer::resize(int width, int height)
     {
-        m_viewportPanelWidth = (int) width;
-        m_viewportPanelHeight = (int) height;
+        m_viewportPanelWidth = width;
+        m_viewportPanelHeight = height;
         m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
         m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
         m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
@@ -39,6 +40,8 @@ namespace vOS
         m_transparent_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
         m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
         m_pixel_buffer = std::make_shared<PixelBufferObject>(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
+        last_x = width / 2.0f;
+        last_y = height / 2.0f;
     }
 
     void Renderer::render(RenderData* render_data, bool render_bg)
@@ -50,6 +53,9 @@ namespace vOS
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_target_ms->unbind();
+
+        // handle input
+        handle_camera_input();
 
         // Render Meshes
         render_pre_pass(*render_data);
@@ -120,10 +126,121 @@ namespace vOS
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms,m_target);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms, m_target);
     }
 
-    void Renderer::render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh)
+    void Renderer::handle_camera_input()
+    {
+        Input::update();
+
+        auto &cam = m_render_data->camera;
+
+        if (cam.animation)
+        {
+            cam.animation_step();
+            cam.update();
+            return;
+        }
+        // If left ctrl key is pressed, the object move mode is active which requires the camera stand still
+        bool ignore_input = Input::key_pressed(GLFW_KEY_LEFT_CONTROL);
+        if (ignore_input)
+            return;
+
+        if (Input::mouse_double_clicked())
+        {
+            auto mesh_id = m_selection_hover_pass.get_hovered_mesh_object();
+
+            if (mesh_id >= 0)
+            {
+                auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
+                if(Input::key_down(GLFW_KEY_LEFT_CONTROL))
+                {
+                    auto transform = cam.world * mesh->get_data().get_transform();
+                    auto pos_mesh_space = glm::vec4(m_selection_hover_pass.hover_position , 1.0f);
+                    //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
+                    new_target = glm::vec3(transform * pos_mesh_space);
+                }else
+                {
+                    new_target = mesh->get_data().position;
+                }
+
+                auto extended_target = cam.position + glm::length(glm::vec3(new_target) - cam.position) * glm::normalize(cam.target - cam.position);
+                if(cam.get_mode() == FLY)
+                {
+                    cam.switch_mode(extended_target);
+                }
+                cam.animated_look_at(new_target);
+                Window::instance().set_mesh_focus(mesh_id);
+            }
+        }
+
+        if (Input::key_pressed(GLFW_KEY_M))
+        {
+            auto mesh_id = Window::instance().get_mesh_focus();
+            glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
+            if(mesh_id >= 0)
+            {
+                auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                new_target = mesh->get_data().position;
+            }
+            cam.switch_mode(new_target);
+        }
+
+        ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+        ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+        vMin.x += ImGui::GetWindowPos().x;
+        vMin.y += ImGui::GetWindowPos().y;
+        vMax.x += ImGui::GetWindowPos().x;
+        vMax.y += ImGui::GetWindowPos().y;
+
+        // mouse movement
+        auto mouse_coords = Input::get_mouse_coords();
+        auto xpos = mouse_coords.x;
+        auto ypos = mouse_coords.y;
+        auto is_down = Input::mouse_pressed();
+
+        if (!ImGui::IsWindowHovered() || !ImGui::IsWindowFocused())
+        {
+            if (!is_down)
+            {
+                last_x = xpos;
+                last_y = ypos;
+            }
+            return;
+        }
+
+        // mouse scroll
+        cam.handle_mouse_scroll(Input::get_scroll_offset());
+
+        if (xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
+        {
+            if (is_down)
+            {
+
+                float x_offset = xpos - last_x;
+                float y_offset = last_y - ypos;
+
+                last_x = xpos;
+                last_y = ypos;
+
+                cam.handle_mouse_movement(x_offset, y_offset);
+            } else
+            {
+                last_x = xpos;
+                last_y = ypos;
+            }
+        }
+
+        if (ImGui::IsWindowFocused())
+        {
+            cam.handle_key_movement(Input::get_wasd_movement_vector());
+        }
+
+        cam.update();
+    }
+
+    void Renderer::render_mesh(RenderData &render_data, const std::shared_ptr<MeshObject> &mesh)
     {
         if (mesh == nullptr)
         {
@@ -266,7 +383,7 @@ namespace vOS
         auto& cam = render_data.camera;
         m_shadow_pass->calculate_cascades(cam.near, cam.far, cascade_level);
 
-        for(int i = 0; i < cascade_level; i++)
+        for (int i = 0; i < cascade_level; i++)
         {
             m_shadow_pass->get_framebuffer()->bind();
             m_shadow_pass->set_cascade_index(i);

@@ -26,6 +26,7 @@ add_subdirectory(${VOLUMESHOS_EXT})
 
 set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/main.cpp
+        #${VOLUMESHOS_SRC}/tutorials/vos_tutorial_1.cpp
         ${VOLUMESHOS_SRC}/ImguiRenderer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshView.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/Shader.cpp
@@ -58,8 +59,7 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.cpp
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.h
-        ${VOLUMESHOS_SRC}/algorithms/ExampleClass.cpp
-        ${VOLUMESHOS_SRC}/algorithms/ExampleClass.h
+        #${VOLUMESHOS_SRC}/algorithms/ExampleClass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_WB.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_DP.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.cpp
@@ -69,17 +69,17 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestClass.cpp
         ${VOLUMESHOS_SRC}/algorithms/TestQuads.cpp
-        ${VOLUMESHOS_SRC}/rendering/Camera.cpp
+        ${VOLUMESHOS_SRC}/rendering/camera/Camera.cpp
         ${VOLUMESHOS_SRC}/rendering/Light.cpp
         ${VOLUMESHOS_SRC}/panels/QualityPanel.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/MeshMover.cpp
-        ${VOLUMESHOS_SRC}/algorithms/Demo.cpp
+        ${VOLUMESHOS_SRC}/rendering/camera/MeshMover.cpp
+        #${VOLUMESHOS_SRC}/algorithms/Demo.cpp
         ${VOLUMESHOS_SRC}/rendering/Renderer.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp
         ${VOLUMESHOS_SRC}/util/UIUtil.cpp
         ${VOLUMESHOS_SRC}/util/stb.cpp
-        ${VOLUMESHOS_SRC}/util/Log.cpp)
+        ${VOLUMESHOS_SRC}/util/Log.cpp src/rendering/camera/TrackBall.cpp)
 
 add_executable(volumeshOS ${volumeshOS_SOURCES})
 

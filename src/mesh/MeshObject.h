@@ -19,10 +19,14 @@ namespace vOS
         {}
 
         [[nodiscard]] glm::vec3 get_rgb() const
-        { return {r, g, b}; }
+        {
+            return {r, g, b};
+        }
 
         [[nodiscard]] glm::vec4 get_rgba() const
-        { return {r, g, b, a}; }
+        {
+            return {r, g, b, a};
+        }
 
         float r;
         float g;
@@ -32,8 +36,8 @@ namespace vOS
 
     struct MeshData
     {
-         [[nodiscard]] nlohmann::json to_json()
-         {
+        [[nodiscard]] nlohmann::json to_json()
+        {
             nlohmann::json j;
 
             // Phong Data
@@ -48,54 +52,55 @@ namespace vOS
             j["tool_peel_level"] = peel_level;
             j["tool_cell_size"] = cell_size;
 
-             // Rendering Data
-             j["rendering_default_color"] = {color.r, color.g, color.b, color.a};
-             j["rendering_visible"] = visible;
-             j["rendering_selection_color"] =  {selection_color.r, selection_color.g, selection_color.b, selection_color.a};
+            // Rendering Data
+            j["rendering_default_color"] = {color.r, color.g, color.b, color.a};
+            j["rendering_visible"] = visible;
+            j["rendering_selection_color"] = {selection_color.r, selection_color.g, selection_color.b,
+                                              selection_color.a};
 
-             // Transform Data
-             j["transform_position"] = {position.x, position.y, position.z};
-             j["transform_scale"] = {scale.x, scale.y, scale.z};
+            // Transform Data
+            j["transform_position"] = {position.x, position.y, position.z};
+            j["transform_scale"] = {scale.x, scale.y, scale.z};
 
-             // Roundings
-             j["roundings activated"] = rounding_active;
-             j["rounding size"] = rounding_size;
+            // Roundings
+            j["roundings activated"] = rounding_active;
+            j["rounding size"] = rounding_size;
 
             return j;
-         }
+        }
 
-         void load_from_json(nlohmann::json j)
-         {
-             // Phong Data
-             specular_strength = j["phong_spec_strength"];
-             specular_exponent = j["phong_spec_exponent"];
-             ambient_strength = j["phong_ambient_strength"];
-             diffuse_strength = j["phong_diffuse_strength"];
+        void load_from_json(nlohmann::json j)
+        {
+            // Phong Data
+            specular_strength = j["phong_spec_strength"];
+            specular_exponent = j["phong_spec_exponent"];
+            ambient_strength = j["phong_ambient_strength"];
+            diffuse_strength = j["phong_diffuse_strength"];
 
-             // Toolbox Data
-             slice_level = j["tool_slice_level"];
-             slice_locked = j["tool_slice_locked"];
-             peel_level = j["tool_peel_level"];
-             cell_size = j["tool_cell_size"];
+            // Toolbox Data
+            slice_level = j["tool_slice_level"];
+            slice_locked = j["tool_slice_locked"];
+            peel_level = j["tool_peel_level"];
+            cell_size = j["tool_cell_size"];
 
-             // Rendering Data
-             auto color_vec = j["rendering_default_color"];
-             color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
-             visible = j["rendering_visible"];
-             color_vec = j["rendering_selection_color"];
-             selection_color =  Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
+            // Rendering Data
+            auto color_vec = j["rendering_default_color"];
+            color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
+            visible = j["rendering_visible"];
+            color_vec = j["rendering_selection_color"];
+            selection_color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
 
 
-             // Transform Data
-             auto pos_vec = j["transform_position"];
-             position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
-             auto scale_vec = j["transform_scale"];
-             scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
+            // Transform Data
+            auto pos_vec = j["transform_position"];
+            position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
+            auto scale_vec = j["transform_scale"];
+            scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
 
-             // Roundings
-             rounding_active = j["roundings activated"];
-             rounding_size = j["rounding size"];
-         }
+            // Roundings
+            rounding_active = j["roundings activated"];
+            rounding_size = j["rounding size"];
+        }
 
         [[nodiscard]] glm::mat4 get_transform() const
         {
@@ -139,16 +144,24 @@ namespace vOS
 
         // Selection Functionality
         std::unordered_set<int>& get_all_selected_faces()
-        { return m_selected_faces; }
+        {
+            return m_selected_faces;
+        }
 
         std::unordered_set<int>& get_all_selected_vertices()
-        { return m_selected_vertices; }
+        {
+            return m_selected_vertices;
+        }
 
         std::unordered_set<int>& get_all_selected_edges()
-        { return m_selected_edges; }
+        {
+            return m_selected_edges;
+        }
 
         std::unordered_set<int>& get_all_selected_cells()
-        { return m_selected_cells; }
+        {
+            return m_selected_cells;
+        }
 
         /**
          * Adds a shape on selected element (vertex, edge, face)
@@ -228,8 +241,10 @@ namespace vOS
 
         int get_max_peel_depth() const;
 
-        std::tuple<int, int> &selection_offset()
-        { return m_selection_offset; };
+        std::tuple<int, int>& selection_offset()
+        {
+            return m_selection_offset;
+        };
 
         glm::vec3& get_mesh_offset();
 
@@ -255,12 +270,20 @@ namespace vOS
         glm::vec3 &get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir);
 
         MeshData& get_data()
-        { return m_data; }
+        {
+            return m_data;
+        }
 
 
+        void set_mesh_name(const std::string &name)
+        {
+            m_mesh_name = name;
+        }
 
-        void set_mesh_name(const std::string& name){ m_mesh_name = name;}
-        std::string get_mesh_name() { return m_mesh_name; }
+        std::string get_mesh_name()
+        {
+            return m_mesh_name;
+        }
 
         /**
          * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
@@ -272,13 +295,17 @@ namespace vOS
         [[nodiscard]] std::shared_ptr<MeshVertexBuffer> get_mvb() const;
 
         [[nodiscard]] int get_num_visible_vertices() const;
+
         [[nodiscard]] int get_num_visible_edges() const;
 
         [[nodiscard]] std::shared_ptr<VertexArrayObject> get_cylinder_vao() const;
+
         [[nodiscard]] std::shared_ptr<VertexArrayObject> get_sphere_vao() const;
 
         [[nodiscard]] int get_id() const
-        { return m_id; }
+        {
+            return m_id;
+        }
 
         [[nodiscard]] std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> get_ovm() const;
 

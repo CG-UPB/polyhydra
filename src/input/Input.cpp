@@ -1,9 +1,7 @@
 
 #include "Input.h"
-#include "GLFW/glfw3.h"
 
-namespace vOS
-{
+namespace vOS {
     // Static Variables
     bool Input::m_ignore_keyboard_commands;
     bool Input::m_accept_inputs;
@@ -11,9 +9,9 @@ namespace vOS
     glm::vec3 Input::m_movement_vector;
     glm::vec2 Input::m_scroll_offset;
     std::map<int, int> Input::m_keybinds;
-    GLFWwindow* Input::m_window;
+    GLFWwindow *Input::m_window;
 
-    void Input::setup(GLFWwindow* window)
+    void Input::setup(GLFWwindow *window)
     {
         m_window = window;
 
@@ -73,6 +71,11 @@ namespace vOS
 
     bool Input::key_pressed(int imgui_key_id)
     {
+        return ImGui::IsKeyPressed(get_key_bind(imgui_key_id));
+    }
+
+    bool Input::key_down(int imgui_key_id)
+    {
         return ImGui::IsKeyDown(get_key_bind(imgui_key_id));
     }
 
@@ -89,14 +92,13 @@ namespace vOS
         mov.y -= ImGui::IsKeyDown(get_key_bind(GLFW_KEY_LEFT_SHIFT)) ? 1.0f : 0.0f;
         mov.z += ImGui::IsKeyDown(get_key_bind(GLFW_KEY_W)) ? 1.0f : 0.0f;
         mov.z -= ImGui::IsKeyDown(get_key_bind(GLFW_KEY_S)) ? 1.0f : 0.0f;
-        if (mov.x != 0.0f || mov.y != 0.0f || mov.z != 0.0f)
-        {
+        if (mov.x != 0.0f || mov.y != 0.0f || mov.z != 0.0f) {
             mov = glm::normalize(mov);
         }
         m_movement_vector = mov;
     }
 
-    void Input::glw_callback_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset)
+    void Input::glw_callback_mouse_scroll(GLFWwindow *window, double xoffset, double yoffset)
     {
         if (!m_accept_inputs || m_ignore_mouse_commands)
             return;
@@ -109,34 +111,30 @@ namespace vOS
         m_scroll_offset = {0.0f, 0.0f};
     }
 
-
     // use the ImGui methods for this, since the glfw callback is not called every frame, which causes lags while moving the mouse
     bool Input::mouse_pressed()
-    { return ImGui::IsMouseDown(ImGuiMouseButton_Left); }
-
-    double Input::get_mouse_X()
-    { return ImGui::GetMousePos().x; }
-
-    double Input::get_mouse_Y()
-    { return ImGui::GetMousePos().y; }
-
-    bool Input::controll_pressed()
     {
-        return key_pressed(GLFW_KEY_LEFT_CONTROL);
+        return ImGui::IsMouseDown(ImGuiMouseButton_Left);
     }
 
-    float Input::get_wasd_movement_vector_X()
-    { return m_movement_vector.x; }
+    bool Input::mouse_double_clicked()
+    {
+        return ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+    }
 
-    float Input::get_wasd_movement_vector_Y()
-    { return m_movement_vector.y; }
+    glm::vec2 Input::get_mouse_coords()
+    {
+        return {ImGui::GetMousePos().x, ImGui::GetMousePos().y};
+    }
 
-    float Input::get_wasd_movement_vector_Z()
-    { return m_movement_vector.z; }
+    glm::vec3 Input::get_wasd_movement_vector()
+    {
+        return m_movement_vector;
+    }
 
-    double Input::get_scroll_offset_X()
-    { return m_scroll_offset.x; }
+    glm::vec2 Input::get_scroll_offset()
+    {
+        return m_scroll_offset;
+    }
 
-    double Input::get_scroll_offset_Y()
-    { return m_scroll_offset.y; }
 }

@@ -94,8 +94,6 @@ void Demo::code_demo_ui()
     {
         move = false;
 
-        window->camera_mode(1, 10);
-        window->camera_focus_on(0,0,0, 0,0, 10);
     }
 
     // Move Camera in a circle around Mesh

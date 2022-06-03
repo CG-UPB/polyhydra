@@ -639,7 +639,6 @@ namespace vOS
         if(index < 0)
             return;
 
-        rendering_mutex.lock();
         // Get MeshObject
         auto search = m_mesh_objects.find(index);
         if (search != m_mesh_objects.end())
@@ -652,7 +651,6 @@ namespace vOS
         {
             //m_renderer->set_zoom_point(mesh_obj->get_mesh_offset());
         }
-        rendering_mutex.unlock();
     }
 
     int Window::get_mesh_focus() const
@@ -733,7 +731,7 @@ namespace vOS
         auto face_normal = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_normal(ovm_face_id);
         auto face_barycenter = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_halfface_barycenter(ovm_face_id);
         // Focus
-        m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal, time);
+        //m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal, time);
         rendering_mutex.unlock();
     }
 
@@ -741,15 +739,15 @@ namespace vOS
                                  float pos_z, float time)
     {
         rendering_mutex.lock();
-        m_mesh_view->m_render_data.camera.focus_spot({target_x,target_y,target_z}, {pos_x,pos_y,pos_z}, time);
+        //m_mesh_view->m_render_data.camera.focus_spot({target_x,target_y,target_z}, {pos_x,pos_y,pos_z}, time);
         rendering_mutex.unlock();
     }
 
-    void Window::camera_mode(int mode, float orbital_radius)
+    void Window::camera_mode(Mode mode)
     {
         rendering_mutex.lock();
 
-        m_mesh_view->m_render_data.camera.set_mode(mode, orbital_radius);
+        m_mesh_view->m_render_data.camera.set_mode(mode);
         rendering_mutex.unlock();
     }
 
@@ -757,9 +755,9 @@ namespace vOS
     {
         rendering_mutex.lock();
 
-        m_mesh_view->m_render_data.camera.m_orbital_origin = {x,y,z};
-        if(radius >= 1)
-            m_mesh_view->m_render_data.camera.radius = radius;
+//        m_mesh_view->m_render_data.camera.m_orbital_origin = {x,y,z};
+//        if(radius >= 1)
+//            m_mesh_view->m_render_data.camera.radius = radius;
         rendering_mutex.unlock();
     }
 

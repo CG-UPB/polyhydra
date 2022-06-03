@@ -1,7 +1,7 @@
 
 #include "MeshMover.h"
-#include "../input/Input.h"
-#include "../Window.h"
+#include "input/Input.h"
+#include "Window.h"
 
 
 namespace vOS
@@ -10,15 +10,15 @@ namespace vOS
     void MeshMover::update()
     {
         // Update Position
-        m_mouse_position.x = Input::get_mouse_X();
-        m_mouse_position.y = Input::get_mouse_Y();
+        m_mouse_position.x = Input::get_mouse_coords().x;
+        m_mouse_position.y = Input::get_mouse_coords().y;
 
         // Update Scroll Position
-        m_scroll_value += Input::get_scroll_offset_Y() * m_scroll_strength;
+        m_scroll_value += Input::get_scroll_offset().y * m_scroll_strength;
         m_mouse_position.z = m_scroll_value;
 
         bool mouse_down = Input::mouse_pressed();
-        bool move_mode_desired = Input::controll_pressed();
+        bool move_mode_desired = Input::key_down(GLFW_KEY_LEFT_CONTROL);
 
         if (mouse_down && !m_mouse_press_flank && move_mode_desired)
         {
@@ -42,11 +42,10 @@ namespace vOS
                 if (m_target_mesh_object == nullptr)
                 {
                     m_dragging = false;
-                }
-                else
+                } else
                 {
                     // Enter Dragging Mode
-                    m_anchor = {Input::get_mouse_X(), Input::get_mouse_Y(), 0};
+                    m_anchor = {Input::get_mouse_coords().x, Input::get_mouse_coords().y, 0};
                     m_dragging = true;
 
                     // Reset Scroll value
@@ -55,20 +54,17 @@ namespace vOS
 
                     m_mesh_original_position = m_target_mesh_object->get_data().position;
                 }
-            }
-            else
+            } else
             {
                 // User likely clicked on void, in this case don't drag
                 m_dragging = false;
             }
 
-        }
-        else if (!move_mode_desired || (!mouse_down && m_mouse_press_flank))
+        } else if (!move_mode_desired || (!mouse_down && m_mouse_press_flank))
         {
             // Leave Dragging Mode
             m_dragging = false;
-        }
-        else if (m_dragging)
+        } else if (m_dragging)
         {
             // Stay in Dragging Mode
             move_mesh();
@@ -95,7 +91,8 @@ namespace vOS
             distance = distance < 0.01f ? 0.01f : distance;
 
             // Normalize Mouse Coordinates by screen size and distance from camera to object
-            screen_difference = screen_difference / (m_camera->get_viewport_size() / distance);
+            glm::vec3 size(m_camera->get_viewport_size().x, m_camera->get_viewport_size().y, 1.0f);
+            screen_difference = screen_difference / (size / distance);
 
             // Convert Mouse Coordinate to Camera Space
             glm::vec3 cam_space =

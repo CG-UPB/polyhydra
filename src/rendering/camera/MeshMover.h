@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-#include "./passes/SelectionHoverPass.h"
+#include "rendering/passes/SelectionHoverPass.h"
 #include "Camera.h"
 
 namespace vOS

@@ -30,6 +30,8 @@ namespace vOS
 
         [[nodiscard]] int get_hovered_mesh_object() const {return m_hovered_mesh;};
 
+        glm::vec3 hover_position = {0.0f, 0.0f, 0.0f};
+
     private:
 
         /**
