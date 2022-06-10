@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # update all submodules before building
 find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
+if(GIT_FOUND AND EXISTS "${VOLUMESHOS_ROOT}/.git")
     # Update submodules as needed
     message(STATUS "Submodule init")
     execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -f
