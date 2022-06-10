@@ -80,8 +80,8 @@ namespace vOS {
 
         Mode m_mode = FLY;
 
-        float m_vertical_speed = 6.0f;
-        float m_horizontal_speed = 7.0f;
+        float m_vertical_speed = 3.0f;
+        float m_horizontal_speed = 3.0f;
         float m_sensitivity = 0.2f;
 
         // Axis

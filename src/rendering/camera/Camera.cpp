@@ -51,8 +51,6 @@ namespace vOS {
 
     void Camera::update()
     {
-        //Input::update();
-        //handle_input();
 
         // Frame Delta
         auto current_frame = (float) ImGui::GetTime();
@@ -139,13 +137,15 @@ namespace vOS {
         auto delta_angle_x = (float) (2 * M_PI / m_screen_width);
         auto delta_angle_y = (float) (M_PI / m_screen_height);
 
-        float angle_x = -x_offset * delta_angle_x;
-        float angle_y = y_offset * delta_angle_y;
+        float angle_x = std::min((float)M_PI / 10.0f, -x_offset * delta_angle_x);
+        float angle_y = std::min((float)M_PI / 10.0f, y_offset * delta_angle_y);
 
         // when front and up are simalar
-        if (float cos_angle = dot(get_front(), m_world_up); cos_angle * glm::sign(angle_y) > 0.99f)
+        float cos_angle = dot(get_front(), m_world_up);
+        if (cos_angle * glm::sign(angle_y) > 0.95f)
         {
             angle_y = 0.0f;
+            return;
         }
 
         if (m_mode == FLY)
@@ -174,6 +174,9 @@ namespace vOS {
     {
         if (m_mode == FLY)
         {
+            auto extended_target = position + glm::length(glm::vec3(new_orbit_target) - position) *
+                                                  glm::normalize(target - position);
+            look_at(extended_target);
             set_mode(ORBIT);
             animated_look_at(new_orbit_target);
         }
@@ -262,7 +265,7 @@ namespace vOS {
 
     glm::vec3 Camera::get_up() const
     {
-        return m_camera_up;
+        return m_world_up;
     }
 
     glm::vec3 Camera::get_right() const

@@ -74,7 +74,6 @@ set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/rendering/Light.cpp
         ${VOLUMESHOS_SRC}/panels/QualityPanel.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/camera/MeshMover.cpp
         #${VOLUMESHOS_SRC}/algorithms/Demo.cpp
         ${VOLUMESHOS_SRC}/rendering/Renderer.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp

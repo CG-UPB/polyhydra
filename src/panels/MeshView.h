@@ -18,7 +18,6 @@
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
-#include "rendering/camera/MeshMover.h"
 #include "../Window.h"
 #include "../util/ModeEnum.h"
 #include "../rendering/Renderer.h"
@@ -76,8 +75,6 @@ namespace vOS
         int m_transparency = WEIGHTED_BLENDED;
         int m_shadow_map_cascade_level_debug = 0;
 
-        // Other Rendering Components
-        MeshMover m_mover;
 
         friend class Window;
     };
