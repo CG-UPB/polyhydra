@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenVolumeMesh/Geometry/VectorT.hh>
+#include "OpenVolumeMesh/Geometry/VectorT.hh"
 #include "OpenVolumeMesh/Mesh/PolyhedralMesh.hh"
 
 namespace vOS

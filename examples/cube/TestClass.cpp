@@ -3,9 +3,9 @@
 //
 
 #include "TestClass.h"
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
-#include "../Window.h"
-#include "../panels/NewFileDialog.h"
+#include "OpenVolumeMesh/FileManager/FileManager.hh"
+#include "Window.h"
+#include "panels/NewFileDialog.h"
 
 namespace vOS {
 

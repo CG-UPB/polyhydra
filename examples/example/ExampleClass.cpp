@@ -3,8 +3,8 @@
 //
 
 #include "ExampleClass.h"
-#include "../Window.h"
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
+#include "Window.h"
+#include "OpenVolumeMesh/FileManager/FileManager.hh"
 #include <functional>
 #include <thread>
 
@@ -43,7 +43,7 @@ void ExampleClass::simple_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/broken_bullet_MC.ovm", m_mesh);
+    file_manager.readFile("./res/sample_meshes/broken_bullet_MC.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();
@@ -86,7 +86,7 @@ void ExampleClass::toolbar_demonstration_ui(){
         OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_1;
 
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh_1);
+        file_manager.readFile("./res/sample_meshes/hand4234.1.ovm", m_mesh_1);
 
         // VOS Window
         Window& window = Window::instance();
@@ -107,9 +107,9 @@ void ExampleClass::toolbar_run(){
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_2;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh_1);
+    file_manager.readFile("./res/sample_meshes/hand4234.1.ovm", m_mesh_1);
 
-    file_manager.readFile("../res/sample_meshes/guy2500.1.ovm", m_mesh_2);
+    file_manager.readFile("./res/sample_meshes/guy2500.1.ovm", m_mesh_2);
 
     // VOS Window
     Window& window = Window::instance();
@@ -166,7 +166,7 @@ void ExampleClass::selection_demonstration_ui(){
         if(mode)
             Window::instance().camera_mode(FLY);
         else
-            Window::instance().camera_mode(0);
+            Window::instance().camera_mode(ORBIT);
         mode = !mode;
     }
 
@@ -243,7 +243,7 @@ void ExampleClass::bounding_run() {
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh);
+    file_manager.readFile("./res/sample_meshes/hand4234.1.ovm", m_mesh);
 
     // VOS Window
     Window& window = Window::instance();

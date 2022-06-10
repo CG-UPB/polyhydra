@@ -3,12 +3,12 @@
 #include "random"
 #include "iostream"
 #include "queue"
-#include "../Window.h"
+#include "Window.h"
 #include <chrono>
 #include <thread>
 #include <math.h>
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
-#include "../panels/NewFileDialog.h"
+#include "OpenVolumeMesh/FileManager/FileManager.hh"
+#include "panels/NewFileDialog.h"
 
 typedef std::pair<float, OpenVolumeMesh::VertexHandle> Node;
 

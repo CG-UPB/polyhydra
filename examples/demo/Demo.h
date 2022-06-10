@@ -5,7 +5,7 @@
 #ifndef VOLUMESHOS_DEMO_H
 #define VOLUMESHOS_DEMO_H
 
-#include "../Window.h"
+#include "Window.h"
 
 using namespace vOS;
 

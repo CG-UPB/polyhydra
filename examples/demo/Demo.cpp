@@ -4,11 +4,11 @@
 
 #include "Demo.h"
 
-#include "../Window.h"
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
+#include "Window.h"
+#include "OpenVolumeMesh/FileManager/FileManager.hh"
 #include <functional>
 #include <thread>
-#include "../util/VecUtil.h"
+#include "util/VecUtil.h"
 
 
 using namespace vOS;
@@ -42,7 +42,7 @@ void Demo::code_demo()
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh);
+    file_manager.readFile("./res/sample_meshes/nut_el0_5_hex_opt.ovm", m_mesh);
 
     m_nut_mesh = window->add_mesh(&m_mesh);
 
@@ -127,7 +127,7 @@ void Demo::color_splash_init()
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/guy2500.1.ovm", m_mesh);
+    file_manager.readFile("./res/sample_meshes/guy2500.1.ovm", m_mesh);
 
     // Add Mesh
     m_hand_mesh = window->add_mesh(&m_mesh);
@@ -237,8 +237,8 @@ void Demo::multi_mesh()
     OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_nut;
 
     OpenVolumeMesh::IO::FileManager file_manager;
-    file_manager.readFile("../res/sample_meshes/hand4234.1.ovm", m_mesh_hand);
-    file_manager.readFile("../res/sample_meshes/kitten_el2_hex.ovm", m_mesh_nut);
+    file_manager.readFile("./res/sample_meshes/hand4234.1.ovm", m_mesh_hand);
+    file_manager.readFile("./res/sample_meshes/kitten_el2_hex.ovm", m_mesh_nut);
 
     // Add Mesh
     m_hand_mesh = window->add_mesh(&m_mesh_hand);
@@ -246,7 +246,6 @@ void Demo::multi_mesh()
 
     window->set_mesh_position(m_hand_mesh, -3, 0,3);
     window->set_mesh_position(m_nut_mesh, 0, -3, 0);
-    window->camera_mode(0);
 }
 
 void Demo::multi_mesh_ui()

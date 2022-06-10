@@ -3,10 +3,10 @@
 //
 
 #include "TestQuads.h"
-#include "../Window.h"
-#include <time.h>
-#include <OpenVolumeMesh/FileManager/FileManager.hh>
-#include "../panels/NewFileDialog.h"
+#include "Window.h"
+#include <ctime>
+#include "OpenVolumeMesh/FileManager/FileManager.hh"
+#include "panels/NewFileDialog.h"
 
 
 TestQuads::TestQuads()

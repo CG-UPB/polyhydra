@@ -5,7 +5,7 @@
 #ifndef VOLUMESHOS_TESTQUADS_H
 #define VOLUMESHOS_TESTQUADS_H
 
-#include <OpenVolumeMesh/Geometry/VectorT.hh>
+#include "OpenVolumeMesh/Geometry/VectorT.hh"
 #include "OpenVolumeMesh/Mesh/PolyhedralMesh.hh"
 
 class TestQuads
