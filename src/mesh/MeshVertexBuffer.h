@@ -69,6 +69,27 @@ namespace vOS
         std::vector<float> vertex_normals;
         std::vector<float> min_edge_lengths;
         std::vector<unsigned int> indices;
+
+        void clear()
+        {
+            vertex_types.clear();
+            vertex_positions.clear();
+            vertex_halfface_normals.clear();
+            vertex_cell_centers.clear();
+            vertex_colors.clear();
+            vertex_peel_depths.clear();
+            vertex_is_triangle.clear();
+            vertex_is_digged.clear();
+            vertex_is_isolated.clear();
+            face_center.clear();
+            to_vertex.clear();
+            dihedral_angle.clear();
+            selection.clear();
+            hovered.clear();
+            vertex_normals.clear();
+            min_edge_lengths.clear();
+            indices.clear();
+        }
     };
 
     struct AttributeData
@@ -125,7 +146,7 @@ namespace vOS
     {
     public:
 
-        explicit MeshVertexBuffer(std::shared_ptr<Mesh> mesh);
+        explicit MeshVertexBuffer(const std::shared_ptr<Mesh>& mesh);
 
         /**
          * converts selection id of vertices to OVM id
@@ -232,7 +253,7 @@ namespace vOS
 
         void build_vertex_arrays();
 
-        void add_cell_rounded(std::shared_ptr<Mesh> mesh, Cell cell);
+        void add_cell_rounded(const std::shared_ptr<Mesh>& mesh, Cell cell);
 
         unsigned int add_vertex_data_to_cell_data(
                 RoundedCellData& data,

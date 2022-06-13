@@ -47,7 +47,7 @@ namespace vOS
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
-    MeshVertexBuffer::MeshVertexBuffer(std::shared_ptr<Mesh> mesh):
+    MeshVertexBuffer::MeshVertexBuffer(const std::shared_ptr<Mesh>& mesh):
         m_mesh(mesh), m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
     {
         // first update the normal face attribute for all faces
@@ -176,8 +176,10 @@ namespace vOS
     {
         auto peel_property = mesh->request_cell_property<int>(MeshProperties::PROP_PEEL_DEPTH);
 
-        std::vector<HalffaceData> halffaces;
-        std::vector<glm::vec3> vertices;
+        static std::vector<HalffaceData> halffaces;
+        halffaces.clear();
+        static std::vector<glm::vec3> vertices;
+        vertices.clear();
 
         // add every vertex only once for the selection, no need to render them twice
         int num_selection_vertices = 0;
@@ -247,8 +249,10 @@ namespace vOS
             auto normal = halfface_normal_to_vec3(chf_it.idx());
 
             // Count the amount of Vertices this Face has
-            std::vector<glm::vec3> halfface_vertices;
-            std::vector<glm::vec3> vertex_normals;
+            static std::vector<glm::vec3> halfface_vertices;
+            halfface_vertices.clear();
+            static std::vector<glm::vec3> vertex_normals;
+            vertex_normals.clear();
             for (auto hfhe_it: mesh->halfface_halfedges(chf_it))
             {
                 // get the corresponding edge vertex
@@ -452,13 +456,16 @@ namespace vOS
         data.indices.push_back(m_current_rounded_index + i1);
     }
 
-    void MeshVertexBuffer::add_cell_rounded(std::shared_ptr<Mesh> mesh, Cell cell)
+    void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<Mesh>& mesh, Cell cell)
     {
         int cell_vertex_offset = m_vertex_offset_rounded;
 
-        std::unordered_map<int, glm::vec3> face_centers;
-        std::unordered_map<int, glm::vec3> face_normals;
-        std::unordered_map<int, std::vector<RoundedVertexData>> cell_vertices;
+        static std::unordered_map<int, glm::vec3> face_centers;
+        face_centers.clear();
+        static std::unordered_map<int, glm::vec3> face_normals;
+        face_normals.clear();
+        static std::unordered_map<int, std::vector<RoundedVertexData>> cell_vertices;
+        cell_vertices.clear();
         // start with the halffaces, because with them, we can navigate inside the current cell without other cells
         // if we would instead take the halfedges of a vertex for example, they would include other cells,
         // which we don't want
@@ -558,20 +565,25 @@ namespace vOS
         // basically, almost all of them map from ovm id to opengl index
 
         // for each halfface the vertex that lies in the center of the halfface
-        std::unordered_map<int, unsigned int> face_center_indices;
+        static std::unordered_map<int, unsigned int> face_center_indices;
+        face_center_indices.clear();
         // the index for each corner vertex of the cell
-        std::unordered_map<int, unsigned int> corner_vertex_indices;
+        static std::unordered_map<int, unsigned int> corner_vertex_indices;
+        corner_vertex_indices.clear();
         // for each halfface those vertices that are close to the edge, basically the smaller triangle in the middle
-        std::unordered_map<int, std::vector<RoundedFaceVertexData>> halfface_vertices_indices;
+        static std::unordered_map<int, std::vector<RoundedFaceVertexData>> halfface_vertices_indices;
+        halfface_vertices_indices.clear();
         // for each corner vertex of the halfface, the vertex on the inner triangle that is closest to the corner
-        std::unordered_map<int, std::unordered_map<int, unsigned int>> corner_vertex_face_vertex_index;
+        static std::unordered_map<int, std::unordered_map<int, unsigned int>> corner_vertex_face_vertex_index;
+        //corner_vertex_face_vertex_index.clear();
         // for each halfedge, and for a given corner vertex, the new vertex on the halfedge that is closest to the corner
         // *-----*---------he----------*-----*
         //       ^                     ^
         //       |                     |
         // this one for           this one for
         // the left corner        the right corner
-        std::unordered_map<int, std::unordered_map<int, unsigned int>> halfedge_vertex_indices;
+        static std::unordered_map<int, std::unordered_map<int, unsigned int>> halfedge_vertex_indices;
+        halfedge_vertex_indices.clear();
 
 
         struct VertexAttribData
@@ -586,11 +598,12 @@ namespace vOS
             float dihedral_angle;
             bool used_vertex_normal;
             RoundedFaceVertexData data;
-
         };
-        std::unordered_map<int, std::vector<VertexAttribData>> halfface_vertices;
+        static std::unordered_map<int, std::vector<VertexAttribData>> halfface_vertices;
+        halfface_vertices.clear();
 
-        RoundedCellData cell_data;
+        static RoundedCellData cell_data;
+        cell_data.clear();
         cell_data.cell_id = cell.idx();
         glm::vec4 color(1.0f, 1.0f, 1.0f, 0.0f);
         glm::vec3 zero(0.0f);
