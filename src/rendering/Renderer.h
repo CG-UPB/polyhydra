@@ -49,6 +49,7 @@ namespace vOS
 
     private:
 
+        void handle_input();
         void handle_camera_input();
         void handle_mesh_input();
         void render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh);
@@ -94,6 +95,10 @@ namespace vOS
         // Input handling
         float last_x = 0.0f;
         float last_y = 0.0f;
+        float xpos = 0.0f;
+        float ypos = 0.0f;
+        float x_offset = 0.0f;
+        float y_offset = 0.0f;
 
         RenderData* m_render_data = nullptr;
 

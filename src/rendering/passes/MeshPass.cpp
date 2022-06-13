@@ -54,7 +54,7 @@ namespace vOS
 
 
         // Shader uniforms
-        m_mesh_shader->set_uniform_mat4f("u_transform", data.camera.world * mesh->get_data().get_transform());
+        m_mesh_shader->set_uniform_mat4f("u_transform", transform);
         m_mesh_shader->set_uniform_mat4f("u_projection", data.camera.projection);
         m_mesh_shader->set_uniform_mat4f("u_view", data.camera.view);
         m_mesh_shader->set_uniform_vec3f("u_light_pos", light_pos);

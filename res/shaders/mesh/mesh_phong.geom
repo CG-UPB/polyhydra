@@ -81,9 +81,12 @@ void main()
     vec4 viewspace_pos1 = u_view * vec4(pos1, 1.0);
     vec4 viewspace_pos2 = u_view * vec4(pos2, 1.0);
 
-    vec4 screen_pos0 = u_projection * viewspace_pos0;
-    vec4 screen_pos1 = u_projection * viewspace_pos1;
-    vec4 screen_pos2 = u_projection * viewspace_pos2;
+//    vec4 screen_pos0 = u_projection * viewspace_pos0;
+//    vec4 screen_pos1 = u_projection * viewspace_pos1;
+//    vec4 screen_pos2 = u_projection * viewspace_pos2;
+    vec4 screen_pos0 = u_projection * u_view * vec4(pos0, 1.0);
+    vec4 screen_pos1 = u_projection * u_view * vec4(pos1, 1.0);
+    vec4 screen_pos2 = u_projection * u_view * vec4(pos2, 1.0);
 
     vec3 ndc_pos[3] = vec3[](
         vec3(screen_pos0.xyz / screen_pos0.w),

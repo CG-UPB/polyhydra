@@ -105,7 +105,6 @@ namespace vOS
         }
 
 
-
         glm::mat4 get_transform() const
         {
             return transformation;
@@ -115,7 +114,8 @@ namespace vOS
         {
             glm::mat4 rot(1.0f);
             rot = glm::translate(glm::mat4(1.0), (position )) * rotation * glm::translate(glm::mat4(1.0), -(position )) ;
-            transformation =  rot * translation *  scaling;
+            transformation =  rot * translation * scaling;
+            //transformation = rot * translation ;
         }
 
         glm::mat4 translation = glm::mat4(1.0f);

@@ -565,7 +565,7 @@ namespace vOS
     {
         m_data.scaling = glm::mat4(1.0f);
         m_data.scale = vec;
-        m_data.scaling = glm::scale(m_data.scaling * m_data.scale_normalization, vec);
+        m_data.scaling = glm::scale(m_data.scaling, vec *m_data.scale_normalization );
         m_data.update_transform();
     }
 

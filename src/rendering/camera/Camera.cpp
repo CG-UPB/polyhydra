@@ -91,17 +91,6 @@ namespace vOS {
         }
     }
 
-    void Camera::handle_trackball_movement(const glm::vec2 &start_position, const glm::vec2 &end_position)
-    {
-        //Log::warn("start x: " + std::to_string(start_position.x) + ", start y: " + std::to_string(start_position.y));
-        //Log::warn("end x: " + std::to_string(end_position.x) + ", end y: " + std::to_string(end_position.y));
-        if (start_position.x != end_position.x || start_position.y != end_position.y)
-        {
-            m_trackball.move_from_to(start_position, end_position);
-            VecUtil::print_mat(view);
-        }
-    }
-
     void Camera::handle_mouse_scroll(glm::vec2 scroll)
     {
         auto y_offset = scroll.y;

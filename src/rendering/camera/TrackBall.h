@@ -12,17 +12,13 @@ namespace vOS
 
         TrackBall(Camera& camera, float radius);
 
-        void move_from_to(const glm::vec2& start_position, const glm::vec2& end_position);
-
-        glm::mat4 get_transform() const;
+        static glm::vec3 get_rotation_axis(const glm::vec2& start_position, const glm::vec2& end_position, glm::vec2 viewport_size);
+        static float get_rotation_angle(const glm::vec2& start_position, const glm::vec2& end_position, glm::vec2 viewport_size);
 
     private:
 
-        glm::vec3 get_trackball_vector(const glm::vec2& screen_pos);
+        static glm::vec3 get_trackball_vector(const glm::vec2& screen_pos, glm::vec2 viewport_size);
 
         Camera& m_camera;
-        float m_radius = 1.0f;
-        glm::mat4 m_trackball_transform = glm::mat4(1.0f);
-
     };
 }

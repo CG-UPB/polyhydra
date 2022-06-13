@@ -67,8 +67,7 @@ namespace vOS
         m_target_ms->unbind();
 
         // handle input
-        handle_mesh_input();
-        handle_camera_input();
+        handle_input();
 
         // Render Meshes
         render_pre_pass(*render_data);
@@ -141,7 +140,8 @@ namespace vOS
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms, m_target);
     }
-    void Renderer::handle_mesh_input()
+
+    void Renderer::handle_input()
     {
         Input::update();
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
@@ -153,13 +153,12 @@ namespace vOS
 
         // mouse movement
         auto mouse_coords = Input::get_mouse_coords();
-        auto xpos = mouse_coords.x;
-        auto ypos = mouse_coords.y;
+        xpos = mouse_coords.x;
+        ypos = mouse_coords.y;
         auto is_down = Input::mouse_pressed();
-        auto& cam = m_render_data->camera;
 
-        float x_offset = 0.0f;
-        float y_offset = 0.0f;
+        x_offset = 0.0f;
+        y_offset = 0.0f;
 
         if (xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
         {
@@ -169,11 +168,21 @@ namespace vOS
                 y_offset = last_y - ypos;
             }
         }
+
+        handle_camera_input();
+        handle_mesh_input();
+
+        last_x = xpos;
+        last_y = ypos;
+    }
+
+    void Renderer::handle_mesh_input()
+    {
         if(mesh_moving)
         {
             mesh_moving = false;
         }
-
+        auto& cam = m_render_data->camera;
         if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
         {
             auto mesh_id = Window::instance().get_mesh_focus() ;
@@ -204,11 +213,24 @@ namespace vOS
                     auto pos = mesh->get_data().position;
                     auto off = mesh->get_data().position_offset;
 
-                    auto x_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_up(), 0.0f);
-                    auto y_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_right(), 0.0f);
+//                    auto x_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_up(), 0.0f);
+//                    auto y_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_right(), 0.0f);
+//
+//                    mesh->rotate(x_rotation, x_axis);
+//                    mesh->rotate(-y_rotation, y_axis);
 
-                    mesh->rotate(x_rotation, x_axis);
-                    mesh->rotate(-y_rotation, y_axis);
+                    if (Input::mouse_pressed() && (last_x != xpos || last_y != ypos))
+                    {
+                        auto axis = TrackBall::get_rotation_axis({last_x, last_y}, {xpos, ypos},
+                                                                 cam.get_viewport_size());
+                        auto angle = TrackBall::get_rotation_angle({last_x, last_y}, {xpos, ypos},
+                                                                   cam.get_viewport_size());
+                        //glm::mat3 camera_to_trackball = glm::inverse(mesh->get_data().get_transform()) * glm::mat3(cam.world));
+                        glm::vec3 axis_in_trackball_coords = glm::inverse(cam.view * mesh->get_data().get_transform()) * glm::vec4(axis, 0.0f);
+
+
+                        mesh->rotate(angle, axis_in_trackball_coords);
+                    }
                 }
             }
         }
@@ -216,40 +238,6 @@ namespace vOS
 
     void Renderer::handle_camera_input()
     {
-        Input::update();
-        ImVec2 vMin = ImGui::GetWindowContentRegionMin();
-        ImVec2 vMax = ImGui::GetWindowContentRegionMax();
-        vMin.x += ImGui::GetWindowPos().x;
-        vMin.y += ImGui::GetWindowPos().y;
-        vMax.x += ImGui::GetWindowPos().x;
-        vMax.y += ImGui::GetWindowPos().y;
-
-        // mouse movement
-        auto mouse_coords = Input::get_mouse_coords();
-        auto xpos = mouse_coords.x;
-        auto ypos = mouse_coords.y;
-        auto is_down = Input::mouse_pressed();
-
-        float x_offset = 0.0f;
-        float y_offset = 0.0f;
-
-        if (xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
-        {
-            if (is_down)
-            {
-                x_offset = xpos - last_x;
-                y_offset = last_y - ypos;
-
-                last_x = xpos;
-                last_y = ypos;
-            }
-            else
-            {
-                last_x = xpos;
-                last_y = ypos;
-            }
-        }
-
         auto& cam = m_render_data->camera;
         if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
         {
