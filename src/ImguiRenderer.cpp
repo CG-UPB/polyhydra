@@ -34,10 +34,13 @@ namespace vOS
         initImGuiStyle();
         Shader::load_all();
         UIUtil::load_all();
+        VertexArrayObject::init();
     }
 
     ImguiRenderer::~ImguiRenderer()
     {
+        VertexArrayObject::clean_up();
+        UIUtil::clean_up();
         Shader::delete_all();
 
         // Cleanup

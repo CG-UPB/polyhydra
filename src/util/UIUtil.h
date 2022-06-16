@@ -12,6 +12,8 @@ namespace vOS
 
         static void load_all();
 
+        static void clean_up();
+
         static std::shared_ptr<TextureIcon> get_icon(const std::string& name);
 
         static ImFont* get_regular_font();

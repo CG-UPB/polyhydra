@@ -33,7 +33,7 @@ namespace vOS
         glm::vec3 light_positions[max_cascades];
 
     private:
-        std::shared_ptr<Renderer> m_renderer;
+        Renderer* m_renderer;
         std::shared_ptr<Shader> m_shadow_shader;
         std::shared_ptr<FrameBufferObject> m_shadow_framebuffer;
         float m_z_mult = 2.5f;

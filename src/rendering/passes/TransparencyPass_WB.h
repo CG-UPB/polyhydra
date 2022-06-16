@@ -34,7 +34,7 @@ namespace vOS
         glm::vec4 m_zeros = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
         glm::vec4 m_ones =glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        std::shared_ptr<Renderer> m_renderer;
+        Renderer* m_renderer;
         std::shared_ptr<Shader> m_transparency_shader;
         std::shared_ptr<Shader> m_composite_shader;
         std::shared_ptr<FrameBufferObject> m_transparent_framebuffer;

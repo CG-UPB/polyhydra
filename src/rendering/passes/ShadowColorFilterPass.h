@@ -24,7 +24,7 @@ namespace vOS
         unsigned int m_width;
         unsigned int m_height;
 
-        std::shared_ptr<Renderer> m_renderer;
+        Renderer* m_renderer;
         std::shared_ptr<Shader> m_color_filter_shader;
         std::shared_ptr<FrameBufferObject> m_color_filter_framebuffer;
     };

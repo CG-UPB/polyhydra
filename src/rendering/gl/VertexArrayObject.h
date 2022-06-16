@@ -14,6 +14,17 @@ namespace vOS
         static void draw_screen_quad();
 
         /**
+         * Initialize static members here, since we need to control the destruction as well since we need an active
+         * OpenGL Context.
+         */
+        static void init();
+
+        /**
+         * Clean up static members. The OpenGL Context still exists here.
+         */
+        static void clean_up();
+
+        /**
          * Creates a new VertexArrayObject from vertices and indices.
          *
          * @param vertices vector of vertices, aligned like so [x0, y0, z0, x1, y1, z1, ...]

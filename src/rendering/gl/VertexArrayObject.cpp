@@ -6,16 +6,22 @@ namespace vOS
 {
     std::unique_ptr<VertexArrayObject> VertexArrayObject::s_screen_quad = nullptr;
 
+    void VertexArrayObject::init()
+    {
+        s_screen_quad = std::make_unique<VertexArrayObject>(
+                CommonMeshes::PlaneXY::vertices(2.0f, 2.0f),
+                CommonMeshes::PlaneXY::indices()
+        );
+        s_screen_quad->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
+    }
+
+    void VertexArrayObject::clean_up()
+    {
+        s_screen_quad.reset();
+    }
+
     void VertexArrayObject::draw_screen_quad()
     {
-        if (s_screen_quad == nullptr)
-        {
-            s_screen_quad = std::make_unique<VertexArrayObject>(
-                    CommonMeshes::PlaneXY::vertices(2.0f, 2.0f),
-                    CommonMeshes::PlaneXY::indices()
-            );
-            s_screen_quad->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
-        }
         s_screen_quad->draw();
     }
 
