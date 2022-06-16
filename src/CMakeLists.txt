@@ -86,8 +86,6 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/panels/QualityPanel.h
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.h
-        ${VOLUMESHOS_SRC}/rendering/camera/MeshMover.cpp
-        ${VOLUMESHOS_SRC}/rendering/camera/MeshMover.h
         ${VOLUMESHOS_SRC}/rendering/Renderer.cpp
         ${VOLUMESHOS_SRC}/rendering/Renderer.h
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp
