@@ -51,8 +51,6 @@ namespace vOS {
 
     void Camera::update()
     {
-        //Input::update();
-        //handle_input();
 
         // Frame Delta
         auto current_frame = (float) ImGui::GetTime();
@@ -93,17 +91,6 @@ namespace vOS {
         }
     }
 
-    void Camera::handle_trackball_movement(const glm::vec2 &start_position, const glm::vec2 &end_position)
-    {
-        //Log::warn("start x: " + std::to_string(start_position.x) + ", start y: " + std::to_string(start_position.y));
-        //Log::warn("end x: " + std::to_string(end_position.x) + ", end y: " + std::to_string(end_position.y));
-        if (start_position.x != end_position.x || start_position.y != end_position.y)
-        {
-            m_trackball.move_from_to(start_position, end_position);
-            VecUtil::print_mat(view);
-        }
-    }
-
     void Camera::handle_mouse_scroll(glm::vec2 scroll)
     {
         auto y_offset = scroll.y;
@@ -139,13 +126,15 @@ namespace vOS {
         auto delta_angle_x = (float) (2 * M_PI / m_screen_width);
         auto delta_angle_y = (float) (M_PI / m_screen_height);
 
-        float angle_x = -x_offset * delta_angle_x;
-        float angle_y = y_offset * delta_angle_y;
+        float angle_x = std::min((float)M_PI / 10.0f, -x_offset * delta_angle_x);
+        float angle_y = std::min((float)M_PI / 10.0f, y_offset * delta_angle_y);
 
         // when front and up are simalar
-        if (float cos_angle = dot(get_front(), m_world_up); cos_angle * glm::sign(angle_y) > 0.99f)
+        float cos_angle = dot(get_front(), m_world_up);
+        if (cos_angle * glm::sign(angle_y) > 0.95f)
         {
             angle_y = 0.0f;
+            return;
         }
 
         if (m_mode == FLY)
@@ -174,13 +163,16 @@ namespace vOS {
     {
         if (m_mode == FLY)
         {
+            auto extended_target = position + glm::length(glm::vec3(new_orbit_target) - position) *
+                                                  glm::normalize(target - position);
+            look_at(extended_target);
             set_mode(ORBIT);
             animated_look_at(new_orbit_target);
         }
         else if(m_mode == ORBIT)
         {
             set_mode(FLY);
-            look_at(position + glm::normalize(target - position));
+            animated_look_at(position + glm::normalize(target - position));
         }
     }
 
@@ -199,26 +191,43 @@ namespace vOS {
         if(!animation)
         {
             animation = true;
-            animation_start = target;
-            animation_end = new_target;
+            animation_start_target = target;
+            animation_end_target = new_target;
+            animation_start_position = position;
+            auto pos_dir = glm::normalize(new_target - position);
+            if(m_mode == ORBIT && glm::length(target - position) < glm::length(new_target -position))
+            {
+                animation_end_position = animation_end_target - pos_dir * glm::length(target - position);
+            }
+            else
+            {
+                animation_end_position = position;
+            }
         }
     }
 
     void Camera::animation_step()
     {
+        int steps = 15;
         if(animation)
         {
-            glm::vec3 step = animation_end - animation_start ;
-            step /= 10;
-            glm::vec3 remain = animation_end - target;
+            glm::vec3 target_step = animation_end_target - animation_start_target ;
+            target_step /= steps;
 
-            if(glm::length(step) >= glm::length(remain))
+            glm::vec3 position_step = animation_end_position - animation_start_position;
+            position_step /= steps;
+
+            glm::vec3 remain = animation_end_target - target;
+
+            if(glm::length(target_step) >= glm::length(remain))
             {
-                look_at(animation_end);
+                position = animation_end_position;
+                look_at(animation_end_target);
                 animation = false;
             } else
             {
-                look_at(target + step);
+                position = position + position_step;
+                look_at(target + target_step);
             }
         }
     }
@@ -245,7 +254,7 @@ namespace vOS {
 
     glm::vec3 Camera::get_up() const
     {
-        return m_camera_up;
+        return m_world_up;
     }
 
     glm::vec3 Camera::get_right() const

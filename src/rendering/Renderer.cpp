@@ -25,6 +25,7 @@ namespace vOS
         m_transparency_pass_dp = std::make_shared<TransparencyPass_DP>(this, width, height);
         last_x = width / 2.0f;
         last_y = height / 2.0f;
+
     }
 
     void Renderer::resize(int width, int height)
@@ -55,7 +56,7 @@ namespace vOS
         m_target_ms->unbind();
 
         // handle input
-        handle_camera_input();
+        handle_input();
 
         // Render Meshes
         render_pre_pass(*render_data);
@@ -129,64 +130,9 @@ namespace vOS
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms, m_target);
     }
 
-    void Renderer::handle_camera_input()
+    void Renderer::handle_input()
     {
         Input::update();
-
-        auto &cam = m_render_data->camera;
-
-        if (cam.animation)
-        {
-            cam.animation_step();
-            cam.update();
-            return;
-        }
-        // If left ctrl key is pressed, the object move mode is active which requires the camera stand still
-        bool ignore_input = Input::key_pressed(GLFW_KEY_LEFT_CONTROL);
-        if (ignore_input)
-            return;
-
-        if (Input::mouse_double_clicked())
-        {
-            auto mesh_id = m_selection_hover_pass.get_hovered_mesh_object();
-
-            if (mesh_id >= 0)
-            {
-                auto mesh = Window::instance().get_mesh_obj(mesh_id);
-                glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
-                if(Input::key_down(GLFW_KEY_LEFT_CONTROL))
-                {
-                    auto transform = cam.world * mesh->get_data().get_transform();
-                    auto pos_mesh_space = glm::vec4(m_selection_hover_pass.hover_position , 1.0f);
-                    //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
-                    new_target = glm::vec3(transform * pos_mesh_space);
-                }else
-                {
-                    new_target = mesh->get_data().position;
-                }
-
-                auto extended_target = cam.position + glm::length(glm::vec3(new_target) - cam.position) * glm::normalize(cam.target - cam.position);
-                if(cam.get_mode() == FLY)
-                {
-                    cam.switch_mode(extended_target);
-                }
-                cam.animated_look_at(new_target);
-                Window::instance().set_mesh_focus(mesh_id);
-            }
-        }
-
-        if (Input::key_pressed(GLFW_KEY_M))
-        {
-            auto mesh_id = Window::instance().get_mesh_focus();
-            glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
-            if(mesh_id >= 0)
-            {
-                auto mesh = Window::instance().get_mesh_obj(mesh_id);
-                new_target = mesh->get_data().position;
-            }
-            cam.switch_mode(new_target);
-        }
-
         ImVec2 vMin = ImGui::GetWindowContentRegionMin();
         ImVec2 vMax = ImGui::GetWindowContentRegionMax();
         vMin.x += ImGui::GetWindowPos().x;
@@ -196,51 +142,160 @@ namespace vOS
 
         // mouse movement
         auto mouse_coords = Input::get_mouse_coords();
-        auto xpos = mouse_coords.x;
-        auto ypos = mouse_coords.y;
+        xpos = mouse_coords.x;
+        ypos = mouse_coords.y;
         auto is_down = Input::mouse_pressed();
 
-        if (!ImGui::IsWindowHovered() || !ImGui::IsWindowFocused())
-        {
-            if (!is_down)
-            {
-                last_x = xpos;
-                last_y = ypos;
-            }
-            return;
-        }
-
-        // mouse scroll
-        cam.handle_mouse_scroll(Input::get_scroll_offset());
+        x_offset = 0.0f;
+        y_offset = 0.0f;
 
         if (xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
         {
             if (is_down)
             {
-
-                float x_offset = xpos - last_x;
-                float y_offset = last_y - ypos;
-
-                last_x = xpos;
-                last_y = ypos;
-
-                cam.handle_mouse_movement(x_offset, y_offset);
-            } else
-            {
-                last_x = xpos;
-                last_y = ypos;
+                x_offset = xpos - last_x;
+                y_offset = last_y - ypos;
             }
         }
 
-        if (ImGui::IsWindowFocused())
-        {
-            cam.handle_key_movement(Input::get_wasd_movement_vector());
-        }
+        handle_camera_input();
+        handle_mesh_input();
 
+        last_x = xpos;
+        last_y = ypos;
+    }
+
+    void Renderer::handle_mesh_input()
+    {
+        if(mesh_moving)
+        {
+            mesh_moving = false;
+        }
+        auto& cam = m_render_data->camera;
+        if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
+        {
+            auto mesh_id = Window::instance().get_mesh_focus() ;
+            if (mesh_id >= 0)
+            {
+                if (Input::key_down(Input::TRANSLATE_MESH))
+                {
+                    mesh_moving = true;
+                    auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                    auto delta_x = (float) (2 * M_PI / m_viewportPanelWidth);
+                    auto delta_y = (float) (M_PI / m_viewportPanelHeight);
+
+                    glm::vec3 vertical = cam.get_right() * x_offset * delta_x * 2.0f;
+                    glm::vec3 horizontal = cam.get_up() * y_offset * delta_y * 2.0f;
+
+                    mesh->translate(mesh->get_data().position + vertical + horizontal) ;
+                }
+                else if (Input::key_down(Input::ROTATE_MESH))
+                {
+                    mesh_moving = true;
+                    auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                    auto delta_x = (float) (2 * M_PI / m_viewportPanelWidth);
+                    auto delta_y = (float) (M_PI / m_viewportPanelHeight);
+
+                    float x_rotation = x_offset * delta_x;
+                    float y_rotation = y_offset * delta_y;
+
+                    auto pos = mesh->get_data().position;
+                    auto off = mesh->get_data().position_offset;
+
+//                    auto x_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_up(), 0.0f);
+//                    auto y_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_right(), 0.0f);
+//
+//                    mesh->rotate(x_rotation, x_axis);
+//                    mesh->rotate(-y_rotation, y_axis);
+
+                    if (Input::mouse_pressed() && (last_x != xpos || last_y != ypos))
+                    {
+                        auto axis = TrackBall::get_rotation_axis({last_x, last_y}, {xpos, ypos},
+                                                                 cam.get_viewport_size());
+                        auto angle = TrackBall::get_rotation_angle({last_x, last_y}, {xpos, ypos},
+                                                                   cam.get_viewport_size());
+                        //glm::mat3 camera_to_trackball = glm::inverse(mesh->get_data().get_transform()) * glm::mat3(cam.world));
+                        glm::vec3 axis_in_trackball_coords = glm::inverse(cam.view * mesh->get_data().get_transform()) * glm::vec4(axis, 0.0f);
+
+
+                        mesh->rotate(angle, axis_in_trackball_coords);
+                    }
+                }
+            }
+        }
+    }
+
+    void Renderer::handle_camera_input()
+    {
+        auto& cam = m_render_data->camera;
+        if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
+        {
+            if (!mesh_moving)
+            {
+                if (cam.animation)
+                {
+                    cam.animation_step();
+                    cam.update();
+                    return;
+                }
+
+                if (Input::mouse_double_clicked())
+                {
+                    auto mesh_id = m_selection_hover_pass.get_hovered_mesh_object();
+
+                    if (mesh_id >= 0)
+                    {
+                        auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                        glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
+
+                        auto mode = GlobalViewerSettings::getInstance()->get_selection_mode();
+                        if (mode == Selection::ALL)
+                        {
+                            new_target = mesh->get_data().position;
+                        }
+                        else if(mode != Selection::Off)
+                        {
+                            auto transform = cam.world * mesh->get_data().get_transform();
+                            auto pos_mesh_space = glm::vec4(m_selection_hover_pass.hover_position, 1.0f);
+                            //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
+                            new_target = glm::vec3(transform * pos_mesh_space);
+                        }
+
+                        if (cam.get_mode() == FLY)
+                        {
+                            cam.switch_mode(new_target);
+                        }
+                        else
+                        {
+                            cam.animated_look_at(new_target);
+                        }
+
+                        Window::instance().set_mesh_focus(mesh_id);
+                    }
+                }
+
+                if (Input::key_pressed(Input::SWITCH_CAMERA_MODE))
+                {
+                    auto mesh_id = Window::instance().get_mesh_focus();
+                    glm::vec3 new_target = cam.target;
+                    if(mesh_id >= 0)
+                    {
+                        auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                        new_target = mesh->get_data().position;
+                    }
+                    cam.switch_mode(new_target);
+                }
+
+                cam.handle_mouse_scroll(Input::get_scroll_offset());
+                cam.handle_mouse_movement(x_offset, y_offset);
+                cam.handle_key_movement(Input::get_wasd_movement_vector());
+            }
+
+        }
         cam.update();
     }
 
-    void Renderer::render_mesh(RenderData &render_data, const std::shared_ptr<MeshObject> &mesh)
+    void Renderer::render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh)
     {
         if (mesh == nullptr)
         {

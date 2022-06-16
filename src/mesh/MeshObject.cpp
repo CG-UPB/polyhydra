@@ -21,19 +21,20 @@ namespace vOS
         file_manager.readFile(file_path, *m_mesh);
     }
 
-    void MeshObject::write_to_file(const std::string &file_path) const
+    void MeshObject::write_to_file(const std::string& file_path) const
     {
         // open OVM FileManager
         OpenVolumeMesh::IO::FileManager file_manager;
         file_manager.writeFile(file_path, *m_mesh);
     }
 
-    void MeshObject::select_element(int id, int type){
+    void MeshObject::select_element(int id, int type)
+    {
         int shape_key = type * key_multiplier + id;
 
         // We can't select an element twice
         bool already_selected = is_element_selected(id, type);
-        if(already_selected)
+        if (already_selected)
             return;
 
         if (type == 0)
@@ -60,7 +61,9 @@ namespace vOS
 
             m_created_shapes.insert({shape_key, shape_id});
              */
-        }else if(type == 1) {
+        }
+        else if (type == 1)
+        {
             m_selected_vertices.insert(id);
 
             // Add Shape
@@ -79,7 +82,8 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
 
             m_created_shapes.insert({shape_key, shape_id});
-        } else if (type == 2)
+        }
+        else if (type == 2)
         {
             m_selected_edges.insert(id);
 
@@ -90,7 +94,7 @@ namespace vOS
             auto v1 = m_mesh->vertex(vertices[1]);
             auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5,
                                       v0[2] + (v1[2] - v0[2]) * 0.5);
-            auto *shape = new Box();
+            auto* shape = new Box();
             shape->set_scale(0.02f, 0.02f, 0.02f);
             shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
             shape->set_base_color(0.0f, 0.0f, 1.0f);
@@ -101,8 +105,9 @@ namespace vOS
             Window::instance().rendering_mutex.lock();
 
             m_created_shapes.insert({shape_key, shape_id});
-        } else
-        if(type == 6){
+        }
+        else if (type == 6)
+        {
             m_selected_cells.insert(id);
 
             OpenVolumeMesh::CellHandle cell(id);
@@ -111,7 +116,7 @@ namespace vOS
             bool first = true;
 
             std::vector<glm::vec3> vertices;
-            for (auto cv_it : m_mesh->cell_vertices(cell))
+            for (auto cv_it: m_mesh->cell_vertices(cell))
             {
                 auto v_pos = m_mesh->vertex(cv_it);
                 vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
@@ -188,19 +193,23 @@ namespace vOS
         if (!is_selected)
             return;
 
-        if(type == 0) {
+        if (type == 0)
+        {
 
             m_mvb->set_face_selection(id, false);
             return;
-        } else if (type == 1)
+        }
+        else if (type == 1)
         {
             auto entry = m_selected_vertices.find(id);
             m_selected_vertices.erase(entry);
-        } else if (type == 2)
+        }
+        else if (type == 2)
         {
             auto entry = m_selected_edges.find(id);
             m_selected_edges.erase(entry);
-        } else
+        }
+        else
         {
             auto entry = m_selected_cells.find(id);
             m_selected_cells.erase(entry);
@@ -221,13 +230,15 @@ namespace vOS
     bool MeshObject::is_element_selected(int id, int type)
     {
 
-        if(type == 0)
+        if (type == 0)
         {
             return m_selected_faces.find(id) != m_selected_faces.end();
-        }else if(type == 1)
+        }
+        else if (type == 1)
         {
             return m_selected_vertices.find(id) != m_selected_vertices.end();
-        }else if(type == 2)
+        }
+        else if (type == 2)
         {
             return m_selected_edges.find(id) != m_selected_edges.end();
         }
@@ -237,7 +248,7 @@ namespace vOS
         }
     }
 
-    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh)
+    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
     {
         // copy given mesh
         m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
@@ -249,6 +260,9 @@ namespace vOS
 
         // calculates the amount of ids the mesh needs
         calculate_mesh_offset();
+
+        translate(glm::vec3(0.0f));
+        scale(glm::vec3(1.0f));
 
         m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
     }
@@ -290,11 +304,12 @@ namespace vOS
         // initialize every vertex on boundary with peel_level = 0, else: -1
         for (auto vertex: m_mesh->vertices())
         {
-            if(m_mesh->has_vertex_bottom_up_incidences() && m_mesh->is_boundary(vertex))
+            if (m_mesh->has_vertex_bottom_up_incidences() && m_mesh->is_boundary(vertex))
             {
                 vertex_peel_property[vertex] = 0;
                 act_level.push_back(vertex);
-            } else
+            }
+            else
             {
                 vertex_peel_property[vertex] = -1;
             }
@@ -303,16 +318,16 @@ namespace vOS
         // actual depth
         int depth = 0;
 
-        while(!act_level.empty())
+        while (!act_level.empty())
         {
             depth++;
             // to get the next layer we get the neighbour vertices of the vertices of actual layer
-            for(auto vertex : act_level)
+            for (auto vertex: act_level)
             {
                 // vertices of next layer are the vertices of adjacent cells (especially important for 90°+ angles)
-                for (auto neighbour_cell : m_mesh->vertex_cells(vertex))
+                for (auto neighbour_cell: m_mesh->vertex_cells(vertex))
                 {
-                    for(auto neighbour : m_mesh->cell_vertices(neighbour_cell))
+                    for (auto neighbour: m_mesh->cell_vertices(neighbour_cell))
                     {
                         // if not yet initalized: peel_depth of vertex = actual_depth
                         if (vertex_peel_property[neighbour] == -1)
@@ -332,18 +347,18 @@ namespace vOS
 
         // now evaluate peel_level of cells: minimum peel_level of all vertices of the cell
         int max_depth = 0;
-        for(auto cell : m_mesh->cells())
+        for (auto cell: m_mesh->cells())
         {
             //
             int minimum = -1;
-            for(auto cell_vertex : m_mesh->cell_vertices(cell))
+            for (auto cell_vertex: m_mesh->cell_vertices(cell))
             {
                 // the first one is already the minimum
                 if (minimum == -1)
                 {
                     minimum = vertex_peel_property[cell_vertex];
                 }
-                else if(vertex_peel_property[cell_vertex] < minimum)
+                else if (vertex_peel_property[cell_vertex] < minimum)
                 {
                     minimum = vertex_peel_property[cell_vertex];
                 }
@@ -409,10 +424,10 @@ namespace vOS
     int MeshObject::calculate_selection_size() const
     {
         int size = 0;
-        for (auto hf_it : m_mesh->halffaces())
+        for (auto hf_it: m_mesh->halffaces())
         {
             int num_halfface_vertices = 0;
-            for (auto vhf_it : m_mesh->halfface_vertices(hf_it))
+            for (auto vhf_it: m_mesh->halfface_vertices(hf_it))
             {
                 num_halfface_vertices++;
             }
@@ -437,7 +452,7 @@ namespace vOS
         m_selection_offset = {start, start + calculate_selection_size()};
     }
 
-    std::pair<glm::vec3,glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
+    std::pair<glm::vec3, glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
     {
 
         if (m_data.slice_locked)
@@ -447,7 +462,7 @@ namespace vOS
 
         std::vector<float> vertices;
 
-        for (auto v_it : m_mesh->vertices())
+        for (auto v_it: m_mesh->vertices())
         {
             auto v_pos = m_mesh->vertex(v_it);
             glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);
@@ -467,21 +482,24 @@ namespace vOS
             if (vertex.x < min.x)
             {
                 min.x = vertex.x;
-            } else if (vertex.x > max.x)
+            }
+            else if (vertex.x > max.x)
             {
                 max.x = vertex.x;
             }
             if (vertex.y < min.y)
             {
                 min.y = vertex.y;
-            } else if (vertex.y > max.y)
+            }
+            else if (vertex.y > max.y)
             {
                 max.y = vertex.y;
             }
             if (vertex.z < min.z)
             {
                 min.z = vertex.z;
-            } else if (vertex.z > max.z)
+            }
+            else if (vertex.z > max.z)
             {
                 max.z = vertex.z;
             }
@@ -495,13 +513,14 @@ namespace vOS
     }
 
 
-    glm::vec3 &MeshObject::get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir)
+    glm::vec3& MeshObject::get_slice_dir(const glm::mat4& view_transform, const glm::vec3& view_dir)
     {
         if (!m_data.slice_locked)
         {
             m_just_locked = true;
             m_slice_dir = view_dir;
-        } else
+        }
+        else
         {
             if (m_just_locked)
             {
@@ -517,11 +536,47 @@ namespace vOS
         return m_max_peel_depth;
     }
 
-    std::shared_ptr<MeshVertexBuffer> MeshObject::get_mvb() const {
+    std::shared_ptr<MeshVertexBuffer> MeshObject::get_mvb() const
+    {
         return m_mvb;
     }
 
-    glm::vec3 MeshObject::get_min() {return m_mvb->get_min_bounding_box();}
-    glm::vec3 MeshObject::get_max() {return m_mvb->get_max_bounding_box();}
+    glm::vec3 MeshObject::get_min()
+    {
+        return m_mvb->get_min_bounding_box();
+    }
+
+    glm::vec3 MeshObject::get_max()
+    {
+        return m_mvb->get_max_bounding_box();
+    }
+
+    void MeshObject::translate(glm::vec3 vec)
+    {
+        m_data.translation = glm::mat4(1.0f);
+        m_data.position = vec;
+        m_data.translation = glm::translate(m_data.translation,  m_data.position - m_data.position_offset);
+        m_data.update_transform();
+    }
+
+    void MeshObject::scale(glm::vec3 vec)
+    {
+        m_data.scaling = glm::mat4(1.0f);
+        m_data.scale = vec;
+        m_data.scaling = glm::scale(m_data.scaling, vec *m_data.scale_normalization );
+        m_data.update_transform();
+    }
+
+    void MeshObject::rotate(float angle, glm::vec3 axis)
+    {
+        m_data.rotation = glm::rotate(m_data.rotation, angle, glm::normalize(axis));
+
+        m_data.update_transform();
+    }
+
+    glm::vec3 MeshObject::get_up_direction()
+    {
+        return glm::vec3();
+    }
 }
 

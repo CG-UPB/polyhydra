@@ -48,7 +48,9 @@ namespace vOS
 
     private:
 
+        void handle_input();
         void handle_camera_input();
+        void handle_mesh_input();
         void render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh);
         void render_selection(RenderData& render_data);
         void render_pre_pass(RenderData& render_data);
@@ -89,10 +91,15 @@ namespace vOS
         int m_viewportPanelHeight;
 
         bool m_is_rendering_background = false;
+        bool mesh_moving = false;
 
         // Input handling
         float last_x = 0.0f;
         float last_y = 0.0f;
+        float xpos = 0.0f;
+        float ypos = 0.0f;
+        float x_offset = 0.0f;
+        float y_offset = 0.0f;
 
         RenderData* m_render_data = nullptr;
 

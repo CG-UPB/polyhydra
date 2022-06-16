@@ -93,7 +93,7 @@ namespace vOS
 
             // Transform Data
             auto pos_vec = j["transform_position"];
-            position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
+            //position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
             auto scale_vec = j["transform_scale"];
             scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
 
@@ -102,12 +102,25 @@ namespace vOS
             rounding_size = j["rounding size"];
         }
 
-        [[nodiscard]] glm::mat4 get_transform() const
+
+        glm::mat4 get_transform() const
         {
-            glm::mat4 pos = glm::translate(position);
-            glm::mat4 scl = glm::scale(scale * scale_normalization);
-            return pos * scl * glm::translate(-position_offset);
+            return transformation;
         }
+
+        void update_transform()
+        {
+            glm::mat4 rot(1.0f);
+            rot = glm::translate(glm::mat4(1.0), (position )) * rotation * glm::translate(glm::mat4(1.0), -(position )) ;
+            transformation =  rot * translation * scaling;
+            //transformation = rot * translation ;
+        }
+
+        glm::mat4 translation = glm::mat4(1.0f);
+        glm::mat4 scaling = glm::mat4(1.0f);
+        glm::mat4 rotation = glm::mat4(1.0f);
+        glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::mat4 transformation = glm::mat4(1.0f);
 
         // Rendering Variables
         Color color                 = {0.76f, 0.76f, 0.76f, 1.0f};
@@ -308,6 +321,14 @@ namespace vOS
         }
 
         [[nodiscard]] std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> get_ovm() const;
+
+        void translate(glm::vec3 vec);
+
+        void scale(glm::vec3 vec);
+
+        void rotate(float angle, glm::vec3 axis);
+
+        glm::vec3 get_up_direction();
 
     private:
         /**

@@ -12,6 +12,13 @@ namespace vOS {
     class Input {
     public:
 
+        enum
+        {
+            SWITCH_CAMERA_MODE = GLFW_KEY_M,
+            ROTATE_MESH = GLFW_KEY_LEFT_ALT,
+            TRANSLATE_MESH = GLFW_KEY_LEFT_CONTROL
+        };
+
         /**
          * Setup and Construction
          */

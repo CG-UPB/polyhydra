@@ -464,13 +464,13 @@ namespace vOS
     void Window::set_mesh_position(int mesh_id, float x, float y, float z)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().position = glm::vec3(x, y, z);
+        get_mesh_obj(mesh_id)->translate(glm::vec3(x, y, z));
     }
 
     void Window::set_mesh_scale(int mesh_id, float scale)
     {
         // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().scale = glm::vec3(scale, scale, scale);
+        get_mesh_obj(mesh_id)->scale(glm::vec3(scale, scale, scale));
     }
 
     void Window::set_mesh_rounding_size(int mesh_id, float r_size)

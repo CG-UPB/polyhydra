@@ -135,7 +135,7 @@ namespace vOS {
         }
     }
 
-    void SelectionPass::render_mesh(const std::shared_ptr<MeshObject>& mesh, RenderData& data)
+    void SelectionPass::render_mesh(std::shared_ptr<MeshObject> const& mesh, RenderData& data)
     {
         if (mesh != nullptr && mesh->get_vao() != nullptr)
         {

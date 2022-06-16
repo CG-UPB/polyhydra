@@ -21,7 +21,6 @@ namespace vOS
 
         // Set Camera Viewport Size
         m_render_data.camera.set_viewport_size(width, height);
-        m_mover.set_references(&m_render_data.camera, &m_renderer->m_selection_hover_pass);
     }
 
     void MeshView::handleResize()
@@ -284,12 +283,6 @@ namespace vOS
 
         // handle the things related to our mesh rendering canvas
         handleResize();
-
-        // Update Camera
-        m_render_data.camera.update();
-
-        // Update Mesh Mover
-        m_mover.update();
 
         m_renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
         m_renderer->render(&m_render_data);
