@@ -30,10 +30,9 @@ namespace vOS
 
         void update_draw_texture();
 
-        std::shared_ptr<Renderer> m_renderer;
+        Renderer* m_renderer;
         std::shared_ptr<Shader> m_transparency_shader;
         std::shared_ptr<Shader> m_composite_shader;
-        std::shared_ptr<VertexArrayObject> m_vao;
 
         float m_alpha_pow = 1.0f;
         float m_pow = 1.0f;

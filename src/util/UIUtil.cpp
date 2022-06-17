@@ -30,6 +30,14 @@ namespace vOS
         ImGui::GetIO().FontDefault = s_regular;
     }
 
+    void UIUtil::clean_up()
+    {
+        for (auto& icon : s_icons)
+        {
+            icon.second.reset();
+        }
+    }
+
     std::shared_ptr<TextureIcon> UIUtil::get_icon(const std::string& name)
     {
         auto icon = s_icons.find(name);

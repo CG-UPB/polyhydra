@@ -271,7 +271,7 @@ namespace vOS
     {
         for (auto& shader : s_shaders)
         {
-            delete shader.second.get();
+            shader.second.reset();
         }
     }
 }
