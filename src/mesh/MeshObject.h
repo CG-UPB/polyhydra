@@ -112,8 +112,9 @@ namespace vOS
         {
             glm::mat4 rot(1.0f);
             rot = glm::translate(glm::mat4(1.0), (position )) * rotation * glm::translate(glm::mat4(1.0), -(position )) ;
-            transformation =  rot * translation * scaling;
-            //transformation = rot * translation ;
+            glm::mat4 scal(1.0f);
+            scal = glm::translate(glm::mat4(1.0), (position )) * scaling * glm::translate(glm::mat4(1.0), -(position )) ;
+            transformation =  scal * rot * translation;
         }
 
         glm::mat4 translation = glm::mat4(1.0f);

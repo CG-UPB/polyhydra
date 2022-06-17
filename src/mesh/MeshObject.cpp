@@ -555,7 +555,8 @@ namespace vOS
     {
         m_data.translation = glm::mat4(1.0f);
         m_data.position = vec;
-        m_data.translation = glm::translate(m_data.translation,  m_data.position - m_data.position_offset);
+        m_data.translation = glm::translate(m_data.translation,  vec - m_data.position_offset);
+
         m_data.update_transform();
     }
 
@@ -563,7 +564,7 @@ namespace vOS
     {
         m_data.scaling = glm::mat4(1.0f);
         m_data.scale = vec;
-        m_data.scaling = glm::scale(m_data.scaling, vec *m_data.scale_normalization );
+        m_data.scaling = glm::scale(m_data.scaling, vec * m_data.scale_normalization );
         m_data.update_transform();
     }
 
@@ -574,9 +575,5 @@ namespace vOS
         m_data.update_transform();
     }
 
-    glm::vec3 MeshObject::get_up_direction()
-    {
-        return glm::vec3();
-    }
 }
 

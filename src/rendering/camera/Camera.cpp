@@ -131,7 +131,7 @@ namespace vOS {
 
         // when front and up are simalar
         float cos_angle = dot(get_front(), m_world_up);
-        if (cos_angle * glm::sign(angle_y) > 0.95f)
+        if (cos_angle * glm::sign(angle_y) > 0.99f)
         {
             angle_y = 0.0f;
             return;
