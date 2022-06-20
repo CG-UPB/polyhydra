@@ -19,9 +19,16 @@ namespace vOS
 
     struct HalffaceData
     {
-        std::vector<VertexData> vertices;
-        std::vector<unsigned int> indices;
-        std::vector<int> halfface_ids;
+        std::vector<VertexData> vertices{};
+        std::vector<unsigned int> indices{};
+        std::vector<int> halfface_ids{};
+
+        void clear()
+        {
+            vertices.clear();
+            indices.clear();
+            halfface_ids.clear();
+        }
     };
 
     struct RoundedVertexData
@@ -52,23 +59,23 @@ namespace vOS
     struct RoundedCellData
     {
         int cell_id = -1;
-        std::vector<float> vertex_types;
-        std::vector<float> vertex_positions;
-        std::vector<float> vertex_halfface_normals;
-        std::vector<float> vertex_cell_centers;
-        std::vector<float> vertex_colors;
-        std::vector<float> vertex_peel_depths;
-        std::vector<float> vertex_is_triangle;
-        std::vector<float> vertex_is_digged;
-        std::vector<float> vertex_is_isolated;
-        std::vector<float> face_center;
-        std::vector<float> to_vertex;
-        std::vector<float> dihedral_angle;
-        std::vector<float> selection;
-        std::vector<float> hovered;
-        std::vector<float> vertex_normals;
-        std::vector<float> min_edge_lengths;
-        std::vector<unsigned int> indices;
+        std::vector<float> vertex_types{};
+        std::vector<float> vertex_positions{};
+        std::vector<float> vertex_halfface_normals{};
+        std::vector<float> vertex_cell_centers{};
+        std::vector<float> vertex_colors{};
+        std::vector<float> vertex_peel_depths{};
+        std::vector<float> vertex_is_triangle{};
+        std::vector<float> vertex_is_digged{};
+        std::vector<float> vertex_is_isolated{};
+        std::vector<float> face_center{};
+        std::vector<float> to_vertex{};
+        std::vector<float> dihedral_angle{};
+        std::vector<float> selection{};
+        std::vector<float> hovered{};
+        std::vector<float> vertex_normals{};
+        std::vector<float> min_edge_lengths{};
+        std::vector<unsigned int> indices{};
 
         void clear()
         {
@@ -101,16 +108,14 @@ namespace vOS
 
     enum class VAO
     {
-        MESH_FACE, MESH_ROUNDED, SPHERE, CYLINDER,
-        NUM_VALUES
+        MESH_FACE, MESH_ROUNDED, SPHERE, CYLINDER
     };
 
     enum class Attribute
     {
         POSITION, FACE_NORMAL, CELL_CENTER, PEEL_DEPTH, IS_DIGGED, COLOR, IS_ISOLATED, IS_TRIANGLE, VERTEX_TYPE,
         FACE_CENTER, TO_VERTEX, DIHEDRAL_ANGLE, SELECTION, SELECTION_VERTEX_POSITION, SELECTION_FROM_VERTEX,
-        SELECTION_TO_VERTEX, HOVERED, VERTEX_NORMAL, MIN_EDGE_LEN,
-        NUM_VALUES
+        SELECTION_TO_VERTEX, HOVERED, VERTEX_NORMAL, MIN_EDGE_LEN
     };
 
     struct AttributeDefinitions

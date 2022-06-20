@@ -244,7 +244,8 @@ namespace vOS
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
         for (auto chf_it: mesh->cell_halffaces(cell))
         {
-            HalffaceData halfface_data;
+            static HalffaceData halfface_data;
+            halfface_data.clear();
             int halfface_id = chf_it.idx();
             auto normal = halfface_normal_to_vec3(chf_it.idx());
 

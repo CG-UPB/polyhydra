@@ -103,7 +103,7 @@ namespace vOS
         }
 
 
-        glm::mat4 get_transform() const
+        [[nodiscard]] const glm::mat4& get_transform() const
         {
             return transformation;
         }
