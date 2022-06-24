@@ -64,8 +64,8 @@ namespace vOS
         m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
         m_mesh_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
         m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
-        m_mesh_shader->set_uniform_vec3f("u_min", mesh->get_transformed_bb(view_transform).first);
-        m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_transformed_bb(view_transform).second);
+        m_mesh_shader->set_uniform_vec3f("u_min", mesh->get_world_bb(view_transform).first);
+        m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
         m_mesh_shader->set_uniform_vec3f("u_slice_direction", mesh->get_slice_dir(view_transform, -glm::normalize(data.camera.get_front())));
         m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
         m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);

@@ -452,16 +452,14 @@ namespace vOS
         m_selection_offset = {start, start + calculate_selection_size()};
     }
 
-    std::pair<glm::vec3, glm::vec3>& MeshObject::get_transformed_bb(const glm::mat4& transform)
+    std::pair<glm::vec3, glm::vec3>& MeshObject::get_world_bb(const glm::mat4& transform)
     {
-
         if (m_data.slice_locked)
         {
             return m_transformed_bb;
         }
 
         std::vector<float> vertices;
-
         for (auto v_it: m_mesh->vertices())
         {
             auto v_pos = m_mesh->vertex(v_it);
@@ -518,14 +516,14 @@ namespace vOS
         if (!m_data.slice_locked)
         {
             m_just_locked = true;
-            m_slice_dir = view_dir;
+            m_slice_dir = glm::vec3(glm::inverse(view_transform) * glm::vec4(view_dir, 1.0f));
         }
         else
         {
             if (m_just_locked)
             {
                 m_just_locked = false;
-                m_slice_dir = view_dir;
+                m_slice_dir = glm::vec3(glm::inverse(view_transform) * glm::vec4(view_dir, 1.0f));
             }
         }
         return m_slice_dir;

@@ -273,7 +273,7 @@ namespace vOS
          * @param transform Transformation matrix
          * @return bounding box in mesh coorinates
          */
-        std::pair<glm::vec3, glm::vec3> &get_transformed_bb(const glm::mat4 &transform);
+        std::pair<glm::vec3, glm::vec3> &get_world_bb(const glm::mat4 &transform);
 
         /**
          * Calculates the direction the camera points to

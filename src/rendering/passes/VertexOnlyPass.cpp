@@ -31,7 +31,7 @@ namespace vOS
         float peel_depth = mesh->get_data().peel_level;
         float slice_depth = mesh->get_data().slice_level;
 
-        auto bb = mesh->get_transformed_bb(view_transform);
+        auto bb = mesh->get_world_bb(view_transform);
         auto min = bb.first;
         auto max = bb.second;
 
