@@ -7,13 +7,7 @@
 
 #include "TrackBall.h"
 
-namespace vOS {
-
-    enum Mode
-    {
-        FLY,
-        ORBIT
-    };
+namespace volumeshOS {
 
 /**
  * Camera class responsible for Data concerning the rendering camera. Position direction and other attributes are managed and changable through this class

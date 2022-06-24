@@ -2,7 +2,7 @@
 #include "TransparencyPass_WB.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace vOS
+namespace volumeshOS
 {
     class MeshView;
 
@@ -68,7 +68,7 @@ namespace vOS
         auto min = bb.first;
         auto max = bb.second;
 
-        // View Operations
+        // volumeshOS Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
         auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 

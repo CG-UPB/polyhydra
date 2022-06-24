@@ -25,7 +25,7 @@ TestQuads::TestQuads()
 
 void TestQuads::ui()
 {
-    vOS::Window &window = vOS::Window::instance();
+    volumeshOS::Window &window = volumeshOS::Window::instance();
     ImGui::Begin("Custom UI");
     // Next Phase
     if (ImGui::Button("Add Quad"))
@@ -34,14 +34,14 @@ void TestQuads::ui()
     }
     if (ImGui::Button("Load Mesh"))
     {
-        vOS::NewFileDialog file_dialog;
+        volumeshOS::NewFileDialog file_dialog;
 
         char const * filename;
 
         filename = file_dialog.openDialog("Open Mesh File");
 
         if (filename != NULL){
-            vOS::Window &window = vOS::Window::instance();
+            volumeshOS::Window &window = volumeshOS::Window::instance();
             OpenVolumeMesh::GeometricPolyhedralMeshV3d mesh;
             OpenVolumeMesh::IO::FileManager file_manager;
             file_manager.readFile(filename, mesh);
@@ -93,20 +93,20 @@ OpenVolumeMesh::GeometricPolyhedralMeshV3d TestQuads::create_quad(std::vector<Op
 
 void TestQuads::add_quad()
 {
-    vOS::Window &window = vOS::Window::instance();
+    volumeshOS::Window &window = volumeshOS::Window::instance();
     auto mesh = create_quad(m_quad_positions);
     int mesh_id = window.add_mesh(&mesh);
 
     srand(time(nullptr));
-    window.set_mesh_color(mesh_id, vOS::Color((float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX, 0.4));
-    //window.set_mesh_color(mesh_id, vOS::Color( 0.0, 0.0, 1.0,1.0));
+    window.set_mesh_color(mesh_id, volumeshOS::Color((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 0.4));
+    //window.set_mesh_color(mesh_id, volumeshOS::Color( 0.0, 0.0, 1.0,1.0));
 
 
 }
 
 void TestQuads::run()
 {
-    vOS::Window &window = vOS::Window::instance();
+    volumeshOS::Window &window = volumeshOS::Window::instance();
 
     window.set_custom_imgui(std::bind(&TestQuads::ui, this));
 
@@ -114,13 +114,13 @@ void TestQuads::run()
     int ground_id = window.add_mesh(&ground);
     window.set_mesh_scale(ground_id, 15);
     window.set_mesh_position(ground_id, 0.0, -10.0, 0.0);
-    window.set_mesh_color(ground_id,vOS::Color(0.6f, 0.6f, 0.6f, 1.0f));
+    window.set_mesh_color(ground_id, volumeshOS::Color(0.6f, 0.6f, 0.6f, 1.0f));
 
     auto wall = create_quad(m_quad_positions);
     int wall_id = window.add_mesh(&wall);
     window.set_mesh_scale(wall_id, 15);
     window.set_mesh_position(wall_id, 0.0, 20.0, -40.0);
-    window.set_mesh_color(wall_id,vOS::Color(0.6f, 0.6f, 0.6f, 1.0f));
+    window.set_mesh_color(wall_id, volumeshOS::Color(0.6f, 0.6f, 0.6f, 1.0f));
 
 
     float translate = 5.0;
@@ -130,8 +130,8 @@ void TestQuads::run()
         auto mesh = create_quad(m_quad_positions);
         int mesh_id = window.add_mesh(&mesh);
         window.set_mesh_position(mesh_id, (((float)i)/2)*translate, (((float)i)/2)*translate, ((float)i)*translate);
-        //window.set_mesh_color(mesh_id, vOS::Color((float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX));
-        window.set_mesh_color(mesh_id, vOS::Color( 0.0, 0.0, 1.0,1.0));
+        //window.set_mesh_color(mesh_id, volumeshOS::Color((float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX, (float)rand()/RAND_MAX));
+        window.set_mesh_color(mesh_id, volumeshOS::Color(0.0, 0.0, 1.0, 1.0));
 
     }
 

@@ -3,7 +3,7 @@
 
 #include "../fs/FileManager.h"
 
-namespace vOS
+namespace volumeshOS
 {
     std::unordered_map<std::string, std::shared_ptr<TextureIcon>> UIUtil::s_icons;
     ImFont* UIUtil::s_regular = nullptr;

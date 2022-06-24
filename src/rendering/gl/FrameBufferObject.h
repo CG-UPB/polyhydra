@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * Attachment definition. Use this to configure the texture you want to attach to the framebuffer.

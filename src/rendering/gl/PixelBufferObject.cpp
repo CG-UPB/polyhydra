@@ -1,7 +1,7 @@
 
 #include "PixelBufferObject.h"
 
-namespace vOS
+namespace volumeshOS
 {
     PixelBufferObject::PixelBufferObject(unsigned int num_buffers, unsigned int width, unsigned int height):
         m_num_buffers(num_buffers),

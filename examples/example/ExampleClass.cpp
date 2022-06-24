@@ -8,7 +8,7 @@
 #include <functional>
 #include <thread>
 
-using namespace vOS;
+using namespace volumeshOS;
 
 void ExampleClass::initialize() {
     // Set Custom UI for phase changing

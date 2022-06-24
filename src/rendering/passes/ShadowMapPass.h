@@ -3,7 +3,7 @@
 #include "RenderPass.h"
 #include "../../panels/MeshView.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     class ShadowMapPass : public RenderPass

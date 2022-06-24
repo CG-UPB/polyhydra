@@ -1,7 +1,7 @@
 
 #include "NewFileDialog.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     NewFileDialog::NewFileDialog()

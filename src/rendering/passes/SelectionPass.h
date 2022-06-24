@@ -3,7 +3,7 @@
 #include "RenderPass.h"
 #include "../../mesh/MeshObject.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * Renders the entire scene again in which every element of every mesh is rendered in a unique

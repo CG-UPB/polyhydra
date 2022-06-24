@@ -2,7 +2,7 @@
 #include "LogWindow.h"
 #include "../input/Input.h"
 
-namespace vOS
+namespace volumeshOS
 {
     std::shared_ptr<LogWindow> LogWindow::s_instance;
 

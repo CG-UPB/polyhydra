@@ -8,7 +8,7 @@
 #include "panels/NewFileDialog.h"
 #include "rendering/passes/ShapePass.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     Window& Window::instance()
@@ -74,7 +74,7 @@ namespace vOS
         // Close Vos
         close();
 
-        m_is_in_render_loop= false;
+        m_is_in_render_loop = false;
     }
 
     void Window::close()
@@ -139,7 +139,7 @@ namespace vOS
 
         // Draw all of our panels and renderers
 
-        // Mesh View
+        // Mesh volumeshOS
         m_mesh_view->show();
 
         // Log Window
@@ -506,74 +506,6 @@ namespace vOS
         rendering_mutex.unlock();
     }
 
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh, int mesh_id)
-    {
-        rendering_mutex.lock();
-        // Create MeshObject
-        auto new_mesh_obj = std::make_shared<MeshObject>(mesh_id);
-        new_mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
-        new_mesh_obj->set_mesh(mesh);
-
-        // Check if mesh_id of mesh already exist: yes -> replace it, no -> just insert it
-        auto search = m_mesh_objects.find(mesh_id);
-        if (search != m_mesh_objects.end())
-        {
-            search->second = std::move(new_mesh_obj);
-        }
-        else
-        {
-            // Insert Mesh
-            m_mesh_objects.emplace(mesh_id, std::move(new_mesh_obj));
-        }
-
-        // If no other Mesh exists, focus the newly added Mesh
-        if (m_mesh_objects.size() == 1) {
-            rendering_mutex.unlock();
-            set_mesh_focus(mesh_id);
-            rendering_mutex.lock();
-        }
-        // Calculate Offsets
-        int offset = 0;
-        for (const auto& [id, mesh_obj] : m_mesh_objects)
-        {
-            mesh_obj->set_selection_offset(offset);
-            offset = std::get<1>(mesh_obj->selection_offset()) + 1;
-        }
-        rendering_mutex.unlock();
-    }
-
-    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
-    {
-        rendering_mutex.lock();
-        // Generate Index
-        int mesh_id = m_total_number_of_loaded_meshes++;
-
-        // Create MeshObject
-        auto new_mesh_obj = std::make_shared<MeshObject>(mesh_id);
-        new_mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
-        new_mesh_obj->set_mesh(mesh);
-
-        // Add mesh to our map
-        m_mesh_objects.emplace(mesh_id, std::move(new_mesh_obj));
-
-        // If no other Mesh exists, focus the newly added Mesh
-        if (m_mesh_objects.size() == 1) {
-
-            rendering_mutex.unlock();
-            set_mesh_focus(mesh_id);
-            rendering_mutex.lock();
-        }
-
-        // Calculate Offsets
-        int offset = 0;
-        for (const auto& [id, mesh_obj] : m_mesh_objects)
-        {
-            mesh_obj->set_selection_offset(offset);
-            offset = std::get<1>(mesh_obj->selection_offset()) + 1;
-        }
-        rendering_mutex.unlock();
-        return mesh_id;
-    }
 
     void Window::remove_mesh(int index)
     {
@@ -632,37 +564,6 @@ namespace vOS
 
         rendering_mutex.unlock();
     };
-
-
-    void Window::set_mesh_focus(int index)
-    {
-        if(index < 0)
-            return;
-
-        // Get MeshObject
-        auto search = m_mesh_objects.find(index);
-        if (search != m_mesh_objects.end())
-        {
-            m_focused_mesh = index;
-        }
-        // Focus Camera
-        auto mesh_obj = get_mesh_obj(m_focused_mesh);
-        if (mesh_obj != nullptr)
-        {
-            //m_renderer->set_zoom_point(mesh_obj->get_mesh_offset());
-        }
-    }
-
-    int Window::get_mesh_focus() const
-    {
-        return m_focused_mesh;
-    }
-
-    std::shared_ptr<MeshObject> Window::get_mesh_obj(int index)
-    {
-        return m_mesh_objects.find(index) != m_mesh_objects.end() ? m_mesh_objects[index] : nullptr;
-    }
-
 
     void Window::take_screenshot(const std::string& filepath)
     {

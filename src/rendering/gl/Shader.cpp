@@ -2,7 +2,7 @@
 #include "Shader.h"
 #include "../../fs/FileManager.h"
 
-namespace vOS
+namespace volumeshOS
 {
     std::unordered_map<std::string, std::shared_ptr<Shader>> Shader::s_shaders;
 

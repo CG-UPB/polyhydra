@@ -2,7 +2,7 @@
 #include "PrePass.h"
 #include "../../Window.h"
 
-namespace vOS
+namespace volumeshOS
 {
     void PrePass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
@@ -31,7 +31,7 @@ namespace vOS
         auto min = bb.first;
         auto max = bb.second;
 
-        // View Operations
+        // volumeshOS Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
         auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 

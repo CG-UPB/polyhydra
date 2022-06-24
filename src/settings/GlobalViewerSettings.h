@@ -4,7 +4,7 @@
 #include "../mesh/MeshObject.h"
 #include "../util/ModeEnum.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     /**

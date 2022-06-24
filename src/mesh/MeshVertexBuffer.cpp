@@ -4,7 +4,7 @@
 #include "../util/VecUtil.h"
 #include "MeshProperties.h"
 
-namespace vOS
+namespace volumeshOS
 {
     AttributeDefinitions MeshVertexBuffer::s_attribute_definitions{};
 
@@ -258,7 +258,7 @@ namespace vOS
             {
                 // get the corresponding edge vertex
                 auto vertex = mesh->from_vertex_handle(hfhe_it);
-                auto face = vOS::Mesh::face_handle(chf_it);
+                auto face = volumeshOS::Mesh::face_handle(chf_it);
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
                 vertex_normals.push_back(vertex_normal);
@@ -641,7 +641,7 @@ namespace vOS
                 glm::vec3 edge_face_center_average = (face_centers[data.halfface_id] + face_centers[prev_data.halfface_id]) * 0.5f;
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
 
-                auto edge = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
+                auto edge = volumeshOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
                 // edge vertex
                 halfedge_vertex_indices[edge.idx()][data.from_vertex_id] = add_vertex_data_to_cell_data(
                         cell_data,
@@ -656,7 +656,7 @@ namespace vOS
                 );
                 total_cell_vertex_count++;
 
-                auto face = vOS::Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
+                auto face = volumeshOS::Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex_id) : -face_normal;
 
@@ -775,8 +775,8 @@ namespace vOS
                 const int to_corner_vertex_halfedge_id = face_vertex.to_vertex_halfedge_id;
                 const int next_to_corner_vertex_halfedge_id = face_vertex.next_to_vertex_halfedge_id;
 
-                const int to_corner_vertex_edge_id = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
-                const int next_to_corner_vertex_edge_id = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
+                const int to_corner_vertex_edge_id = volumeshOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
+                const int next_to_corner_vertex_edge_id = volumeshOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
 
                 const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
 

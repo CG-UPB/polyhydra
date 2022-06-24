@@ -98,7 +98,7 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/camera/TrackBall.cpp
         ${VOLUMESHOS_SRC}/rendering/camera/TrackBall.h
         ${VOLUMESHOS_SRC}/vospch.h
-        )
+        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h)
 
 add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
 

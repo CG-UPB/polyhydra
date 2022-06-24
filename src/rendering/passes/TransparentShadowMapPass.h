@@ -3,7 +3,7 @@
 
 #include "RenderPass.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     class TransparentShadowMapPass : public RenderPass

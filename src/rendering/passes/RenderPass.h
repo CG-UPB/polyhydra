@@ -9,7 +9,7 @@
 #include "rendering/camera/Camera.h"
 #include "../Light.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * Render Data includes World Information such as the Camera and Lighting

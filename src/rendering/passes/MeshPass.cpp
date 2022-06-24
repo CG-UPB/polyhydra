@@ -1,7 +1,7 @@
 
 #include "MeshPass.h"
 
-namespace vOS
+namespace volumeshOS
 {
     MeshPass::MeshPass(Renderer* renderer): m_renderer(renderer)
     {}
@@ -43,7 +43,7 @@ namespace vOS
         glm::mat4 l_transform = data.light.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
 
-        // View Operations
+        // volumeshOS Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
         auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 

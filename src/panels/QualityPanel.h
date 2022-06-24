@@ -5,7 +5,7 @@
 #include "../ImguiRenderer.h"
 #include "../settings/GlobalViewerSettings.h"
 
-namespace vOS
+namespace volumeshOS
 {
     class QualityPanel final: public WindowPanel
     {

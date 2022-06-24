@@ -2,7 +2,7 @@
 
 #include "Shape.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * This class represents a Box as subclass of Shape

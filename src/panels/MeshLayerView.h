@@ -5,7 +5,7 @@
 #include "../ImguiRenderer.h"
 #include "../settings/GlobalViewerSettings.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * This class represents the UI-Prompt, which shows a Mesh List. It shows some options for every single mesh, that

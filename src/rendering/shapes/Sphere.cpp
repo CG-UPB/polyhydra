@@ -3,7 +3,7 @@
 
 #include "../meshes/CommonMeshes.h"
 
-namespace vOS
+namespace volumeshOS
 {
     Sphere::~Sphere()
     {

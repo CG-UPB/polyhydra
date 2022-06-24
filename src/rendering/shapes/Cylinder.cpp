@@ -2,7 +2,7 @@
 #include "Cylinder.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     Cylinder::~Cylinder()

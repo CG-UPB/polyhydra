@@ -5,27 +5,13 @@
 #include "../Window.h"
 #include "MeshProperties.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     MeshObject::MeshObject(int id) : m_id(id)
     {
         // empty mesh
         m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
-    }
-
-    void MeshObject::load_from_file(const std::string& file_path)
-    {
-        // open OVM FileManager
-        OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(file_path, *m_mesh);
-    }
-
-    void MeshObject::write_to_file(const std::string& file_path) const
-    {
-        // open OVM FileManager
-        OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.writeFile(file_path, *m_mesh);
     }
 
     void MeshObject::select_element(int id, int type)

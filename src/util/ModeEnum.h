@@ -1,6 +1,6 @@
 #pragma once
 
-namespace vOS
+namespace volumeshOS
 {
     enum ModeEnum {
         Wireframe = 0,

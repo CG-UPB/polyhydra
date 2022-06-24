@@ -2,7 +2,7 @@
 #include "Renderer.h"
 #include "input/Input.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     Renderer::Renderer(int width, int height, std::shared_ptr<FrameBufferObject> initial_target_ms, std::shared_ptr<FrameBufferObject> initial_target):

@@ -2,7 +2,7 @@
 #include "../../Window.h"
 #include "TransparentShadowMapPass.h"
 
-namespace vOS
+namespace volumeshOS
 {
     TransparentShadowMapPass::TransparentShadowMapPass(int width, int height)
     {

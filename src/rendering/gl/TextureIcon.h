@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-namespace vOS
+namespace volumeshOS
 {
     class TextureIcon
     {

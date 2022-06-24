@@ -5,7 +5,7 @@
 
 #include <stb_image_write.h>
 
-namespace vOS
+namespace volumeshOS
 {
     MeshView::MeshView(int width, int height) :
             m_viewportPanelWidth(width),

@@ -3,7 +3,7 @@
 #include "RenderPass.h"
 #include "../Renderer.h"
 
-namespace vOS
+namespace volumeshOS
 {
     class Renderer;
 

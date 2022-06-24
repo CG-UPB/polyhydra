@@ -1,7 +1,7 @@
 
 #include "Log.h"
 
-namespace vOS
+namespace volumeshOS
 {
     Log::Level Log::s_log_level = Log::Level::INFO;
 }

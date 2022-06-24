@@ -3,7 +3,7 @@
 #include "../input/Input.h"
 #include "../util/Tooltips.h"
 
-namespace vOS
+namespace volumeshOS
 {
     QualityPanel::QualityPanel() {
     }
@@ -142,4 +142,4 @@ namespace vOS
         ImGui::End();
     }
 
-} // namespace vOS
+} // namespace volumeshOS

@@ -4,10 +4,10 @@
 
 #include "../ImguiRenderer.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
-     * This class represents a LogWindow, which is shown in vOS and where the User could log some messages. It is
+     * This class represents a LogWindow, which is shown in volumeshOS and where the User could log some messages. It is
      * realised as Singleton
      */
     class LogWindow final: public WindowPanel

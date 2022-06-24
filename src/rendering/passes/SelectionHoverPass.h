@@ -3,7 +3,7 @@
 #include "RenderPass.h"
 #include "../../mesh/MeshObject.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * Renders a copy of whatever Element the user is currently hovering above

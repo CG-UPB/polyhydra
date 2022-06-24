@@ -3,7 +3,7 @@
 #include "RenderPass.h"
 #include "../shapes/Shape.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     /**

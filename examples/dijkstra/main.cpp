@@ -3,6 +3,6 @@
 
 int main()
 {
-    vOS::Dijkstra dijkstra;
+    volumeshOS::Dijkstra dijkstra;
     dijkstra.start();
 }

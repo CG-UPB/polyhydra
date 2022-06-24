@@ -2,7 +2,7 @@
 
 #include "Shape.h"
 
-namespace vOS
+namespace volumeshOS
 {
     class Sphere : public Shape
     {

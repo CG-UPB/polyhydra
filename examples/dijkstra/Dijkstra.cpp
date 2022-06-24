@@ -12,7 +12,7 @@
 
 typedef std::pair<float, OpenVolumeMesh::VertexHandle> Node;
 
-namespace vOS
+namespace volumeshOS
 {
 
     Dijkstra::Dijkstra() : m_weights(&m_mesh, "")
@@ -216,11 +216,11 @@ namespace vOS
         // Wait for Vos to initialize
         window.is_ready();
 
-        auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
+        auto* box_start = new volumeshOS::Box(0.05f, 0.05f, 0.05f);
         box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
         box_start->set_base_color(0.2f, 0.2f, 1.0f);
 
-        auto* box_end = new vOS::Box(0.05f, 0.05f, 0.05f);
+        auto* box_end = new volumeshOS::Box(0.05f, 0.05f, 0.05f);
         box_end->set_position(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2]);
         box_end->set_base_color(0.2f, 0.2f, 1.0f);
 
@@ -290,7 +290,7 @@ namespace vOS
                 auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
 
                 /*
-                auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
+                auto* box = new volumeshOS::Box(0.05f, 0.05f, 0.05f);
                 box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
                 if (i == res.size() - 1 || first)
                 {
@@ -398,11 +398,11 @@ namespace vOS
         window.is_ready();
 
         Window::instance().add_mesh(&m_mesh);
-        auto* box_start = new vOS::Box(0.05f, 0.05f, 0.05f);
+        auto* box_start = new volumeshOS::Box(0.05f, 0.05f, 0.05f);
         box_start->set_position(m_mesh.vertex(m_start)[0], m_mesh.vertex(m_start)[1], m_mesh.vertex(m_start)[2]);
         box_start->set_base_color(0.2f, 0.2f, 1.0f);
 
-        auto* box_end = new vOS::Box(0.05f, 0.05f, 0.05f);
+        auto* box_end = new volumeshOS::Box(0.05f, 0.05f, 0.05f);
         box_end->set_position(m_mesh.vertex(m_end)[0], m_mesh.vertex(m_end)[1], m_mesh.vertex(m_end)[2]);
         box_end->set_base_color(0.2f, 0.2f, 1.0f);
 
@@ -471,7 +471,7 @@ namespace vOS
                 auto vertex = OpenVolumeMesh::VertexHandle(res[i]);
 
                 /*
-                auto* box = new vOS::Box(0.05f, 0.05f, 0.05f);
+                auto* box = new volumeshOS::Box(0.05f, 0.05f, 0.05f);
                 box->set_position(m_mesh.vertex(vertex)[0], m_mesh.vertex(vertex)[1],m_mesh.vertex(vertex)[2]);
                 if (i == res.size() - 1 || first)
                 {

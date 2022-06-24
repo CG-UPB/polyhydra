@@ -3,6 +3,6 @@
 
 int main()
 {
-    vOS::TestClass test;
+    volumeshOS::TestClass test;
     test.initialize();
 }

@@ -17,11 +17,11 @@
 #include "panels/QualityPanel.h"
 #include "settings/GlobalViewerSettings.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
 /**
- * Used by the programmer to visualize OVM Meshes using the vOS viewer
+ * Used by the programmer to visualize OVM Meshes using the volumeshOS viewer
  * Vos is thread safe
  * Provides callback functions for events happening inside the viewer
  */

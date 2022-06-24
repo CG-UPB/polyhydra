@@ -7,7 +7,7 @@
 
 #include "Window.h"
 
-namespace vOS {
+namespace volumeshOS {
     class TestClass {
     public:
         void start();

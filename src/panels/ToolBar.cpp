@@ -7,7 +7,7 @@
 #include "../util/ImGuiUtil.h"
 
 
-namespace vOS
+namespace volumeshOS
 {
 
 
@@ -364,4 +364,4 @@ namespace vOS
         ImGui::End();
     }
 
-} // namespace vOS
+} // namespace volumeshOS

@@ -2,7 +2,7 @@
 
 #include "RenderPass.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * Renders the Background visible when no other Mesh occupies the Viewfield

@@ -3,7 +3,7 @@
 #include "MeshPass.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace vOS {
+namespace volumeshOS {
     SelectionPass::SelectionPass()
     {
         // Get Shaders
@@ -36,7 +36,7 @@ namespace vOS {
         auto min = bb.first;
         auto max = bb.second;
 
-        // View Operations
+        // volumeshOS Operations
         glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
         auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 

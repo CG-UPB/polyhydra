@@ -7,7 +7,7 @@
 #include "Window.h"
 #include "panels/NewFileDialog.h"
 
-namespace vOS {
+namespace volumeshOS {
 
 
     void TestClass::initialize() {
@@ -19,20 +19,20 @@ namespace vOS {
 
     void TestClass::ui()
     {
-        vOS::Window &window = vOS::Window::instance();
+        volumeshOS::Window &window = volumeshOS::Window::instance();
         ImGui::Begin("Custom UI");
         // Next Phase
 
         if (ImGui::Button("Load Mesh"))
         {
-            vOS::NewFileDialog file_dialog;
+            volumeshOS::NewFileDialog file_dialog;
 
             char const * filename;
 
             filename = file_dialog.openDialog("Open Mesh File");
 
             if (filename != NULL){
-                vOS::Window &window = vOS::Window::instance();
+                volumeshOS::Window &window = volumeshOS::Window::instance();
                 OpenVolumeMesh::GeometricPolyhedralMeshV3d mesh;
                 OpenVolumeMesh::IO::FileManager file_manager;
                 file_manager.readFile(filename, mesh);

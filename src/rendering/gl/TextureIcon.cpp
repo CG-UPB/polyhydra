@@ -2,7 +2,7 @@
 #include "TextureIcon.h"
 #include "stb_image.h"
 
-namespace vOS
+namespace volumeshOS
 {
     TextureIcon::TextureIcon(const std::filesystem::path &file_path)
     {

@@ -6,7 +6,7 @@
 #include "../settings/GlobalViewerSettings.h"
 #include "../util/ModeEnum.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     /**

@@ -4,7 +4,7 @@
 
 #include "../rendering/gl/TextureIcon.h"
 
-namespace vOS
+namespace volumeshOS
 {
     class UIUtil
     {

@@ -11,7 +11,7 @@
 #include "util/VecUtil.h"
 
 
-using namespace vOS;
+using namespace volumeshOS;
 
 Demo::Demo()
 {

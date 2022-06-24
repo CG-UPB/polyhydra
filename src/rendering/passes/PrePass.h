@@ -4,7 +4,7 @@
 #include "RenderPass.h"
 #include "../gl/PrePassFrameBufferObject.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     class PrePass : public RenderPass

@@ -1,7 +1,7 @@
 
 #include "FrameBufferObject.h"
 
-namespace vOS
+namespace volumeshOS
 {
     // rgba and depth attachments
     const std::vector<FrameBufferAttachment> FrameBufferObject::RGBA_AND_DEPTH = {

@@ -2,9 +2,8 @@
 
 #include "vospch.h"
 
-namespace vOS
+namespace volumeshOS
 {
-    typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> Mesh;
 
     class VecUtil
     {

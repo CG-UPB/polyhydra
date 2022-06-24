@@ -4,7 +4,7 @@
 
 #include "../rendering/gl/VertexArrayObject.h"
 
-namespace vOS
+namespace volumeshOS
 {
     typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> Mesh;
     typedef OpenVolumeMesh::CellHandle Cell;

@@ -4,11 +4,11 @@
 
 #include "../ImguiRenderer.h"
 
-namespace vOS
+namespace volumeshOS
 {
     /**
      * This class represents our CustomUIPanel. The User is able to create its own UI with Imgui-Elements. It could be
-     * used with our filedialog to get meshes inside vOS, or to get some values(ints, floats, etc.) which are relevant for
+     * used with our filedialog to get meshes inside volumeshOS, or to get some values(ints, floats, etc.) which are relevant for
      * algorithms. For more information's watch our examples
      */
     class CustomUIPanel : public WindowPanel {

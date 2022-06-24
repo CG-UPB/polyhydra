@@ -1,7 +1,7 @@
 
 #include "IcoSphereMesh.h"
 
-namespace vOS
+namespace volumeshOS
 {
 
     IcoSphereMesh::IcoSphereMesh(int recursion_level): m_index(0)

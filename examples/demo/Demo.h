@@ -7,7 +7,7 @@
 
 #include "Window.h"
 
-using namespace vOS;
+using namespace volumeshOS;
 
 class Demo {
 public:
