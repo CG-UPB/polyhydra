@@ -218,19 +218,19 @@ namespace volumeshOS
 
         if (type == 0)
         {
-            return m_selected_faces.find(id) != m_selected_faces.end();
+            return m_selected_faces.contains(id);
         }
         else if (type == 1)
         {
-            return m_selected_vertices.find(id) != m_selected_vertices.end();
+            return m_selected_vertices.contains(id);
         }
         else if (type == 2)
         {
-            return m_selected_edges.find(id) != m_selected_edges.end();
+            return m_selected_edges.contains(id);
         }
         else
         {
-            return m_selected_cells.find(id) != m_selected_cells.end();
+            return m_selected_cells.contains(id);
         }
     }
 
@@ -363,7 +363,19 @@ namespace volumeshOS
 
     void MeshObject::set_face_color(int ovm_id, Color color)
     {
-        m_mvb->set_face_color(ovm_id, color.r, color.g, color.b, color.a);
+        auto col = color.get_rgba();
+        m_mvb->set_face_color(ovm_id, col.r, col.g, col.b, col.a);
+    }
+
+    void MeshObject::set_cell_color(int ovm_id, Color color)
+    {
+        auto col = color.get_rgba();
+        m_mvb->set_cell_color(ovm_id, col.r, col.g, col.b, col.a);
+    }
+
+    void MeshObject::set_mesh_color(Color color)
+    {
+        m_data.color = color;
     }
 
     int MeshObject::to_vertex_id(int value)

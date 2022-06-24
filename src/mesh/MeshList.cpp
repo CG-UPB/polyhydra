@@ -96,9 +96,9 @@ namespace volumeshOS
         iterate(f, id);
     }
 
-    void MeshList::set_color(EntityType type, Color color, MeshID id)
+    void MeshList::set_color(EntityType type, MeshID m_id, HandleID h_id, Color color)
     {
-        if(get_mesh(id))
+        if(get_mesh(m_id))
         {
             switch (type)
             {
@@ -107,31 +107,50 @@ namespace volumeshOS
                 case EntityType::Edge:
                     break;
                 case EntityType::Face:
+                    get_mesh(m_id)->set_face_color(h_id, color);
                     break;
                 case EntityType::Cell:
+                    get_mesh(m_id)->set_cell_color(h_id, color);
                     break;
                 case EntityType::Mesh:
+                    get_mesh(m_id)->set_mesh_color(color);
                     return;
-                    break;
             }
         }
     }
 
-    void MeshList::select(EntityType type, HandleID h_id, MeshID m_id)
+    void MeshList::select(EntityType type, MeshID m_id, HandleID h_id)
     {
         if(get_mesh(m_id))
         {
-
+            switch (type)
+            {
+                case EntityType::Vertex:
+                    //m_on_vertex_selection(mesh_id, element_handle_id, true);
+                    break;
+                case EntityType::Edge:
+                    //m_on_edge_selection(mesh_id, element_handle_id, true);
+                    break;
+                case EntityType::Face:
+                    //m_on_face_selection(mesh_id, element_handle_id, true);
+                    break;
+                case EntityType::Cell:
+                    //m_on_cell_selection(mesh_id, element_handle_id, true);
+                    break;
+                case EntityType::Mesh:
+                    //m_on_mesh_selection(mesh_id, element_handle_id, true);
+                    return;
+            }
         }
     }
 
-//    void MeshList::iterate(void (*func)(std::shared_ptr<MeshObject>))
-//    {
-//        for(const auto& [id, mesh] : m_mesh_list)
-//        {
-//            func(mesh);
-//        }
-//    }
+    void MeshList::iterate(const std::function<void(std::shared_ptr<MeshObject>)>& func)
+    {
+        for(const auto& [id, mesh] : m_mesh_list)
+        {
+            func(mesh);
+        }
+    }
 
     void MeshList::iterate(const std::function<void()>& func, MeshID id)
     {

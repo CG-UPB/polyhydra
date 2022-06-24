@@ -202,6 +202,10 @@ namespace volumeshOS
 
         void set_face_color(int ovm_id, Color color);
 
+        void set_cell_color(int ovm_id, Color color);
+
+        void set_mesh_color(Color color);
+
         /**
          * updates the vertex_buffer
          */

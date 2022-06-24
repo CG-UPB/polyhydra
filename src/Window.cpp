@@ -279,15 +279,6 @@ namespace volumeshOS
         rendering_mutex.unlock();
     }
 
-    void Window::set_face_color(int mesh_id, int ovm_face_id, const Color& color)
-    {
-        get_mesh_obj(mesh_id)->set_face_color(ovm_face_id, color);
-    }
-
-    void Window::set_cell_color(int mesh_id, int ovm_cell_id, const Color& color)
-    {
-        get_mesh_obj(mesh_id)->get_mvb()->set_cell_color(ovm_cell_id, color.r, color.g, color.b, color.a);
-    }
 
     Color Window::get_face_color(int mesh_id, int ovm_face_id)
     {
