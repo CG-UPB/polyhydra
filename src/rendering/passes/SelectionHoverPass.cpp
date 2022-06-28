@@ -3,7 +3,7 @@
 #include "../meshes/CommonMeshes.h"
 #include "../../Window.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     SelectionHoverPass::SelectionHoverPass(): m_hover_color(glm::vec4(0.9, 0.2, 0.2, 0.5))
     {

@@ -4,7 +4,7 @@
 #include "../Renderer.h"
 #include "../../settings/GlobalViewerSettings.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     class Renderer;
 

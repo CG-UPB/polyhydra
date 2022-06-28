@@ -5,34 +5,6 @@
 
 namespace volumeshOS
 {
-    class Mesh
-    {
-    public:
-        explicit Mesh(int id);
-        void set_color()
-        {
-            volumeshOS::set_color(m_id, ...);
-        }
-
-    private:
-
-        int m_id;
-    };
-
-
-    Mesh mesh = volumeshOS::add_mesh(...);
-
-    volumeshOS::add_mesh(...);
-
-    volumeshOS::set_color(mesh, ...);
-    volumeshOS::set_color(...);
-
-    volumeshOS::set_color(mesh.get_id(), ...);
-
-
-    mesh.set_color(...);
-
-
 
     enum class EntityType
     {
@@ -57,21 +29,20 @@ namespace volumeshOS
 
     struct Color
     {
-        explicit Color(float r = 1.0f, float g = 1.0f, float b = 1.0f, float a = 1.0f) : rgba(r, g, b, a)
+        explicit Color(float r = 1.0f, float g = 1.0f, float b = 1.0f, float a = 1.0f) : r(r), g(g), b(b), a(a)
         {}
 
         [[nodiscard]] glm::vec3 get_rgb() const
         {
-            return glm::vec3{rgba};
+            return glm::vec3{r, g, b};
         }
 
-        [[nodiscard]] const glm::vec4& get_rgba() const
+        [[nodiscard]] glm::vec4 get_rgba() const
         {
-            return rgba;
+            return glm::vec4{r, g, b, a};
         }
 
-    private:
-        glm::vec4 rgba;
+        float r, g, b, a;
     };
 
 }

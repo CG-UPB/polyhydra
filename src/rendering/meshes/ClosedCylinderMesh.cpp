@@ -1,7 +1,7 @@
 
 #include "ClosedCylinderMesh.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     ClosedCylinderMesh::ClosedCylinderMesh(int samples, float radius, float height)
     {

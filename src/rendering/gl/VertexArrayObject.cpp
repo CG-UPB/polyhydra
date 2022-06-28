@@ -2,7 +2,7 @@
 #include "VertexArrayObject.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     std::unique_ptr<VertexArrayObject> VertexArrayObject::s_screen_quad = nullptr;
 

@@ -2,7 +2,7 @@
 #include "SSAOPass.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     // best image quality, but also most demanding on the gpu
     const SSAOOptions SSAOPass::QUALITY_SSAO = {

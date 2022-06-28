@@ -14,7 +14,7 @@
 
 #include <stb_image.h>
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     static void glfwErrorCallback(int error, const char *description)
     {

@@ -4,7 +4,7 @@
 #include "../../util/VecUtil.h"
 #include "Camera.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     TrackBall::TrackBall(Camera& camera, float radius) :

@@ -2,7 +2,7 @@
 
 #include "RenderPass.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     class VertexOnlyPass : public RenderPass

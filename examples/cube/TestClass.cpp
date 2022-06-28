@@ -25,7 +25,7 @@ namespace volumeshOS {
 
         if (ImGui::Button("Load Mesh"))
         {
-            volumeshOS::NewFileDialog file_dialog;
+            Internal::NewFileDialog file_dialog;
 
             char const * filename;
 

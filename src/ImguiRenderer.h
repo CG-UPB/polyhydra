@@ -4,7 +4,7 @@
 
 #include <GLFW/glfw3.h>
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     // Forward Declaration

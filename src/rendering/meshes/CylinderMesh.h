@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     /**
      * Represents an open cylinder, meaning that the two ends are not closed. Used for selection rendering of edges.

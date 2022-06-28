@@ -2,12 +2,14 @@
 
 #include "vospch.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     class VecUtil
     {
     public:
+
+        typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> Mesh;
 
         static void print_mat(const glm::mat4& mat)
         {

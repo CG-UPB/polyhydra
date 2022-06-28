@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     class Log
     {

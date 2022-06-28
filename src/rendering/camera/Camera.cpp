@@ -3,7 +3,8 @@
 #include "input/Input.h"
 #include "../../util/VecUtil.h"
 
-namespace volumeshOS {
+namespace volumeshOS::Internal
+{
 
     /**
      * 1) Trackball

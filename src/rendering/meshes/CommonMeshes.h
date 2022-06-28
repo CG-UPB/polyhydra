@@ -6,7 +6,7 @@
 #include "ClosedCylinderMesh.h"
 #include "CylinderMesh.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     /**
      * Mainly used for VertexArrayObjects, this struct generates common mesh shapes such as planes, cubes and spheres.

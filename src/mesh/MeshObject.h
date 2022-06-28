@@ -7,7 +7,7 @@
 #include "nlohmann/json.hpp"
 #include "../util/VecUtil.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     struct MeshData
@@ -100,8 +100,8 @@ namespace volumeshOS
         glm::mat4 transformation = glm::mat4(1.0f);
 
         // Rendering Variables
-        Color color                 = {0.76f, 0.76f, 0.76f, 1.0f};
-        Color selection_color       = {0.76f, 0.76f, 0.76f, 0.0f};
+        Color color                 = Color{0.76f, 0.76f, 0.76f, 1.0f};
+        Color selection_color       = Color{0.76f, 0.76f, 0.76f, 0.0f};
         float ambient_strength      = 1.0f;
         float diffuse_strength      = 1.0f;
         float specular_strength     = 0.3f;

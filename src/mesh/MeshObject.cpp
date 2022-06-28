@@ -5,7 +5,7 @@
 #include "../Window.h"
 #include "MeshProperties.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     MeshObject::MeshObject(int id) : m_id(id)

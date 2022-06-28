@@ -4,7 +4,7 @@
 #include "MeshObject.h"
 
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     using MeshID = int;
     using HandleID = int;

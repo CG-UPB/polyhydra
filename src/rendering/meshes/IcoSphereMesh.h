@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     /**
      * This class represents a Sphere, generated from an Icosahedron.

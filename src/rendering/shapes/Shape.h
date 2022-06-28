@@ -5,7 +5,7 @@
 #include "../gl/Shader.h"
 #include "../gl/VertexArrayObject.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     /**
      * This class is the super-class for the shapes. If an user wants to create new shapes he easily overrides this class

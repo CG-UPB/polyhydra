@@ -1,6 +1,6 @@
 #include "GlobalViewerSettings.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     std::shared_ptr<GlobalViewerSettings> GlobalViewerSettings::instance = nullptr;
 

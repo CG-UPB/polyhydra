@@ -4,7 +4,7 @@
 
 #include "../ImguiRenderer.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     /**
      * This class represents our CustomUIPanel. The User is able to create its own UI with Imgui-Elements. It could be

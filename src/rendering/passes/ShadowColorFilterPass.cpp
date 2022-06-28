@@ -1,7 +1,7 @@
 
 #include "ShadowColorFilterPass.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     ShadowColorFilterPass::ShadowColorFilterPass(Renderer* renderer, int width, int height):
     m_renderer(renderer),

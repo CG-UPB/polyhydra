@@ -3,7 +3,7 @@
 #include "../ImguiRenderer.h"
 #include <tinyfiledialogs.h>
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     /**

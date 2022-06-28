@@ -5,9 +5,12 @@
 
 namespace volumeshOS
 {
-    namespace
-    {
+    std::vector<std::function<void()>> commands;
 
-        //std::shared_ptr<Renderer> renderer = old_renderer;
+    void set_color(const Color& color)
+    {
+        commands.emplace_back([&color](){
+            // do stuff
+        });
     }
 }

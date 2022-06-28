@@ -2,7 +2,7 @@
 
 #include "Shape.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     class Cylinder : public Shape
     {

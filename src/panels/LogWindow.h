@@ -4,7 +4,7 @@
 
 #include "../ImguiRenderer.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     /**
      * This class represents a LogWindow, which is shown in volumeshOS and where the User could log some messages. It is

@@ -2,7 +2,7 @@
 #include "BackgroundPass.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     BackgroundPass::BackgroundPass():

@@ -2,7 +2,7 @@
 
 #include "../meshes/CommonMeshes.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     Box::Box(float size_x, float size_y, float size_z): m_size(size_x, size_y, size_z)

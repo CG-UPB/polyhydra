@@ -7,7 +7,8 @@
 
 #include "TrackBall.h"
 
-namespace volumeshOS {
+namespace volumeshOS::Internal
+{
 
 /**
  * Camera class responsible for Data concerning the rendering camera. Position direction and other attributes are managed and changable through this class

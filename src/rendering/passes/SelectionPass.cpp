@@ -3,7 +3,8 @@
 #include "MeshPass.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace volumeshOS {
+namespace volumeshOS::Internal
+{
     SelectionPass::SelectionPass()
     {
         // Get Shaders

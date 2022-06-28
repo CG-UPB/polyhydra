@@ -1,7 +1,8 @@
 
 #include "CustomUIPanel.h"
 
-namespace volumeshOS {
+namespace volumeshOS::Internal
+{
 
     void CustomUIPanel::show() {
         // if custom_callback_function(default) is empty nothing happens

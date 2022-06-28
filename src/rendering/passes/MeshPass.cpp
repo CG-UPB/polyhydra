@@ -1,7 +1,7 @@
 
 #include "MeshPass.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     MeshPass::MeshPass(Renderer* renderer): m_renderer(renderer)
     {}

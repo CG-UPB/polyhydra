@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     /**
      * Represents a closed cylinder, where both ends are closed.

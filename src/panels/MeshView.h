@@ -22,7 +22,7 @@
 #include "../util/ModeEnum.h"
 #include "../rendering/Renderer.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     class MeshView: public WindowPanel
     {

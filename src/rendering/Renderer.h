@@ -20,7 +20,7 @@
 #include "../rendering/passes/ShapePass.h"
 #include "../Window.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     class MeshPass;
     class SSAOPass;

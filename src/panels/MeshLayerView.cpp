@@ -5,7 +5,7 @@
 #include "NewFileDialog.h"
 #include "../util/ImGuiUtil.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
 

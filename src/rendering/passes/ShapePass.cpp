@@ -2,7 +2,7 @@
 #include "ShapePass.h"
 #include "../../Window.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     // Static Variables
     std::vector<Shape*> ShapePass::s_shapes;

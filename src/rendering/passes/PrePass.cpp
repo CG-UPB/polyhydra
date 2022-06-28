@@ -2,7 +2,7 @@
 #include "PrePass.h"
 #include "../../Window.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     void PrePass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {

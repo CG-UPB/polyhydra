@@ -1,7 +1,7 @@
 
 #include "ShadowMapPass.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     ShadowMapPass::ShadowMapPass(Renderer* renderer, int width, int height) : m_renderer(renderer)
     {

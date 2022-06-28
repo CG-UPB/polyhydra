@@ -1,7 +1,8 @@
 
 #include "Input.h"
 
-namespace volumeshOS {
+namespace volumeshOS::Internal
+{
     // Static Variables
     bool Input::m_ignore_keyboard_commands;
     bool Input::m_accept_inputs;

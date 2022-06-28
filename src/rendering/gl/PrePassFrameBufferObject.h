@@ -2,9 +2,11 @@
 
 #include "FrameBufferObject.h"
 
-namespace volumeshOS {
+namespace volumeshOS::Internal
+{
 
-    class PrePassFrameBufferObject : public FrameBufferObject {
+    class PrePassFrameBufferObject : public FrameBufferObject
+    {
 
     public:
 

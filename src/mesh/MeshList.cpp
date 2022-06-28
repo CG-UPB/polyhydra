@@ -1,7 +1,7 @@
 
 #include "MeshList.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     MeshList::MeshList()
     {

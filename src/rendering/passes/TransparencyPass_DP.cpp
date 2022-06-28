@@ -3,7 +3,7 @@
 #include "../../Window.h"
 #include "../meshes/CommonMeshes.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     class MeshView;
 

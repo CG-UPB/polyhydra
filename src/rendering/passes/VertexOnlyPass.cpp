@@ -4,7 +4,7 @@
 #include "../../mesh/MeshObject.h"
 #include "../../Window.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     VertexOnlyPass::VertexOnlyPass()
     {

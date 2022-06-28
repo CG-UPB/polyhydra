@@ -3,7 +3,7 @@
 #include "../input/Input.h"
 #include "../util/Tooltips.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     QualityPanel::QualityPanel() {
     }

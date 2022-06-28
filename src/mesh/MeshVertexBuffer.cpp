@@ -4,7 +4,7 @@
 #include "../util/VecUtil.h"
 #include "MeshProperties.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
     AttributeDefinitions MeshVertexBuffer::s_attribute_definitions{};
 
