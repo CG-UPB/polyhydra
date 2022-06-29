@@ -5,14 +5,18 @@
 
 namespace volumeshOS
 {
+    using MeshID = int;
+    using HandleID = int;
 
     enum class EntityType
     {
         Vertex,
         Edge,
+        Halfface,
         Face,
         Cell,
-        Mesh
+        Mesh,
+        All
     };
 
     enum class Theme

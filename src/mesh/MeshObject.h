@@ -12,7 +12,7 @@ namespace volumeshOS::Internal
 
     struct MeshData
     {
-        [[nodiscard]] nlohmann::json to_json()
+        nlohmann::json to_json()
         {
             nlohmann::json j;
 
@@ -79,7 +79,7 @@ namespace volumeshOS::Internal
         }
 
 
-        [[nodiscard]] const glm::mat4& get_transform() const
+        const glm::mat4& get_transform() const
         {
             return transformation;
         }
@@ -158,19 +158,19 @@ namespace volumeshOS::Internal
          * @param id ID to access element data
          * @param type declares type of element
          */
-        void select_element(int id, int type);
+        void select_element(int id, EntityType type);
 
         /**
          * Removes a shape on selected element (vertex, edge, face)
          * @param id ID to access element data
          * @param type declares type of element
          */
-        void unselect_element(int id, int type);
+        void deselect_element(int id, EntityType type);
 
         /**
          * Removes all shapes added by selection
          */
-        void unselect_all();
+        void deselect_all();
 
         /**
          * Checks if a specific element is selected
@@ -178,7 +178,7 @@ namespace volumeshOS::Internal
          * @param type declares type of element
          * @return
          */
-        bool is_element_selected(int id, int type);
+        bool is_element_selected(int id, EntityType type);
 
         /**
          * Uses OVM FileManager to load Mesh from file

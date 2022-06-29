@@ -3,7 +3,7 @@
 #include "random"
 #include "iostream"
 #include "queue"
-#include "Window.h"
+#include "panels/Window.h"
 #include <chrono>
 #include <thread>
 #include <math.h>

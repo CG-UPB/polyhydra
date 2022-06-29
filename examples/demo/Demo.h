@@ -5,7 +5,7 @@
 #ifndef VOLUMESHOS_DEMO_H
 #define VOLUMESHOS_DEMO_H
 
-#include "Window.h"
+#include "panels/Window.h"
 
 using namespace volumeshOS;
 

@@ -23,8 +23,20 @@ namespace volumeshOS::Internal
         // add mesh by path to OVM-FIle
         int add_mesh(const std::string& path);
 
+        // sets OVM-Mesh to existing ID
+        void set_mesh(MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
+
+        // sets OVM-Mesh by path to existing ID
+        void set_mesh(MeshID id, const std::string& path);
+
         // deletes mesh
         void delete_mesh(MeshID id);
+
+        // deletes mesh
+        void delete_meshes();
+
+        // return mesh by id
+        std::shared_ptr<MeshObject> get_mesh(MeshID id);
 
         // set current mesh (and focus camera on it)
         void set_focused_mesh(MeshID id);
@@ -33,34 +45,94 @@ namespace volumeshOS::Internal
         std::shared_ptr<MeshObject> get_focused_mesh(MeshID id);
 
 
+        /* Selection */
+
+        // set EntityType with its handle selected for a specific mesh
+        void select(EntityType type, MeshID m_id, HandleID h_id);
+
+        // set EntityType with its handle unselected for a specific mesh
+        void deselect(EntityType type, MeshID m_id, HandleID h_id);
+
+
         /* Mesh Setting */
 
         // set the position in world coordinate system
         void set_position();
 
-        // set color for EntityType : a)Vertex, b)Edge, c) Face, d) Cell, e) whole Mesh
-        void set_color(EntityType type, MeshID m_id, HandleID h_id, Color color);
+        // Set color for all meshes (all cells and halffaces)
+        void set_color(const Color& color);
 
-        // set visibiliy of a specific mesh
-        void set_visibility(MeshID id, bool visible);
+        // Set color for one mesh (all cells and halffaces)
+        void set_color(MeshID id, const Color& color);
 
-        // set peel level of a specific mesh
+        // Set color for one cell of a mesh
+        void set_color(MeshID id, OpenVolumeMesh::CellHandle cell, const Color& color);
+
+        // Set color for one face (both halffaces) of a mesh
+        void set_color(MeshID id, OpenVolumeMesh::FaceHandle face, const Color& color);
+
+        // Set color for one halfface of a mesh
+        void set_color(MeshID id, OpenVolumeMesh::HalfFaceHandle halfface, const Color& color);
+
+        // Set color for one edge of a mesh
+        void set_color(MeshID id, OpenVolumeMesh::EdgeHandle edge, const Color& color);
+
+        // Set color for one vertex of a mesh
+        void set_color(MeshID id, OpenVolumeMesh::VertexHandle vertex, const Color& color);
+
+        // Set the ambient term for the phong lighting model of a mesh
+        void set_ambient(MeshID id, float ambient);
+
+        // Set the diffuse term for the phong lighting model of a mesh
+        void set_diffuse(MeshID id, float diffuse);
+
+        // Set the specular term for the phong lighting model of a mesh
+        void set_specular(MeshID id, float specular);
+
+        // Set the specular coefficient for the phong lighting model of a mesh
+        void set_specular_coefficient(MeshID id, float coefficient);
+
+        // Set parameters for the phong lighting model of a mesh
+        void set_phong(MeshID id, float ambient, float diffuse, float specular, float coefficient);
+
+        // Set the position of a mesh
+        void set_position(MeshID id, float x, float y, float z);
+
+        // Set the scale of a mesh
+        void set_scale(MeshID id, float scale);
+
+        // Set the rotation of a mesh using euler angles
+        void set_rotation(MeshID id, float x, float y, float z);
+
+        // Set the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
+        void set_slice_factor(MeshID id, float factor);
+
+        // Lock the direction of the slice plane
+        void set_slice_lock(MeshID id, bool lock);
+
+        // Set the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
         void set_peel_level(MeshID id, float level);
 
-        // set slice level of a specific mesh
-        void set_slice_level(MeshID id, float level);
+        // Set the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
+        void set_cell_rounding(MeshID id, float rounding);
 
-        // lock slicing of a specific mesh
-        void set_slice_lock(MeshID id, bool locked);
-
-        // set cell size for a specific mesh
+        // Set the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
         void set_cell_size(MeshID id, float size);
 
+        // Set the cell visibility of a mesh
+        void set_visibility(MeshID id, OpenVolumeMesh::CellHandle cell, bool visible);
 
-        /* Selection */
+        // Set the visibility of a mesh
+        void set_visibility(MeshID id, bool visible);
 
-        // set EntityType with its handle selected for a specific mesh
-        void select(EntityType type, MeshID m_id, HandleID h_id);
+        // Reset the visibility so that all cells are visible
+        void reset_visibility(MeshID id);
+
+        // Isolate a single cell of a mesh, making it the only visible cell
+        void isolate(MeshID id, OpenVolumeMesh::CellHandle cell);
+
+        // Hide a cell of a mesh
+        void hide(MeshID id, OpenVolumeMesh::CellHandle cell);
 
 
         /* Utility */
@@ -76,8 +148,8 @@ namespace volumeshOS::Internal
         // calculate the range of selection-ids for each mesh
         void calculate_selection_offsets();
 
-        // return mesh by id
-        std::shared_ptr<MeshObject> get_mesh(MeshID id);
+        // load OVM-Mesh from file
+        static OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* load_from_file(const std::string& path);
 
         // list of MeshObjects
         std::unordered_map<int, std::shared_ptr<MeshObject>> m_mesh_list;

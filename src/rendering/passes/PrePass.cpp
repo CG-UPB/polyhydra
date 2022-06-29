@@ -1,6 +1,6 @@
 
 #include "PrePass.h"
-#include "../../Window.h"
+#include "panels/Window.h"
 
 namespace volumeshOS::Internal
 {

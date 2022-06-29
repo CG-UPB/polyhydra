@@ -1,6 +1,6 @@
 
 #include "TransparencyPass_DP.h"
-#include "../../Window.h"
+#include "panels/Window.h"
 #include "../meshes/CommonMeshes.h"
 
 namespace volumeshOS::Internal

@@ -5,7 +5,7 @@
 #pragma once
 
 
-#include "Window.h"
+#include "panels/Window.h"
 
 namespace volumeshOS {
     class TestClass {

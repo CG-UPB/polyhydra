@@ -2,7 +2,7 @@
 #include "VertexOnlyPass.h"
 
 #include "../../mesh/MeshObject.h"
-#include "../../Window.h"
+#include "panels/Window.h"
 
 namespace volumeshOS::Internal
 {

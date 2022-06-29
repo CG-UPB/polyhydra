@@ -3,7 +3,7 @@
 //
 
 #include "ExampleClass.h"
-#include "Window.h"
+#include "panels/Window.h"
 #include "OpenVolumeMesh/FileManager/FileManager.hh"
 #include <functional>
 #include <thread>

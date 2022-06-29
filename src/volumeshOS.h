@@ -59,10 +59,10 @@ namespace volumeshOS
 
 
     // Add mesh from ovm instance, return new wrapper
-    [[nodiscard]] const VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);
+    [[nodiscard]] VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);
 
     // Add mesh from file path, return new wrapper
-    [[nodiscard]] const VMesh load(const std::string& path);
+    [[nodiscard]] VMesh load(const std::string& path);
 
 
     // Set mesh from ovm instance without generating a new id
@@ -260,7 +260,7 @@ namespace volumeshOS
     [[nodiscard]] bool get_visibility(const VMesh& mesh);
 
 
-    // Camera
+    /* Camera */
 
     // Set the position of the camera
     void set_camera_position(float x, float y, float z);
@@ -275,7 +275,7 @@ namespace volumeshOS
     void focus(const VMesh& mesh);
 
 
-    // Global settings
+    /* Global settings */
 
     // Set the direction of the light in the scene
     void set_light_direction(float x, float y, float z);
@@ -284,7 +284,7 @@ namespace volumeshOS
     void set_background_color(const Color& color);
 
 
-    // Miscellaneous
+    /* Miscellaneous */
 
     // Export the current viewport as png
     void export_image();

@@ -8,7 +8,7 @@
 #include "panels/NewFileDialog.h"
 #include "rendering/passes/ShapePass.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
     Window& Window::instance()

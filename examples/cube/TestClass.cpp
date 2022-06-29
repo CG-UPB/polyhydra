@@ -4,7 +4,7 @@
 
 #include "TestClass.h"
 #include "OpenVolumeMesh/FileManager/FileManager.hh"
-#include "Window.h"
+#include "panels/Window.h"
 #include "panels/NewFileDialog.h"
 
 namespace volumeshOS {

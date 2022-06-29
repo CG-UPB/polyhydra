@@ -5,7 +5,7 @@
 #ifndef VOLUMESHOS_EXAMPLECLASS_H
 #define VOLUMESHOS_EXAMPLECLASS_H
 
-#include "Window.h"
+#include "panels/Window.h"
 
 class ExampleClass {
 public:

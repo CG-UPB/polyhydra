@@ -5,7 +5,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "Window.h"
+#include "panels/Window.h"
 #include "input/Input.h"
 #include "util/UIUtil.h"
 #include "fs/FileManager.h"

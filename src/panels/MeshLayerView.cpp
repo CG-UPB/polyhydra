@@ -1,6 +1,6 @@
 
 #include "MeshLayerView.h"
-#include "../Window.h"
+#include "Window.h"
 #include "../util/Tooltips.h"
 #include "NewFileDialog.h"
 #include "../util/ImGuiUtil.h"

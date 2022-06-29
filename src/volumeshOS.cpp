@@ -2,15 +2,341 @@
 #include "volumeshOS.h"
 
 #include "rendering/Renderer.h"
+#include "mesh/MeshList.h"
 
 namespace volumeshOS
 {
     std::vector<std::function<void()>> commands;
+    volumeshOS::Internal::MeshList mesh_list;
+    volumeshOS::Internal::Camera camera;
+
+
+    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
+    {
+        commands.emplace_back([&instance](){
+            int id = mesh_list.add_mesh(instance);
+            VMesh vmesh(id);
+            return vmesh;
+        });
+
+    }
+
+    VMesh load(const std::string& path)
+    {
+        commands.emplace_back([&path](){
+            int id = mesh_list.add_mesh(path);
+            VMesh vmesh(id);
+            return vmesh;
+        });
+
+    }
+
+    void load(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
+    {
+        commands.emplace_back([&mesh, &instance](){
+            mesh_list.set_mesh(mesh.get_id(), instance);
+        });
+    }
+
+    void load(const VMesh& mesh, const std::string& path)
+    {
+        commands.emplace_back([&mesh, &path](){
+            mesh_list.set_mesh(mesh.get_id(), path);
+        });
+    }
+
+    void clear(const VMesh& mesh)
+    {
+        commands.emplace_back([&mesh](){
+            mesh_list.delete_mesh(mesh.get_id());
+        });
+    }
+
+    void clear()
+    {
+        commands.emplace_back([](){
+            mesh_list.delete_meshes();
+        });
+    }
 
     void set_color(const Color& color)
     {
         commands.emplace_back([&color](){
-            // do stuff
+            mesh_list.set_color(color);
         });
     }
+
+    void set_color(const VMesh& mesh, const Color& color)
+    {
+        commands.emplace_back([&mesh, &color](){
+            mesh_list.set_color(mesh.get_id(), color);
+        });
+    }
+
+    void set_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, const Color& color)
+    {
+        commands.emplace_back([&mesh, &cell, &color](){
+            mesh_list.set_color(mesh.get_id(), cell, color);
+        });
+    }
+
+    void set_color(const VMesh& mesh, OpenVolumeMesh::FaceHandle face, const Color& color)
+    {
+        commands.emplace_back([&mesh, &face, &color](){
+            mesh_list.set_color(mesh.get_id(), face, color);
+        });
+    }
+
+    /*
+    void set_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface, const Color& color)
+    {
+        commands.emplace_back([&mesh, &halfface, &color](){
+            mesh_list.set_color(mesh.get_id(), halfface, color);
+        });
+    }
+
+    void set_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge, const Color& color)
+    {
+        commands.emplace_back([&mesh, &edge, &color](){
+            mesh_list.set_color(mesh.get_id(), edge, color);
+        });
+    }
+
+    void set_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex, const Color& color)
+    {
+        commands.emplace_back([&mesh, &vertex, &color](){
+            mesh_list.set_color(mesh.get_id(), vertex, color);
+        });
+    }
+    */
+
+    void select(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
+    {
+        commands.emplace_back([&mesh, &vertex](){
+            mesh_list.select(EntityType::Vertex, mesh.get_id(), vertex.idx());
+        });
+    }
+
+    void select(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge)
+    {
+        commands.emplace_back([&mesh, &edge](){
+            mesh_list.select(EntityType::Edge, mesh.get_id(), edge.idx());
+        });
+    }
+
+    void select(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface)
+    {
+        commands.emplace_back([&mesh, &halfface](){
+            mesh_list.select(EntityType::Halfface, mesh.get_id(), halfface.idx());
+        });
+    }
+
+    void select(const VMesh& mesh, OpenVolumeMesh::FaceHandle face)
+    {
+        commands.emplace_back([&mesh, &face](){
+            mesh_list.select(EntityType::Face, mesh.get_id(), face.idx());
+        });
+    }
+
+    void select(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        commands.emplace_back([&mesh, &cell](){
+            mesh_list.select(EntityType::Cell, mesh.get_id(), cell.idx());
+        });
+    }
+
+    void deselect(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
+    {
+        commands.emplace_back([&mesh, &vertex](){
+            mesh_list.deselect(EntityType::Vertex, mesh.get_id(), vertex.idx());
+        });
+    }
+
+    void deselect(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge)
+    {
+        commands.emplace_back([&mesh, &edge](){
+            mesh_list.deselect(EntityType::Edge, mesh.get_id(), edge.idx());
+        });
+    }
+
+    void deselect(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface)
+    {
+        commands.emplace_back([&mesh, &halfface](){
+            mesh_list.deselect(EntityType::Halfface, mesh.get_id(), halfface.idx());
+        });
+    }
+
+    void deselect(const VMesh& mesh, OpenVolumeMesh::FaceHandle face)
+    {
+        commands.emplace_back([&mesh, &face](){
+            mesh_list.deselect(EntityType::Face, mesh.get_id(), face.idx());
+        });
+    }
+
+    void deselect(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        commands.emplace_back([&mesh, &cell](){
+            mesh_list.deselect(EntityType::Cell, mesh.get_id(), cell.idx());
+        });
+    }
+
+    void set_ambient(const VMesh& mesh, float ambient)
+    {
+        commands.emplace_back([&mesh, &ambient](){
+            mesh_list.set_ambient(mesh.get_id(), ambient);
+        });
+    }
+
+    void set_diffuse(const VMesh& mesh, float diffuse)
+    {
+        commands.emplace_back([&mesh, &diffuse](){
+            mesh_list.set_diffuse(mesh.get_id(), diffuse);
+        });
+    }
+
+    void set_specular(const VMesh& mesh, float specular)
+    {
+        commands.emplace_back([&mesh, &specular](){
+            mesh_list.set_specular(mesh.get_id(), specular);
+        });
+    }
+
+    void set_specular_coefficient(const VMesh& mesh, float coefficient)
+    {
+        commands.emplace_back([&mesh, &coefficient](){
+            mesh_list.set_specular_coefficient(mesh.get_id(), coefficient);
+        });
+    }
+
+    void set_phong(const VMesh& mesh, float ambient, float diffuse, float specular, float coefficient)
+    {
+        commands.emplace_back([&mesh, &ambient, &diffuse, &specular, &coefficient](){
+            mesh_list.set_phong(mesh.get_id(), ambient, diffuse, specular, coefficient);
+        });
+    }
+
+    void set_position(const VMesh& mesh, float x, float y, float z)
+    {
+        commands.emplace_back([&mesh, &x, &y, &z](){
+            mesh_list.set_position(mesh.get_id(), x, y, z);
+        });
+    }
+
+    void set_scale(const VMesh& mesh, float scale)
+    {
+        commands.emplace_back([&mesh, &scale](){
+            mesh_list.set_scale(mesh.get_id(), scale);
+        });
+    }
+
+    void set_rotation(const VMesh& mesh, float x, float y, float z)
+    {
+        commands.emplace_back([&mesh, &x, &y, &z](){
+            mesh_list.set_rotation(mesh.get_id(), x, y, z);
+        });
+    }
+
+    void set_slice_factor(const VMesh& mesh, const float level)
+    {
+        commands.emplace_back([&mesh, &level](){
+            mesh_list.set_slice_factor(mesh.get_id(), level);
+        });
+    }
+
+    void set_slice_lock(const VMesh& mesh, const bool locked)
+    {
+        commands.emplace_back([&mesh, &locked](){
+            mesh_list.set_slice_lock(mesh.get_id(), locked);
+        });
+    }
+
+    void set_peel_level(const VMesh& mesh, const float level)
+    {
+        commands.emplace_back([&mesh, &level](){
+            mesh_list.set_peel_level(mesh.get_id(), level);
+        });
+    }
+
+    void set_cell_rounding(const VMesh& mesh, float rounding)
+    {
+        commands.emplace_back([&mesh, &rounding](){
+            mesh_list.set_cell_rounding(mesh.get_id(), rounding);
+        });
+    }
+
+    void set_cell_size(const VMesh& mesh, const float size)
+    {
+        commands.emplace_back([&mesh, &size](){
+            mesh_list.set_cell_size(mesh.get_id(), size);
+        });
+    }
+
+    void set_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, bool visible)
+    {
+        commands.emplace_back([&mesh, &cell, &visible](){
+            mesh_list.set_visibility(mesh.get_id(), cell, visible);
+        });
+    }
+
+    void set_visibility(const VMesh& mesh, const bool visible)
+    {
+        commands.emplace_back([&mesh, &visible](){
+            mesh_list.set_visibility(mesh.get_id(), visible);
+        });
+    }
+
+    void reset_visibility(const VMesh& mesh)
+    {
+        commands.emplace_back([&mesh](){
+            mesh_list.reset_visibility(mesh.get_id());
+        });
+    }
+
+    void isolate(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        commands.emplace_back([&mesh, &cell](){
+            mesh_list.isolate(mesh.get_id(), cell);
+        });
+    }
+
+    void hide(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        commands.emplace_back([&mesh, &cell](){
+            mesh_list.hide(mesh.get_id(), cell);
+        });
+    }
+
+
+    void set_camera_position(float x, float y, float z)
+    {
+        commands.emplace_back([&x, &y, &z](){
+            //camera.set_position(glm::vec3(x, y, z);
+        });
+    }
+
+    void set_camera_view_direction(float x, float y, float z)
+    {
+        commands.emplace_back([&x, &y, &z](){
+            //camera.set_view_direction(glm::vec3(x, y, z));
+        });
+    }
+
+    void set_camera_mode(Mode mode)
+    {
+        commands.emplace_back([&mode](){
+            camera.set_mode(mode);
+        });
+    }
+
+    void focus(const VMesh& mesh)
+    {
+        if(auto mesh_obj = mesh_list.get_mesh(mesh.get_id()))
+        {
+            auto pos = mesh_obj->get_data().position;
+            commands.emplace_back([&pos](){
+                //camera.focus(pos))
+            });
+        }
+    }
+
 }

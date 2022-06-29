@@ -17,7 +17,7 @@
 #include "panels/QualityPanel.h"
 #include "settings/GlobalViewerSettings.h"
 
-namespace volumeshOS
+namespace volumeshOS::Internal
 {
 
 /**

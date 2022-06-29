@@ -3,7 +3,7 @@
 //
 
 #include "TestQuads.h"
-#include "Window.h"
+#include "panels/Window.h"
 #include <ctime>
 #include "OpenVolumeMesh/FileManager/FileManager.hh"
 #include "panels/NewFileDialog.h"

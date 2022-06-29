@@ -2,7 +2,7 @@
 #include "MeshObject.h"
 
 #include "../panels/LogWindow.h"
-#include "../Window.h"
+#include "panels/Window.h"
 #include "MeshProperties.h"
 
 namespace volumeshOS::Internal
@@ -14,16 +14,16 @@ namespace volumeshOS::Internal
         m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
     }
 
-    void MeshObject::select_element(int id, int type)
+    void MeshObject::select_element(int id, EntityType type)
     {
-        int shape_key = type * key_multiplier + id;
+        int shape_key = (int)type * key_multiplier + id;
 
         // We can't select an element twice
         bool already_selected = is_element_selected(id, type);
         if (already_selected)
             return;
 
-        if (type == 0)
+        if (type == EntityType::Face)
         {
             m_selected_faces.insert(id);
 
@@ -48,7 +48,7 @@ namespace volumeshOS::Internal
             m_created_shapes.insert({shape_key, shape_id});
              */
         }
-        else if (type == 1)
+        else if (type == EntityType::Vertex)
         {
             m_selected_vertices.insert(id);
 
@@ -69,7 +69,7 @@ namespace volumeshOS::Internal
 
             m_created_shapes.insert({shape_key, shape_id});
         }
-        else if (type == 2)
+        else if (type == EntityType::Edge)
         {
             m_selected_edges.insert(id);
 
@@ -92,7 +92,7 @@ namespace volumeshOS::Internal
 
             m_created_shapes.insert({shape_key, shape_id});
         }
-        else if (type == 6)
+        else if (type == EntityType::Cell)
         {
             m_selected_cells.insert(id);
 
@@ -123,7 +123,7 @@ namespace volumeshOS::Internal
         }
     }
 
-    void MeshObject::unselect_all()
+    void MeshObject::deselect_all()
     {
         // Delete Face Elements
         for (int element: m_selected_faces)
@@ -172,37 +172,36 @@ namespace volumeshOS::Internal
         m_created_shapes.clear();
     }
 
-    void MeshObject::unselect_element(int id, int type)
+    void MeshObject::deselect_element(int id, EntityType type)
     {
         // Element must be selected to be unselectable
         bool is_selected = is_element_selected(id, type);
         if (!is_selected)
             return;
 
-        if (type == 0)
+        if (type == EntityType::Face)
         {
-
             m_mvb->set_face_selection(id, false);
             return;
         }
-        else if (type == 1)
+        else if (type == EntityType::Vertex)
         {
             auto entry = m_selected_vertices.find(id);
             m_selected_vertices.erase(entry);
         }
-        else if (type == 2)
+        else if (type == EntityType::Edge)
         {
             auto entry = m_selected_edges.find(id);
             m_selected_edges.erase(entry);
         }
-        else
+        else if (type == EntityType::Cell)
         {
             auto entry = m_selected_cells.find(id);
             m_selected_cells.erase(entry);
         }
 
         // Delete Shape Element
-        int shape_key = type * key_multiplier + id;
+        int shape_key = (int)type * key_multiplier + id;
         int shape_id = m_created_shapes[shape_key];
 
 
@@ -213,22 +212,22 @@ namespace volumeshOS::Internal
         m_created_shapes.erase(m_created_shapes.find(shape_key));
     }
 
-    bool MeshObject::is_element_selected(int id, int type)
+    bool MeshObject::is_element_selected(int id, EntityType type)
     {
 
-        if (type == 0)
+        if (type == EntityType::Face)
         {
             return m_selected_faces.contains(id);
         }
-        else if (type == 1)
+        else if (type == EntityType::Vertex)
         {
             return m_selected_vertices.contains(id);
         }
-        else if (type == 2)
+        else if (type == EntityType::Edge)
         {
             return m_selected_edges.contains(id);
         }
-        else
+        else if (type == EntityType::Cell)
         {
             return m_selected_cells.contains(id);
         }
