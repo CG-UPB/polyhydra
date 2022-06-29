@@ -15,7 +15,7 @@ namespace volumeshOS
     void close();
 
 
-    // Callbacks
+    /* Callbacks */
 
     // Define programmer user interface here
     void on_gui_render(std::function<void()> callback);
@@ -55,8 +55,8 @@ namespace volumeshOS
     // Called once when any position is selected
     void on_position_select(std::function<void(float, float, float)> callback);
 
-    // VMesh manipulation
 
+    /* VMesh manipulation */
 
     // Add mesh from ovm instance, return new wrapper
     [[nodiscard]] VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);

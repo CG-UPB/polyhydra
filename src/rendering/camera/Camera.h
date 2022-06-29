@@ -19,8 +19,7 @@ namespace volumeshOS::Internal
         Camera();
 
         void set_viewport_size(float width, float height);
-        void set_mode(Mode mode);
-        Mode get_mode();
+
         void switch_mode(glm::vec3 new_orbit_target = {0.0f, 0.0f, 0.0f});
 
         [[nodiscard]] glm::vec2 get_viewport_size() const;
@@ -35,8 +34,14 @@ namespace volumeshOS::Internal
         void look_at(glm::vec3 new_target);
 
         [[nodiscard]] glm::vec3 get_front() const;
+        [[nodiscard]] glm::vec3 get_world_up() const;
         [[nodiscard]] glm::vec3 get_up() const;
         [[nodiscard]] glm::vec3 get_right() const;
+
+        void set_position(glm::vec3 position);
+        void set_view_direction(glm::vec3 direction);
+        void set_mode(Mode mode);
+        Mode get_mode();
 
         // Matrices
         glm::mat4 world;
@@ -68,10 +73,6 @@ namespace volumeshOS::Internal
         bool animation = false;
 
     private:
-
-        void handle_trackball_movement(const glm::vec2& start_position, const glm::vec2& end_position);
-
-        TrackBall m_trackball;
 
         Mode m_mode = FLY;
 

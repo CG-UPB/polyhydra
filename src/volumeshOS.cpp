@@ -7,6 +7,7 @@
 namespace volumeshOS
 {
     std::vector<std::function<void()>> commands;
+    volumeshOS::Internal::Window window;
     volumeshOS::Internal::MeshList mesh_list;
     volumeshOS::Internal::Camera camera;
 
@@ -310,14 +311,14 @@ namespace volumeshOS
     void set_camera_position(float x, float y, float z)
     {
         commands.emplace_back([&x, &y, &z](){
-            //camera.set_position(glm::vec3(x, y, z);
+            camera.set_position(glm::vec3(x, y, z));
         });
     }
 
     void set_camera_view_direction(float x, float y, float z)
     {
         commands.emplace_back([&x, &y, &z](){
-            //camera.set_view_direction(glm::vec3(x, y, z));
+            camera.set_view_direction(glm::vec3(x, y, z));
         });
     }
 
@@ -334,7 +335,7 @@ namespace volumeshOS
         {
             auto pos = mesh_obj->get_data().position;
             commands.emplace_back([&pos](){
-                //camera.focus(pos))
+                camera.look_at(pos);
             });
         }
     }

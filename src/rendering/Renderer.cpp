@@ -185,7 +185,7 @@ namespace volumeshOS::Internal
                     auto delta_y = (float) (M_PI / m_viewportPanelHeight);
 
                     glm::vec3 vertical = cam.get_right() * x_offset * delta_x * 2.0f;
-                    glm::vec3 horizontal = cam.get_up() * y_offset * delta_y * 2.0f;
+                    glm::vec3 horizontal = cam.get_world_up() * y_offset * delta_y * 2.0f;
 
                     mesh->translate(mesh->get_data().position + vertical + horizontal) ;
                 }
