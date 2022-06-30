@@ -15,7 +15,7 @@ namespace volumeshOS
     {
         window = std::make_unique<Internal::Window>(1280, 720, "volumeshOS");
         window->initialize();
-        mesh_list =
+        //mesh_list =
     }
 
     void clean_up()
@@ -317,6 +317,13 @@ namespace volumeshOS
     {
         commands.emplace_back([&mesh, &cell, &visible](){
             mesh_list->set_visibility(mesh.get_id(), cell, visible);
+        });
+    }
+
+    void set_focused_mesh(const VMesh& mesh)
+    {
+        commands.emplace_back([&mesh](){
+            mesh_list->set_focused_mesh(mesh.get_id());
         });
     }
 

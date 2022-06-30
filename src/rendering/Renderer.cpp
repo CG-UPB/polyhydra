@@ -1,5 +1,7 @@
 
 #include "Renderer.h"
+
+#include <utility>
 #include "input/Input.h"
 
 namespace volumeshOS::Internal
@@ -72,7 +74,7 @@ namespace volumeshOS::Internal
             m_target_ms->bind();
 
             mesh_list->iterate([&](auto id, auto mesh){
-                if(mesh && mesh->get_data().visible)
+                if(mesh->get_data().visible)
                 {
                     mesh->update_vertex_buffer();
                     if (mesh->get_vao() != nullptr)
@@ -82,7 +84,6 @@ namespace volumeshOS::Internal
                 }
             });
 
-            for (auto [id, mesh])
 
             m_target_ms->unbind();
         }
@@ -178,13 +179,11 @@ namespace volumeshOS::Internal
         auto& cam = m_render_data->camera;
         if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
         {
-            auto mesh_id = Window::instance().get_mesh_focus() ;
-            if (mesh_id >= 0)
+            if (auto mesh = mesh_list->get_focused_mesh())
             {
                 if (Input::key_down(Input::TRANSLATE_MESH))
                 {
                     mesh_moving = true;
-                    auto mesh = Window::instance().get_mesh_obj(mesh_id);
                     auto delta_x = (float) (2 * M_PI / m_viewportPanelWidth);
                     auto delta_y = (float) (M_PI / m_viewportPanelHeight);
 
@@ -196,7 +195,6 @@ namespace volumeshOS::Internal
                 else if (Input::key_down(Input::ROTATE_MESH))
                 {
                     mesh_moving = true;
-                    auto mesh = Window::instance().get_mesh_obj(mesh_id);
                     auto delta_x = (float) (2 * M_PI / m_viewportPanelWidth);
                     auto delta_y = (float) (M_PI / m_viewportPanelHeight);
 
@@ -249,7 +247,7 @@ namespace volumeshOS::Internal
 
                     if (mesh_id >= 0)
                     {
-                        auto mesh = Window::instance().get_mesh_obj(mesh_id);
+                        auto mesh = mesh_list->get_mesh(mesh_id);
                         glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
 
                         auto mode = GlobalViewerSettings::getInstance()->get_selection_mode();
@@ -274,17 +272,15 @@ namespace volumeshOS::Internal
                             cam.animated_look_at(new_target);
                         }
 
-                        Window::instance().set_mesh_focus(mesh_id);
+                        mesh_list->set_focused_mesh(mesh_id);
                     }
                 }
 
                 if (Input::key_pressed(Input::SWITCH_CAMERA_MODE))
                 {
-                    auto mesh_id = Window::instance().get_mesh_focus();
                     glm::vec3 new_target = cam.target;
-                    if(mesh_id >= 0)
+                    if(auto mesh = mesh_list->get_focused_mesh())
                     {
-                        auto mesh = Window::instance().get_mesh_obj(mesh_id);
                         new_target = mesh->get_data().position;
                     }
                     cam.switch_mode(new_target);
@@ -375,22 +371,32 @@ namespace volumeshOS::Internal
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-            {
-                if (!mesh->get_data().visible)
+            mesh_list->iterate([&](auto id, auto mesh){
+                if(mesh->get_data().visible)
                 {
-                    continue;
+                    mesh->update_vertex_buffer();
+                    if (mesh->get_vao() != nullptr)
+                    {
+                        m_selection_pass.render_mesh(mesh, render_data);
+                    }
                 }
-                m_selection_pass.render_mesh(mesh, render_data);
-            }
+            });
         }
         m_selectionFrameBuffer->unbind();
 
         m_target_ms->bind();
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-        {
-            m_selection_hover_pass.render(nullptr, render_data, mesh);
-        }
+
+        mesh_list->iterate([&](auto id, auto mesh){
+            if(mesh->get_data().visible)
+            {
+                mesh->update_vertex_buffer();
+                if (mesh->get_vao() != nullptr)
+                {
+                    m_selection_hover_pass.render(nullptr, render_data, mesh);
+                }
+            }
+        });
+
         m_target_ms->unbind();
     }
 
@@ -405,23 +411,24 @@ namespace volumeshOS::Internal
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_pre_pass->clear_position_buffer(render_data);
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-        {
-            if (!mesh->get_data().visible)
+
+
+        mesh_list->iterate([&](auto id, auto mesh){
+            if(mesh->get_data().visible)
             {
-                continue;
+                mesh->update_vertex_buffer();
+                auto vao = mesh->get_vao();
+                if (mesh->get_data().rounding_active)
+                {
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
+                if (vao != nullptr)
+                {
+                    m_pre_pass->render(vao, render_data, mesh);
+                }
             }
-            mesh->update_vertex_buffer();
-            auto vao = mesh->get_vao();
-            if (mesh->get_data().rounding_active)
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_pre_pass->render(vao, render_data, mesh);
-            }
-        }
+        });
+
         // we generate a mipmap for the position, this is used for ssao
         // this needs to happen every frame, since the fragment position values always change
         glBindTexture(GL_TEXTURE_2D, m_pre_pass->get_framebuffer()->get_position_texture());
@@ -449,23 +456,23 @@ namespace volumeshOS::Internal
             m_shadow_pass->bind_for_writing(i);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-            {
-                if (!mesh->get_data().visible)
+
+            mesh_list->iterate([&](auto id, auto mesh){
+                if(mesh->get_data().visible)
                 {
-                    continue;
+                    mesh->update_vertex_buffer();
+                    auto vao = mesh->get_vao();
+                    if (mesh->get_data().rounding_active)
+                    {
+                        vao = mesh->get_mvb()->get_vao_rounded();
+                    }
+                    if (vao != nullptr)
+                    {
+                        m_shadow_pass->render(vao, render_data, mesh);
+                    }
                 }
-                mesh->update_vertex_buffer();
-                auto vao = mesh->get_vao();
-                if (mesh->get_data().rounding_active)
-                {
-                    vao = mesh->get_mvb()->get_vao_rounded();
-                }
-                if (vao != nullptr)
-                {
-                    m_shadow_pass->render(vao, render_data, mesh);
-                }
-            }
+            });
+
             m_shadow_pass->get_framebuffer()->unbind();
         }
     }
@@ -486,25 +493,22 @@ namespace volumeshOS::Internal
         glBlendEquation(GL_FUNC_ADD);
         //glDisable(GL_CULL_FACE);
 
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-        {
-            MeshData& mesh_data = mesh->get_data();
+        mesh_list->iterate([&](auto id, auto mesh){
+            if(mesh->get_data().visible)
+            {
+                mesh->update_vertex_buffer();
+                auto vao = mesh->get_vao();
+                if (mesh->get_data().rounding_active)
+                {
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
+                if (vao != nullptr)
+                {
+                    m_transparency_pass_wb->render(vao, render_data, mesh);
+                }
+            }
+        });
 
-            if (!mesh->get_data().visible)
-            {
-                continue;
-            }
-            mesh->update_vertex_buffer();
-            auto vao = mesh->get_vao();
-            if (mesh_data.rounding_active)
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
-            }
-            if (vao != nullptr)
-            {
-                m_transparency_pass_wb->render(vao, render_data, mesh);
-            }
-        }
         m_transparency_pass_wb->unbind_transparent_buffer();
 
         glDepthFunc(GL_ALWAYS);
@@ -535,26 +539,22 @@ namespace volumeshOS::Internal
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             // first render all meshes
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-            {
-                MeshData& mesh_data = mesh->get_data();
-                if (!mesh->get_data().visible)
+            mesh_list->iterate([&](auto id, auto mesh){
+                if(mesh->get_data().visible)
                 {
-                    continue;
+                    mesh->update_vertex_buffer();
+                    auto vao = mesh->get_vao();
+                    if (mesh->get_data().rounding_active)
+                    {
+                        vao = mesh->get_mvb()->get_vao_rounded();
+                    }
+                    if (vao != nullptr)
+                    {
+                        m_transparency_pass_dp->render(vao, render_data, mesh);
+                    }
                 }
+            });
 
-                mesh->update_vertex_buffer();
-                auto vao = mesh->get_vao();
-                if (mesh_data.rounding_active)
-                {
-                    vao = mesh->get_mvb()->get_vao_rounded();
-                }
-
-                if (vao != nullptr)
-                {
-                    m_transparency_pass_dp->render(vao, render_data, mesh, i);
-                }
-            }
             if (i % 2 == 0)
             {
                 m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
@@ -586,10 +586,12 @@ namespace volumeshOS::Internal
     void Renderer::render_meshes(RenderData& render_data)
     {
         m_target_ms->bind();
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-        {
-            render_mesh(render_data, mesh);
-        }
+        mesh_list->iterate([&](auto id, auto mesh){
+            if(mesh->get_data().visible)
+            {
+                render_mesh(render_data, mesh);
+            }
+        });
         m_target_ms->unbind();
     }
 
@@ -611,7 +613,7 @@ namespace volumeshOS::Internal
 
     void Renderer::set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target)
     {
-        m_target_ms = target_ms;
-        m_target = target;
+        m_target_ms = std::move(target_ms);
+        m_target = std::move(target);
     }
 }

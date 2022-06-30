@@ -18,7 +18,6 @@
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
-#include "panels/Window.h"
 #include "../mesh/MeshList.h"
 
 namespace volumeshOS::Internal

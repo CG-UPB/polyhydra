@@ -44,7 +44,7 @@ namespace volumeshOS::Internal
         void set_focused_mesh(MeshID id);
 
         // get a specific mesh
-        std::shared_ptr<MeshObject> get_focused_mesh(MeshID id);
+        std::shared_ptr<MeshObject> get_focused_mesh();
 
 
         /* Selection */
@@ -140,10 +140,10 @@ namespace volumeshOS::Internal
         /* Utility */
 
         // iterate over meshes and execute func if id matches
-        void iterate( const std::function<void(std::shared_ptr<MeshObject>)>&, MeshID id);
+        void execute_for_mesh( const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id);
 
         // iterate over meshes and execute func for each mesh
-        void execute_for_mesh(const std::function<void(MeshID id, std::shared_ptr<MeshObject>)>& func);
+        void iterate(const std::function<void(MeshID ,std::shared_ptr<MeshObject>)>& func);
 
 
     private:

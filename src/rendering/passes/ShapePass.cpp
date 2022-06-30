@@ -1,6 +1,5 @@
 
 #include "ShapePass.h"
-#include "panels/Window.h"
 
 namespace volumeshOS::Internal
 {

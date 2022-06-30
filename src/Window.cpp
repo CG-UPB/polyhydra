@@ -4,11 +4,11 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "panels/Window.h"
 #include "input/Input.h"
 #include "util/UIUtil.h"
 #include "fs/FileManager.h"
 #include "rendering/gl/Shader.h"
+#include "rendering/gl/VertexArrayObject.h"
 
 #include <stb_image.h>
 

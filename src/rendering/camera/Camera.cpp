@@ -255,7 +255,7 @@ namespace volumeshOS::Internal
 
     glm::vec3 Camera::get_up() const
     {
-        return glm::transpose(view)[1];;
+        return glm::transpose(view)[1];
     }
 
     glm::vec3 Camera::get_world_up() const

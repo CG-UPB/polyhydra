@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.12)
 project(volumeshOS_core)
 
 set(volumeshOS_core_SOURCES
-        ${VOLUMESHOS_SRC}/ImguiRenderer.cpp
-        ${VOLUMESHOS_SRC}/ImguiRenderer.h
         ${VOLUMESHOS_SRC}/panels/MeshView.cpp
         ${VOLUMESHOS_SRC}/panels/MeshView.h
         ${VOLUMESHOS_SRC}/rendering/gl/Shader.cpp

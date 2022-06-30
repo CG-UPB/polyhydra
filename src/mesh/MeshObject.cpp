@@ -2,7 +2,6 @@
 #include "MeshObject.h"
 
 #include "../panels/LogWindow.h"
-#include "panels/Window.h"
 #include "MeshProperties.h"
 
 namespace volumeshOS::Internal

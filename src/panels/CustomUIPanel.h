@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-#include "../Window.h"
+#include "Window.h"
 
 namespace volumeshOS::Internal
 {

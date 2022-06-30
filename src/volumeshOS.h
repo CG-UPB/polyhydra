@@ -207,6 +207,9 @@ namespace volumeshOS
     // Set the visibility of a mesh
     void set_visibility(const VMesh& mesh, bool visible);
 
+    // set currently active mesh
+    void set_focused_mesh(const VMesh& mesh);
+
     // Reset the visibility so that all cells are visible
     void reset_visibility(const VMesh& mesh);
 
@@ -559,6 +562,12 @@ namespace volumeshOS
         inline void set_cell_size(float size) const
         {
             volumeshOS::set_cell_size(*this, size);
+        }
+
+        // Set currently active mesh
+        inline void set_focused_mesh(const VMesh& mesh)
+        {
+            volumeshOS::set_focused_mesh(*this);
         }
 
         // Set the cell visibility of a mesh
