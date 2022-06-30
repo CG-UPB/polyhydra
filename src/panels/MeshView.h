@@ -4,7 +4,7 @@
 
 #include "../rendering/gl/PixelBufferObject.h"
 #include "../rendering/gl/PrePassFrameBufferObject.h"
-#include "../Window.h"
+#include "WindowPanel.h"
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/BackgroundPass.h"
@@ -18,7 +18,6 @@
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
-#include "Window.h"
 #include "../util/ModeEnum.h"
 #include "../rendering/Renderer.h"
 
@@ -32,12 +31,18 @@ namespace volumeshOS::Internal
         void show() override;
         void m_take_screenshot(const std::string& filename);
 
+    public:
+
+        std::shared_ptr<Renderer> renderer = nullptr;
+
     private:
 
         void handleResize();
         void render_debug_menu();
         void querySelection(int type, int picked_id);
         [[nodiscard]] unsigned int get_selected_texture();
+
+    private:
 
         // these are just to differentiate between the different textures, we cannot directly use the texture ids
         // since they can change when resizing the framebuffer
@@ -64,7 +69,6 @@ namespace volumeshOS::Internal
         int m_viewportPanelHeight;
 
         // opengl rendering
-        std::shared_ptr<Renderer> m_renderer = nullptr;
         std::shared_ptr<FrameBufferObject> m_meshFrameBuffer = nullptr;
         std::shared_ptr<FrameBufferObject> m_screen_quad_frameBuffer = nullptr;
         RenderData m_render_data;

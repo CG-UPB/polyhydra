@@ -48,7 +48,7 @@ namespace volumeshOS::Internal
 
             char const *filename;
 
-            filename = file_dialog.saveDialog("Open Snapshot File");
+            filename = file_dialog.save_dialog("Open Snapshot File");
 
             if (filename != nullptr)
             {

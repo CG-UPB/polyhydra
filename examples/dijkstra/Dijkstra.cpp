@@ -149,7 +149,7 @@ namespace volumeshOS
 
             char const * filename;
 
-            filename = file_dialog.openDialog("Open Mesh File");
+            filename = file_dialog.open_dialog("Open Mesh File");
 
             if (filename != NULL){
                 OpenVolumeMesh::IO::FileManager file_manager;

@@ -4,18 +4,6 @@
 
 namespace volumeshOS::Internal
 {
-    std::shared_ptr<LogWindow> LogWindow::s_instance;
-
-    std::shared_ptr<LogWindow> LogWindow::getInstance()
-    {
-        if (s_instance == nullptr)
-        {
-            s_instance = std::shared_ptr<LogWindow>(new LogWindow());
-        }
-        return s_instance;
-    }
-
-
     LogWindow::LogWindow() : m_auto_scroll(true)
     {
         clear();

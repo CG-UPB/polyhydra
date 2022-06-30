@@ -3,24 +3,14 @@
 #include "vospch.h"
 
 #include <GLFW/glfw3.h>
-#include "panels/CustomUIPanel.h"
+#include "panels/LogWindow.h"
+#include "panels/MeshLayerView.h"
+#include "panels/MeshView.h"
+#include "panels/QualityPanel.h"
+#include "panels/ToolBar.h"
 
 namespace volumeshOS::Internal
 {
-    /**
-     *  Parent Class for any visible Windows inside the VosViewer such as the Logger, Toolbox and Mesh List
-     */
-    class WindowPanel
-    {
-    public:
-        /**
-         * Renders the Window Panel. Intended to be run each frame. Also responsible for Panel-internal logic
-         */
-        virtual void show() = 0;
-
-        virtual ~WindowPanel() = default;
-    };
-
     /**
      * Responsible for Imgui and GL Setup and communication
      */
@@ -57,6 +47,17 @@ namespace volumeshOS::Internal
          */
         GLFWwindow* get_window() { return m_window; }
 
+    public:
+
+        struct
+        {
+            std::shared_ptr<LogWindow> log_window           = nullptr;
+            std::shared_ptr<MeshLayerView> mesh_layer_view  = nullptr;
+            std::shared_ptr<MeshView> mesh_view             = nullptr;
+            std::shared_ptr<QualityPanel> quality_settings  = nullptr;
+            std::shared_ptr<ToolBar> toolbar                = nullptr;
+        } panels;
+
     private:
 
         static void init_style();
@@ -82,12 +83,6 @@ namespace volumeshOS::Internal
         void post_render_step();
 
     private:
-
-        struct
-        {
-            Internal::CustomUIPanel custom_ui;
-
-        } m_panels;
 
         bool m_open = false;
         int m_width;

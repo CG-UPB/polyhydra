@@ -16,8 +16,8 @@ namespace volumeshOS::Internal
     {
         m_meshFrameBuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         m_screen_quad_frameBuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
-        m_renderer = std::make_shared<Renderer>(width, height, m_meshFrameBuffer, m_screen_quad_frameBuffer);
-        m_renderer->set_selection_callback(std::bind(&MeshView::querySelection, this, std::placeholders::_1, std::placeholders::_2));
+        renderer = std::make_shared<Renderer>(width, height, m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        renderer->set_selection_callback(std::bind(&MeshView::querySelection, this, std::placeholders::_1, std::placeholders::_2));
 
         // Set Camera Viewport Size
         m_render_data.camera.set_viewport_size(width, height);
@@ -35,7 +35,7 @@ namespace volumeshOS::Internal
             m_viewportPanelHeight = (int) height;
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+            renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_render_data.camera.set_viewport_size(width, height);
         }
     }
@@ -58,9 +58,9 @@ namespace volumeshOS::Internal
         auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         auto export_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
 
-        m_renderer->set_target_framebuffer(export_framebuffer_ms, export_framebuffer);
-        m_renderer->resize(export_width, export_height);
-        m_renderer->render(&m_render_data, false);
+        renderer->set_target_framebuffer(export_framebuffer_ms, export_framebuffer);
+        renderer->resize(export_width, export_height);
+        renderer->render(&m_render_data, false);
 
         glFlush();
         glFinish();
@@ -108,8 +108,8 @@ namespace volumeshOS::Internal
         // restore the old width and height
         m_viewportPanelWidth = prev_width;
         m_viewportPanelHeight = prev_height;
-        m_renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
-        m_renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
+        renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
     }
 
     void MeshView::querySelection(int type, int picked_id)
@@ -184,7 +184,7 @@ namespace volumeshOS::Internal
                     }
                     else
                     {
-                        m_renderer->m_selection_hover_pass.hover(m_render_data, id, type, face_id);
+                        renderer->m_selection_hover_pass.hover(m_render_data, id, type, face_id);
 
                         OpenVolumeMesh::FaceHandle face(face_id);
                         if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -203,7 +203,7 @@ namespace volumeshOS::Internal
                 {
                     int vertex_id = mesh->to_vertex_id(picked_id - from) - 1;
 
-                    m_renderer->m_selection_hover_pass.hover(m_render_data, id, type, vertex_id);
+                    renderer->m_selection_hover_pass.hover(m_render_data, id, type, vertex_id);
 
                     OpenVolumeMesh::VertexHandle vertex(vertex_id);
                     if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -221,7 +221,7 @@ namespace volumeshOS::Internal
                 {
                     int edge_id = mesh->to_edge_id(picked_id - from) - 1;
 
-                    m_renderer->m_selection_hover_pass.hover(m_render_data, id, type, edge_id);
+                    renderer->m_selection_hover_pass.hover(m_render_data, id, type, edge_id);
 
                     OpenVolumeMesh::EdgeHandle edge(edge_id);
                     if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -260,7 +260,7 @@ namespace volumeshOS::Internal
             {
                 m.second->get_mvb()->reset_hover();
             }
-            m_renderer->m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
+            renderer->m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
         }
 
         for (const auto& m: Window::instance().get_mesh_list())
@@ -284,8 +284,8 @@ namespace volumeshOS::Internal
         // handle the things related to our mesh rendering canvas
         handleResize();
 
-        m_renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
-        m_renderer->render(&m_render_data);
+        renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
+        renderer->render(&m_render_data);
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -398,7 +398,7 @@ namespace volumeshOS::Internal
             }
         }
         ImGui::End();
-        m_renderer->m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
+        renderer->m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
     }
 
     unsigned int MeshView::get_selected_texture()
@@ -408,17 +408,17 @@ namespace volumeshOS::Internal
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                return m_renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                return renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
-                return m_renderer->m_ssao_pass->get_ssao_texture();
+                return renderer->m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:
-                return m_renderer->m_ssao_pass->get_blur_texture();
+                return renderer->m_ssao_pass->get_blur_texture();
             case TRANSPARENCY_ACCUM:
-                return m_renderer->m_transparency_pass_wb->get_accum_texture();
+                return renderer->m_transparency_pass_wb->get_accum_texture();
             case TRANSPARENCY_REVEAL:
-                return m_renderer->m_transparency_pass_wb->get_reveal_texture();
+                return renderer->m_transparency_pass_wb->get_reveal_texture();
             case SHADOW_MAP:
-                return m_renderer->m_shadow_pass->shadow_maps[m_shadow_map_cascade_level_debug];
+                return renderer->m_shadow_pass->shadow_maps[m_shadow_map_cascade_level_debug];
         }
         return -1;
     }

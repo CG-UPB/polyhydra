@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 project(volumeshOS_core)
 
 set(volumeshOS_core_SOURCES
-        ${VOLUMESHOS_SRC}/ImguiRenderer.cpp
-        ${VOLUMESHOS_SRC}/ImguiRenderer.h
+        ${VOLUMESHOS_SRC}/Window.cpp
+        ${VOLUMESHOS_SRC}/Window.h
         ${VOLUMESHOS_SRC}/panels/MeshView.cpp
         ${VOLUMESHOS_SRC}/panels/MeshView.h
         ${VOLUMESHOS_SRC}/rendering/gl/Shader.cpp
@@ -14,8 +14,6 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/FrameBufferObject.h
         ${VOLUMESHOS_SRC}/rendering/gl/VertexArrayObject.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/VertexArrayObject.h
-        ${VOLUMESHOS_SRC}/Window.cpp
-        ${VOLUMESHOS_SRC}/Window.h
         ${VOLUMESHOS_SRC}/panels/LogWindow.cpp
         ${VOLUMESHOS_SRC}/panels/LogWindow.h
         ${VOLUMESHOS_SRC}/input/Input.cpp
@@ -32,8 +30,6 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.h
         ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
         ${VOLUMESHOS_SRC}/rendering/shapes/Box.h
-        ${VOLUMESHOS_SRC}/panels/CustomUIPanel.cpp
-        ${VOLUMESHOS_SRC}/panels/CustomUIPanel.h
         ${VOLUMESHOS_SRC}/panels/ToolBar.cpp
         ${VOLUMESHOS_SRC}/panels/ToolBar.h
         ${VOLUMESHOS_SRC}/settings/GlobalViewerSettings.cpp
@@ -98,7 +94,7 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/camera/TrackBall.cpp
         ${VOLUMESHOS_SRC}/rendering/camera/TrackBall.h
         ${VOLUMESHOS_SRC}/vospch.h
-        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h)
+        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h panels/WindowPanel.h)
 
 add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
 

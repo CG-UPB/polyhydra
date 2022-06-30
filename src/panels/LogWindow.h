@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-#include "../Window.h"
+#include "WindowPanel.h"
 
 namespace volumeshOS::Internal
 {
@@ -14,12 +14,8 @@ namespace volumeshOS::Internal
     {
         public:
 
+            LogWindow();
             ~LogWindow() override = default;
-            /**
-             * static Singleton method to get the class-object
-             * @return the class-object
-             */
-            static std::shared_ptr<LogWindow> getInstance();
 
             /**
              * clears the LogWindow - deletes all thats in the buffer
@@ -58,13 +54,6 @@ namespace volumeshOS::Internal
             void show() override;
 
         private:
-            /**
-             * private Constructor for the Singleton
-             */
-            LogWindow();
-
-            // this variable holds the class-object for the Singleton
-            static std::shared_ptr<LogWindow> s_instance;
 
             // Variables that are used for Buffering and filtering
             ImGuiTextBuffer m_buffer;

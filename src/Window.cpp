@@ -4,7 +4,6 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "panels/Window.h"
 #include "input/Input.h"
 #include "util/UIUtil.h"
 #include "fs/FileManager.h"
@@ -33,28 +32,43 @@ namespace volumeshOS::Internal
 
     void Window::initialize()
     {
+        // initialize libraries
         init_glfw();
         init_imgui();
         init_style();
         Shader::load_all();
         UIUtil::load_all();
         VertexArrayObject::init();
+
+        // create ui panels
+        panels.log_window           = std::make_shared<LogWindow>();
+        panels.mesh_layer_view      = std::make_shared<MeshLayerView>();
+        panels.mesh_view            = std::make_shared<MeshView>(m_width, m_height);
+        panels.quality_settings     = std::make_shared<QualityPanel>();
+        panels.toolbar              = std::make_shared<ToolBar>();
+
         m_open = true;
     }
 
     void Window::clean_up()
     {
+        // clean up ui panels
+        panels.log_window           = nullptr;
+        panels.mesh_layer_view      = nullptr;
+        panels.mesh_view            = nullptr;
+        panels.quality_settings     = nullptr;
+        panels.toolbar              = nullptr;
+
+        // clean up
         VertexArrayObject::clean_up();
         UIUtil::clean_up();
         Shader::delete_all();
-
-        // Cleanup
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
         glfwDestroyWindow(get_window());
-
         glfwTerminate();
+
         m_open = false;
     }
 
@@ -235,7 +249,11 @@ namespace volumeshOS::Internal
     {
         pre_render_step();
 
-
+        panels.log_window->show();
+        panels.mesh_layer_view->show();
+        panels.mesh_view->show();
+        panels.quality_settings->show();
+        panels.toolbar->show();
 
         post_render_step();
     }

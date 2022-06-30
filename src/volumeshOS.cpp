@@ -1,7 +1,7 @@
 
 #include "volumeshOS.h"
 
-#include "rendering/Renderer.h"
+#include "Window.h"
 #include "mesh/MeshList.h"
 
 namespace volumeshOS
@@ -15,7 +15,8 @@ namespace volumeshOS
     {
         window = std::make_unique<Internal::Window>(1280, 720, "volumeshOS");
         window->initialize();
-        mesh_list =
+        mesh_list = window->panels.mesh_view->renderer->mesh_list;
+        camera = window->panels.mesh_view->renderer->camera;
     }
 
     void clean_up()

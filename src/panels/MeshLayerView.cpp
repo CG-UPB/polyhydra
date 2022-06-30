@@ -91,7 +91,7 @@ namespace volumeshOS::Internal
 
                     char const *filename;
 
-                    filename = file_dialog.saveMeshSettings("Save Mesh Settings File");
+                    filename = file_dialog.save_mesh_settings("Save Mesh Settings File");
 
                     if (filename != nullptr)
                     {
@@ -107,7 +107,7 @@ namespace volumeshOS::Internal
 
                     char const *filename;
 
-                    filename = file_dialog.loadMeshSettings("Save Mesh Settings File");
+                    filename = file_dialog.load_mesh_settings("Save Mesh Settings File");
                     if (filename != nullptr)
                     {
                         Window::instance().rendering_mutex.unlock();

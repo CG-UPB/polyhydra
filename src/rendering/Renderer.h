@@ -18,8 +18,9 @@
 #include "../rendering/passes/TransparencyPass_DP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
-#include "panels/Window.h"
 #include "../mesh/MeshList.h"
+#include "camera/Camera.h"
+#include "Light.h"
 
 namespace volumeshOS::Internal
 {
@@ -47,9 +48,11 @@ namespace volumeshOS::Internal
 
         void set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target);
 
+    public:
 
-        // mesh list
-        std::shared_ptr<MeshList> mesh_list                                    = nullptr;
+        std::shared_ptr<MeshList> mesh_list     = nullptr;
+        std::shared_ptr<Camera> camera          = nullptr;
+        Light light;
 
     private:
 
@@ -67,6 +70,8 @@ namespace volumeshOS::Internal
         void render_transparency_wb(RenderData& render_data);
         void render_transparency_dp(RenderData& render_data);
         void query_selection(int type, int id);
+
+    private:
 
         // render buffers
         std::shared_ptr<FrameBufferObject> m_target_ms                          = nullptr;
@@ -105,8 +110,6 @@ namespace volumeshOS::Internal
         float ypos = 0.0f;
         float x_offset = 0.0f;
         float y_offset = 0.0f;
-
-        RenderData* m_render_data = nullptr;
 
         GlobalViewerSettings& m_settings;
 

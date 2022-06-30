@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-#include "../Window.h"
+#include "WindowPanel.h"
 #include "../settings/GlobalViewerSettings.h"
 
 namespace volumeshOS::Internal
