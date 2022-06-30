@@ -8,6 +8,7 @@
 #include "util/UIUtil.h"
 #include "fs/FileManager.h"
 #include "rendering/gl/Shader.h"
+#include "rendering/gl/VertexArrayObject.h"
 
 #include <stb_image.h>
 

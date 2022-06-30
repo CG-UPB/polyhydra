@@ -321,6 +321,13 @@ namespace volumeshOS
         });
     }
 
+    void set_focused_mesh(const VMesh& mesh)
+    {
+        commands.emplace_back([&mesh](){
+            mesh_list->set_focused_mesh(mesh.get_id());
+        });
+    }
+
     void set_visibility(const VMesh& mesh, const bool visible)
     {
         commands.emplace_back([&mesh, &visible]{

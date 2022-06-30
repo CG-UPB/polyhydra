@@ -1,5 +1,4 @@
 
-#include "panels/Window.h"
 #include "TransparentShadowMapPass.h"
 
 namespace volumeshOS::Internal

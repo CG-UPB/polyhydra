@@ -1,7 +1,6 @@
 
 #include "SelectionHoverPass.h"
 #include "../meshes/CommonMeshes.h"
-#include "panels/Window.h"
 
 namespace volumeshOS::Internal
 {

@@ -39,25 +39,25 @@ namespace volumeshOS::Internal
         add_mesh(mesh_id, ovm_mesh);
     }
 
-    void MeshList::set_mesh(const MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
+    void MeshList::set_mesh(const MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* ovm_mesh)
     {
-        auto f = [this, &id, &mesh]() -> void{
+        auto f = [this, &id, &ovm_mesh](const std::shared_ptr<MeshObject>& mesh) -> void{
             auto mesh_obj = get_mesh(id);
-            mesh_obj->set_mesh(mesh);
+            mesh->set_mesh(ovm_mesh);
         };
 
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_mesh(const MeshID id, const std::string& path)
     {
-        auto f = [this, &id, &path]() -> void{
+        auto f = [this, &id, &path](const std::shared_ptr<MeshObject>& mesh) -> void{
             auto mesh_obj = get_mesh(id);
             auto ovm_mesh = load_from_file(path);
             mesh_obj->set_mesh(ovm_mesh);
         };
 
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::delete_mesh(const MeshID id)
@@ -88,123 +88,168 @@ namespace volumeshOS::Internal
 
     void MeshList::set_focused_mesh(const MeshID id)
     {
-        auto f = [this, &id]() -> void{
+        auto f = [this, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
             m_focused_mesh = id;
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
-    std::shared_ptr<MeshObject> MeshList::get_focused_mesh(const MeshID id)
+    std::shared_ptr<MeshObject> MeshList::get_focused_mesh()
     {
         return get_mesh(m_focused_mesh);
     }
 
     void MeshList::set_ambient(MeshID id, float ambient)
     {
-
+        static auto f = [this, &ambient, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            get_mesh(id)->get_data().ambient_strength = ambient;
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_diffuse(MeshID id, float diffuse)
     {
-
+        static auto f = [this, &diffuse, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            get_mesh(id)->get_data().diffuse_strength = diffuse;
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_specular(MeshID id, float specular)
     {
-
+        static auto f = [this, &specular, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            get_mesh(id)->get_data().specular_strength = specular;
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_specular_coefficient(MeshID id, float coefficient)
     {
-
+        static auto f = [this, &coefficient, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            get_mesh(id)->get_data().specular_exponent = coefficient;
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_phong(MeshID id, float ambient, float diffuse, float specular, float coefficient)
     {
-
+        static auto f = [this, &ambient, &diffuse, &specular, &coefficient, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            get_mesh(id)->get_data().ambient_strength = ambient;
+            get_mesh(id)->get_data().diffuse_strength = diffuse;
+            get_mesh(id)->get_data().specular_strength = specular;
+            get_mesh(id)->get_data().specular_exponent = coefficient;
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_position(MeshID id, float x, float y, float z)
     {
-
+        static auto f = [this, &x, &y, &z, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            //get_mesh(id)->get_data().position = glm::vec3(x, y, z);
+            get_mesh(id)->translate(glm::vec3(x, y, z));
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_scale(MeshID id, float scale)
     {
-
+        static auto f = [this, &scale, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            get_mesh(id)->scale(glm::vec3(scale));
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_rotation(MeshID id, float x, float y, float z)
     {
-
+        /*
+        static auto f = [this, &x, &y, &z, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            get_mesh(id)->rotate(glm::vec3(x, y, z));
+        };
+        execute_for_mesh(f, id);
+        */
     }
 
     void MeshList::set_slice_factor(const MeshID id, const float level)
     {
         assert(0.0f <= level <= 1.0f);
-        static auto f = [this, &level, &id]() -> void{
+        static auto f = [this, &level, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
             get_mesh(id)->get_data().slice_level = level;
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_slice_lock(const MeshID id, const bool locked)
     {
-        static auto f = [this, &locked, &id]() -> void{
-            get_mesh(id)->get_data().slice_locked = locked;
+        static auto f = [&locked](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().slice_locked = locked;
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_peel_level(const MeshID id, const float level)
     {
         assert(0.0f <= level <= 1.0f);
-        static auto f = [this, &level, &id]() -> void{
-            get_mesh(id)->get_data().peel_level = level;
+        static auto f = [this, &level, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().peel_level = level;
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_cell_rounding(MeshID id, float rounding)
     {
-
+        static auto f = [&rounding](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().rounding_size = rounding;
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_cell_size(const MeshID id, const float size)
     {
         assert(0.0f <= size <= 1.0f);
-        static auto f = [this, &size, &id]() -> void{
-            get_mesh(id)->get_data().cell_size = size;
+        static auto f = [this, &size, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().cell_size = size;
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_visibility(MeshID id, OpenVolumeMesh::CellHandle cell, bool visible)
     {
-
+        static auto f = [this, &cell, &visible](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_mvb()->set_cell_digged(cell.idx(), visible);
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_visibility(const MeshID id, const bool visible)
     {
-        static auto f = [this, &visible, &id]() -> void{
-            get_mesh(id)->get_data().visible = visible;
+        static auto f = [this, &visible, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().visible = visible;
         };
         execute_for_mesh(f, id);
     }
 
     void MeshList::reset_visibility(MeshID id)
     {
-
+        static auto f = [this](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_mvb()->reset_digging();
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::isolate(MeshID id, OpenVolumeMesh::CellHandle cell)
     {
-
+        static auto f = [this, &cell](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_mvb()->set_cell_isolated(cell.idx());
+        };
+        execute_for_mesh(f, id);
     }
 
     void MeshList::hide(MeshID id, OpenVolumeMesh::CellHandle cell)
     {
-
+        static auto f = [this, &cell](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_mvb()->set_cell_digged(cell.idx(), true);
+        };
+        execute_for_mesh(f, id);
     }
 
 
@@ -276,7 +321,15 @@ namespace volumeshOS::Internal
         }
     }
 
-    void MeshList::execute_for_mesh(const std::function<void(MeshID id, std::shared_ptr<MeshObject>)>& func)
+    void MeshList::execute_for_mesh(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
+    {
+        if(auto mesh = get_mesh(id))
+        {
+            func(mesh);
+        }
+    }
+
+    void MeshList::iterate(const std::function<void(MeshID id, std::shared_ptr<MeshObject>)>& func)
     {
         for(const auto& [id, mesh] : m_mesh_list)
         {
@@ -284,14 +337,6 @@ namespace volumeshOS::Internal
             {
                 func(id, mesh);
             }
-        }
-    }
-
-    void MeshList::iterate(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
-    {
-        if(auto mesh = get_mesh(id))
-        {
-            func(mesh);
         }
     }
 
@@ -317,5 +362,7 @@ namespace volumeshOS::Internal
     {
         return m_mesh_list.find(id) != m_mesh_list.end() ? m_mesh_list[id] : nullptr;
     }
+
+
 
 };
