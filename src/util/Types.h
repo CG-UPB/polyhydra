@@ -5,8 +5,6 @@
 
 namespace volumeshOS
 {
-    using MeshID = int;
-    using HandleID = int;
 
     enum class EntityType
     {

@@ -19,6 +19,7 @@
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
 #include "panels/Window.h"
+#include "../mesh/MeshList.h"
 
 namespace volumeshOS::Internal
 {
@@ -45,6 +46,10 @@ namespace volumeshOS::Internal
         void render(RenderData* render_data, bool render_bg = true);
 
         void set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target);
+
+
+        // mesh list
+        std::shared_ptr<MeshList> mesh_list                                    = nullptr;
 
     private:
 

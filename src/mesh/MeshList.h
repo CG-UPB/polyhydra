@@ -17,11 +17,13 @@ namespace volumeshOS::Internal
 
         /* Mesh Management */
 
+        int next_id();
+
         // add mesh by OVM-Mesh
-        int add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
+        void add_mesh(MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
 
         // add mesh by path to OVM-FIle
-        int add_mesh(const std::string& path);
+        void add_mesh(MeshID id, const std::string& path);
 
         // sets OVM-Mesh to existing ID
         void set_mesh(MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
@@ -138,10 +140,10 @@ namespace volumeshOS::Internal
         /* Utility */
 
         // iterate over meshes and execute func if id matches
-        void iterate( const std::function<void()>&, MeshID id);
+        void iterate( const std::function<void(std::shared_ptr<MeshObject>)>&, MeshID id);
 
         // iterate over meshes and execute func for each mesh
-        void iterate(const std::function<void(std::shared_ptr<MeshObject>)>& func);
+        void execute_for_mesh(const std::function<void(MeshID id, std::shared_ptr<MeshObject>)>& func);
 
 
     private:
@@ -156,6 +158,9 @@ namespace volumeshOS::Internal
 
         // number of total meshes
         int m_total_meshes;
+
+        // id counter
+        int m_id_count;
 
         // id of the focused mesh
         MeshID m_focused_mesh;

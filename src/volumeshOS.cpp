@@ -60,7 +60,7 @@ namespace volumeshOS
         commands.emplace_back([&id, &instance]{
             mesh_list->add_mesh(id, instance);
         });
-
+        return vmesh;
     }
 
     VMesh load(const std::string& path)
@@ -316,7 +316,7 @@ namespace volumeshOS
     void set_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, bool visible)
     {
         commands.emplace_back([&mesh, &cell, &visible](){
-            mesh_list.set_visibility(mesh.get_id(), cell, visible);
+            mesh_list->set_visibility(mesh.get_id(), cell, visible);
         });
     }
 
@@ -372,11 +372,11 @@ namespace volumeshOS
 
     void focus(const VMesh& mesh)
     {
-        if(auto mesh_obj = mesh_list.get_mesh(mesh.get_id()))
+        if(auto mesh_obj = mesh_list->get_mesh(mesh.get_id()))
         {
             auto pos = mesh_obj->get_data().position;
             commands.emplace_back([&pos](){
-                camera.look_at(pos);
+                camera->look_at(pos);
             });
         }
     }

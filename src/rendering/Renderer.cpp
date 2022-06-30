@@ -26,6 +26,8 @@ namespace volumeshOS::Internal
         last_x = width / 2.0f;
         last_y = height / 2.0f;
 
+        mesh_list = std::make_shared<MeshList>();
+
     }
 
     void Renderer::resize(int width, int height)
@@ -68,18 +70,20 @@ namespace volumeshOS::Internal
                 render_background(*render_data);
             }
             m_target_ms->bind();
-            for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-            {
-                if (mesh == nullptr || !mesh->get_data().visible)
+
+            mesh_list->iterate([&](auto id, auto mesh){
+                if(mesh && mesh->get_data().visible)
                 {
-                    continue;
+                    mesh->update_vertex_buffer();
+                    if (mesh->get_vao() != nullptr)
+                    {
+                        m_vertex_only_pass.render(nullptr, *render_data, mesh);
+                    }
                 }
-                mesh->update_vertex_buffer();
-                if (mesh->get_vao() != nullptr)
-                {
-                    m_vertex_only_pass.render(nullptr, *render_data, mesh);
-                }
-            }
+            });
+
+            for (auto [id, mesh])
+
             m_target_ms->unbind();
         }
         else

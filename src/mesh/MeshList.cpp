@@ -6,12 +6,18 @@ namespace volumeshOS::Internal
     MeshList::MeshList()
     {
         m_total_meshes = 0;
+        m_id_count = 0;
         m_focused_mesh = -1;
     }
 
-    int MeshList::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
+    MeshID MeshList::next_id()
     {
-        int mesh_id = m_total_meshes++;
+        return ++m_id_count;
+    }
+
+    void MeshList::add_mesh(MeshID mesh_id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
+    {
+
         auto new_mesh = std::make_shared<MeshObject>(mesh_id);
         new_mesh->set_mesh_name(std::to_string(mesh->n_vertices()));
         new_mesh->set_mesh(mesh);
@@ -25,13 +31,12 @@ namespace volumeshOS::Internal
         // calculate the range of the selection ids per mesh
         calculate_selection_offsets();
 
-        return mesh_id;
     }
 
-    int MeshList::add_mesh(const std::string& path)
+    void MeshList::add_mesh(MeshID mesh_id, const std::string& path)
     {
         auto ovm_mesh = load_from_file(path);
-        add_mesh(ovm_mesh);
+        add_mesh(mesh_id, ovm_mesh);
     }
 
     void MeshList::set_mesh(const MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
@@ -59,9 +64,10 @@ namespace volumeshOS::Internal
     {
         for(auto it = m_mesh_list.begin(); it!= m_mesh_list.end();)
         {
-            if(it->first == id)
+            if (it->first == id)
             {
                 m_mesh_list.erase(it);
+                m_total_meshes--;
             }
             else
             {
@@ -76,6 +82,7 @@ namespace volumeshOS::Internal
         {
             m_mesh_list.erase(it);
         }
+        m_total_meshes = 0;
     }
 
 
@@ -182,7 +189,7 @@ namespace volumeshOS::Internal
         static auto f = [this, &visible, &id]() -> void{
             get_mesh(id)->get_data().visible = visible;
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::reset_visibility(MeshID id)
@@ -203,7 +210,7 @@ namespace volumeshOS::Internal
 
     void MeshList::set_color(const Color& color)
     {
-        static auto f = [this, &color](const std::shared_ptr<MeshObject>& mesh) -> void{
+        static auto f = [this, &color](MeshID id, const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->set_mesh_color(color);
         };
         iterate(f);
@@ -211,34 +218,34 @@ namespace volumeshOS::Internal
 
     void MeshList::set_color(const MeshID id, const Color& color)
     {
-        static auto f = [this, &id, &color]() -> void{
-            get_mesh(id)->set_mesh_color(color);
+        static auto f = [this, &id, &color](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->set_mesh_color(color);
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_color(const MeshID id, OpenVolumeMesh::CellHandle cell, const Color& color)
     {
-        static auto f = [this, &id, &cell, &color]() -> void{
-            get_mesh(id)->set_cell_color(cell.idx(), color);
+        static auto f = [this, &id, &cell, &color](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->set_cell_color(cell.idx(), color);
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_color(const MeshID id, OpenVolumeMesh::FaceHandle face, const Color& color)
     {
-        static auto f = [this, &id, &face, &color]() -> void{
-            get_mesh(id)->set_face_color(face.idx(), color);
+        static auto f = [this, &id, &face, &color](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->set_face_color(face.idx(), color);
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     void MeshList::set_color(const MeshID id, OpenVolumeMesh::HalfFaceHandle halfface, const Color& color)
     {
-        static auto f = [this, &id, &halfface, &color]() -> void{
-            get_mesh(id)->set_face_color(halfface.idx(), color);
+        static auto f = [this, &id, &halfface, &color](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->set_face_color(halfface.idx(), color);
         };
-        iterate(f, id);
+        execute_for_mesh(f, id);
     }
 
     /*
@@ -269,15 +276,18 @@ namespace volumeshOS::Internal
         }
     }
 
-    void MeshList::iterate(const std::function<void(std::shared_ptr<MeshObject>)>& func)
+    void MeshList::execute_for_mesh(const std::function<void(MeshID id, std::shared_ptr<MeshObject>)>& func)
     {
         for(const auto& [id, mesh] : m_mesh_list)
         {
-            func(mesh);
+            if(mesh)
+            {
+                func(id, mesh);
+            }
         }
     }
 
-    void MeshList::iterate(const std::function<void()>& func, MeshID id)
+    void MeshList::iterate(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
     {
         if(auto mesh = get_mesh(id))
         {
