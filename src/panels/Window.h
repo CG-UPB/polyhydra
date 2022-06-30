@@ -4,7 +4,7 @@
 
 #include "vospch.h"
 
-#include "ImguiRenderer.h"
+#include "Window.h"
 #include "mesh/MeshObject.h"
 #include "rendering/shapes/Box.h"
 #include "rendering/shapes/Cylinder.h"
@@ -253,7 +253,7 @@ namespace volumeshOS::Internal
         // the destructor of these pointers is called in reverse initialization order
         // so declaring this first makes sure that its destructor is called last, which is important
         // since it destroys the opengl context, which is needed to destroy the other objects
-        std::unique_ptr<ImguiRenderer> m_imgui_renderer;
+        std::unique_ptr<Window> m_imgui_renderer;
 
         // Responsible for Mesh rendering
         std::unique_ptr<MeshView> m_mesh_view;

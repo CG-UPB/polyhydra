@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-#include "../ImguiRenderer.h"
+#include "../Window.h"
 
 namespace volumeshOS::Internal
 {

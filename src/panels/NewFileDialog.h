@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ImguiRenderer.h"
+#include "../Window.h"
 #include <tinyfiledialogs.h>
 
 namespace volumeshOS::Internal

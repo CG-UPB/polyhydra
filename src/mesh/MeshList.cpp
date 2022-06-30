@@ -279,16 +279,9 @@ namespace volumeshOS::Internal
 
     void MeshList::iterate(const std::function<void()>& func, MeshID id)
     {
-        for(auto it = m_mesh_list.begin(); it!= m_mesh_list.end();)
+        if(auto mesh = get_mesh(id))
         {
-            if(it->first == id)
-            {
-                func();
-            }
-            else
-            {
-                ++it;
-            }
+            func(mesh);
         }
     }
 

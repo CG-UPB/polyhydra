@@ -4,7 +4,7 @@
 
 #include "../rendering/gl/PixelBufferObject.h"
 #include "../rendering/gl/PrePassFrameBufferObject.h"
-#include "../ImguiRenderer.h"
+#include "../Window.h"
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/BackgroundPass.h"

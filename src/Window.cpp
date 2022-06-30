@@ -1,7 +1,6 @@
 
-#include "ImguiRenderer.h"
+#include "Window.h"
 
-#include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
@@ -9,35 +8,41 @@
 #include "input/Input.h"
 #include "util/UIUtil.h"
 #include "fs/FileManager.h"
-#include "panels/LogWindow.h"
 #include "rendering/gl/Shader.h"
 
 #include <stb_image.h>
 
 namespace volumeshOS::Internal
 {
-    static void glfwErrorCallback(int error, const char *description)
+    static void glfw_error_callback(int error, const char* description)
     {
         fprintf(stderr, "Glfw Error %d: %s\n", error, description);
     }
 
-    static void printError(const std::string& description)
+    static void print_error(const std::string& description)
     {
         fprintf(stderr, "Error: %s\n", description.c_str());
     }
 
+    Window::Window(int width, int height, std::string title):
+        m_width(width),
+        m_height(height),
+        m_title(std::move(title)),
+        m_window(nullptr)
+    {}
 
-    ImguiRenderer::ImguiRenderer(int width, int height, std::string title): m_width(width), m_height(height), m_title(std::move(title))
+    void Window::initialize()
     {
-        initGLFW();
-        initImGui();
-        initImGuiStyle();
+        init_glfw();
+        init_imgui();
+        init_style();
         Shader::load_all();
         UIUtil::load_all();
         VertexArrayObject::init();
+        m_open = true;
     }
 
-    ImguiRenderer::~ImguiRenderer()
+    void Window::clean_up()
     {
         VertexArrayObject::clean_up();
         UIUtil::clean_up();
@@ -50,13 +55,14 @@ namespace volumeshOS::Internal
         glfwDestroyWindow(get_window());
 
         glfwTerminate();
+        m_open = false;
     }
 
 
-    void ImguiRenderer::initGLFW()
+    void Window::init_glfw()
     {
         // Setup window
-        glfwSetErrorCallback(glfwErrorCallback);
+        glfwSetErrorCallback(glfw_error_callback);
         if (!glfwInit())
         {
             return;
@@ -91,7 +97,7 @@ namespace volumeshOS::Internal
         m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
         if (m_window == nullptr)
         {
-            printError("Failed to create window");
+            print_error("Failed to create window");
             return;
         }
 
@@ -102,25 +108,19 @@ namespace volumeshOS::Internal
 
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1); // Enable vsync
-        // Setup Input Class
+
         Input::setup(m_window);
-        /*
-        glfwSetKeyCallback(m_window, Input::glfwKeyCallback);
-        glfwSetMouseButtonCallback(m_window, Input::glfwMouseButtonCallback);
-        glfwSetCursorPosCallback(m_window, Input::glfwMouseCursorPosCallback);
-        glfwSetScrollCallback(m_window, Input::glfwScrollCallback);
-         */
 
         // load opengl functions
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-            printError("Failed to initialize OpenGL context");
+            print_error("Failed to initialize OpenGL context");
             return;
         }
 
         glEnable(GL_MULTISAMPLE);
     }
 
-    void ImguiRenderer::initImGui()
+    void Window::init_imgui()
     {
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
@@ -142,7 +142,7 @@ namespace volumeshOS::Internal
         ImGui_ImplOpenGL3_Init(m_glslVersion.c_str());
     }
 
-    void ImguiRenderer::initImGuiStyle()
+    void Window::init_style()
     {
         ImGuiStyle& style = ImGui::GetStyle();
 
@@ -163,33 +163,32 @@ namespace volumeshOS::Internal
         load_light_mode();
     }
 
-    void ImguiRenderer::show_dock_space()
+    void Window::show_dock_space()
     {
-        // Note: Switch this to true to enable dockspace
         static bool dockSpaceOpen = true;
         static ImGuiDockNodeFlags dockSpaceFlags = ImGuiDockNodeFlags_None;
 
-        // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-        // because it would be confusing to have two docking targets within each others.
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
         ImGuiViewport* viewport = ImGui::GetMainViewport();
+
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
         ImGui::SetNextWindowViewport(viewport->ID);
+
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+        ImGuiWindowFlags window_flags =
+                        ImGuiWindowFlags_NoDocking |
+                        ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoCollapse |
+                        ImGuiWindowFlags_NoResize |
+                        ImGuiWindowFlags_NoMove |
+                        ImGuiWindowFlags_NoBringToFrontOnFocus |
+                        ImGuiWindowFlags_NoNavFocus;
+
         if (dockSpaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
             window_flags |= ImGuiWindowFlags_NoBackground;
 
-        // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-        // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-        // all active windows docked into it will lose their parent and become undocked.
-        // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-        // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("DockSpace Demo", &dockSpaceOpen, window_flags);
         ImGui::PopStyleVar(3);
@@ -207,11 +206,18 @@ namespace volumeshOS::Internal
         style.WindowMinSize.x = minWinSizeX;
     }
 
-    bool ImguiRenderer::window_closed() {
-        return glfwWindowShouldClose(get_window());
+    bool Window::should_close()
+    {
+        return glfwWindowShouldClose(get_window()) || !m_open;
     }
 
-    void ImguiRenderer::pre_render_step() {
+    void Window::close()
+    {
+        m_open = false;
+    }
+
+    void Window::pre_render_step()
+    {
 
         glfwPollEvents();
 
@@ -225,7 +231,17 @@ namespace volumeshOS::Internal
         //ImGui::ShowDemoWindow();
     }
 
-    void ImguiRenderer::post_render_step() {
+    void Window::render()
+    {
+        pre_render_step();
+
+
+
+        post_render_step();
+    }
+
+    void Window::post_render_step()
+    {
 
         ImGui::End();
 
@@ -244,7 +260,7 @@ namespace volumeshOS::Internal
         Input::reset_offset();
     }
 
-    void ImguiRenderer::load_light_mode()
+    void Window::load_light_mode()
     {
         ImVec4* colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_Text]                   = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
@@ -304,7 +320,7 @@ namespace volumeshOS::Internal
         colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     }
 
-    void ImguiRenderer::load_dark_mode()
+    void Window::load_dark_mode()
     {
         ImVec4* colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
