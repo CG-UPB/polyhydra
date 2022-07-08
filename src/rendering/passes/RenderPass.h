@@ -4,6 +4,7 @@ namespace volumeshOS::Internal
 {
     class Renderer;
     class Shader;
+    class VertexArrayObject;
 
     struct RenderPass
     {

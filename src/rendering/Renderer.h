@@ -22,6 +22,8 @@
 
 namespace volumeshOS::Internal
 {
+    class SSAOPass;
+
     class Renderer
     {
     public:

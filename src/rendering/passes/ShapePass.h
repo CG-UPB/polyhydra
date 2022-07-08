@@ -40,7 +40,7 @@ namespace volumeshOS::Internal
         [[nodiscard]] static const Shape& get_shape(unsigned int shape_id);
 
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData &data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
 
     private:
         // List of all Shapes

@@ -1,5 +1,6 @@
 
 #include "ShapePass.h"
+#include "../Renderer.h"
 
 namespace volumeshOS::Internal
 {
@@ -15,42 +16,42 @@ namespace volumeshOS::Internal
         }
     }
 
-    void ShapePass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void ShapePass::render(const Renderer& renderer)
     {
-        // Translate
-        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
-
-        glDisable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
-
-        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
-
-        // Renders all Shapes
-        for (Shape* shape : s_shapes)
-        {
-            // Get Shape Shader
-            Shader& shader = *shape->get_shader();
-            shader.bind();
-
-            // Set uniform variables
-            shader.set_uniform_mat4f("u_mesh_transform", transform);
-            shader.set_uniform_mat4f("u_projection", data.camera.projection);
-            shader.set_uniform_mat4f("u_view", data.camera.view);
-
-            shader.set_uniform_vec3f("u_light_pos", light_pos);
-            shader.set_uniform_vec3f("u_cam_pos", data.camera.position);
-            shader.set_uniform_vec3f("u_light_color", data.light.color);
-            shader.set_uniform_bool("u_phong", true);
-
-            shader.set_uniform_mat4f("u_transform", shape->get_transform());
-            shader.set_uniform_vec4f("u_base_color", shape->get_base_color());
-
-            // Draw Shape
-            shape->draw();
-
-            shader.unbind();
-        }
+//        // Translate
+//        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
+//
+//        glDisable(GL_CULL_FACE);
+//        glEnable(GL_DEPTH_TEST);
+//        glDepthMask(GL_TRUE);
+//
+//        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.position, 1.0));
+//
+//        // Renders all Shapes
+//        for (Shape* shape : s_shapes)
+//        {
+//            // Get Shape Shader
+//            Shader& shader = *shape->get_shader();
+//            shader.bind();
+//
+//            // Set uniform variables
+//            shader.set_uniform_mat4f("u_mesh_transform", transform);
+//            shader.set_uniform_mat4f("u_projection", data.camera.projection);
+//            shader.set_uniform_mat4f("u_view", data.camera.view);
+//
+//            shader.set_uniform_vec3f("u_light_pos", light_pos);
+//            shader.set_uniform_vec3f("u_cam_pos", data.camera.position);
+//            shader.set_uniform_vec3f("u_light_color", data.light.color);
+//            shader.set_uniform_bool("u_phong", true);
+//
+//            shader.set_uniform_mat4f("u_transform", shape->get_transform());
+//            shader.set_uniform_vec4f("u_base_color", shape->get_base_color());
+//
+//            // Draw Shape
+//            shape->draw();
+//
+//            shader.unbind();
+//        }
     }
 
     void ShapePass::add_shape(Shape* shape)

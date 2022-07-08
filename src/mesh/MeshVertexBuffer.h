@@ -149,7 +149,7 @@ namespace volumeshOS::Internal
     {
     public:
 
-        explicit MeshVertexBuffer(Mesh mesh);
+        explicit MeshVertexBuffer(OVMesh mesh);
 
         /**
          * converts selection id of vertices to OVM id
@@ -256,7 +256,7 @@ namespace volumeshOS::Internal
 
         void build_vertex_arrays();
 
-        void add_cell_rounded(const std::shared_ptr<Mesh>& mesh, Cell cell);
+        void add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
 
         unsigned int add_vertex_data_to_cell_data(
                 RoundedCellData& data,
@@ -272,14 +272,14 @@ namespace volumeshOS::Internal
 
         void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2) const;
 
-        void add_cell_by_faces(const std::shared_ptr<Mesh>& mesh, Cell cell);
+        void add_cell_by_faces(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
 
         void add_face_indices(HalffaceData& face) const;
 
-        void add_from_to_vertex(const std::shared_ptr<Mesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
+        void add_from_to_vertex(const std::shared_ptr<OVMesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
                                 const OpenVolumeMesh::VertexHandle& to);
 
-        static std::vector<float> get_vertices(const std::shared_ptr<Mesh>& mesh);
+        static std::vector<float> get_vertices(const std::shared_ptr<OVMesh>& mesh);
 
         [[nodiscard]] inline glm::vec3 halfface_normal_to_vec3(int halfface_id);
 
@@ -331,8 +331,8 @@ namespace volumeshOS::Internal
         void update_vertex_arrays();
 
         // ovm references
-        std::shared_ptr<Mesh> m_mesh;
-        OpenVolumeMesh::NormalAttrib<Mesh> m_normals;
+        std::shared_ptr<OVMesh> m_mesh;
+        OpenVolumeMesh::NormalAttrib<OVMesh> m_normals;
 
         // loading stats
         int m_num_loaded_cells = 0;

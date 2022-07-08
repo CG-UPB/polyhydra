@@ -47,10 +47,10 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
-    MeshVertexBuffer::MeshVertexBuffer(Mesh mesh):
+    MeshVertexBuffer::MeshVertexBuffer(OVMesh mesh):
         m_current_loading_cell_it(mesh.cells_begin()), m_normals(mesh)
     {
-        m_mesh = std::make_shared<Mesh>(mesh);
+        m_mesh = std::make_shared<OVMesh>(mesh);
         // first update the normal face attribute for all faces
         m_normals.update_vertex_normals();
         m_original_vertices = get_vertices(m_mesh);
@@ -173,7 +173,7 @@ namespace volumeshOS::Internal
         return ((float) m_num_loaded_cells / (float) m_mesh->n_cells()) * 100.0f;
     }
 
-    void MeshVertexBuffer::add_cell_by_faces(const std::shared_ptr<Mesh>& mesh, Cell cell)
+    void MeshVertexBuffer::add_cell_by_faces(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
     {
         auto peel_property = mesh->request_cell_property<int>(MeshProperties::PROP_PEEL_DEPTH);
 
@@ -259,7 +259,7 @@ namespace volumeshOS::Internal
             {
                 // get the corresponding edge vertex
                 auto vertex = mesh->from_vertex_handle(hfhe_it);
-                auto face = Mesh::face_handle(chf_it);
+                auto face = OVMesh::face_handle(chf_it);
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
                 vertex_normals.push_back(vertex_normal);
@@ -458,7 +458,7 @@ namespace volumeshOS::Internal
         data.indices.push_back(m_current_rounded_index + i1);
     }
 
-    void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<Mesh>& mesh, Cell cell)
+    void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
     {
         int cell_vertex_offset = m_vertex_offset_rounded;
 
@@ -643,7 +643,7 @@ namespace volumeshOS::Internal
                 glm::vec3 edge_face_center_average = (face_centers[data.halfface_id] + face_centers[prev_data.halfface_id]) * 0.5f;
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
 
-                auto edge = Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
+                auto edge = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
                 // edge vertex
                 halfedge_vertex_indices[edge.idx()][data.from_vertex_id] = add_vertex_data_to_cell_data(
                         cell_data,
@@ -658,7 +658,7 @@ namespace volumeshOS::Internal
                 );
                 total_cell_vertex_count++;
 
-                auto face = Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
+                auto face = OVMesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex_id) : -face_normal;
 
@@ -777,8 +777,8 @@ namespace volumeshOS::Internal
                 const int to_corner_vertex_halfedge_id = face_vertex.to_vertex_halfedge_id;
                 const int next_to_corner_vertex_halfedge_id = face_vertex.next_to_vertex_halfedge_id;
 
-                const int to_corner_vertex_edge_id = Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
-                const int next_to_corner_vertex_edge_id = Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
+                const int to_corner_vertex_edge_id = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
+                const int next_to_corner_vertex_edge_id = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
 
                 const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
 
@@ -821,7 +821,7 @@ namespace volumeshOS::Internal
         m_current_rounded_index += (int) cell_data.vertex_positions.size() / 3;
     }
 
-    void MeshVertexBuffer::add_from_to_vertex(const std::shared_ptr<Mesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
+    void MeshVertexBuffer::add_from_to_vertex(const std::shared_ptr<OVMesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
                                               const OpenVolumeMesh::VertexHandle& to)
     {
         VecUtil::push_vec3(
@@ -834,7 +834,7 @@ namespace volumeshOS::Internal
         );
     }
 
-    std::vector<float> MeshVertexBuffer::get_vertices(const std::shared_ptr<Mesh>& mesh)
+    std::vector<float> MeshVertexBuffer::get_vertices(const std::shared_ptr<OVMesh>& mesh)
     {
         std::vector<float> vertices;
         vertices.reserve(mesh->n_vertices() * 3);
