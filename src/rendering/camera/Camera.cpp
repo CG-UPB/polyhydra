@@ -11,8 +11,7 @@ namespace volumeshOS::Internal
      *
      */
 
-    Camera::Camera() :
-            m_trackball(*this, 1.0f)
+    Camera::Camera()
     {
 
         set_viewport_size(800, 600);

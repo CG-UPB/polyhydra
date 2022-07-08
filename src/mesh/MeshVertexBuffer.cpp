@@ -47,10 +47,10 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
-    MeshVertexBuffer::MeshVertexBuffer(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh):
-        m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
+    MeshVertexBuffer::MeshVertexBuffer(Mesh mesh):
+        m_current_loading_cell_it(mesh.cells_begin()), m_normals(mesh)
     {
-        m_mesh = std::make_shared<MeshVertexBuffer>(mesh);
+        m_mesh = std::make_shared<Mesh>(mesh);
         // first update the normal face attribute for all faces
         m_normals.update_vertex_normals();
         m_original_vertices = get_vertices(m_mesh);
@@ -259,7 +259,7 @@ namespace volumeshOS::Internal
             {
                 // get the corresponding edge vertex
                 auto vertex = mesh->from_vertex_handle(hfhe_it);
-                auto face = volumeshOS::Mesh::face_handle(chf_it);
+                auto face = Mesh::face_handle(chf_it);
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
                 vertex_normals.push_back(vertex_normal);
@@ -471,7 +471,7 @@ namespace volumeshOS::Internal
         // start with the halffaces, because with them, we can navigate inside the current cell without other cells
         // if we would instead take the halfedges of a vertex for example, they would include other cells,
         // which we don't want
-        mesh->set_color()
+        //mesh->set_color()
         for (auto chf_it: mesh->cell_halffaces(cell))
         {
             face_normals[chf_it.idx()] = halfface_normal_to_vec3(chf_it.idx());
@@ -643,7 +643,7 @@ namespace volumeshOS::Internal
                 glm::vec3 edge_face_center_average = (face_centers[data.halfface_id] + face_centers[prev_data.halfface_id]) * 0.5f;
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
 
-                auto edge = volumeshOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
+                auto edge = Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
                 // edge vertex
                 halfedge_vertex_indices[edge.idx()][data.from_vertex_id] = add_vertex_data_to_cell_data(
                         cell_data,
@@ -658,7 +658,7 @@ namespace volumeshOS::Internal
                 );
                 total_cell_vertex_count++;
 
-                auto face = volumeshOS::Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
+                auto face = Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex_id) : -face_normal;
 
@@ -777,8 +777,8 @@ namespace volumeshOS::Internal
                 const int to_corner_vertex_halfedge_id = face_vertex.to_vertex_halfedge_id;
                 const int next_to_corner_vertex_halfedge_id = face_vertex.next_to_vertex_halfedge_id;
 
-                const int to_corner_vertex_edge_id = volumeshOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
-                const int next_to_corner_vertex_edge_id = volumeshOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
+                const int to_corner_vertex_edge_id = Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
+                const int next_to_corner_vertex_edge_id = Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
 
                 const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
 

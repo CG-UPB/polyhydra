@@ -4,6 +4,10 @@
 #include "../panels/LogWindow.h"
 #include "MeshProperties.h"
 
+#include "rendering/shapes/Sphere.h"
+#include "rendering/shapes/Box.h"
+#include "rendering/shapes/Cylinder.h"
+
 namespace volumeshOS::Internal
 {
 
@@ -62,11 +66,9 @@ namespace volumeshOS::Internal
             shape->set_base_color(0.0f, 1.0f, 0.0f);
 
             // There a guaranteed Mutex Guard around this method
-            Window::instance().rendering_mutex.unlock();
-            int shape_id = Window::instance().add_shape(shape);
-            Window::instance().rendering_mutex.lock();
+            //int shape_id = Window::instance().add_shape(shape);
 
-            m_created_shapes.insert({shape_key, shape_id});
+            //m_created_shapes.insert({shape_key, shape_id});
         }
         else if (type == EntityType::Edge)
         {
@@ -85,11 +87,9 @@ namespace volumeshOS::Internal
             shape->set_base_color(0.0f, 0.0f, 1.0f);
 
             // There a guaranteed Mutex Guard around this method
-            Window::instance().rendering_mutex.unlock();
-            int shape_id = Window::instance().add_shape(shape);
-            Window::instance().rendering_mutex.lock();
+            //int shape_id = Window::instance().add_shape(shape);
 
-            m_created_shapes.insert({shape_key, shape_id});
+            //m_created_shapes.insert({shape_key, shape_id});
         }
         else if (type == EntityType::Cell)
         {
@@ -115,9 +115,7 @@ namespace volumeshOS::Internal
             shape->set_base_color(0.0f, 1.0f, 0.0f);
 
             // There a guaranteed Mutex Guard around this method
-            Window::instance().rendering_mutex.unlock();
-            int shape_id = Window::instance().add_shape(shape);
-            Window::instance().rendering_mutex.lock();
+            //int shape_id = Window::instance().add_shape(shape);
 
         }
     }
@@ -139,9 +137,7 @@ namespace volumeshOS::Internal
             int shape_key = 1 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
-            Window::instance().rendering_mutex.unlock();
-            Window::instance().remove_shape(shape_id);
-            Window::instance().rendering_mutex.lock();
+            //Window::instance().remove_shape(shape_id);
         }
         m_selected_vertices.clear();
         // Delete Edge Elements
@@ -151,9 +147,7 @@ namespace volumeshOS::Internal
             int shape_key = 2 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
-            Window::instance().rendering_mutex.unlock();
-            Window::instance().remove_shape(shape_id);
-            Window::instance().rendering_mutex.lock();
+            //Window::instance().remove_shape(shape_id);
         }
         m_selected_edges.clear();
         // Delete Cell Elements
@@ -163,9 +157,7 @@ namespace volumeshOS::Internal
             int shape_key = 3 * key_multiplier + element;
             int shape_id = m_created_shapes[shape_key];
 
-            Window::instance().rendering_mutex.unlock();
-            Window::instance().remove_shape(shape_id);
-            Window::instance().rendering_mutex.lock();
+            //Window::instance().remove_shape(shape_id);
         }
         m_selected_cells.clear();
         m_created_shapes.clear();
@@ -204,9 +196,7 @@ namespace volumeshOS::Internal
         int shape_id = m_created_shapes[shape_key];
 
 
-        Window::instance().rendering_mutex.unlock();
-        Window::instance().remove_shape(shape_id);
-        Window::instance().rendering_mutex.lock();
+        //Window::instance().remove_shape(shape_id);
 
         m_created_shapes.erase(m_created_shapes.find(shape_key));
     }
@@ -248,7 +238,7 @@ namespace volumeshOS::Internal
         translate(glm::vec3(0.0f));
         scale(glm::vec3(1.0f));
 
-        m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
+        m_mvb = std::make_shared<MeshVertexBuffer>(*m_mesh);
     }
 
     void MeshObject::update_vertex_buffer()

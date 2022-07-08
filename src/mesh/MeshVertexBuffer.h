@@ -151,7 +151,7 @@ namespace volumeshOS::Internal
     {
     public:
 
-        explicit MeshVertexBuffer(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
+        explicit MeshVertexBuffer(Mesh mesh);
 
         /**
          * converts selection id of vertices to OVM id
