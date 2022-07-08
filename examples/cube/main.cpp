@@ -10,7 +10,9 @@ int main()
         {
             if (auto file = volumeshOS::file_dialog("Select ovm file"))
             {
-                mesh = volumeshOS::load(file);
+                mesh.update(file);
+                //mesh = volumeshOS::update(file);
+                volumeshOS::update(mesh, file);
             }
         }
         ImGui::End();
@@ -18,6 +20,7 @@ int main()
     volumeshOS::on_cell_select([](auto mesh, auto cell){
         mesh.isolate(cell);
         mesh.load_configuration("");
+        mesh.set_color(cell, glm::vec3());
     });
     volumeshOS::open();
 }

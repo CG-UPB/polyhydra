@@ -32,7 +32,7 @@ namespace volumeshOS::Internal
     class TransparencyPass_WB;
     class TransparencyPass_DP;
 
-    typedef std::function<void(int type, int picked_id)> SelectionCallback;
+    typedef std::function<void(int, int)> SelectionCallback;
 
     class Renderer
     {

@@ -15,7 +15,8 @@ namespace volumeshOS::Internal
         m_background_shader = Shader::background_shader();
     }
 
-    void BackgroundPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+
+    void BackgroundPass::render(std::shared_ptr<VertexArrayObject> vao, std::shared_ptr<MeshObject> mesh)
     {
         // Parameters are ignored, as they are not necessary
 

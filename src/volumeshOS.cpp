@@ -1,4 +1,11 @@
 
+#define VOS_IGNORE_INVALID_MESH
+#ifndef VOS_IGNORE_INVALID_MESH
+    #define VOS_ASSERT_VALID_MESH(mesh, list) assert(list->get_mesh(mesh.get_id()) && "Invalid VMesh handle")
+#else
+    #define VOS_ASSERT_VALID_MESH(mesh, list) if (!list->get_mesh(mesh.get_id())) return
+#endif
+
 #include "volumeshOS.h"
 
 #include "Window.h"
@@ -6,10 +13,10 @@
 
 namespace volumeshOS
 {
-    std::vector<std::function<void()>> commands     = {};
-    std::unique_ptr<Internal::Window> window        = nullptr;
-    std::shared_ptr<Internal::MeshList> mesh_list   = nullptr;
-    std::shared_ptr<Internal::Camera> camera        = nullptr;
+    static std::vector<std::function<void()>> commands     = {};
+    static std::unique_ptr<Internal::Window> window        = nullptr;
+    static std::shared_ptr<Internal::MeshList> mesh_list   = nullptr;
+    static std::shared_ptr<Internal::Camera> camera        = nullptr;
 
     void initialize()
     {
@@ -74,14 +81,14 @@ namespace volumeshOS
         return vmesh;
     }
 
-    void load(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
+    void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
     {
         commands.emplace_back([&mesh, &instance]{
             mesh_list->set_mesh(mesh.get_id(), instance);
         });
     }
 
-    void load(const VMesh& mesh, const std::string& path)
+    void update(const VMesh& mesh, const std::string& path)
     {
         commands.emplace_back([&mesh, &path]{
             mesh_list->set_mesh(mesh.get_id(), path);

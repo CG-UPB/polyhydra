@@ -4,7 +4,6 @@
 
 #include "../rendering/gl/VertexArrayObject.h"
 #include "MeshVertexBuffer.h"
-#include "nlohmann/json.hpp"
 #include "../util/VecUtil.h"
 
 
@@ -80,7 +79,7 @@ namespace volumeshOS::Internal
         }
 
 
-        const glm::mat4& get_transform() const
+        [[nodiscard]] const glm::mat4& get_transform() const
         {
             return transformation;
         }
@@ -94,11 +93,10 @@ namespace volumeshOS::Internal
             transformation =  scal * rot * translation;
         }
 
-        glm::mat4 translation = glm::mat4(1.0f);
-        glm::mat4 scaling = glm::mat4(1.0f);
-        glm::mat4 rotation = glm::mat4(1.0f);
-        glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::mat4 transformation = glm::mat4(1.0f);
+        glm::mat4 translation       = glm::mat4(1.0f);
+        glm::mat4 scaling           = glm::mat4(1.0f);
+        glm::mat4 rotation          = glm::mat4(1.0f);
+        glm::mat4 transformation    = glm::mat4(1.0f);
 
         // Rendering Variables
         Color color                 = Color{0.76f, 0.76f, 0.76f, 1.0f};
@@ -309,8 +307,6 @@ namespace volumeshOS::Internal
         void scale(glm::vec3 vec);
 
         void rotate(float angle, glm::vec3 axis);
-
-        glm::vec3 get_up_direction();
 
     private:
         /**

@@ -63,7 +63,7 @@ namespace volumeshOS::Internal
         // file endings for the savefile-dialog
         const char* m_save_filter_pattern[2] = {"*.png", "*.bmp"};
 
-        // file ending for the load-mesh-data-dialog
+        // file ending for the update-mesh-data-dialog
         const char* m_load_mesh_filter_pattern[1] = {"*.json"};
         // file ending for the save-mesh-data-dialog
         const char* m_save_mesh_filter_pattern[1] = {"*.json"};

@@ -16,7 +16,7 @@ namespace volumeshOS::Internal
 
         if (image_data == nullptr)
         {
-            std::string message = "Failed to load texture: ";
+            std::string message = "Failed to update texture: ";
             message.append(file_path.string());
             throw std::runtime_error(message.c_str());
         }

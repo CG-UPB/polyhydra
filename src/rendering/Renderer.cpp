@@ -135,6 +135,87 @@ namespace volumeshOS::Internal
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms, m_target);
     }
 
+    void render()
+    {
+        for(mesh)
+        {
+//            if (mesh == nullptr)
+//            {
+//                return;
+//            }
+//            MeshData& mesh_data = mesh->get_data();
+//
+//            if (!mesh_data.visible)
+//            {
+//                return;
+//            }
+//            mesh->update_vertex_buffer();
+//
+//            auto vao = mesh->get_vao();
+//            if (mesh_data.rounding_active)
+//            {
+//                vao = mesh->get_mvb()->get_vao_rounded();
+//            }
+//
+//            // render all passes
+//            if (vao != nullptr)
+//            {
+
+            // check if data should be added to data_list
+
+            // calculate data once for each mesh
+            m_data[mesh] = {
+                    .should_render = mesh.visible && vao != nullptr,
+
+            };
+        }
+
+
+        // calculate variables for all passes
+
+        for(pass)
+        {
+            for(mesh)
+            {
+                m_current_data = data[mesh];
+                pass.render(this)
+            }
+        }
+
+        pass1(this)
+        pass2(this)
+        pass3(this)
+
+
+        for (auto mesh : mesh_list)
+        {
+            // Calculate render variables
+            data.current_mesh = mesh;
+            data.view_transform = ...;
+            ...
+
+            m_mesh_pass.render(this);
+            m_selection_pass.render(this);
+            ...
+        }
+    }
+
+    void pass1()
+    {
+        for_each_mesh([]{
+
+        });
+    }
+
+    void for_each_mesh(std::function<void()> fn)
+    {
+        for (mesh : meshes_to_render)
+        {
+            m_current_data = render_data[mesh];
+            fn();
+        }
+    }
+
     void Renderer::handle_input()
     {
         Input::update();

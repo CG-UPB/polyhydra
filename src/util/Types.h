@@ -5,6 +5,16 @@
 
 namespace volumeshOS
 {
+    namespace Internal
+    {
+        typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>   OVMesh;
+        typedef OpenVolumeMesh::VertexHandle                            OVMVertex;
+        typedef OpenVolumeMesh::EdgeHandle                              OVMEdge;
+        typedef OpenVolumeMesh::HalfEdgeHandle                          OVMHalfEdge;
+        typedef OpenVolumeMesh::FaceHandle                              OVMFace;
+        typedef OpenVolumeMesh::HalfFaceHandle                          OVMHalfFace;
+        typedef OpenVolumeMesh::CellHandle                              OVMCell;
+    }
 
     enum class EntityType
     {
@@ -31,7 +41,13 @@ namespace volumeshOS
 
     struct Color
     {
-        explicit Color(float r = 1.0f, float g = 1.0f, float b = 1.0f, float a = 1.0f) : r(r), g(g), b(b), a(a)
+        Color(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a)
+        {}
+
+        Color(const glm::vec3& color) : Color(color.r, color.g, color.b)
+        {}
+
+        Color(const glm::vec4& color) : Color(color.r, color.g, color.b, color.a)
         {}
 
         [[nodiscard]] glm::vec3 get_rgb() const

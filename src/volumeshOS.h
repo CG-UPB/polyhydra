@@ -66,10 +66,10 @@ namespace volumeshOS
 
 
     // Set mesh from ovm instance without generating a new id
-    void load(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);
+    void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);
 
     // Set mesh from file path without generating a new id
-    void load(const VMesh& mesh, const std::string& path);
+    void update(const VMesh& mesh, const std::string& path);
 
 
     // Remove all meshes from volumeshOS
@@ -313,15 +313,15 @@ namespace volumeshOS
         {}
 
         // Set mesh from ovm instance without generating a new id
-        inline void load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance) const
+        inline void update(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance) const
         {
-            volumeshOS::load(*this, instance);
+            volumeshOS::update(*this, instance);
         }
 
         // Set mesh from file path without generating a new id
-        inline void load(const std::string& path) const
+        inline void update(const std::string& path) const
         {
-            volumeshOS::load(*this, path);
+            volumeshOS::update(*this, path);
         }
 
         // Remove mesh from volumeshOS
