@@ -58,6 +58,7 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/meshes/IcoSphereMesh.h
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.cpp
         ${VOLUMESHOS_SRC}/rendering/meshes/CylinderMesh.h
+        ${VOLUMESHOS_SRC}/rendering/passes/RenderPass.h
         ${VOLUMESHOS_SRC}/rendering/passes/MeshPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/MeshPass.h
         ${VOLUMESHOS_SRC}/rendering/passes/BackgroundPass.cpp

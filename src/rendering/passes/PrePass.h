@@ -15,9 +15,9 @@ namespace volumeshOS::Internal
         PrePass(int width, int height);
 
         void resize_buffers(int width, int height);
-        void clear_position_buffer(const RenderData& data);
+        void clear_position_buffer();
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(Renderer* renderer) override;
 
         [[nodiscard]] std::shared_ptr<PrePassFrameBufferObject> get_framebuffer() const;
 

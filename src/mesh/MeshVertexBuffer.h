@@ -6,8 +6,6 @@
 
 namespace volumeshOS::Internal
 {
-    typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> Mesh;
-    typedef OpenVolumeMesh::CellHandle Cell;
 
     struct VertexData
     {

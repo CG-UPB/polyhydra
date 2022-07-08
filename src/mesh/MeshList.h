@@ -150,7 +150,7 @@ namespace volumeshOS::Internal
         // calculate the range of selection-ids for each mesh
         void calculate_selection_offsets();
 
-        // load OVM-Mesh from file
+        // update OVM-Mesh from file
         static OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* load_from_file(const std::string& path);
 
         // list of MeshObjects

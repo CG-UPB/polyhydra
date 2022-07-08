@@ -126,7 +126,7 @@ namespace volumeshOS::Internal
 
         Input::setup(m_window);
 
-        // load opengl functions
+        // update opengl functions
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
             print_error("Failed to initialize OpenGL context");
             return;

@@ -12,72 +12,6 @@ namespace volumeshOS::Internal
 
     struct MeshData
     {
-        nlohmann::json to_json()
-        {
-            nlohmann::json j;
-
-            // Phong Data
-            j["phong_spec_strength"] = specular_strength;
-            j["phong_spec_exponent"] = specular_exponent;
-            j["phong_ambient_strength"] = ambient_strength;
-            j["phong_diffuse_strength"] = diffuse_strength;
-
-            // Toolbox Data
-            j["tool_slice_level"] = slice_level;
-            j["tool_slice_locked"] = slice_locked;
-            j["tool_peel_level"] = peel_level;
-            j["tool_cell_size"] = cell_size;
-
-            // Rendering Data
-            j["rendering_default_color"] = {color.r, color.g, color.b, color.a};
-            j["rendering_visible"] = visible;
-            j["rendering_selection_color"] = {selection_color.r, selection_color.g, selection_color.b,
-                                              selection_color.a};
-
-            // Transform Data
-            j["transform_position"] = {position.x, position.y, position.z};
-            j["transform_scale"] = {scale.x, scale.y, scale.z};
-
-            // Roundings
-            j["roundings activated"] = rounding_active;
-            j["rounding size"] = rounding_size;
-
-            return j;
-        }
-
-        void load_from_json(nlohmann::json j)
-        {
-            // Phong Data
-            specular_strength = j["phong_spec_strength"];
-            specular_exponent = j["phong_spec_exponent"];
-            ambient_strength = j["phong_ambient_strength"];
-            diffuse_strength = j["phong_diffuse_strength"];
-
-            // Toolbox Data
-            slice_level = j["tool_slice_level"];
-            slice_locked = j["tool_slice_locked"];
-            peel_level = j["tool_peel_level"];
-            cell_size = j["tool_cell_size"];
-
-            // Rendering Data
-            auto color_vec = j["rendering_default_color"];
-            color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
-            visible = j["rendering_visible"];
-            color_vec = j["rendering_selection_color"];
-            selection_color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
-
-
-            // Transform Data
-            auto pos_vec = j["transform_position"];
-            //position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
-            auto scale_vec = j["transform_scale"];
-            scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
-
-            // Roundings
-            rounding_active = j["roundings activated"];
-            rounding_size = j["rounding size"];
-        }
-
 
         [[nodiscard]] const glm::mat4& get_transform() const
         {
@@ -86,11 +20,9 @@ namespace volumeshOS::Internal
 
         void update_transform()
         {
-            glm::mat4 rot(1.0f);
-            rot = glm::translate(glm::mat4(1.0), (position )) * rotation * glm::translate(glm::mat4(1.0), -(position )) ;
-            glm::mat4 scal(1.0f);
-            scal = glm::translate(glm::mat4(1.0), (position )) * scaling * glm::translate(glm::mat4(1.0), -(position )) ;
-            transformation =  scal * rot * translation;
+            glm::mat4 rot = glm::translate(glm::mat4(1.0), position) * rotation;
+            glm::mat4 scl = scaling * glm::translate(glm::mat4(1.0), -position);
+            transformation =  scl * rot * translation;
         }
 
         glm::mat4 translation       = glm::mat4(1.0f);
@@ -178,18 +110,6 @@ namespace volumeshOS::Internal
          * @return
          */
         bool is_element_selected(int id, EntityType type);
-
-        /**
-         * Uses OVM FileManager to load Mesh from file
-         * @param file_path path to file
-         */
-        void load_from_file(const std::string& file_path);
-
-        /**
-         * Uses OVM FileManager to save Mesh to file
-         * @param file_path path to file
-         */
-        void write_to_file(const std::string &file_path) const;
 
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
 

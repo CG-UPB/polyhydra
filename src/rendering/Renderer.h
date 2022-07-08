@@ -44,7 +44,7 @@ namespace volumeshOS::Internal
 
         void resize(int width, int height);
 
-        void render(RenderData* render_data, bool render_bg = true);
+        void render(bool render_bg = true);
 
         void set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target);
 
@@ -53,22 +53,23 @@ namespace volumeshOS::Internal
         std::shared_ptr<MeshList> mesh_list     = nullptr;
         std::shared_ptr<Camera> camera          = nullptr;
         Light light;
+        std::vector<MeshObject&> render_list    = nullptr;
 
     private:
 
         void handle_input();
         void handle_camera_input();
         void handle_mesh_input();
-        void render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh);
-        void render_selection(RenderData& render_data);
-        void render_pre_pass(RenderData& render_data);
-        void render_shadow_map(RenderData& render_data);
-        void render_ssao_pass(RenderData& render_data);
-        void render_background(RenderData& render_data);
-        void render_meshes(RenderData& render_data);
-        void render_transparency(RenderData& render_data);
-        void render_transparency_wb(RenderData& render_data);
-        void render_transparency_dp(RenderData& render_data);
+        void render_mesh(const std::shared_ptr<MeshObject>& mesh);
+        void render_selection();
+        void render_pre_pass();
+        void render_shadow_map();
+        void render_ssao_pass();
+        void render_background();
+        void render_meshes();
+        void render_transparency();
+        void render_transparency_wb();
+        void render_transparency_dp();
         void query_selection(int type, int id);
 
     private:

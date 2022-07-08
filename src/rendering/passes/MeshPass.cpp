@@ -8,6 +8,10 @@ namespace volumeshOS::Internal
 
     void MeshPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
+        for(mesh_data : renderer->mesh_data)
+        {
+
+        }
         auto settings = GlobalViewerSettings::getInstance();
         bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
         float wireframe_size = settings->get_wireframe_size();

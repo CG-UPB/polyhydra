@@ -1,11 +1,11 @@
 
 #include "PrePass.h"
-#include "panels/Window.h"
 
 namespace volumeshOS::Internal
 {
-    void PrePass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void PrePass::render(Renderer* renderer)
     {
+        for ( data: data_list)
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
@@ -19,8 +19,8 @@ namespace volumeshOS::Internal
 
         pre_phong_shader->bind();
 
-        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
-        glm::mat4 view_transform = data.camera.view * transform;
+        glm::mat4 transform = camera.world * mesh->get_data().get_transform();
+        glm::mat4 view_transform = camera.view * transform;
 
         // Cell operations
         float cell_size = mesh->get_data().cell_size;
@@ -78,13 +78,13 @@ namespace volumeshOS::Internal
         return m_pre_pass_framebuffer;
     }
 
-    void PrePass::clear_position_buffer(const RenderData& data)
+    void PrePass::clear_position_buffer()
     {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         m_clear_position_shader->bind();
-        m_clear_position_shader->set_uniform_float("u_far", data.camera.far);
+        m_clear_position_shader->set_uniform_float("u_far", camera.far);
         VertexArrayObject::draw_screen_quad();
         m_clear_position_shader->unbind();
     }

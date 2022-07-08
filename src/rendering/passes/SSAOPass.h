@@ -7,6 +7,7 @@
 namespace volumeshOS::Internal
 {
     class Renderer;
+    class RenderPass;
 
     /**
      * Screen-Space Ambient Occlusion rendering pass.

@@ -55,7 +55,7 @@ namespace volumeshOS::Internal
                 }
         };
 
-        // create frame buffers and load the shaders we need
+        // create frame buffers and update the shaders we need
         m_ssao_framebuffer = std::make_shared<FrameBufferObject>(initial_width, initial_height, ssao_attachments);
         m_blur_framebuffer = std::make_shared<FrameBufferObject>(initial_width, initial_height, blur_attachments);
         m_ssao_shader = Shader::get("ssao");

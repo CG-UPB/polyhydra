@@ -20,7 +20,7 @@ namespace volumeshOS::Internal
         renderer->set_selection_callback(std::bind(&MeshView::querySelection, this, std::placeholders::_1, std::placeholders::_2));
 
         // Set Camera Viewport Size
-        m_render_data.camera.set_viewport_size(width, height);
+        renderer->camera->set_viewport_size(width, height);
     }
 
     void MeshView::handleResize()
@@ -114,163 +114,159 @@ namespace volumeshOS::Internal
 
     void MeshView::querySelection(int type, int picked_id)
     {
-        // evaluate which in which mesh the color was selected
-        bool any_mesh_hovered = false;
-
-        // Remember face id in case of double click
-        int face_id = 0;
-        int face_id_mesh = -1;
-        int hovered_mesh_id = -1;
-
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-        {
-            int from = std::get<0>(mesh->selection_offset());
-            int to = std::get<1>(mesh->selection_offset());
-
-            if (picked_id >= from && picked_id <= to)
-            {
-                m_hovered_element_id = picked_id;
-                m_hovered_element_type = type;
-
-                hovered_mesh_id = id;
-                any_mesh_hovered = true;
-
-                auto& settings = *GlobalViewerSettings::getInstance();
-
-                if (type == SELECTION_TYPE_FACE)
-                {
-                    face_id_mesh = id;
-                    int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
-                    auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
-                    auto ch = mesh->get_ovm()->incident_cell(chf);
-                    mesh->get_mvb()->hover_halfface(halfface_id);
-                    face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(chf).idx();
-
-                    if (settings.get_isolation_state())
-                    {
-                        if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                        {
-                            mesh->get_mvb()->set_cell_isolated(ch.idx());
-                        }
-                    }
-
-                    if (settings.get_selection_mode() == CELL || settings.get_digging_activated())
-                    {
-                        if (chf.is_valid())
-                        {
-                            auto cell = mesh->get_ovm()->incident_cell(chf);
-                            mesh->get_mvb()->hover_cell(cell.idx());
-                        }
-
-                        if (settings.get_digging_activated() && !settings.get_isolation_state())
-                        {
-                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                            {
-                                mesh->get_mvb()->set_cell_digged(ch.idx(), true);
-                            }
-                        }
-                        else
-                        {
-                            // cell_handle beinhaltet cell
-                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                            {
-                                // Select element via Window class, to activate Callback function
-                                // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
-                                Window::instance().rendering_mutex.unlock();
-                                Window::instance().select_element(id, ch.idx(), 6);
-                                Window::instance().rendering_mutex.lock();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        renderer->m_selection_hover_pass.hover(m_render_data, id, type, face_id);
-
-                        OpenVolumeMesh::FaceHandle face(face_id);
-                        if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                        {
-                            // Select element via Window class, to activate Callback function
-                            // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
-                            Window::instance().rendering_mutex.unlock();
-                            Window::instance().select_element(id, face_id, type);
-                            Window::instance().rendering_mutex.lock();
-                        }
-                    }
-
-
-                }
-                else if (type == SELECTION_TYPE_VERTEX)
-                {
-                    int vertex_id = mesh->to_vertex_id(picked_id - from) - 1;
-
-                    renderer->m_selection_hover_pass.hover(m_render_data, id, type, vertex_id);
-
-                    OpenVolumeMesh::VertexHandle vertex(vertex_id);
-                    if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                    {
-                        // Select element via Window class, to activate Callback function
-                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
-                        Window::instance().rendering_mutex.unlock();
-                        Window::instance().select_element(id, vertex_id, type);
-                        Window::instance().rendering_mutex.lock();
-                    }
-
-                    mesh->get_mvb()->reset_hover();
-                }
-                else if (type == SELECTION_TYPE_EDGE)
-                {
-                    int edge_id = mesh->to_edge_id(picked_id - from) - 1;
-
-                    renderer->m_selection_hover_pass.hover(m_render_data, id, type, edge_id);
-
-                    OpenVolumeMesh::EdgeHandle edge(edge_id);
-                    if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                    {
-                        // Select element via Window class, to activate Callback function
-                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
-                        Window::instance().rendering_mutex.unlock();
-                        Window::instance().select_element(id, edge_id, type);
-                        Window::instance().rendering_mutex.lock();
-                    }
-                    mesh->get_mvb()->reset_hover();
-                }
-
-                break;
-            }
-        }
-        if (ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
-        {
-            if (face_id_mesh >= 0)
-            {
-                Window::instance().rendering_mutex.unlock();
-                // Focus
-                Window::instance().camera_focus_on(face_id_mesh, face_id, 0.4);
-                Window::instance().rendering_mutex.lock();
-            }
-        }
-        if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
-        {
-            // TODO Escape Focus
-        }
-
-        auto active_mesh = Window::instance().get_focused_mesh_object();
-        if ((!any_mesh_hovered && active_mesh != nullptr) || !ImGui::IsWindowHovered())
-        {
-            for (const auto& m: Window::instance().get_mesh_list())
-            {
-                m.second->get_mvb()->reset_hover();
-            }
-            renderer->m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
-        }
-
-        for (const auto& m: Window::instance().get_mesh_list())
-        {
-            int mesh_id = m.first;
-            if (mesh_id != hovered_mesh_id)
-            {
-                m.second->get_mvb()->reset_hover();
-            }
-        }
+//        // evaluate which in which mesh the color was selected
+//        bool any_mesh_hovered = false;
+//
+//        // Remember face id in case of double click
+//        int face_id = 0;
+//        int face_id_mesh = -1;
+//        int hovered_mesh_id = -1;
+//
+//        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+//        {
+//            int from = std::get<0>(mesh->selection_offset());
+//            int to = std::get<1>(mesh->selection_offset());
+//
+//            if (picked_id >= from && picked_id <= to)
+//            {
+//                m_hovered_element_id = picked_id;
+//                m_hovered_element_type = type;
+//
+//                hovered_mesh_id = id;
+//                any_mesh_hovered = true;
+//
+//                auto& settings = *GlobalViewerSettings::getInstance();
+//
+//                if (type == SELECTION_TYPE_FACE)
+//                {
+//                    face_id_mesh = id;
+//                    int halfface_id = mesh->to_halfface_id(picked_id - from) - 1;
+//                    auto chf = OpenVolumeMesh::HalfFaceHandle{halfface_id};
+//                    auto ch = mesh->get_ovm()->incident_cell(chf);
+//                    mesh->get_mvb()->hover_halfface(halfface_id);
+//                    face_id = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(chf).idx();
+//
+//                    if (settings.get_isolation_state())
+//                    {
+//                        if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+//                        {
+//                            mesh->get_mvb()->set_cell_isolated(ch.idx());
+//                        }
+//                    }
+//
+//                    if (settings.get_selection_mode() == CELL || settings.get_digging_activated())
+//                    {
+//                        if (chf.is_valid())
+//                        {
+//                            auto cell = mesh->get_ovm()->incident_cell(chf);
+//                            mesh->get_mvb()->hover_cell(cell.idx());
+//                        }
+//
+//                        if (settings.get_digging_activated() && !settings.get_isolation_state())
+//                        {
+//                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+//                            {
+//                                mesh->get_mvb()->set_cell_digged(ch.idx(), true);
+//                            }
+//                        }
+//                        else
+//                        {
+//                            // cell_handle beinhaltet cell
+//                            if (ch.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+//                            {
+//                                // Select element via Window class, to activate Callback function
+//                                // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+//                                Window::instance().rendering_mutex.unlock();
+//                                Window::instance().select_element(id, ch.idx(), 6);
+//                                Window::instance().rendering_mutex.lock();
+//                            }
+//                        }
+//                    }
+//                    else
+//                    {
+//                        renderer->m_selection_hover_pass.hover(m_render_data, id, type, face_id);
+//
+//                        OpenVolumeMesh::FaceHandle face(face_id);
+//                        if (face.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+//                        {
+//                            // Select element via Window class, to activate Callback function
+//                            // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+//                            Window::instance().rendering_mutex.unlock();
+//                            Window::instance().select_element(id, face_id, type);
+//                            Window::instance().rendering_mutex.lock();
+//                        }
+//                    }
+//
+//
+//                }
+//                else if (type == SELECTION_TYPE_VERTEX)
+//                {
+//                    int vertex_id = mesh->to_vertex_id(picked_id - from) - 1;
+//
+//                    renderer->m_selection_hover_pass.hover(m_render_data, id, type, vertex_id);
+//
+//                    OpenVolumeMesh::VertexHandle vertex(vertex_id);
+//                    if (vertex.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+//                    {
+//                        // Select element via Window class, to activate Callback function
+//                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+//
+//                        //Window::instance().select_element(id, vertex_id, type);
+//
+//                    }
+//
+//                    mesh->get_mvb()->reset_hover();
+//                }
+//                else if (type == SELECTION_TYPE_EDGE)
+//                {
+//                    int edge_id = mesh->to_edge_id(picked_id - from) - 1;
+//
+//                    renderer->m_selection_hover_pass.hover(m_render_data, id, type, edge_id);
+//
+//                    OpenVolumeMesh::EdgeHandle edge(edge_id);
+//                    if (edge.is_valid() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+//                    {
+//                        // Select element via Window class, to activate Callback function
+//                        // To avoid problems with the Callback functions, we unlock the mutex guard here and lock it again after the method is done
+//                        //Window::instance().select_element(id, edge_id, type);
+//                    }
+//                    mesh->get_mvb()->reset_hover();
+//                }
+//
+//                break;
+//            }
+//        }
+//        if (ImGui::IsWindowFocused() && ImGui::IsMouseDoubleClicked(0))
+//        {
+//            if (face_id_mesh >= 0)
+//            {
+//                // Focus
+//                //Window::instance().camera_focus_on(face_id_mesh, face_id, 0.4);
+//            }
+//        }
+//        if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+//        {
+//            // TODO Escape Focus
+//        }
+//
+//        auto active_mesh = Window::instance().get_focused_mesh_object();
+//        if ((!any_mesh_hovered && active_mesh != nullptr) || !ImGui::IsWindowHovered())
+//        {
+//            for (const auto& m: Window::instance().get_mesh_list())
+//            {
+//                m.second->get_mvb()->reset_hover();
+//            }
+//            renderer->m_selection_hover_pass.hover(m_render_data, -1, 0, 0);
+//        }
+//
+//        for (const auto& m: Window::instance().get_mesh_list())
+//        {
+//            int mesh_id = m.first;
+//            if (mesh_id != hovered_mesh_id)
+//            {
+//                m.second->get_mvb()->reset_hover();
+//            }
+//        }
     }
 
     void MeshView::show()
@@ -285,7 +281,7 @@ namespace volumeshOS::Internal
         handleResize();
 
         renderer->set_target_framebuffer(m_meshFrameBuffer, m_screen_quad_frameBuffer);
-        renderer->render(&m_render_data);
+        renderer->render();
 
         // store the current top left position, so we can draw text here later on top of our canvas
         auto topLeft = ImGui::GetCursorPos();
@@ -324,21 +320,21 @@ namespace volumeshOS::Internal
         }
 
         // display mesh loading percentage
-        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
-        {
-            auto mvb = mesh->get_mvb();
-            if (mvb != nullptr && !mvb->is_loading_finished())
-            {
-                ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
-                float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
-                ImGui::SetCursorPos({middle_x, topLeft.y});
-                ImGui::Text(
-                        "%s",
-                        std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
-                );
-                break;
-            }
-        }
+//        for (const auto& [id, mesh] : Window::instance().get_mesh_list())
+//        {
+//            auto mvb = mesh->get_mvb();
+//            if (mvb != nullptr && !mvb->is_loading_finished())
+//            {
+//                ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
+//                float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
+//                ImGui::SetCursorPos({middle_x, topLeft.y});
+//                ImGui::Text(
+//                        "%s",
+//                        std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
+//                );
+//                break;
+//            }
+//        }
 
         /*
         if (Window::instance().has_mesh() && Window::instance().get_active_mesh_obj() != nullptr &&  Window::instance().get_active_mesh_obj()->m_mesh != nullptr)
