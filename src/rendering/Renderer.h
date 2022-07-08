@@ -53,7 +53,7 @@ namespace volumeshOS::Internal
         std::shared_ptr<MeshList> mesh_list     = nullptr;
         std::shared_ptr<Camera> camera          = nullptr;
         Light light;
-        std::vector<MeshObject&> render_list    = nullptr;
+        std::vector<std::shared_ptr<MeshObject>> render_list;
 
     private:
 
