@@ -10,11 +10,11 @@ namespace volumeshOS::Internal
     class TransparencyPassDP : public RenderPass
     {
     public:
-        explicit TransparencyPassDP(Renderer* renderer, int width, int height);
+        explicit TransparencyPassDP(int width, int height);
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh, int pass);
-        void render_composition(int current_passes, int max_passes);
+        void render(const Renderer& renderer) override;
+        void render_meshes(const Renderer& renderer);
+        void render_composition(const Renderer& renderer, int current_passes, int max_passes);
         void resize_buffers(int width, int height);
 
         GLuint m_texture;

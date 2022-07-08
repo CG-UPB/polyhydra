@@ -71,16 +71,12 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.h
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionHoverPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionHoverPass.h
-        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_WB.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_WB.h
-        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_DP.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPass_DP.h
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPassWB.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPassWB.h
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPassDP.cpp
+        ${VOLUMESHOS_SRC}/rendering/passes/TransparencyPassDP.h
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/ShadowMapPass.h
-        ${VOLUMESHOS_SRC}/rendering/passes/TransparentShadowMapPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/TransparentShadowMapPass.h
-        ${VOLUMESHOS_SRC}/rendering/passes/ShadowColorFilterPass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/ShadowColorFilterPass.h
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.h
         ${VOLUMESHOS_SRC}/rendering/passes/SSAOPass.cpp

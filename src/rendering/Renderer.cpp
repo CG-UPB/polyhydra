@@ -24,12 +24,12 @@ namespace volumeshOS::Internal
 
         passes.background_pass = std::make_shared<BackgroundPass>();
         passes.pre_pass = std::make_shared<PrePass>(width, height);
-        passes.shadow_pass = std::make_shared<ShadowMapPass>(this, width * 2, height * 2);
+        passes.shadow_pass = std::make_shared<ShadowMapPass>(width * 2, height * 2);
         passes.mesh_pass = std::make_shared<MeshPass>();
-        passes.ssao_pass = std::make_shared<SSAOPass>(this, width, height);
-        passes.transparency_pass_wb = std::make_shared<TransparencyPassWB>(this, width, height);
-        passes.transparency_pass_dp = std::make_shared<TransparencyPassDP>(this, width, height);
-        passes.shape_pass = std::make_shared<ShapePass>();
+        passes.ssao_pass = std::make_shared<SSAOPass>(width, height);
+        passes.transparency_pass_wb = std::make_shared<TransparencyPassWB>(*this, width, height);
+        passes.transparency_pass_dp = std::make_shared<TransparencyPassDP>(width, height);
+        //passes.shape_pass = std::make_shared<ShapePass>();
         passes.selection_pass = std::make_shared<SelectionPass>();
         passes.selection_hover_pass = std::make_shared<SelectionHoverPass>();
         passes.vertex_only_pass = std::make_shared<VertexOnlyPass>();
@@ -46,7 +46,7 @@ namespace volumeshOS::Internal
     {
         frame.width = width;
         frame.height = height;
-        passes.transparency_pass_wb->resize_buffers(frame.width, frame.height);
+        passes.transparency_pass_wb->resize_buffers(*this, frame.width, frame.height);
         passes.transparency_pass_dp->resize_buffers(frame.width, frame.height);
         passes.pre_pass->resize_buffers(frame.width, frame.height);
         passes.ssao_pass->resize_buffers(frame.width, frame.height);
@@ -82,34 +82,34 @@ namespace volumeshOS::Internal
         buffers.target_framebuffer_ms->unbind();
 
         // Render Meshes
-        passes.pre_pass->render(this);
+        passes.pre_pass->render(*this);
 
         if (m_settings.get_mesh_mode() == ModeEnum::Only_Vertices)
         {
             if (render_bg)
             {
-                passes.background_pass->render(this);
+                passes.background_pass->render(*this);
             }
-            passes.vertex_only_pass->render(this);
+            passes.vertex_only_pass->render(*this);
         }
         else
         {
             if (m_settings.get_ambient_occlusion_activated())
             {
-                passes.ssao_pass->render(this);
+                passes.ssao_pass->render(*this);
             }
 
             if (m_settings.get_shadows_activated())
             {
-                passes.shadow_pass->render(this);
+                passes.shadow_pass->render(*this);
             }
 
             if (render_bg)
             {
-                passes.background_pass->render(this);
+                passes.background_pass->render(*this);
             }
 
-            passes.mesh_pass->render(this);
+            passes.mesh_pass->render(*this);
 
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
 
@@ -120,10 +120,10 @@ namespace volumeshOS::Internal
                 switch (m_transparency)
                 {
                     case DEPTH_PEELING:
-                        passes.transparency_pass_dp->render(this);
+                        passes.transparency_pass_dp->render(*this);
                         break;
                     case WEIGHTED_BLENDED :
-                        passes.transparency_pass_wb->render(this);
+                        passes.transparency_pass_wb->render(*this);
                     default:
                         return;
                 }
@@ -132,7 +132,7 @@ namespace volumeshOS::Internal
             // Render Selection
             if (m_settings.get_selection_activated())
             {
-                passes.selection_pass->render(this);
+                passes.selection_pass->render(*this);
             }
         }
 
@@ -306,263 +306,37 @@ namespace volumeshOS::Internal
         camera->update();
     }
 
-
-    void Renderer::render_selection()
-    {
-        // now render our mesh scene to the framebuffer texture
-        buffers.selection_frame_buffer->bind();
-
-        // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-        // viewport[3] equals viewport height
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-
-        // read Pixel data/color from framebuffer
-        ImVec2 mouse_pos_in_window = {
-                ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
-                ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()
-        };
-        int x = (int) mouse_pos_in_window.x / 2;
-        int y = (int) (viewport[3] * 2 - (int) mouse_pos_in_window.y) / 2;
-
-        GLubyte* data = buffers.pixel_buffer->start_read(x, y, 1, 1);
-
-        if (data != nullptr)
-        {
-            // evaluate ID out of color
-            int type = data[0] & 3;
-            int id;
-            if (passes.selection_pass->is_debug_mode())
-            {
-                id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
-            }
-            else
-            {
-                id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
-            }
-            query_selection(type, id);
-        }
-
-        buffers.pixel_buffer->finish_read();
-
-        frame.current = (frame.current + 1) % frame.limit;
-        if (frame.current == 0)
-        {
-            // we need to clear our framebuffer as well
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            mesh_list->iterate([&](auto id, auto mesh){
-                if(mesh->get_data().visible)
-                {
-                    mesh->update_vertex_buffer();
-                    if (mesh->get_vao() != nullptr)
-                    {
-                        passes.selection_pass->render_mesh(mesh);
-                    }
-                }
-            });
-        }
-        buffers.selection_frame_buffer->unbind();
-
-        buffers.target_framebuffer_ms->bind();
-
-        mesh_list->iterate([&](auto id, auto mesh){
-            if(mesh->get_data().visible)
-            {
-                mesh->update_vertex_buffer();
-                if (mesh->get_vao() != nullptr)
-                {
-                    passes.selection_hover_pass->render(nullptr, mesh);
-                }
-            }
-        });
-
-        buffers.target_framebuffer_ms->unbind();
-    }
-
     void Renderer::query_selection(int type, int id)
     {
         m_selection_callback(type, id);
     }
 
-    void Renderer::render_pre_pass()
-    {
-        passes.pre_pass->get_framebuffer()->bind();
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        passes.pre_pass->clear_position_buffer();
 
-
-        mesh_list->iterate([&](auto id, auto mesh){
-            if(mesh->get_data().visible)
-            {
-                mesh->update_vertex_buffer();
-                auto vao = mesh->get_vao();
-                if (mesh->get_data().rounding_active)
-                {
-                    vao = mesh->get_mvb()->get_vao_rounded();
-                }
-                if (vao != nullptr)
-                {
-                    passes.pre_pass->render(vao, mesh);
-                }
-            }
-        });
-
-        // we generate a mipmap for the position, this is used for ssao
-        // this needs to happen every frame, since the fragment position values always change
-        glBindTexture(GL_TEXTURE_2D, passes.pre_pass->get_framebuffer()->get_position_texture());
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        passes.pre_pass->get_framebuffer()->unbind();
-    }
-
-    void Renderer::render_shadow_map()
-    {
-        // render opaque shadow map
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-
-        // calculate all cascade matrices
-        passes.shadow_pass->clear_cascades();
-        int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
-
-        passes.shadow_pass->calculate_cascades(camera->near, camera->far, cascade_level);
-
-        for (int i = 0; i < cascade_level; i++)
-        {
-            passes.shadow_pass->get_framebuffer()->bind();
-            passes.shadow_pass->set_cascade_index(i);
-            passes.shadow_pass->bind_for_writing(i);
-
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            passes.shadow_pass->render(vao, mesh);
-
-            passes.shadow_pass->get_framebuffer()->unbind();
-        }
-    }
-
-    void Renderer::render_ssao_pass()
-    {
-        passes.ssao_pass->render(nullptr, nullptr);
-    }
-
-    void Renderer::render_transparency_wb()
-    {
-        passes.transparency_pass_wb->bind_transparent_buffer();
-        passes.transparency_pass_wb->clear_framebuffer();
-        glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
-        glBlendFunci(0, GL_ONE, GL_ONE);
-        glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-        glBlendEquation(GL_FUNC_ADD);
-        //glDisable(GL_CULL_FACE);
-
-        mesh_list->iterate([&](auto id, auto mesh){
-            if(mesh->get_data().visible)
-            {
-                mesh->update_vertex_buffer();
-                auto vao = mesh->get_vao();
-                if (mesh->get_data().rounding_active)
-                {
-                    vao = mesh->get_mvb()->get_vao_rounded();
-                }
-                if (vao != nullptr)
-                {
-                    passes.transparency_pass_wb->render(vao, mesh);
-                }
-            }
-        });
-
-        passes.transparency_pass_wb->unbind_transparent_buffer();
-
-        glDepthFunc(GL_ALWAYS);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
-
-        buffers.target_framebuffer_ms->bind();
-        passes.transparency_pass_wb->render_composition();
-        buffers.target_framebuffer_ms->unbind();
-    }
-
-    void Renderer::render_transparency_dp()
-    {
-        int num_passes = m_settings.get_number_passes();
-        for (int i = 0; i < num_passes; i++)
-        {
-            if (i % 2 == 0)
-            {
-                passes.transparency_pass_dp->m_transparent_framebuffer0->bind();
-            }
-            else
-            {
-                passes.transparency_pass_dp->m_transparent_framebuffer1->bind();
-            }
-            glClearDepth(0.0f);
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-            // first render all meshes
-            mesh_list->iterate([&](auto id, auto mesh){
-                if(mesh->get_data().visible)
-                {
-                    mesh->update_vertex_buffer();
-                    auto vao = mesh->get_vao();
-                    if (mesh->get_data().rounding_active)
-                    {
-                        vao = mesh->get_mvb()->get_vao_rounded();
-                    }
-                    if (vao != nullptr)
-                    {
-                        passes.transparency_pass_dp->render(vao, mesh);
-                    }
-                }
-            });
-
-            if (i % 2 == 0)
-            {
-                passes.transparency_pass_dp->m_transparent_framebuffer0->unbind();
-            }
-            else
-            {
-                passes.transparency_pass_dp->m_transparent_framebuffer1->unbind();
-            }
-            passes.transparency_pass_dp->render_composition(i, num_passes);
-        }
-    }
-
-
-    void Renderer::render_background()
-    {
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-
-        buffers.target_framebuffer_ms->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        passes.background_pass->render(nullptr, nullptr);
-        buffers.target_framebuffer_ms->unbind();
-    }
-
-
-    void Renderer::render_transparency()
-    {
-        int m_transparency = m_settings.get_transparency_mode();
-        switch (m_transparency)
-        {
-            case DEPTH_PEELING:
-                render_transparency_dp();
-                break;
-            case WEIGHTED_BLENDED :
-                render_transparency_wb();
-            default:
-                return;
-        }
-    }
+//    void Renderer::render_shadow_map()
+//    {
+//        // render opaque shadow map
+//        glClearColor(0.0, 0.0, 0.0, 0.0);
+//
+//        // calculate all cascade matrices
+//        passes.shadow_pass->clear_cascades();
+//        int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
+//
+//        passes.shadow_pass->calculate_cascades(camera->near, camera->far, cascade_level);
+//
+//        for (int i = 0; i < cascade_level; i++)
+//        {
+//            passes.shadow_pass->get_framebuffer()->bind();
+//            passes.shadow_pass->set_cascade_index(i);
+//            passes.shadow_pass->bind_for_writing(i);
+//
+//            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//
+//            passes.shadow_pass->render(vao, mesh);
+//
+//            passes.shadow_pass->get_framebuffer()->unbind();
+//        }
+//    }
+//
 
     void Renderer::set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target)
     {

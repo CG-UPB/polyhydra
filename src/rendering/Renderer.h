@@ -27,6 +27,7 @@ namespace volumeshOS::Internal
     class ShadowMapPass;
     class TransparencyPassWB;
     class TransparencyPassDP;
+    class VertexOnlyPass;
 
     class Renderer
     {
@@ -115,5 +116,6 @@ namespace volumeshOS::Internal
         friend class ShadowMapPass;
         friend class TransparencyPassWB;
         friend class TransparencyPassDP;
+        friend class VertexOnlyPass;
     };
 }

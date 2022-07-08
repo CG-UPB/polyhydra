@@ -7,8 +7,7 @@ namespace volumeshOS::Internal
 {
     class MeshView;
 
-    TransparencyPassDP::TransparencyPassDP(Renderer* renderer, int width, int height):
-            m_renderer(renderer),
+    TransparencyPassDP::TransparencyPassDP(int width, int height) :
             m_width(width),
             m_height(height)
     {
@@ -16,168 +15,200 @@ namespace volumeshOS::Internal
         m_composite_shader = Shader::get("composite_dp");
 
         std::vector<FrameBufferAttachment> transparent_attachments0 =
-        {
-            FrameBufferAttachment
-            {
-                    .internal_format    = GL_RGBA16F,
-                    .format             = GL_RGBA,
-                    .type               = GL_FLOAT,
-                    .attachment         = GL_COLOR_ATTACHMENT0,
-                    .texture_filter     = GL_LINEAR,
-                    .texture_wrap       = GL_CLAMP_TO_EDGE
-            },
-            FrameBufferAttachment
-            {
-                    .internal_format    = GL_DEPTH_COMPONENT,
-                    .format             = GL_DEPTH_COMPONENT,
-                    .type               = GL_FLOAT,
-                    .attachment         = GL_DEPTH_ATTACHMENT,
-                    .texture_filter     = GL_NEAREST,
-                    .texture_wrap       = GL_CLAMP_TO_EDGE,
-                    .texture_comp_func  = GL_LEQUAL,
-                    .texture_comp_mode  = GL_NONE
-            }
-        };
+                {
+                        FrameBufferAttachment
+                                {
+                                        .internal_format    = GL_RGBA16F,
+                                        .format             = GL_RGBA,
+                                        .type               = GL_FLOAT,
+                                        .attachment         = GL_COLOR_ATTACHMENT0,
+                                        .texture_filter     = GL_LINEAR,
+                                        .texture_wrap       = GL_CLAMP_TO_EDGE
+                                },
+                        FrameBufferAttachment
+                                {
+                                        .internal_format    = GL_DEPTH_COMPONENT,
+                                        .format             = GL_DEPTH_COMPONENT,
+                                        .type               = GL_FLOAT,
+                                        .attachment         = GL_DEPTH_ATTACHMENT,
+                                        .texture_filter     = GL_NEAREST,
+                                        .texture_wrap       = GL_CLAMP_TO_EDGE,
+                                        .texture_comp_func  = GL_LEQUAL,
+                                        .texture_comp_mode  = GL_NONE
+                                }
+                };
         m_transparent_framebuffer0 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments0);
 
         std::vector<FrameBufferAttachment> transparent_attachments1 =
-        {
-            FrameBufferAttachment{
-                    .internal_format    = GL_RGBA16F,
-                    .format             = GL_RGBA,
-                    .type               = GL_FLOAT,
-                    .attachment         = GL_COLOR_ATTACHMENT0,
-                    .texture_filter     = GL_LINEAR,
-                    .texture_wrap       = GL_CLAMP_TO_EDGE
-
-            },
-            FrameBufferAttachment
                 {
-                        .internal_format    = GL_DEPTH_COMPONENT,
-                        .format             = GL_DEPTH_COMPONENT,
-                        .type               = GL_FLOAT,
-                        .attachment         = GL_DEPTH_ATTACHMENT,
-                        .texture_filter     = GL_NEAREST,
-                        .texture_wrap       = GL_CLAMP_TO_EDGE,
-                        .texture_comp_func  = GL_LEQUAL,
-                        .texture_comp_mode  = GL_NONE
-                }
-        };
+                        FrameBufferAttachment{
+                                .internal_format    = GL_RGBA16F,
+                                .format             = GL_RGBA,
+                                .type               = GL_FLOAT,
+                                .attachment         = GL_COLOR_ATTACHMENT0,
+                                .texture_filter     = GL_LINEAR,
+                                .texture_wrap       = GL_CLAMP_TO_EDGE
+
+                        },
+                        FrameBufferAttachment
+                                {
+                                        .internal_format    = GL_DEPTH_COMPONENT,
+                                        .format             = GL_DEPTH_COMPONENT,
+                                        .type               = GL_FLOAT,
+                                        .attachment         = GL_DEPTH_ATTACHMENT,
+                                        .texture_filter     = GL_NEAREST,
+                                        .texture_wrap       = GL_CLAMP_TO_EDGE,
+                                        .texture_comp_func  = GL_LEQUAL,
+                                        .texture_comp_mode  = GL_NONE
+                                }
+                };
         m_transparent_framebuffer1 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments1);
 
         //update_draw_texture();
     }
 
-    void TransparencyPassDP::clean_up_framebuffer()
+    void TransparencyPassDP::render(const Renderer& renderer)
     {
-
-    }
-
-    void TransparencyPassDP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh, int pass)
-    {
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
-        glDepthFunc(GL_GREATER);
-        glDisable(GL_BLEND);
-
-        if(pass % 2 == 0)
+        int num_passes = renderer.m_settings.get_number_passes();
+        for (int i = 0; i < num_passes; i++)
         {
-            m_transparent_framebuffer0->bind();
-            m_transparency_shader->bind();
-            if(pass == 0)
+            if (i % 2 == 0)
             {
-                unsigned int depth_texture = m_renderer->m_target_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                renderer.passes.transparency_pass_dp->m_transparent_framebuffer0->bind();
             }
             else
             {
-                unsigned int depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                renderer.passes.transparency_pass_dp->m_transparent_framebuffer1->bind();
             }
-            render(vao, data, mesh);
-            m_transparency_shader->unbind();
-            m_transparent_framebuffer0->unbind();
-        }
-        else
-        {
-            m_transparent_framebuffer1->bind();
-            m_transparency_shader->bind();
-            unsigned int depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
-            m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
-            render(vao, data, mesh);
-            m_transparency_shader->unbind();
-            m_transparent_framebuffer1->unbind();
+            glClearDepth(0.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+            glEnable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE);
+            glDepthFunc(GL_GREATER);
+            glDisable(GL_BLEND);
+
+            if (i % 2 == 0)
+            {
+                m_transparent_framebuffer0->bind();
+                m_transparency_shader->bind();
+                if (i == 0)
+                {
+                    unsigned int depth_texture = renderer.buffers.target_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
+                    m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                }
+                else
+                {
+                    unsigned int depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
+                    m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                }
+                render_meshes(renderer);
+                m_transparency_shader->unbind();
+                m_transparent_framebuffer0->unbind();
+            }
+            else
+            {
+                m_transparent_framebuffer1->bind();
+                m_transparency_shader->bind();
+                unsigned int depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
+                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                render_meshes(renderer);
+                m_transparency_shader->unbind();
+                m_transparent_framebuffer1->unbind();
+            }
+
+            if (i % 2 == 0)
+            {
+                renderer.passes.transparency_pass_dp->m_transparent_framebuffer0->unbind();
+            }
+            else
+            {
+                renderer.passes.transparency_pass_dp->m_transparent_framebuffer1->unbind();
+            }
+            render_composition(renderer, i, num_passes);
         }
     }
 
-    void TransparencyPassDP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void TransparencyPassDP::render_meshes(const Renderer& renderer)
     {
-        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
-        glm::mat4 view_transform = data.camera.view * transform;
+        auto cam = renderer.camera;
+        auto light = renderer.light;
 
-        // Cell operations
-        float cell_size = mesh->get_data().cell_size;
-        float peel_depth = mesh->get_data().peel_level;
-        float slice_depth = mesh->get_data().slice_level;
+        for (const auto& mesh: renderer.render_list)
+        {
+            glm::mat4 transform = cam->world * mesh->get_data().get_transform();
+            glm::mat4 view_transform = cam->view * transform;
 
-        auto bb = mesh->get_world_bb(view_transform);
-        auto min = bb.first;
-        auto max = bb.second;
+            // Cell operations
+            float cell_size = mesh->get_data().cell_size;
+            float peel_depth = mesh->get_data().peel_level;
+            float slice_depth = mesh->get_data().slice_level;
 
-        // volumeshOS Operations
-        glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
-        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
+            auto bb = mesh->get_world_bb(view_transform);
+            auto min = bb.first;
+            auto max = bb.second;
 
-        glm::vec3 cam_pos(data.camera.view * glm::vec4(data.camera.position, 1.0));
-        glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
+            // volumeshOS Operations
+            glm::vec3 view_dir = -glm::normalize(cam->get_front());
+            auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
-        bool use_vertex_normals = GlobalViewerSettings::getInstance()->get_mesh_mode() == Phong_Vertexnormals;
+            glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
+            glm::vec3 light_pos(cam->view * glm::vec4(light.light_dir, 1.0));
 
-        // set all of our uniforms
-        m_transparency_shader->set_uniform_mat4f("u_transform", transform);
-        m_transparency_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-        m_transparency_shader->set_uniform_mat4f("u_view", data.camera.view);
-        m_transparency_shader->set_uniform_vec3f("u_light_pos", light_pos);
-        m_transparency_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
-        m_transparency_shader->set_uniform_vec3f("u_light_color", data.light.color);
-        m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
-        m_transparency_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
-        m_transparency_shader->set_uniform_float("u_peel_depth", peel_depth);
-        m_transparency_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_transparency_shader->set_uniform_vec3f("u_min", min);
-        m_transparency_shader->set_uniform_vec3f("u_max", max);
-        m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_transparency_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-        m_transparency_shader->set_uniform_float("u_pow", m_pow);
-        m_transparency_shader->set_uniform_float("u_alpha_pow", m_alpha_pow);
-        m_transparency_shader->set_uniform_float("u_range", m_range);
-        m_transparency_shader->set_uniform_float("u_depth_range", m_depth_range);
-        m_transparency_shader->set_uniform_float("u_ordering_strength", m_ordering_strength);
-        m_transparency_shader->set_uniform_float("u_t_min", m_min);
-        m_transparency_shader->set_uniform_float("u_t_max", m_max);
-        m_transparency_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
-        m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
-        m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-        m_transparency_shader->set_uniform_int("u_viewport_width", m_renderer->m_target_framebuffer->get_width());
-        m_transparency_shader->set_uniform_int("u_viewport_height", m_renderer->m_target_framebuffer->get_height());
-        m_transparency_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
-        m_transparency_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
-        m_transparency_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
-        m_transparency_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
-        m_transparency_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
+            bool use_vertex_normals = GlobalViewerSettings::getInstance()->get_mesh_mode() == Phong_Vertexnormals;
 
-        vao->draw();
+            // set all of our uniforms
+            m_transparency_shader->set_uniform_mat4f("u_transform", transform);
+            m_transparency_shader->set_uniform_mat4f("u_projection", cam->projection);
+            m_transparency_shader->set_uniform_mat4f("u_view", cam->view);
+            m_transparency_shader->set_uniform_vec3f("u_light_pos", light_pos);
+            m_transparency_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
+            m_transparency_shader->set_uniform_vec3f("u_light_color", light.color);
+            m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
+            m_transparency_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
+            m_transparency_shader->set_uniform_float("u_peel_depth", peel_depth);
+            m_transparency_shader->set_uniform_float("u_slice_depth", slice_depth);
+            m_transparency_shader->set_uniform_vec3f("u_min", min);
+            m_transparency_shader->set_uniform_vec3f("u_max", max);
+            m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_transparency_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+            m_transparency_shader->set_uniform_float("u_pow", m_pow);
+            m_transparency_shader->set_uniform_float("u_alpha_pow", m_alpha_pow);
+            m_transparency_shader->set_uniform_float("u_range", m_range);
+            m_transparency_shader->set_uniform_float("u_depth_range", m_depth_range);
+            m_transparency_shader->set_uniform_float("u_ordering_strength", m_ordering_strength);
+            m_transparency_shader->set_uniform_float("u_t_min", m_min);
+            m_transparency_shader->set_uniform_float("u_t_max", m_max);
+            m_transparency_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+            m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
+            m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+            m_transparency_shader->set_uniform_int("u_viewport_width", renderer.buffers.target_framebuffer->get_width());
+            m_transparency_shader->set_uniform_int("u_viewport_height", renderer.buffers.target_framebuffer->get_height());
+            m_transparency_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
+            m_transparency_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
+            m_transparency_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
+            m_transparency_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
+            m_transparency_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
 
+            auto vao = mesh->get_vao();
+            if (mesh->get_data().rounding_active)
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            m_transparency_shader->unbind();
+            vao->draw();
+        }
     }
 
-    void TransparencyPassDP::render_composition(int current_pass, int max_passes)
+    void TransparencyPassDP::render_composition(const Renderer& renderer, int current_pass, int max_passes)
     {
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
 
-        if (m_renderer->m_is_rendering_background)
+        if (renderer.frame.is_rendering_background)
         {
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
         }
@@ -188,7 +219,7 @@ namespace volumeshOS::Internal
 
         unsigned int new_layer;
 
-        if(current_pass % 2 == 0)
+        if (current_pass % 2 == 0)
         {
             new_layer = m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
         }
@@ -198,7 +229,7 @@ namespace volumeshOS::Internal
         }
 
 
-        m_renderer->m_target_framebuffer_ms->bind();
+        renderer.buffers.target_framebuffer_ms->bind();
         m_composite_shader->bind();
         m_composite_shader->set_uniform_int("u_current_pass", current_pass);
         m_composite_shader->set_uniform_int("u_max_passes", max_passes - 1);
@@ -206,7 +237,7 @@ namespace volumeshOS::Internal
         m_composite_shader->set_uniform_sampler2D("new_layer_texture", GL_TEXTURE0, new_layer);
         VertexArrayObject::draw_screen_quad();
         m_composite_shader->unbind();
-        m_renderer->m_target_framebuffer_ms->unbind();
+        renderer.buffers.target_framebuffer_ms->unbind();
 
 
         glDisable(GL_BLEND);
@@ -226,13 +257,13 @@ namespace volumeshOS::Internal
 
     void TransparencyPassDP::update_draw_texture()
     {
-        unsigned int texture = m_renderer->m_target_framebuffer_ms->get_texture(GL_COLOR_ATTACHMENT0);
-        m_transparent_framebuffer0->bind();
-        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture);
-        m_transparent_framebuffer0->unbind();
-        m_transparent_framebuffer1->bind();
-        m_transparent_framebuffer1->attach_texture(GL_COLOR_ATTACHMENT0, texture);
-        m_transparent_framebuffer1->unbind();
+        //unsigned int texture = renderer.buffers.target_framebuffer_ms->get_texture(GL_COLOR_ATTACHMENT0);
+//        m_transparent_framebuffer0->bind();
+//        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture);
+//        m_transparent_framebuffer0->unbind();
+//        m_transparent_framebuffer1->bind();
+//        m_transparent_framebuffer1->attach_texture(GL_COLOR_ATTACHMENT0, texture);
+//        m_transparent_framebuffer1->unbind();
     }
 
 }

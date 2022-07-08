@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderPass.h"
+#include "rendering/gl/Shader.h"
 
 namespace volumeshOS::Internal
 {
@@ -11,11 +12,13 @@ namespace volumeshOS::Internal
     public:
 
         VertexOnlyPass();
+        ~VertexOnlyPass() = default;
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
 
     private:
 
         std::shared_ptr<Shader> m_vertex_only_shader = nullptr;
     };
+
 }
