@@ -12,8 +12,6 @@
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
 #include "../rendering/passes/ShadowMapPass.h"
-#include "../rendering/passes/ShadowColorFilterPass.h"
-#include "../rendering/passes/TransparentShadowMapPass.h"
 #include "../rendering/passes/TransparencyPassWB.h"
 #include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"

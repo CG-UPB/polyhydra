@@ -31,8 +31,8 @@ namespace volumeshOS::Internal
             .z_bias         = 0.02
     };
 
-    SSAOPass::SSAOPass(Renderer* renderer, int initial_width, int initial_height) :
-            m_renderer(renderer), m_options(SSAOPass::QUALITY_SSAO)
+    SSAOPass::SSAOPass(int initial_width, int initial_height) :
+        m_options(SSAOPass::QUALITY_SSAO)
     {
         // we only need one channel for the occlusion factor
         std::vector<FrameBufferAttachment> ssao_attachments = {
@@ -160,51 +160,62 @@ namespace volumeshOS::Internal
         }
     }
 
-    void SSAOPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& render_data, std::shared_ptr<MeshObject> mesh)
+    void SSAOPass::render(const Renderer& renderer)
     {
+        renderer.passes.pre_pass->get_framebuffer()->bind();
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderer.passes.pre_pass->clear_position_buffer();
+
         load_options_from_settings();
         if (m_options.active)
         {
-            auto pre_pass = m_renderer->m_pre_pass->get_framebuffer();
-            // main ssao pass
-            m_ssao_framebuffer->bind();
-            glClear(GL_COLOR_BUFFER_BIT);
-            m_ssao_shader->bind();
-            // options
-            m_ssao_shader->set_uniform_int("u_samples", m_options.num_samples);
-            m_ssao_shader->set_uniform_float("u_radius", m_options.sample_radius);
-            m_ssao_shader->set_uniform_float("u_strength", m_options.strength);
-            m_ssao_shader->set_uniform_float("u_bias", m_options.z_bias);
-            // ssao related
-            m_ssao_shader->set_uniform_vec3f_array("u_sample_kernel", m_sample_kernel);
-            m_ssao_shader->set_uniform_sampler2D("u_position", GL_TEXTURE0, pre_pass->get_position_texture());
-            m_ssao_shader->set_uniform_sampler2D("u_normal", GL_TEXTURE1, pre_pass->get_normal_texture());
-            m_ssao_shader->set_uniform_sampler2D("u_noise", GL_TEXTURE2, m_noise_texture);
-            m_ssao_shader->set_uniform_int("u_noise_size", s_noise_size);
-            // general
-            m_ssao_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
-            m_ssao_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
-            m_ssao_shader->set_uniform_mat4f("u_projection", render_data.camera.projection);
-            m_ssao_shader->set_uniform_mat4f("u_view", render_data.camera.view);
-            m_ssao_shader->set_uniform_float("u_far", render_data.camera.far);
-            VertexArrayObject::draw_screen_quad();
-            m_ssao_shader->unbind();
-            m_ssao_framebuffer->unbind();
-            // blur pass
-            m_blur_framebuffer->bind();
-            glClear(GL_COLOR_BUFFER_BIT);
-            m_ssao_blur_shader->bind();
-            // general
-            m_ssao_blur_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
-            m_ssao_blur_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
-            m_ssao_blur_shader->set_uniform_float("u_far", render_data.camera.far);
-            // blur related
-            m_ssao_blur_shader->set_uniform_sampler2D("u_ssao_input", GL_TEXTURE0, get_ssao_texture());
-            m_ssao_blur_shader->set_uniform_sampler2D("u_position", GL_TEXTURE1, pre_pass->get_position_texture());
-            m_ssao_blur_shader->set_uniform_int("u_noise_size", s_noise_size);
-            VertexArrayObject::draw_screen_quad();
-            m_ssao_blur_shader->unbind();
-            m_blur_framebuffer->unbind();
+            auto cam = renderer.camera;
+            auto light = renderer.light;
+
+            for (const auto& mesh: renderer.render_list)
+            {
+                auto pre_pass = renderer.passes.pre_pass->get_framebuffer();
+                // main ssao pass
+                m_ssao_framebuffer->bind();
+                glClear(GL_COLOR_BUFFER_BIT);
+                m_ssao_shader->bind();
+                // options
+                m_ssao_shader->set_uniform_int("u_samples", m_options.num_samples);
+                m_ssao_shader->set_uniform_float("u_radius", m_options.sample_radius);
+                m_ssao_shader->set_uniform_float("u_strength", m_options.strength);
+                m_ssao_shader->set_uniform_float("u_bias", m_options.z_bias);
+                // ssao related
+                m_ssao_shader->set_uniform_vec3f_array("u_sample_kernel", m_sample_kernel);
+                m_ssao_shader->set_uniform_sampler2D("u_position", GL_TEXTURE0, pre_pass->get_position_texture());
+                m_ssao_shader->set_uniform_sampler2D("u_normal", GL_TEXTURE1, pre_pass->get_normal_texture());
+                m_ssao_shader->set_uniform_sampler2D("u_noise", GL_TEXTURE2, m_noise_texture);
+                m_ssao_shader->set_uniform_int("u_noise_size", s_noise_size);
+                // general
+                m_ssao_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
+                m_ssao_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
+                m_ssao_shader->set_uniform_mat4f("u_projection", cam->projection);
+                m_ssao_shader->set_uniform_mat4f("u_view", cam->view);
+                m_ssao_shader->set_uniform_float("u_far", cam->far);
+                VertexArrayObject::draw_screen_quad();
+                m_ssao_shader->unbind();
+                m_ssao_framebuffer->unbind();
+                // blur pass
+                m_blur_framebuffer->bind();
+                glClear(GL_COLOR_BUFFER_BIT);
+                m_ssao_blur_shader->bind();
+                // general
+                m_ssao_blur_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
+                m_ssao_blur_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
+                m_ssao_blur_shader->set_uniform_float("u_far", cam->far);
+                // blur related
+                m_ssao_blur_shader->set_uniform_sampler2D("u_ssao_input", GL_TEXTURE0, get_ssao_texture());
+                m_ssao_blur_shader->set_uniform_sampler2D("u_position", GL_TEXTURE1, pre_pass->get_position_texture());
+                m_ssao_blur_shader->set_uniform_int("u_noise_size", s_noise_size);
+                VertexArrayObject::draw_screen_quad();
+                m_ssao_blur_shader->unbind();
+                m_blur_framebuffer->unbind();
+            }
         }
         else
         {
@@ -214,6 +225,12 @@ namespace volumeshOS::Internal
             glClear(GL_COLOR_BUFFER_BIT);
             m_blur_framebuffer->unbind();
         }
+
+        glBindTexture(GL_TEXTURE_2D, renderer.passes.pre_pass->get_framebuffer()->get_position_texture());
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        renderer.passes.pre_pass->get_framebuffer()->unbind();
+
     }
 
     void SSAOPass::resize_buffers(int width, int height)

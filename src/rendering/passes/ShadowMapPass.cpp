@@ -3,7 +3,7 @@
 
 namespace volumeshOS::Internal
 {
-    ShadowMapPass::ShadowMapPass(Renderer* renderer, int width, int height) : m_renderer(renderer)
+    ShadowMapPass::ShadowMapPass(int width, int height)
     {
         clear_cascades();
 
@@ -58,81 +58,104 @@ namespace volumeshOS::Internal
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[cascade_idx], 0);
     }
 
-    void ShadowMapPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData &data, std::shared_ptr<MeshObject> mesh)
+    void ShadowMapPass::render(const Renderer& renderer)
     {
-        int i = cascade_idx;
+        auto cam = renderer.camera;
+        auto light = renderer.light;
 
-        // Get Mesh
-        std::shared_ptr<MeshObject> obj = Window::instance().get_mesh_obj(mesh->get_id());
-        if (obj == nullptr)
-            return;
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glEnable(GL_DEPTH_CLAMP);
+        // render opaque shadow map
+        glClearColor(0.0, 0.0, 0.0, 0.0);
 
-        m_shadow_shader->bind();
+        // calculate all cascade matrices
+        clear_cascades();
+        int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
 
+        calculate_cascades(renderer, cam->near, cam->far, cascade_level);
 
-        // Transform
-        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
-        glm::mat4 view_transform = data.camera.view * transform;
-
-        // Cell operations
-        float cell_size = mesh->get_data().cell_size;
-        float peel_depth = mesh->get_data().peel_level;
-        float slice_depth = mesh->get_data().slice_level;
-
-        auto bb = mesh->get_world_bb(view_transform);
-        auto min = bb.first;
-        auto max = bb.second;
-
-        // volumeshOS Operations
-        glm::vec3 view_dir = -glm::normalize(data.camera.get_front());
-        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
-
-        auto settings = GlobalViewerSettings::getInstance();
-
-        // Shader uniforms
-        m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
-        m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
-        m_shadow_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_shadow_shader->set_uniform_vec3f("u_min", min);
-        m_shadow_shader->set_uniform_vec3f("u_max", max);
-        m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-        m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-        m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->get_mesh_mode() == Wireframe);
-        m_shadow_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
-        m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
-        m_shadow_shader->set_uniform_float("u_wireframe_size", settings->get_wireframe_size());
-        m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-
-
-        m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
-        m_shadow_shader->set_uniform_mat4f("u_light_view", cascade_views[i]);
-        m_shadow_shader->set_uniform_mat4f("u_transform", transform);
-
-        m_shadow_shader->set_uniform_int("u_viewport_width", m_renderer->m_viewportPanelWidth);
-        m_shadow_shader->set_uniform_int("u_viewport_height", m_renderer->m_viewportPanelHeight);
-
-        if(settings->get_mesh_mode() == Wireframe)
+        for (int i = 0; i < cascade_level; i++)
         {
-            mesh->get_mvb()->get_vao_by_face()->draw();
+            get_framebuffer()->bind();
+            set_cascade_index(i);
+            bind_for_writing(i);
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_BLEND);
+            glDepthFunc(GL_LESS);
+            glDepthMask(GL_TRUE);
+            glEnable(GL_DEPTH_CLAMP);
+
+            for (const auto& mesh: renderer.render_list)
+            {
+                //int i = cascade_idx;
+
+                m_shadow_shader->bind();
+                // Transform
+                glm::mat4 transform = cam->world * mesh->get_data().get_transform();
+                glm::mat4 view_transform = cam->view * transform;
+
+                // Cell operations
+                float cell_size = mesh->get_data().cell_size;
+                float peel_depth = mesh->get_data().peel_level;
+                float slice_depth = mesh->get_data().slice_level;
+
+                auto bb = mesh->get_world_bb(view_transform);
+                auto min = bb.first;
+                auto max = bb.second;
+
+                // volumeshOS Operations
+                glm::vec3 view_dir = -glm::normalize(cam->get_front());
+                auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
+
+                auto settings = GlobalViewerSettings::getInstance();
+
+                // Shader uniforms
+                m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
+                m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
+                m_shadow_shader->set_uniform_float("u_slice_depth", slice_depth);
+                m_shadow_shader->set_uniform_vec3f("u_min", min);
+                m_shadow_shader->set_uniform_vec3f("u_max", max);
+                m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+                m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+                m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->get_mesh_mode() == Wireframe);
+                m_shadow_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+                m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
+                m_shadow_shader->set_uniform_float("u_wireframe_size", settings->get_wireframe_size());
+                m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+
+
+                m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
+                m_shadow_shader->set_uniform_mat4f("u_light_view", cascade_views[i]);
+                m_shadow_shader->set_uniform_mat4f("u_transform", transform);
+
+                m_shadow_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
+                m_shadow_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
+
+                if (settings->get_mesh_mode() == Wireframe)
+                {
+                    mesh->get_mvb()->get_vao_by_face()->draw();
+                }
+                else
+                {
+                    auto vao = mesh->get_vao();
+                    if (mesh->get_data().rounding_active)
+                    {
+                        vao = mesh->get_mvb()->get_vao_rounded();
+                    }
+                    vao->draw();
+                }
+            }
+
+            m_shadow_shader->unbind();
+
+            glCullFace(GL_BACK);
+            glEnable(GL_CULL_FACE);
+            glDisable(GL_DEPTH_CLAMP);
+
+            get_framebuffer()->unbind();
         }
-        else
-        {
-            vao->draw();
-        }
-
-
-        m_shadow_shader->unbind();
-
-        glCullFace(GL_BACK);
-        glEnable(GL_CULL_FACE);
-        glDisable(GL_DEPTH_CLAMP);
 
     }
 
@@ -174,7 +197,7 @@ namespace volumeshOS::Internal
         return m_shadow_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
     }
 
-    void ShadowMapPass::calculate_cascades(float near, float far, int cascade_level)
+    void ShadowMapPass::calculate_cascades(const Renderer& renderer, float near, float far, int cascade_level)
     {
         // calculate near and far plane for each cascade
 //        for (int i = 1; i <= cascade_level; i++)
@@ -200,25 +223,25 @@ namespace volumeshOS::Internal
                 n = cascade_ends[i - 1];
                 f = cascade_ends[i];
             }
-            calculate_cascade(n, f, i);
+            calculate_cascade(renderer, n, f, i);
         }
     }
 
-    void ShadowMapPass::calculate_cascade(float near, float far, int i)
+    void ShadowMapPass::calculate_cascade(const Renderer& renderer, float near, float far, int i)
     {
-        auto& cam = m_renderer->m_render_data->camera;
-        auto& light = m_renderer->m_render_data->light;
+        auto cam = renderer.camera;
+        auto light = renderer.light;
 
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(
-                (float)glm::radians(cam.zoom),
-                (float)m_renderer->m_viewportPanelHeight / (float)m_renderer->m_viewportPanelWidth,
+                (float)glm::radians(cam->zoom),
+                (float)renderer.frame.height / (float)renderer.frame.width,
                 near,
                 far
         );
 
         std::vector<glm::vec4> frustum_corners;
-        const auto inverse = glm::inverse(proj * cam.view);
+        const auto inverse = glm::inverse(proj * cam->view);
 
 
 //        float ar = (float)renderer->m_viewportPanelHeight / (float)renderer->m_viewportPanelWidth;

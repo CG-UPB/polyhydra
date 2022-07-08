@@ -2,6 +2,7 @@
 
 #include "RenderPass.h"
 #include "../Renderer.h"
+#include "rendering/gl/Shader.h"
 
 namespace volumeshOS::Internal
 {
@@ -10,18 +11,18 @@ namespace volumeshOS::Internal
     class TransparencyPassWB : public RenderPass
     {
     public:
-        explicit TransparencyPassWB(Renderer* renderer, int width, int height);
+        explicit TransparencyPassWB(const Renderer& renderer, int width, int height);
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
         void render_composition();
-        void resize_buffers(int width, int height);
+        void resize_buffers(const Renderer& renderer,int width, int height);
         void clear_framebuffer() const;
 
         GLuint m_reveal_texture;
         GLuint m_accum_texture;
         GLuint m_depth_texture;
 
-        void generate_transparency_framebuffer(int width, int height);
+        void generate_transparency_framebuffer(const Renderer& renderer, int width, int height);
         void bind_transparent_buffer();
         void unbind_transparent_buffer();
 
