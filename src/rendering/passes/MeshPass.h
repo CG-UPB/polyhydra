@@ -14,17 +14,9 @@ namespace volumeshOS::Internal
     {
     public:
 
-        explicit MeshPass(Renderer* renderer);
-        /**
-         * Deconstructor
-         */
+        MeshPass() = default;
         ~MeshPass() = default;
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
-
-
-    private:
-
-        Renderer* m_renderer;
+        void render(const Renderer& renderer) override;
     };
 }

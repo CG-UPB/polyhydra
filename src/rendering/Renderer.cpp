@@ -61,73 +61,78 @@ namespace volumeshOS::Internal
     {
         frame.is_rendering_background = render_bg;
 
+        // handle input
+        handle_input();
+
+        render_list.clear();
+        mesh_list->iterate([&](auto id, auto mesh){
+            if(mesh->get_data().visible)
+            {
+                mesh->update_vertex_buffer();
+                if (mesh->get_vao() != nullptr)
+                {
+                    render_list.push_back(mesh);
+                }
+            }
+        });
+
         buffers.target_framebuffer_ms->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         buffers.target_framebuffer_ms->unbind();
 
-        // handle input
-        handle_input();
-
         // Render Meshes
-        render_pre_pass();
+        passes.pre_pass->render(this);
 
         if (m_settings.get_mesh_mode() == ModeEnum::Only_Vertices)
         {
             if (render_bg)
             {
-                render_background();
+                passes.background_pass->render(this);
             }
-            buffers.target_framebuffer_ms->bind();
-
-            mesh_list->iterate([&](auto id, auto mesh){
-                if(mesh->get_data().visible)
-                {
-                    mesh->update_vertex_buffer();
-                    if (mesh->get_vao() != nullptr)
-                    {
-                        passes.vertex_only_pass->render(nullptr, mesh);
-                    }
-                }
-            });
-
-
-            buffers.target_framebuffer_ms->unbind();
+            passes.vertex_only_pass->render(this);
         }
         else
         {
             if (m_settings.get_ambient_occlusion_activated())
             {
-                render_ssao_pass();
+                passes.ssao_pass->render(this);
             }
 
             if (m_settings.get_shadows_activated())
             {
-                render_shadow_map();
+                passes.shadow_pass->render(this);
             }
 
-
-            // Now render our mesh scene to the framebuffer texture
-            // Start with opaque objects
             if (render_bg)
             {
-                render_background();
+                passes.background_pass->render(this);
             }
 
-            render_meshes();
+            passes.mesh_pass->render(this);
 
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
 
             // Render transparent objects
             if (m_settings.get_transparency_activated())
             {
-                render_transparency();
+                int m_transparency = m_settings.get_transparency_mode();
+                switch (m_transparency)
+                {
+                    case DEPTH_PEELING:
+                        passes.transparency_pass_dp->render(this);
+                        break;
+                    case WEIGHTED_BLENDED :
+                        passes.transparency_pass_wb->render(this);
+                    default:
+                        return;
+                }
             }
 
             // Render Selection
             if (m_settings.get_selection_activated())
             {
-                render_selection();
+                m_selectionFrameBuffer->render(this);
             }
         }
 
@@ -301,36 +306,6 @@ namespace volumeshOS::Internal
         camera->update();
     }
 
-    void Renderer::render_mesh(const std::shared_ptr<MeshObject>& mesh)
-    {
-        if (mesh == nullptr)
-        {
-            return;
-        }
-
-        MeshData& mesh_data = mesh->get_data();
-
-        if (!mesh_data.visible)
-        {
-            return;
-        }
-
-
-        mesh->update_vertex_buffer();
-
-        auto vao = mesh->get_vao();
-        if (mesh_data.rounding_active)
-        {
-            vao = mesh->get_mvb()->get_vao_rounded();
-        }
-
-        // render all passes
-        if (vao != nullptr)
-        {
-            passes.mesh_pass->render(vao, mesh);
-            //m_shape_pass.render(nullptr, m_render_data, mesh_id);
-        }
-    }
 
     void Renderer::render_selection()
     {
@@ -570,19 +545,6 @@ namespace volumeshOS::Internal
         buffers.target_framebuffer_ms->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         passes.background_pass->render(nullptr, nullptr);
-        buffers.target_framebuffer_ms->unbind();
-    }
-
-
-    void Renderer::render_meshes()
-    {
-        buffers.target_framebuffer_ms->bind();
-        mesh_list->iterate([&](auto id, auto mesh){
-            if(mesh->get_data().visible)
-            {
-                render_mesh( mesh);
-            }
-        });
         buffers.target_framebuffer_ms->unbind();
     }
 
