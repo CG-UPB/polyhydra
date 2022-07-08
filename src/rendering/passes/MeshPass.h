@@ -1,12 +1,9 @@
 #pragma once
 
 #include "RenderPass.h"
-#include "../Renderer.h"
 
 namespace volumeshOS::Internal
 {
-    class Renderer;
-
     /**
      * Renders Meshes according to its set mesh properties
      */

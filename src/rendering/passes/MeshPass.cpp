@@ -1,13 +1,14 @@
 
 #include "MeshPass.h"
+#include "../Renderer.h"
 
 namespace volumeshOS::Internal
 {
 
     void MeshPass::render(const Renderer& renderer)
     {
-        renderer.m_target_ms->bind();
-        for (auto mesh: renderer.render_list)
+        renderer.buffers.target_framebuffer_ms->bind();
+        for (const auto& mesh : renderer.render_list)
         {
             auto settings = GlobalViewerSettings::getInstance();
             bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
@@ -84,8 +85,8 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_int("u_cascade_level", settings->get_cascade_level() - 1);
 
 
-            m_mesh_shader->set_uniform_int("u_viewport_width", renderer.m_viewportPanelWidth);
-            m_mesh_shader->set_uniform_int("u_viewport_height", renderer.m_viewportPanelHeight);
+            m_mesh_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
+            m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
 
             float bias_min = 0.000005;
@@ -105,7 +106,7 @@ namespace volumeshOS::Internal
 
 
             // shadow maps
-            auto s = renderer.m_shadow_pass;
+            auto s = renderer.passes.shadow_pass;
             for (int i = 0; i < s->max_cascades; i++)
             {
                 m_mesh_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) + "]",
@@ -126,15 +127,9 @@ namespace volumeshOS::Internal
 
             // input textures
             m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,
-                                                 renderer.m_pre_pass->get_framebuffer()->get_depth_texture());
+                                                 renderer.passes.pre_pass->get_framebuffer()->get_depth_texture());
             m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,
-                                                 renderer.m_ssao_pass->get_blur_texture());
-            m_mesh_shader->set_uniform_sampler2D("u_transparent_shadow_texture", GL_TEXTURE2,
-                                                 renderer.m_transparent_shadow_pass->get_framebuffer()->get_texture(
-                                                         GL_DEPTH_ATTACHMENT));
-            m_mesh_shader->set_uniform_sampler2D("u_color_filter_texture", GL_TEXTURE3,
-                                                 renderer.m_shadow_color_filter_pass->get_framebuffer()->get_texture(
-                                                         GL_COLOR_ATTACHMENT0));
+                                                 renderer.passes.ssao_pass->get_blur_texture());
 
             // bind cascaded shadow map
             std::vector<unsigned int> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
@@ -162,6 +157,6 @@ namespace volumeshOS::Internal
 
             m_mesh_shader->unbind();
         }
-        renderer.m_target_ms->unbind();
+        renderer.buffers.target_framebuffer_ms->unbind();
     }
 }

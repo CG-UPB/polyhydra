@@ -22,7 +22,7 @@ namespace volumeshOS::Internal
         {
             glm::mat4 rot = glm::translate(glm::mat4(1.0), position) * rotation;
             glm::mat4 scl = scaling * glm::translate(glm::mat4(1.0), -position);
-            transformation =  scl * rot * translation;
+            transformation = scl * rot * translation;
         }
 
         glm::mat4 translation       = glm::mat4(1.0f);
@@ -167,19 +167,8 @@ namespace volumeshOS::Internal
 
         glm::vec3 get_max();
 
-        /**
-         * Calculates bounding box of transformed vertices. Used for slicing into camera direction.
-         * @param transform Transformation matrix
-         * @return bounding box in mesh coorinates
-         */
         std::pair<glm::vec3, glm::vec3> &get_world_bb(const glm::mat4 &transform);
 
-        /**
-         * Calculates the direction the camera points to
-         * @param view_transform Transformation matrix
-         * @param view_dir camera direction
-         * @return direction vector
-         */
         glm::vec3 &get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir);
 
         MeshData& get_data()
@@ -197,13 +186,6 @@ namespace volumeshOS::Internal
         {
             return m_mesh_name;
         }
-
-        /**
-         * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
-         * we would have to update the vertex array with the data every time we render.
-         *
-         * @return the instanced sphere vao for this mesh
-         */
 
         [[nodiscard]] std::shared_ptr<MeshVertexBuffer> get_mvb() const;
 

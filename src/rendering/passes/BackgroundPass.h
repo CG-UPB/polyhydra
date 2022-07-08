@@ -10,9 +10,7 @@ namespace volumeshOS::Internal
     class BackgroundPass : public RenderPass
     {
     public:
-        /**
-         * Constructor
-         */
+
         BackgroundPass();
 
         /**
@@ -26,7 +24,7 @@ namespace volumeshOS::Internal
          */
         [[nodiscard]] const glm::vec4& get_background_color() const;
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData &data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
 
     private:
 

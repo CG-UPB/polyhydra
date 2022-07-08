@@ -1,6 +1,9 @@
 
 #include "BackgroundPass.h"
 #include "../meshes/CommonMeshes.h"
+#include "rendering/gl/VertexArrayObject.h"
+#include "rendering/gl/Shader.h"
+#include "../Renderer.h"
 
 namespace volumeshOS::Internal
 {
@@ -16,18 +19,25 @@ namespace volumeshOS::Internal
     }
 
 
-    void BackgroundPass::render(std::shared_ptr<VertexArrayObject> vao, std::shared_ptr<MeshObject> mesh)
+    void BackgroundPass::render(const Renderer& renderer)
     {
-        // Parameters are ignored, as they are not necessary
-
-        // Rendering a simple gradient
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
         glDisable(GL_BLEND);
         glDepthMask(GL_FALSE);
+
+        renderer.buffers.target_framebuffer_ms->bind();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Rendering a simple gradient
         m_background_shader->bind();
         m_background_shader->set_uniform_vec4f("u_top_color", m_top_color);
         m_background_shader->set_uniform_vec4f("u_bottom_color", m_bottom_color);
         m_vao->draw();
         m_background_shader->unbind();
+
+        renderer.buffers.target_framebuffer_ms->unbind();
     }
 
     void BackgroundPass::set_background_color(const glm::vec4& color)

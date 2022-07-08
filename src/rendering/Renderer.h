@@ -27,6 +27,7 @@ namespace volumeshOS::Internal
     class ShadowMapPass;
     class TransparencyPassWB;
     class TransparencyPassDP;
+    class BackgroundPass;
 
     class Renderer
     {
@@ -34,7 +35,7 @@ namespace volumeshOS::Internal
 
         Renderer(int width, int height, const std::shared_ptr<FrameBufferObject>& initial_target_ms, const std::shared_ptr<FrameBufferObject>& initial_target);
 
-        void set_selection_callback(std::function<void(int, int)> callback) { m_selection_callback = std::move(callback); };
+        void set_selection_callback(std::function<void(int, int)> callback) { selection_callback = std::move(callback); };
 
         void resize(int width, int height);
 
@@ -48,6 +49,7 @@ namespace volumeshOS::Internal
         std::shared_ptr<Camera> camera          = nullptr;
         Light light;
         std::vector<std::shared_ptr<MeshObject>> render_list;
+        std::function<void(int, int)> selection_callback;
 
         // render buffers
         struct
@@ -100,20 +102,5 @@ namespace volumeshOS::Internal
         void handle_mesh_input();
         void render_transparency_wb();
         void render_transparency_dp();
-        void query_selection(int type, int id);
-
-    private:
-
-        // general
-        GlobalViewerSettings& m_settings;
-        std::function<void(int, int)> m_selection_callback;
-
-        friend class Window;
-        friend class MeshView;
-        friend class MeshPass;
-        friend class SSAOPass;
-        friend class ShadowMapPass;
-        friend class TransparencyPassWB;
-        friend class TransparencyPassDP;
     };
 }

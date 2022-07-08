@@ -16,7 +16,7 @@ namespace volumeshOS::Internal
          */
         SelectionHoverPass();
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
 
         /**
          * Highlights given Element identified by ID, type and Mesh ID
@@ -26,7 +26,7 @@ namespace volumeshOS::Internal
          * @param type
          * @param id
          */
-        void hover(const RenderData& data, int mesh_id, int type, int id);
+        void hover(const std::shared_ptr<MeshObject>& mesh, int type, int id);
 
         [[nodiscard]] int get_hovered_mesh_object() const {return m_hovered_mesh;};
 

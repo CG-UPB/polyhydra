@@ -1,6 +1,8 @@
 
 #include "SelectionHoverPass.h"
 #include "../meshes/CommonMeshes.h"
+#include "../gl/Shader.h"
+#include "../Renderer.h"
 
 namespace volumeshOS::Internal
 {
@@ -16,10 +18,9 @@ namespace volumeshOS::Internal
         m_edge_vao = std::make_unique<VertexArrayObject>(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
     }
 
-    void SelectionHoverPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void SelectionHoverPass::render(const Renderer& renderer)
     {
-        // If no element is hovered, return
-        if (m_hovered_type == SELECTION_TYPE_NONE || m_hovered_mesh != mesh->get_id())
+        if (m_hovered_type == SELECTION_TYPE_NONE)
         {
             return;
         }
@@ -30,66 +31,78 @@ namespace volumeshOS::Internal
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-        // Transform Data
-        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
+        renderer.buffers.target_framebuffer_ms->bind();
 
-        if (m_hovered_type == SELECTION_TYPE_FACE)
+        for (const auto& mesh : renderer.render_list)
         {
-            // Face
-            if (m_face_vao != nullptr)
+            // If no element is hovered, return
+            if (m_hovered_mesh != mesh->get_id())
             {
-                // Draw flat color quad
-                m_flat_color_shader->bind();
-                m_flat_color_shader->set_uniform_mat4f("u_transform", transform);
-                m_flat_color_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_flat_color_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_flat_color_shader->set_uniform_vec4f("u_color", m_hover_color);
-                m_face_vao->draw();
-                m_flat_color_shader->unbind();
+                continue;
+            }
+
+            // Transform Data
+            glm::mat4 transform = renderer.camera->world * mesh->get_data().get_transform();
+
+            if (m_hovered_type == SELECTION_TYPE_FACE)
+            {
+                // Face
+                if (m_face_vao != nullptr)
+                {
+                    // Draw flat color quad
+                    m_flat_color_shader->bind();
+                    m_flat_color_shader->set_uniform_mat4f("u_transform", transform);
+                    m_flat_color_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+                    m_flat_color_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+                    m_flat_color_shader->set_uniform_vec4f("u_color", m_hover_color);
+                    m_face_vao->draw();
+                    m_flat_color_shader->unbind();
+                }
+            }
+            else if (m_hovered_type == SELECTION_TYPE_VERTEX)
+            {
+                // Vertex
+                if (m_quad_vao != nullptr)
+                {
+                    // Draw flat color sphere
+                    m_quad_circle_shader->bind();
+                    m_quad_circle_shader->set_uniform_mat4f("u_transform", transform);
+                    m_quad_circle_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+                    m_quad_circle_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+                    m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
+                    m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
+                    m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
+                    m_quad_circle_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+                    m_quad_vao->draw();
+                    m_quad_circle_shader->unbind();
+                }
+            }
+            else if (m_hovered_type == SELECTION_TYPE_EDGE)
+            {
+                // Edge
+                if (m_edge_vao != nullptr)
+                {
+                    // Draw flat color cylinder
+                    glm::vec4 color(m_hover_color);
+                    color *= 0.5;
+                    m_edge_hover_shader->bind();
+                    m_edge_hover_shader->set_uniform_mat4f("u_mesh_transform", transform);
+                    m_edge_hover_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+                    m_edge_hover_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+                    m_edge_hover_shader->set_uniform_vec4f("u_color", color);
+                    m_edge_hover_shader->set_uniform_vec3f("u_from_vertex", m_hovered_edge_from);
+                    m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
+                    m_edge_hover_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+                    m_edge_hover_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+                    m_edge_vao->draw();
+                    m_edge_hover_shader->unbind();
+                }
             }
         }
-        else if (m_hovered_type == SELECTION_TYPE_VERTEX)
-        {
-            // Vertex
-            if (m_quad_vao != nullptr)
-            {
-                // Draw flat color sphere
-                m_quad_circle_shader->bind();
-                m_quad_circle_shader->set_uniform_mat4f("u_transform", transform);
-                m_quad_circle_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_quad_circle_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
-                m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
-                m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
-                m_quad_circle_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-                m_quad_vao->draw();
-                m_quad_circle_shader->unbind();
-            }
-        }
-        else if (m_hovered_type == SELECTION_TYPE_EDGE)
-        {
-            // Edge
-            if (m_edge_vao != nullptr)
-            {
-                // Draw flat color cylinder
-                glm::vec4 color(m_hover_color);
-                color *= 0.5;
-                m_edge_hover_shader->bind();
-                m_edge_hover_shader->set_uniform_mat4f("u_mesh_transform", transform);
-                m_edge_hover_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_edge_hover_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_edge_hover_shader->set_uniform_vec4f("u_color", color);
-                m_edge_hover_shader->set_uniform_vec3f("u_from_vertex", m_hovered_edge_from);
-                m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
-                m_edge_hover_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-                m_edge_hover_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-                m_edge_vao->draw();
-                m_edge_hover_shader->unbind();
-            }
-        }
+        renderer.buffers.target_framebuffer_ms->unbind();
     }
 
-    void SelectionHoverPass::hover(const RenderData& data, int mesh_id, int type, int id)
+    void SelectionHoverPass::hover(const std::shared_ptr<MeshObject>& mesh, int type, int id)
     {
         // Do not doubly hover above an element
         if (m_hovered_id == id && m_hovered_type == type)
@@ -100,12 +113,7 @@ namespace volumeshOS::Internal
         // Remember Element data
         m_hovered_type = type;
         m_hovered_id = id;
-        m_hovered_mesh = mesh_id;
-
-        // Get MeshObject
-        auto mesh = Window::instance().get_mesh_obj(mesh_id);
-        if(mesh == nullptr)
-            return;
+        m_hovered_mesh = mesh->get_id();
 
         auto mesh_transform = mesh->get_data().get_transform();
 

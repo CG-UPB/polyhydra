@@ -15,9 +15,8 @@ namespace volumeshOS::Internal
         PrePass(int width, int height);
 
         void resize_buffers(int width, int height);
-        void clear_position_buffer();
 
-        void render(Renderer* renderer) override;
+        void render(const Renderer& renderer) override;
 
         [[nodiscard]] std::shared_ptr<PrePassFrameBufferObject> get_framebuffer() const;
 
