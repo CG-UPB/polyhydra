@@ -25,7 +25,7 @@ namespace volumeshOS::Internal
         passes.background_pass = std::make_shared<BackgroundPass>();
         passes.pre_pass = std::make_shared<PrePass>(width, height);
         passes.shadow_pass = std::make_shared<ShadowMapPass>(this, width * 2, height * 2);
-        passes.mesh_pass = std::make_shared<MeshPass>(this);
+        passes.mesh_pass = std::make_shared<MeshPass>();
         passes.ssao_pass = std::make_shared<SSAOPass>(this, width, height);
         passes.transparency_pass_wb = std::make_shared<TransparencyPassWB>(this, width, height);
         passes.transparency_pass_dp = std::make_shared<TransparencyPassDP>(this, width, height);
@@ -132,7 +132,7 @@ namespace volumeshOS::Internal
             // Render Selection
             if (m_settings.get_selection_activated())
             {
-                m_selectionFrameBuffer->render(this);
+                passes.selection_pass->render(this);
             }
         }
 
@@ -345,8 +345,8 @@ namespace volumeshOS::Internal
 
         buffers.pixel_buffer->finish_read();
 
-        m_current_frame = (m_current_frame + 1) % m_frame_limit;
-        if (m_current_frame == 0)
+        frame.current = (frame.current + 1) % frame.limit;
+        if (frame.current == 0)
         {
             // we need to clear our framebuffer as well
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

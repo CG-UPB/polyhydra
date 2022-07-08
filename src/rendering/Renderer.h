@@ -98,14 +98,6 @@ namespace volumeshOS::Internal
         void handle_input();
         void handle_camera_input();
         void handle_mesh_input();
-        void render_mesh(const std::shared_ptr<MeshObject>& mesh);
-        void render_selection();
-        void render_pre_pass();
-        void render_shadow_map();
-        void render_ssao_pass();
-        void render_background();
-        void render_meshes();
-        void render_transparency();
         void render_transparency_wb();
         void render_transparency_dp();
         void query_selection(int type, int id);
