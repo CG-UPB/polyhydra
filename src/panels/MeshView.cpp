@@ -404,7 +404,7 @@ namespace volumeshOS::Internal
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                return renderer->m_selectionFrameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                return renderer->m_selection_frame_buffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
                 return renderer->m_ssao_pass->get_ssao_texture();
             case SSAO_BLUR:

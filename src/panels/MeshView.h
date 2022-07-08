@@ -14,8 +14,8 @@
 #include "../rendering/passes/ShadowMapPass.h"
 #include "../rendering/passes/ShadowColorFilterPass.h"
 #include "../rendering/passes/TransparentShadowMapPass.h"
-#include "../rendering/passes/TransparencyPass_WB.h"
-#include "../rendering/passes/TransparencyPass_DP.h"
+#include "../rendering/passes/TransparencyPassWB.h"
+#include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
 #include "../util/ModeEnum.h"
@@ -71,7 +71,6 @@ namespace volumeshOS::Internal
         // opengl rendering
         std::shared_ptr<FrameBufferObject> m_meshFrameBuffer = nullptr;
         std::shared_ptr<FrameBufferObject> m_screen_quad_frameBuffer = nullptr;
-        RenderData m_render_data;
 
         // selected texture for rendering (mostly for debugging)
         int m_viewport_texture = FINAL_IMAGE;

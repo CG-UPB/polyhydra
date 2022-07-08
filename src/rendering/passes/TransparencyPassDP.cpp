@@ -1,5 +1,5 @@
 
-#include "TransparencyPass_DP.h"
+#include "TransparencyPassDP.h"
 #include "panels/Window.h"
 #include "../meshes/CommonMeshes.h"
 
@@ -7,7 +7,7 @@ namespace volumeshOS::Internal
 {
     class MeshView;
 
-    TransparencyPass_DP::TransparencyPass_DP(Renderer* renderer, int width,int height):
+    TransparencyPassDP::TransparencyPassDP(Renderer* renderer, int width, int height):
             m_renderer(renderer),
             m_width(width),
             m_height(height)
@@ -68,12 +68,12 @@ namespace volumeshOS::Internal
         //update_draw_texture();
     }
 
-    void TransparencyPass_DP::clean_up_framebuffer()
+    void TransparencyPassDP::clean_up_framebuffer()
     {
 
     }
 
-    void TransparencyPass_DP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh, int pass)
+    void TransparencyPassDP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh, int pass)
     {
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
@@ -86,7 +86,7 @@ namespace volumeshOS::Internal
             m_transparency_shader->bind();
             if(pass == 0)
             {
-                unsigned int depth_texture = m_renderer->m_target->get_texture(GL_DEPTH_ATTACHMENT);
+                unsigned int depth_texture = m_renderer->m_target_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
                 m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
             }
             else
@@ -110,7 +110,7 @@ namespace volumeshOS::Internal
         }
     }
 
-    void TransparencyPass_DP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void TransparencyPassDP::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
         glm::mat4 view_transform = data.camera.view * transform;
@@ -158,8 +158,8 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
         m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
         m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-        m_transparency_shader->set_uniform_int("u_viewport_width", m_renderer->m_target->get_width());
-        m_transparency_shader->set_uniform_int("u_viewport_height", m_renderer->m_target->get_height());
+        m_transparency_shader->set_uniform_int("u_viewport_width", m_renderer->m_target_framebuffer->get_width());
+        m_transparency_shader->set_uniform_int("u_viewport_height", m_renderer->m_target_framebuffer->get_height());
         m_transparency_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
         m_transparency_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
         m_transparency_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
@@ -170,7 +170,7 @@ namespace volumeshOS::Internal
 
     }
 
-    void TransparencyPass_DP::render_composition(int current_pass, int max_passes)
+    void TransparencyPassDP::render_composition(int current_pass, int max_passes)
     {
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
@@ -198,7 +198,7 @@ namespace volumeshOS::Internal
         }
 
 
-        m_renderer->m_target_ms->bind();
+        m_renderer->m_target_framebuffer_ms->bind();
         m_composite_shader->bind();
         m_composite_shader->set_uniform_int("u_current_pass", current_pass);
         m_composite_shader->set_uniform_int("u_max_passes", max_passes - 1);
@@ -206,7 +206,7 @@ namespace volumeshOS::Internal
         m_composite_shader->set_uniform_sampler2D("new_layer_texture", GL_TEXTURE0, new_layer);
         VertexArrayObject::draw_screen_quad();
         m_composite_shader->unbind();
-        m_renderer->m_target_ms->unbind();
+        m_renderer->m_target_framebuffer_ms->unbind();
 
 
         glDisable(GL_BLEND);
@@ -215,7 +215,7 @@ namespace volumeshOS::Internal
 
     }
 
-    void TransparencyPass_DP::resize_buffers(int width, int height)
+    void TransparencyPassDP::resize_buffers(int width, int height)
     {
         m_transparent_framebuffer0->resize(width, height);
         m_transparent_framebuffer1->resize(width, height);
@@ -224,9 +224,9 @@ namespace volumeshOS::Internal
         //generate_transparency_framebuffer(width, height);
     }
 
-    void TransparencyPass_DP::update_draw_texture()
+    void TransparencyPassDP::update_draw_texture()
     {
-        unsigned int texture = m_renderer->m_target_ms->get_texture(GL_COLOR_ATTACHMENT0);
+        unsigned int texture = m_renderer->m_target_framebuffer_ms->get_texture(GL_COLOR_ATTACHMENT0);
         m_transparent_framebuffer0->bind();
         m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture);
         m_transparent_framebuffer0->unbind();

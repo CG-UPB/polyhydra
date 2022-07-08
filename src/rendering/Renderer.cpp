@@ -7,26 +7,35 @@
 namespace volumeshOS::Internal
 {
 
-    Renderer::Renderer(int width, int height, std::shared_ptr<FrameBufferObject> initial_target_ms, std::shared_ptr<FrameBufferObject> initial_target):
-        m_viewportPanelWidth(width), m_viewportPanelHeight(height), m_settings(*GlobalViewerSettings::getInstance())
+    Renderer::Renderer(
+            int width,
+            int height,
+            const std::shared_ptr<FrameBufferObject>& initial_target_ms,
+            const std::shared_ptr<FrameBufferObject>& initial_target
+            ): m_settings(*GlobalViewerSettings::getInstance())
     {
-        m_target_ms = std::move(initial_target_ms);
-        m_target = std::move(initial_target);
+        frame.width = width;
+        frame.height = height;
 
-        m_pre_pass = std::make_shared<PrePass>(width, height);
-        m_shadow_pass = std::make_shared<ShadowMapPass>(this, width * 2, height * 2);
-        m_transparent_shadow_pass = std::make_shared<TransparentShadowMapPass>(width, height);
-        m_shadow_color_filter_pass = std::make_shared<ShadowColorFilterPass>(this, width, height);
-        m_mesh_pass = std::make_shared<MeshPass>(this);
-        m_ssao_pass = std::make_shared<SSAOPass>(this, width, height);
+        buffers.target_framebuffer_ms = initial_target_ms;
+        buffers.target_framebuffer = initial_target;
+        buffers.selection_frame_buffer = std::make_shared<FrameBufferObject>(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
+        buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
 
-        m_selectionFrameBuffer = std::make_shared<FrameBufferObject>(width / 2, height / 2, FrameBufferObject::RGBA_AND_DEPTH);
-        m_pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
+        passes.background_pass = std::make_shared<BackgroundPass>();
+        passes.pre_pass = std::make_shared<PrePass>(width, height);
+        passes.shadow_pass = std::make_shared<ShadowMapPass>(this, width * 2, height * 2);
+        passes.mesh_pass = std::make_shared<MeshPass>(this);
+        passes.ssao_pass = std::make_shared<SSAOPass>(this, width, height);
+        passes.transparency_pass_wb = std::make_shared<TransparencyPassWB>(this, width, height);
+        passes.transparency_pass_dp = std::make_shared<TransparencyPassDP>(this, width, height);
+        passes.shape_pass = std::make_shared<ShapePass>();
+        passes.selection_pass = std::make_shared<SelectionPass>();
+        passes.selection_hover_pass = std::make_shared<SelectionHoverPass>();
+        passes.vertex_only_pass = std::make_shared<VertexOnlyPass>();
 
-        m_transparency_pass_wb = std::make_shared<TransparencyPass_WB>(this, width, height);
-        m_transparency_pass_dp = std::make_shared<TransparencyPass_DP>(this, width, height);
-        last_x = width / 2.0f;
-        last_y = height / 2.0f;
+        input.last.x = (float) width / 2.0f;
+        input.last.y = (float) height / 2.0f;
 
         mesh_list = std::make_shared<MeshList>();
         camera = std::make_shared<Camera>();
@@ -35,32 +44,27 @@ namespace volumeshOS::Internal
 
     void Renderer::resize(int width, int height)
     {
-        m_viewportPanelWidth = width;
-        m_viewportPanelHeight = height;
-        m_transparency_pass_wb->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-        m_transparency_pass_dp->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-        m_pre_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-        m_ssao_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-        m_shadow_pass->resize_buffers(m_viewportPanelWidth * 2, m_viewportPanelHeight * 2);
-        m_shadow_color_filter_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-        m_transparent_shadow_pass->resize_buffers(m_viewportPanelWidth, m_viewportPanelHeight);
-        m_selectionFrameBuffer->resize(m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
-        m_pixel_buffer = std::make_shared<PixelBufferObject>(2, m_viewportPanelWidth / 2, m_viewportPanelHeight / 2);
-        last_x = width / 2.0f;
-        last_y = height / 2.0f;
+        frame.width = width;
+        frame.height = height;
+        passes.transparency_pass_wb->resize_buffers(frame.width, frame.height);
+        passes.transparency_pass_dp->resize_buffers(frame.width, frame.height);
+        passes.pre_pass->resize_buffers(frame.width, frame.height);
+        passes.ssao_pass->resize_buffers(frame.width, frame.height);
+        passes.shadow_pass->resize_buffers(frame.width * 2, frame.height * 2);
+        buffers.selection_frame_buffer->resize(frame.width / 2, frame.height / 2);
+        buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, frame.width / 2, frame.height / 2);
+        input.last.x = (float) width / 2.0f;
+        input.last.y = (float) height / 2.0f;
     }
 
     void Renderer::render(bool render_bg)
     {
-        for( auto )
+        frame.is_rendering_background = render_bg;
 
-
-        m_is_rendering_background = render_bg;
-
-        m_target_ms->bind();
+        buffers.target_framebuffer_ms->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_target_ms->unbind();
+        buffers.target_framebuffer_ms->unbind();
 
         // handle input
         handle_input();
@@ -74,7 +78,7 @@ namespace volumeshOS::Internal
             {
                 render_background();
             }
-            m_target_ms->bind();
+            buffers.target_framebuffer_ms->bind();
 
             mesh_list->iterate([&](auto id, auto mesh){
                 if(mesh->get_data().visible)
@@ -82,13 +86,13 @@ namespace volumeshOS::Internal
                     mesh->update_vertex_buffer();
                     if (mesh->get_vao() != nullptr)
                     {
-                        m_vertex_only_pass.render(nullptr, mesh);
+                        passes.vertex_only_pass->render(nullptr, mesh);
                     }
                 }
             });
 
 
-            m_target_ms->unbind();
+            buffers.target_framebuffer_ms->unbind();
         }
         else
         {
@@ -112,7 +116,7 @@ namespace volumeshOS::Internal
 
             render_meshes();
 
-            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, m_target_ms, m_target);
+            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
 
             // Render transparent objects
             if (m_settings.get_transparency_activated())
@@ -135,88 +139,7 @@ namespace volumeshOS::Internal
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, m_target_ms, m_target);
-    }
-
-    void render()
-    {
-        for(mesh)
-        {
-//            if (mesh == nullptr)
-//            {
-//                return;
-//            }
-//            MeshData& mesh_data = mesh->get_data();
-//
-//            if (!mesh_data.visible)
-//            {
-//                return;
-//            }
-//            mesh->update_vertex_buffer();
-//
-//            auto vao = mesh->get_vao();
-//            if (mesh_data.rounding_active)
-//            {
-//                vao = mesh->get_mvb()->get_vao_rounded();
-//            }
-//
-//            // render all passes
-//            if (vao != nullptr)
-//            {
-
-            // check if data should be added to data_list
-
-            // calculate data once for each mesh
-            m_data[mesh] = {
-                    .should_render = mesh.visible && vao != nullptr,
-
-            };
-        }
-
-
-        // calculate variables for all passes
-
-        for(pass)
-        {
-            for(mesh)
-            {
-                m_current_data = data[mesh];
-                pass.render(this)
-            }
-        }
-
-        pass1(this)
-        pass2(this)
-        pass3(this)
-
-
-        for (auto mesh : mesh_list)
-        {
-            // Calculate render variables
-            data.current_mesh = mesh;
-            data.view_transform = ...;
-            ...
-
-            m_mesh_pass.render(this);
-            m_selection_pass.render(this);
-            ...
-        }
-    }
-
-    void pass1()
-    {
-        for_each_mesh([]{
-
-        });
-    }
-
-    void for_each_mesh(std::function<void()> fn)
-    {
-        for (mesh : meshes_to_render)
-        {
-            m_current_data = render_data[mesh];
-            fn();
-        }
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
     }
 
     void Renderer::handle_input()
@@ -231,34 +154,34 @@ namespace volumeshOS::Internal
 
         // mouse movement
         auto mouse_coords = Input::get_mouse_coords();
-        xpos = mouse_coords.x;
-        ypos = mouse_coords.y;
+        input.pos.x = mouse_coords.x;
+        input.pos.y = mouse_coords.y;
         auto is_down = Input::mouse_pressed();
 
-        x_offset = 0.0f;
-        y_offset = 0.0f;
+        input.offset.x = 0.0f;
+        input.offset.y = 0.0f;
 
-        if (xpos > vMin.x && xpos < vMax.x && ypos > vMin.y && ypos < vMax.y)
+        if (input.pos.x > vMin.x && input.pos.x < vMax.x && input.pos.y > vMin.y && input.pos.y < vMax.y)
         {
             if (is_down)
             {
-                x_offset = xpos - last_x;
-                y_offset = last_y - ypos;
+                input.offset.x = input.pos.x - input.last.x;
+                input.offset.y = input.last.y - input.pos.y;
             }
         }
 
         handle_camera_input();
         handle_mesh_input();
 
-        last_x = xpos;
-        last_y = ypos;
+        input.last.x = input.pos.x;
+        input.last.y = input.pos.y;
     }
 
     void Renderer::handle_mesh_input()
     {
-        if(mesh_moving)
+        if(input.mesh_moving)
         {
-            mesh_moving = false;
+            input.mesh_moving = false;
         }
 
         if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
@@ -267,23 +190,23 @@ namespace volumeshOS::Internal
             {
                 if (Input::key_down(Input::TRANSLATE_MESH))
                 {
-                    mesh_moving = true;
-                    auto delta_x = (float) (2 * M_PI / m_viewportPanelWidth);
-                    auto delta_y = (float) (M_PI / m_viewportPanelHeight);
+                    input.mesh_moving = true;
+                    auto delta_x = (float) (2 * M_PI / frame.width);
+                    auto delta_y = (float) (M_PI / frame.height);
 
-                    glm::vec3 vertical = camera->get_right() * x_offset * delta_x * 2.0f;
-                    glm::vec3 horizontal = camera->get_world_up() * y_offset * delta_y * 2.0f;
+                    glm::vec3 vertical = camera->get_right() * input.offset.x * delta_x * 2.0f;
+                    glm::vec3 horizontal = camera->get_world_up() * input.offset.y * delta_y * 2.0f;
 
                     mesh->translate(mesh->get_data().position + vertical + horizontal) ;
                 }
                 else if (Input::key_down(Input::ROTATE_MESH))
                 {
-                    mesh_moving = true;
-                    auto delta_x = (float) (2 * M_PI / m_viewportPanelWidth);
-                    auto delta_y = (float) (M_PI / m_viewportPanelHeight);
+                    input.mesh_moving = true;
+                    auto delta_x = (float) (2 * M_PI / frame.width);
+                    auto delta_y = (float) (M_PI / frame.height);
 
-                    float x_rotation = x_offset * delta_x;
-                    float y_rotation = y_offset * delta_y;
+                    float x_rotation = input.offset.x * delta_x;
+                    float y_rotation = input.offset.y * delta_y;
 
                     auto pos = mesh->get_data().position;
                     auto off = mesh->get_data().position_offset;
@@ -294,11 +217,11 @@ namespace volumeshOS::Internal
 //                    mesh->rotate(x_rotation, x_axis);
 //                    mesh->rotate(-y_rotation, y_axis);
 
-                    if (Input::mouse_pressed() && (last_x != xpos || last_y != ypos))
+                    if (Input::mouse_pressed() && (input.last.x != input.pos.x || input.last.y != input.pos.y))
                     {
-                        auto axis = TrackBall::get_rotation_axis({last_x, last_y}, {xpos, ypos},
+                        auto axis = TrackBall::get_rotation_axis({input.last.x, input.last.y}, {input.pos.x, input.pos.y},
                                                                  camera->get_viewport_size());
-                        auto angle = TrackBall::get_rotation_angle({last_x, last_y}, {xpos, ypos},
+                        auto angle = TrackBall::get_rotation_angle({input.last.x, input.last.y}, {input.pos.x, input.pos.y},
                                                                    camera->get_viewport_size());
                         //glm::mat3 camera_to_trackball = glm::inverse(mesh->get_data().get_transform()) * glm::mat3(cam.world));
                         glm::vec3 axis_in_trackball_coords = glm::inverse(camera->view * mesh->get_data().get_transform()) * glm::vec4(axis, 0.0f);
@@ -315,7 +238,7 @@ namespace volumeshOS::Internal
     {
         if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
         {
-            if (!mesh_moving)
+            if (!input.mesh_moving)
             {
                 if (camera->animation)
                 {
@@ -326,7 +249,7 @@ namespace volumeshOS::Internal
 
                 if (Input::mouse_double_clicked())
                 {
-                    auto mesh_id = m_selection_hover_pass.get_hovered_mesh_object();
+                    auto mesh_id = passes.selection_hover_pass->get_hovered_mesh_object();
 
                     if (mesh_id >= 0)
                     {
@@ -341,7 +264,7 @@ namespace volumeshOS::Internal
                         else if(mode != Selection::Off)
                         {
                             auto transform = camera->world * mesh->get_data().get_transform();
-                            auto pos_mesh_space = glm::vec4(m_selection_hover_pass.hover_position, 1.0f);
+                            auto pos_mesh_space = glm::vec4(passes.selection_hover_pass->hover_position, 1.0f);
                             //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
                             new_target = glm::vec3(transform * pos_mesh_space);
                         }
@@ -370,7 +293,7 @@ namespace volumeshOS::Internal
                 }
 
                 camera->handle_mouse_scroll(Input::get_scroll_offset());
-                camera->handle_mouse_movement(x_offset, y_offset);
+                camera->handle_mouse_movement(input.offset.x, input.offset.y);
                 camera->handle_key_movement(Input::get_wasd_movement_vector());
             }
 
@@ -404,7 +327,7 @@ namespace volumeshOS::Internal
         // render all passes
         if (vao != nullptr)
         {
-            m_mesh_pass->render(vao, mesh);
+            passes.mesh_pass->render(vao, mesh);
             //m_shape_pass.render(nullptr, m_render_data, mesh_id);
         }
     }
@@ -412,7 +335,7 @@ namespace volumeshOS::Internal
     void Renderer::render_selection()
     {
         // now render our mesh scene to the framebuffer texture
-        m_selectionFrameBuffer->bind();
+        buffers.selection_frame_buffer->bind();
 
         // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
         // viewport[3] equals viewport height
@@ -427,14 +350,14 @@ namespace volumeshOS::Internal
         int x = (int) mouse_pos_in_window.x / 2;
         int y = (int) (viewport[3] * 2 - (int) mouse_pos_in_window.y) / 2;
 
-        GLubyte* data = m_pixel_buffer->start_read(x, y, 1, 1);
+        GLubyte* data = buffers.pixel_buffer->start_read(x, y, 1, 1);
 
         if (data != nullptr)
         {
             // evaluate ID out of color
             int type = data[0] & 3;
             int id;
-            if (m_selection_pass.is_debug_mode())
+            if (passes.selection_pass->is_debug_mode())
             {
                 id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
             }
@@ -445,7 +368,7 @@ namespace volumeshOS::Internal
             query_selection(type, id);
         }
 
-        m_pixel_buffer->finish_read();
+        buffers.pixel_buffer->finish_read();
 
         m_current_frame = (m_current_frame + 1) % m_frame_limit;
         if (m_current_frame == 0)
@@ -460,14 +383,14 @@ namespace volumeshOS::Internal
                     mesh->update_vertex_buffer();
                     if (mesh->get_vao() != nullptr)
                     {
-                        m_selection_pass.render_mesh(mesh);
+                        passes.selection_pass->render_mesh(mesh);
                     }
                 }
             });
         }
-        m_selectionFrameBuffer->unbind();
+        buffers.selection_frame_buffer->unbind();
 
-        m_target_ms->bind();
+        buffers.target_framebuffer_ms->bind();
 
         mesh_list->iterate([&](auto id, auto mesh){
             if(mesh->get_data().visible)
@@ -475,12 +398,12 @@ namespace volumeshOS::Internal
                 mesh->update_vertex_buffer();
                 if (mesh->get_vao() != nullptr)
                 {
-                    m_selection_hover_pass.render(nullptr, mesh);
+                    passes.selection_hover_pass->render(nullptr, mesh);
                 }
             }
         });
 
-        m_target_ms->unbind();
+        buffers.target_framebuffer_ms->unbind();
     }
 
     void Renderer::query_selection(int type, int id)
@@ -490,10 +413,10 @@ namespace volumeshOS::Internal
 
     void Renderer::render_pre_pass()
     {
-        m_pre_pass->get_framebuffer()->bind();
+        passes.pre_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_pre_pass->clear_position_buffer();
+        passes.pre_pass->clear_position_buffer();
 
 
         mesh_list->iterate([&](auto id, auto mesh){
@@ -507,17 +430,17 @@ namespace volumeshOS::Internal
                 }
                 if (vao != nullptr)
                 {
-                    m_pre_pass->render(vao, mesh);
+                    passes.pre_pass->render(vao, mesh);
                 }
             }
         });
 
         // we generate a mipmap for the position, this is used for ssao
         // this needs to happen every frame, since the fragment position values always change
-        glBindTexture(GL_TEXTURE_2D, m_pre_pass->get_framebuffer()->get_position_texture());
+        glBindTexture(GL_TEXTURE_2D, passes.pre_pass->get_framebuffer()->get_position_texture());
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
-        m_pre_pass->get_framebuffer()->unbind();
+        passes.pre_pass->get_framebuffer()->unbind();
     }
 
     void Renderer::render_shadow_map()
@@ -526,34 +449,34 @@ namespace volumeshOS::Internal
         glClearColor(0.0, 0.0, 0.0, 0.0);
 
         // calculate all cascade matrices
-        m_shadow_pass->clear_cascades();
+        passes.shadow_pass->clear_cascades();
         int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
 
-        m_shadow_pass->calculate_cascades(camera->near, camera->far, cascade_level);
+        passes.shadow_pass->calculate_cascades(camera->near, camera->far, cascade_level);
 
         for (int i = 0; i < cascade_level; i++)
         {
-            m_shadow_pass->get_framebuffer()->bind();
-            m_shadow_pass->set_cascade_index(i);
-            m_shadow_pass->bind_for_writing(i);
+            passes.shadow_pass->get_framebuffer()->bind();
+            passes.shadow_pass->set_cascade_index(i);
+            passes.shadow_pass->bind_for_writing(i);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            m_shadow_pass->render(vao, mesh);
+            passes.shadow_pass->render(vao, mesh);
 
-            m_shadow_pass->get_framebuffer()->unbind();
+            passes.shadow_pass->get_framebuffer()->unbind();
         }
     }
 
     void Renderer::render_ssao_pass()
     {
-        m_ssao_pass->render(nullptr, nullptr);
+        passes.ssao_pass->render(nullptr, nullptr);
     }
 
     void Renderer::render_transparency_wb()
     {
-        m_transparency_pass_wb->bind_transparent_buffer();
-        m_transparency_pass_wb->clear_framebuffer();
+        passes.transparency_pass_wb->bind_transparent_buffer();
+        passes.transparency_pass_wb->clear_framebuffer();
         glDepthMask(GL_FALSE);
         glEnable(GL_BLEND);
         glBlendFunci(0, GL_ONE, GL_ONE);
@@ -572,21 +495,21 @@ namespace volumeshOS::Internal
                 }
                 if (vao != nullptr)
                 {
-                    m_transparency_pass_wb->render(vao, mesh);
+                    passes.transparency_pass_wb->render(vao, mesh);
                 }
             }
         });
 
-        m_transparency_pass_wb->unbind_transparent_buffer();
+        passes.transparency_pass_wb->unbind_transparent_buffer();
 
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
-        m_target_ms->bind();
-        m_transparency_pass_wb->render_composition();
-        m_target_ms->unbind();
+        buffers.target_framebuffer_ms->bind();
+        passes.transparency_pass_wb->render_composition();
+        buffers.target_framebuffer_ms->unbind();
     }
 
     void Renderer::render_transparency_dp()
@@ -596,11 +519,11 @@ namespace volumeshOS::Internal
         {
             if (i % 2 == 0)
             {
-                m_transparency_pass_dp->m_transparent_framebuffer0->bind();
+                passes.transparency_pass_dp->m_transparent_framebuffer0->bind();
             }
             else
             {
-                m_transparency_pass_dp->m_transparent_framebuffer1->bind();
+                passes.transparency_pass_dp->m_transparent_framebuffer1->bind();
             }
             glClearDepth(0.0f);
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -618,20 +541,20 @@ namespace volumeshOS::Internal
                     }
                     if (vao != nullptr)
                     {
-                        m_transparency_pass_dp->render(vao, mesh);
+                        passes.transparency_pass_dp->render(vao, mesh);
                     }
                 }
             });
 
             if (i % 2 == 0)
             {
-                m_transparency_pass_dp->m_transparent_framebuffer0->unbind();
+                passes.transparency_pass_dp->m_transparent_framebuffer0->unbind();
             }
             else
             {
-                m_transparency_pass_dp->m_transparent_framebuffer1->unbind();
+                passes.transparency_pass_dp->m_transparent_framebuffer1->unbind();
             }
-            m_transparency_pass_dp->render_composition(i, num_passes);
+            passes.transparency_pass_dp->render_composition(i, num_passes);
         }
     }
 
@@ -644,23 +567,23 @@ namespace volumeshOS::Internal
         glDepthMask(GL_TRUE);
         glDisable(GL_BLEND);
 
-        m_target_ms->bind();
+        buffers.target_framebuffer_ms->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_background_pass.render(nullptr, nullptr);
-        m_target_ms->unbind();
+        passes.background_pass->render(nullptr, nullptr);
+        buffers.target_framebuffer_ms->unbind();
     }
 
 
     void Renderer::render_meshes()
     {
-        m_target_ms->bind();
+        buffers.target_framebuffer_ms->bind();
         mesh_list->iterate([&](auto id, auto mesh){
             if(mesh->get_data().visible)
             {
                 render_mesh( mesh);
             }
         });
-        m_target_ms->unbind();
+        buffers.target_framebuffer_ms->unbind();
     }
 
 
@@ -681,7 +604,7 @@ namespace volumeshOS::Internal
 
     void Renderer::set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target)
     {
-        m_target_ms = std::move(target_ms);
-        m_target = std::move(target);
+        buffers.target_framebuffer_ms = std::move(target_ms);
+        buffers.target_framebuffer = std::move(target);
     }
 }

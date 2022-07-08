@@ -1,12 +1,12 @@
 
-#include "TransparencyPass_WB.h"
+#include "TransparencyPassWB.h"
 #include "../meshes/CommonMeshes.h"
 
 namespace volumeshOS::Internal
 {
     class MeshView;
 
-    TransparencyPass_WB::TransparencyPass_WB(Renderer* renderer, int width, int height):
+    TransparencyPassWB::TransparencyPassWB(Renderer* renderer, int width, int height):
             m_renderer(renderer)
     {
         m_transparency_shader = Shader::get("transparency_wb");
@@ -34,11 +34,11 @@ namespace volumeshOS::Internal
         generate_transparency_framebuffer(width, height);
     }
 
-    void TransparencyPass_WB::generate_transparency_framebuffer(int width, int height)
+    void TransparencyPassWB::generate_transparency_framebuffer(int width, int height)
     {
         m_transparent_framebuffer->bind();
 
-        m_depth_texture = m_renderer->m_target->get_texture(GL_DEPTH_ATTACHMENT);
+        m_depth_texture = m_renderer->m_target_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_texture, 0);
 
         glClearBufferfv(GL_COLOR, 0, &m_zeros[0]);
@@ -47,12 +47,12 @@ namespace volumeshOS::Internal
         m_transparent_framebuffer->unbind();
     }
 
-    void TransparencyPass_WB::clean_up_framebuffer()
+    void TransparencyPassWB::clean_up_framebuffer()
     {
 
     }
 
-    void TransparencyPass_WB::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void TransparencyPassWB::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
     {
         m_transparency_shader->bind();
 
@@ -102,8 +102,8 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
         m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
         m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-        m_transparency_shader->set_uniform_int("u_viewport_width", m_renderer->m_target->get_width());
-        m_transparency_shader->set_uniform_int("u_viewport_height", m_renderer->m_target->get_height());
+        m_transparency_shader->set_uniform_int("u_viewport_width", m_renderer->m_target_framebuffer->get_width());
+        m_transparency_shader->set_uniform_int("u_viewport_height", m_renderer->m_target_framebuffer->get_height());
         m_transparency_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
         m_transparency_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
         m_transparency_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
@@ -114,7 +114,7 @@ namespace volumeshOS::Internal
         m_transparency_shader->unbind();
     }
 
-    void TransparencyPass_WB::render_composition()
+    void TransparencyPassWB::render_composition()
     {
         m_composite_shader->bind();
         m_composite_shader->set_uniform_sampler2D("accumTexture", GL_TEXTURE0, get_accum_texture());
@@ -124,34 +124,34 @@ namespace volumeshOS::Internal
 
     }
 
-    void TransparencyPass_WB::resize_buffers(int width, int height)
+    void TransparencyPassWB::resize_buffers(int width, int height)
     {
         m_transparent_framebuffer->resize(width, height);
         generate_transparency_framebuffer(width, height);
     }
 
-    void TransparencyPass_WB::clear_framebuffer() const
+    void TransparencyPassWB::clear_framebuffer() const
     {
         glClearBufferfv(GL_COLOR, 0, &m_zeros[0]);
         glClearBufferfv(GL_COLOR, 1, &m_ones[0]);
     }
 
-    void TransparencyPass_WB::bind_transparent_buffer()
+    void TransparencyPassWB::bind_transparent_buffer()
     {
         m_transparent_framebuffer->bind();
     }
 
-    void TransparencyPass_WB::unbind_transparent_buffer()
+    void TransparencyPassWB::unbind_transparent_buffer()
     {
         m_transparent_framebuffer->unbind();
     }
 
-    unsigned int TransparencyPass_WB::get_accum_texture()
+    unsigned int TransparencyPassWB::get_accum_texture()
     {
         return m_transparent_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
     }
 
-    unsigned int TransparencyPass_WB::get_reveal_texture()
+    unsigned int TransparencyPassWB::get_reveal_texture()
     {
         return m_transparent_framebuffer->get_texture(GL_COLOR_ATTACHMENT1);
     }
