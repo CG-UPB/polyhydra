@@ -50,7 +50,7 @@ namespace volumeshOS
     void open()
     {
         // initialize references and data
-        //initialize();
+        initialize();
 
         // render loop
         while (!window->should_close())
@@ -150,6 +150,25 @@ namespace volumeshOS
         return vmesh;
     }
 
+    VMesh load(const char* path)
+    {
+        int id = mesh_list->next_id();
+        VMesh vmesh(id);
+        commands.emplace_back([id, path]{
+            mesh_list->add_mesh(0, path);
+        });
+        return vmesh;
+    }
+
+    VMesh load_from_dialog(const std::string& title)
+    {
+        if (auto file = volumeshOS::file_dialog(title))
+        {
+            return volumeshOS::load(file);
+        }
+        return VMesh(-1);
+    }
+
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
     {
         commands.emplace_back([mesh, instance]{
@@ -158,6 +177,13 @@ namespace volumeshOS
     }
 
     void update(const VMesh& mesh, const std::string& path)
+    {
+        commands.emplace_back([mesh, path]{
+            mesh_list->set_mesh(mesh.get_id(), path);
+        });
+    }
+
+    void update(const VMesh& mesh, const char* path)
     {
         commands.emplace_back([mesh, path]{
             mesh_list->set_mesh(mesh.get_id(), path);
@@ -509,6 +535,11 @@ namespace volumeshOS
     void export_image(const std::string& path)
     {
 
+    }
+
+    void log(const std::string& message)
+    {
+        Internal::Log::info(message);
     }
 
     float get_ambient(const VMesh& mesh)

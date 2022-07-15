@@ -66,12 +66,21 @@ namespace volumeshOS
     // Add mesh from file path, return new wrapper
     [[nodiscard]] VMesh load(const std::string& path);
 
+    // Add mesh from file path, return new wrapper
+    [[nodiscard]] VMesh load(const char* path);
+
+    // Add mesh from file path, return new wrapper
+    [[nodiscard]] VMesh load_from_dialog(const std::string& title);
+
 
     // Set mesh from ovm instance without generating a new id
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);
 
     // Set mesh from file path without generating a new id
     void update(const VMesh& mesh, const std::string& path);
+
+    // Set mesh from file path without generating a new id
+    void update(const VMesh& mesh, const char* path);
 
 
     // Remove all meshes from volumeshOS
@@ -317,6 +326,8 @@ namespace volumeshOS
     // Set the color theme of volumeshOS
     void set_theme(Theme theme);
 
+    // Log a message
+    void log(const std::string& message);
 
 
     // Wrapper class to use meshes in an object-oriented way

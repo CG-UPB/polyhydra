@@ -256,6 +256,8 @@ namespace volumeshOS::Internal
         panels.quality_settings->show();
         panels.toolbar->show();
 
+        AppState::callbacks.on_gui_render();
+
         post_render_step();
     }
 
