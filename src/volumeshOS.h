@@ -214,6 +214,7 @@ namespace volumeshOS
     // set currently active mesh
     void set_focused_mesh(const VMesh& mesh);
 
+
     // Reset the visibility so that all cells are visible
     void reset_visibility(const VMesh& mesh);
 
@@ -240,10 +241,10 @@ namespace volumeshOS
     [[nodiscard]] std::array<float, 3> get_position(const VMesh& mesh);
 
     // Returns the scale of a mesh
-    [[nodiscard]] float get_scale(const VMesh& mesh);
+    [[nodiscard]] std::array<float, 3> get_scale(const VMesh& mesh);
 
     // Returns the rotation of a mesh using euler angles
-    [[nodiscard]] std::tuple<float, float, float> get_rotation(const VMesh& mesh);
+    [[nodiscard]] std::array<float, 3> get_rotation(const VMesh& mesh);
 
     // Returns the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
     [[nodiscard]] float get_slice_factor(const VMesh& mesh);
@@ -645,13 +646,13 @@ namespace volumeshOS
         }
 
         // Returns the scale of a mesh
-        [[nodiscard]] inline float get_scale() const
+        [[nodiscard]] inline std::array<float, 3> get_scale() const
         {
             return volumeshOS::get_scale(*this);
         }
 
         // Returns the rotation of a mesh using euler angles
-        [[nodiscard]] inline std::tuple<float, float, float> get_rotation() const
+        [[nodiscard]] inline std::array<float, 3> get_rotation() const
         {
             return volumeshOS::get_rotation(*this);
         }

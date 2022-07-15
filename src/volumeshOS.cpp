@@ -335,6 +335,13 @@ namespace volumeshOS
         });
     }
 
+    void get_focused_mesh(const VMesh& mesh)
+    {
+        commands.emplace_back([&mesh](){
+            mesh_list->set_focused_mesh(mesh.get_id());
+        });
+    }
+
     void set_visibility(const VMesh& mesh, const bool visible)
     {
         commands.emplace_back([&mesh, &visible]{
@@ -394,6 +401,96 @@ namespace volumeshOS
                 camera->look_at(pos);
             });
         }
+    }
+
+    float get_ambient(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_ambient(mesh.get_id());
+    }
+
+    float get_diffuse(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_diffuse(mesh.get_id());
+    }
+
+    float get_specular(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_specular(mesh.get_id());
+    }
+
+    float get_specular_coefficient(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_specular_coefficient(mesh.get_id());
+    }
+
+    std::array<float, 3> get_position(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_position(mesh.get_id());
+    }
+
+    std::array<float, 3> get_scale(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_scale(mesh.get_id());
+    }
+
+    std::array<float, 3> get_rotation(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_rotation(mesh.get_id());
+    }
+
+    float get_slice_factor(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_slice_factor(mesh.get_id());
+    }
+
+    bool get_slice_lock(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_slice_lock(mesh.get_id());
+    }
+
+    float get_peel_level(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_peel_level(mesh.get_id());
+    }
+
+    int get_max_peel_depth(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_max_peel_depth(mesh.get_id());
+    }
+
+    float get_cell_rounding(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_cell_rounding(mesh.get_id());
+    }
+
+    float get_cell_size(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_cell_size(mesh.get_id());
+    }
+
+    bool get_visibility(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_visibility(mesh.get_id());
+    }
+
+    bool get_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_visibility(mesh.get_id(), cell);
     }
 
 }

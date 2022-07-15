@@ -137,6 +137,53 @@ namespace volumeshOS::Internal
         void hide(MeshID id, OpenVolumeMesh::CellHandle cell);
 
 
+        /* Getter */
+
+        // Returns the ambient term for the phong lighting model of a mesh
+        float get_ambient(MeshID id);
+
+        // Returns the diffuse term for the phong lighting model of a mesh
+        float get_diffuse(MeshID id);
+
+        // Returns the specular term for the phong lighting model of a mesh
+        float get_specular(MeshID id);
+
+        // Returns the specular coefficient for the phong lighting model of a mesh
+        float get_specular_coefficient(MeshID id);
+
+        // Returns the position of a mesh
+        std::array<float, 3> get_position(MeshID id);
+
+        // Returns the scale of a mesh
+        std::array<float, 3> get_scale(MeshID id);
+
+        // Returns the rotation of a mesh using euler angles
+        std::array<float, 3> get_rotation(MeshID id);
+
+        // Returns the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
+        float get_slice_factor(MeshID id);
+
+        // Returns the lock direction of the slice plane
+        bool get_slice_lock(MeshID id);
+
+        // Returns the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
+        float get_peel_level(MeshID id);
+
+        // Returns the number of cell depth layers of the mesh
+        int get_max_peel_depth(MeshID id);
+
+        // Returns the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
+        float get_cell_rounding(MeshID id);
+
+        // Returns the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
+        float get_cell_size(MeshID id);
+
+        // Returns the visibility of a cell
+        bool get_visibility(MeshID id, OpenVolumeMesh::CellHandle cell);
+
+        // Returns the visibility of the mesh
+        bool get_visibility(MeshID id);
+
         /* Utility */
 
         // iterate over meshes and execute func if id matches

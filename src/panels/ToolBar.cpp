@@ -153,7 +153,7 @@ namespace volumeshOS::Internal
                 m_mesh_position[0] = pos[0];
                 m_mesh_position[1] = pos[1];
                 m_mesh_position[2] = pos[2];
-                m_mesh_scale = scl;
+                m_mesh_scale = scl[0];
 
                 ImGui::Text("Position");
                 ImGui::SameLine();

@@ -320,6 +320,88 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, m_id);
     }
 
+    float MeshList::get_ambient(const MeshID id)
+    {
+        return get_mesh(id)->get_data().ambient_strength;
+    }
+
+    float MeshList::get_diffuse(const MeshID id)
+    {
+        return get_mesh(id)->get_data().diffuse_strength;
+    }
+
+    float MeshList::get_specular(const MeshID id)
+    {
+        return get_mesh(id)->get_data().specular_strength;
+    }
+
+    float MeshList::get_specular_coefficient(const MeshID id)
+    {
+        return get_mesh(id)->get_data().specular_exponent;
+    }
+
+    std::array<float, 3> MeshList::get_position(const MeshID id)
+    {
+        auto p = get_mesh(id)->get_data().position;
+        std::array<float, 3> pos = {p[0], p[1], p[2]};
+        return pos;
+    }
+
+    std::array<float, 3> MeshList::get_scale(const MeshID id)
+    {
+        auto s = get_mesh(id)->get_data().scale;
+        std::array<float, 3> scl = {s[0], s[1], s[2]};
+        return scl;
+    }
+
+    std::array<float, 3> MeshList::get_rotation(const MeshID id)
+    {
+        auto r = get_mesh(id)->get_data().rotation;
+        std::array<float, 3> rot = {0.0, 0.0, 0.0};
+        return rot;
+    }
+
+    float MeshList::get_slice_factor(const MeshID id)
+    {
+        return get_mesh(id)->get_data().slice_level;
+    }
+
+    bool MeshList::get_slice_lock(const MeshID id)
+    {
+        return get_mesh(id)->get_data().slice_locked;
+    }
+
+    float MeshList::get_peel_level(const MeshID id)
+    {
+        return get_mesh(id)->get_data().peel_level;
+    }
+
+    int MeshList::get_max_peel_depth(const MeshID id)
+    {
+        return get_mesh(id)->get_data().peel_level;
+    }
+
+    float MeshList::get_cell_rounding(const MeshID id)
+    {
+        return get_mesh(id)->get_data().rounding_size;
+    }
+
+    float MeshList::get_cell_size(const MeshID id)
+    {
+        return get_mesh(id)->get_data().cell_size;
+    }
+
+    bool MeshList::get_visibility(const MeshID id)
+    {
+        return get_mesh(id)->get_data().visible;
+    }
+
+    bool MeshList::get_visibility(const MeshID id, OpenVolumeMesh::CellHandle cell)
+    {
+        return get_mesh(id)->is_element_selected(cell.idx(), EntityType::Cell);
+    }
+
+
     void MeshList::execute_for_mesh(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
     {
         auto mesh = get_mesh(id);
