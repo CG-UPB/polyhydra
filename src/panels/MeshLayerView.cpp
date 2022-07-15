@@ -40,10 +40,8 @@ namespace volumeshOS::Internal
             ImGui::SameLine(ImGui::GetWindowWidth() - 135.0f);
 
             bool visible = mesh.get_visibility();
-            if (ImGui::Checkbox("##Visible", &visible))
-            {
-                mesh.set_visibility(visible);
-            }
+            ImGui::Checkbox("##Visible", &visible);
+            mesh.set_visibility(visible);
             ImGui::SameLine();
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 

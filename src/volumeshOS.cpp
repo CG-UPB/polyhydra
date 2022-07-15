@@ -32,7 +32,10 @@ namespace volumeshOS
 
     void clean_up()
     {
+        camera = nullptr;
+        mesh_list = nullptr;
         window->clean_up();
+        window = nullptr;
     }
 
     void execute_commands()
