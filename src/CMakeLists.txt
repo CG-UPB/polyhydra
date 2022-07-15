@@ -90,8 +90,8 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.h
 
-        ${VOLUMESHOS_SRC}/settings/GlobalViewerSettings.cpp
-        ${VOLUMESHOS_SRC}/settings/GlobalViewerSettings.h
+        ${VOLUMESHOS_SRC}/settings/AppState.cpp
+        ${VOLUMESHOS_SRC}/settings/AppState.h
 
         ${VOLUMESHOS_SRC}/util/UIUtil.cpp
         ${VOLUMESHOS_SRC}/util/UIUtil.h
@@ -100,7 +100,7 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/util/Log.h
 
         ${VOLUMESHOS_SRC}/vospch.h
-        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h panels/WindowPanel.h mesh/MeshSerializer.h mesh/MeshSerializer.cpp)
+        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h panels/WindowPanel.h mesh/MeshSerializer.h mesh/MeshSerializer.cpp settings/AppState.cpp)
 
 add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
 

@@ -18,42 +18,42 @@ namespace volumeshOS
     /* Callbacks */
 
     // Define programmer user interface here
-    void on_gui_render(std::function<void()> callback);
+    void on_gui_render(const std::function<void()>& callback);
 
 
     // Called each frame a cell is hovered
-    void on_cell_hover(std::function<void(const VMesh, OpenVolumeMesh::CellHandle)> callback);
+    void on_cell_hover(const std::function<void(const VMesh, OpenVolumeMesh::CellHandle)>& callback);
 
     // Called each frame a face is hovered
-    void on_face_hover(std::function<void(const VMesh, OpenVolumeMesh::FaceHandle)> callback);
+    void on_face_hover(const std::function<void(const VMesh, OpenVolumeMesh::FaceHandle)>& callback);
 
     // Called each frame a halfface is hovered
-    void on_halfface_hover(std::function<void(const VMesh, OpenVolumeMesh::HalfFaceHandle)> callback);
+    void on_halfface_hover(const std::function<void(const VMesh, OpenVolumeMesh::HalfFaceHandle)>& callback);
 
     // Called each frame an edge is hovered
-    void on_edge_hover(std::function<void(const VMesh, OpenVolumeMesh::EdgeHandle)> callback);
+    void on_edge_hover(const std::function<void(const VMesh, OpenVolumeMesh::EdgeHandle)>& callback);
 
     // Called each frame a vertex is hovered
-    void on_vertex_hover(std::function<void(const VMesh, OpenVolumeMesh::VertexHandle)> callback);
+    void on_vertex_hover(const std::function<void(const VMesh, OpenVolumeMesh::VertexHandle)>& callback);
 
 
     // Called once when a cell is selected (clicked)
-    void on_cell_select(std::function<void(const VMesh, OpenVolumeMesh::CellHandle)> callback);
+    void on_cell_select(const std::function<void(const VMesh, OpenVolumeMesh::CellHandle)>& callback);
 
     // Called once when a face is selected (clicked)
-    void on_face_select(std::function<void(const VMesh, OpenVolumeMesh::FaceHandle)> callback);
+    void on_face_select(const std::function<void(const VMesh, OpenVolumeMesh::FaceHandle)>& callback);
 
     // Called once when a halfface is selected (clicked)
-    void on_halfface_select(std::function<void(const VMesh, OpenVolumeMesh::HalfFaceHandle)> callback);
+    void on_halfface_select(const std::function<void(const VMesh, OpenVolumeMesh::HalfFaceHandle)>& callback);
 
     // Called once when an edge is selected (clicked)
-    void on_edge_select(std::function<void(const VMesh, OpenVolumeMesh::EdgeHandle)> callback);
+    void on_edge_select(const std::function<void(const VMesh, OpenVolumeMesh::EdgeHandle)>& callback);
 
     // Called once when a vertex is selected (clicked)
-    void on_vertex_select(std::function<void(const VMesh, OpenVolumeMesh::VertexHandle)> callback);
+    void on_vertex_select(const std::function<void(const VMesh, OpenVolumeMesh::VertexHandle)>& callback);
 
     // Called once when any position is selected
-    void on_position_select(std::function<void(float, float, float)> callback);
+    void on_position_select(const std::function<void(float, float, float)>& callback);
 
 
     /* VMesh manipulation */
@@ -241,7 +241,7 @@ namespace volumeshOS
     [[nodiscard]] std::array<float, 3> get_position(const VMesh& mesh);
 
     // Returns the scale of a mesh
-    [[nodiscard]] std::array<float, 3> get_scale(const VMesh& mesh);
+    [[nodiscard]] float get_scale(const VMesh& mesh);
 
     // Returns the rotation of a mesh using euler angles
     [[nodiscard]] std::array<float, 3> get_rotation(const VMesh& mesh);
@@ -646,7 +646,7 @@ namespace volumeshOS
         }
 
         // Returns the scale of a mesh
-        [[nodiscard]] inline std::array<float, 3> get_scale() const
+        [[nodiscard]] inline float get_scale() const
         {
             return volumeshOS::get_scale(*this);
         }

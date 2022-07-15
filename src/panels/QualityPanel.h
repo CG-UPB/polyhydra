@@ -3,18 +3,14 @@
 #include "vospch.h"
 
 #include "WindowPanel.h"
-#include "../settings/GlobalViewerSettings.h"
+#include "../settings/AppState.h"
 
 namespace volumeshOS::Internal
 {
     class QualityPanel final: public WindowPanel
     {
     public:
-        /**
-         * creates an instance of the QualityPanel
-         */
-        QualityPanel();
-        ~QualityPanel();
+
         /**
          * This method is used to draw the QualityPanel in every loop. It creates all the buttons and sets the corresponding
          * variables
@@ -24,11 +20,9 @@ namespace volumeshOS::Internal
     private:
         // display options
         const char* dropdown_presets[5] = {
-                "Off", "Quality", "Balanced", "Performance", "Custom"
+                "OFF", "Quality", "Balanced", "Performance", "Custom"
         };
-        // index of a particular option
-        static const int s_max_samples = 64;
-        static const int s_noise_size = 4;
 
+        static const int s_max_samples = 64;
     };
 }

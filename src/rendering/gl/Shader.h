@@ -36,7 +36,7 @@ namespace volumeshOS::Internal
         static std::shared_ptr<Shader> vertex_only_shader() { return get("vertex_only"); };
 
         /**
-         * Selection shaders.
+         * SelectionMode shaders.
          */
         static std::shared_ptr<Shader> selection_face() { return get("selection_face"); }
         static std::shared_ptr<Shader> selection_vertex_shader() { return get("selection_vertex"); }

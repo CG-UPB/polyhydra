@@ -63,7 +63,7 @@ namespace volumeshOS::Internal
 
         explicit MeshObject(int id);
 
-        // Selection Functionality
+        // SelectionMode Functionality
         std::unordered_set<int>& get_all_selected_faces()
         {
             return m_selected_faces;

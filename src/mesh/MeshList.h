@@ -47,7 +47,7 @@ namespace volumeshOS::Internal
         std::shared_ptr<MeshObject> get_focused_mesh();
 
 
-        /* Selection */
+        /* SelectionMode */
 
         // set EntityType with its handle selected for a specific mesh
         void select(EntityType type, MeshID m_id, HandleID h_id);
@@ -155,7 +155,7 @@ namespace volumeshOS::Internal
         std::array<float, 3> get_position(MeshID id);
 
         // Returns the scale of a mesh
-        std::array<float, 3> get_scale(MeshID id);
+        float get_scale(MeshID id);
 
         // Returns the rotation of a mesh using euler angles
         std::array<float, 3> get_rotation(MeshID id);

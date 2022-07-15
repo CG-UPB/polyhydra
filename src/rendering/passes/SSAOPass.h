@@ -2,7 +2,7 @@
 
 #include "RenderPass.h"
 #include "../Renderer.h"
-#include "../../settings/GlobalViewerSettings.h"
+#include "../../settings/AppState.h"
 
 namespace volumeshOS::Internal
 {

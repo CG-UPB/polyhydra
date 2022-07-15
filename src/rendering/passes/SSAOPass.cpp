@@ -138,22 +138,21 @@ namespace volumeshOS::Internal
 
     void SSAOPass::load_options_from_settings()
     {
-        int selected_option = GlobalViewerSettings::getInstance()->get_ssao_options();
-        switch (selected_option) {
-            case OFF:
+        switch (AppState::settings.ssao_mode) {
+            case SSAOMode::OFF:
                 m_options.active = false;
                 break;
-            case QUALITY:
+            case SSAOMode::QUALITY:
                 load_options(SSAOPass::QUALITY_SSAO);
                 break;
-            case BALANCED:
+            case SSAOMode::BALANCED:
                 load_options(SSAOPass::BALANCED_SSAO);
                 break;
-            case PERFORMANCE:
+            case SSAOMode::PERFORMANCE:
                 load_options(SSAOPass::PERFORMANCE_SSAO);
                 break;
-            case CUSTOM:
-                load_options(GlobalViewerSettings::getInstance()->get_custom_options());
+            case SSAOMode::CUSTOM:
+                load_options(AppState::settings.ssao_custom_options);
                 break;
             default:
                 return;

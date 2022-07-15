@@ -68,7 +68,10 @@ namespace volumeshOS::Internal
 
         // calculate all cascade matrices
         clear_cascades();
-        int cascade_level = GlobalViewerSettings::getInstance()->get_cascade_level();
+
+        auto& settings = AppState::settings;
+
+        int cascade_level = settings.num_shadow_cascades;
 
         calculate_cascades(renderer, cam->near, cam->far, cascade_level);
 
@@ -109,8 +112,6 @@ namespace volumeshOS::Internal
                 glm::vec3 view_dir = -glm::normalize(cam->get_front());
                 auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
-                auto settings = GlobalViewerSettings::getInstance();
-
                 // Shader uniforms
                 m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
                 m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
@@ -119,10 +120,10 @@ namespace volumeshOS::Internal
                 m_shadow_shader->set_uniform_vec3f("u_max", max);
                 m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
                 m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-                m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings->get_mesh_mode() == Wireframe);
+                m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings.rendering_mode == RenderingMode::WIREFRAME);
                 m_shadow_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
                 m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
-                m_shadow_shader->set_uniform_float("u_wireframe_size", settings->get_wireframe_size());
+                m_shadow_shader->set_uniform_float("u_wireframe_size", settings.wireframe_size);
                 m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
 
@@ -133,7 +134,7 @@ namespace volumeshOS::Internal
                 m_shadow_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
                 m_shadow_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
-                if (settings->get_mesh_mode() == Wireframe)
+                if (settings.rendering_mode == RenderingMode::WIREFRAME)
                 {
                     mesh->get_mvb()->get_vao_by_face()->draw();
                 }

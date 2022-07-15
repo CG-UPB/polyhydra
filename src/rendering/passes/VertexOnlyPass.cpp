@@ -46,7 +46,7 @@ namespace volumeshOS::Internal
 
             m_vertex_only_shader->bind();
 
-            float size = GlobalViewerSettings::getInstance()->get_vertex_only_size();
+            float size = AppState::settings.vertex_size;
 
             m_vertex_only_shader->set_uniform_mat4f("u_mesh_transform", transform);
             m_vertex_only_shader->set_uniform_mat4f("u_projection", cam->projection);

@@ -134,7 +134,7 @@ namespace volumeshOS::Internal
 //                hovered_mesh_id = id;
 //                any_mesh_hovered = true;
 //
-//                auto& settings = *GlobalViewerSettings::getInstance();
+//                auto& settings = *AppState::getInstance();
 //
 //                if (type == SELECTION_TYPE_FACE)
 //                {
@@ -306,7 +306,7 @@ namespace volumeshOS::Internal
 
         // Show hovered element type and id
 
-        if (GlobalViewerSettings::getInstance()->get_selection_activated())
+        if (AppState::settings.selection_active)
         {
             std::string hovered_element_name =
                     m_hovered_element_type == 3 ? "Face" : (m_hovered_element_type == 1 ? "Vertex" :
@@ -361,10 +361,10 @@ namespace volumeshOS::Internal
             {
                 m_viewport_texture = FINAL_IMAGE;
             }
-            if (ImGui::RadioButton("Selection", m_viewport_texture == SELECTION))
+            if (ImGui::RadioButton("SelectionMode", m_viewport_texture == SELECTION))
             {
                 m_viewport_texture = SELECTION;
-                GlobalViewerSettings::getInstance()->set_selection_activated(true);
+                AppState::settings.selection_active = true;
             }
             if (ImGui::RadioButton("SSAO Pre", m_viewport_texture == SSAO_PRE))
             {
@@ -388,7 +388,7 @@ namespace volumeshOS::Internal
             }
             if (m_viewport_texture == SHADOW_MAP)
             {
-                int max = GlobalViewerSettings::getInstance()->get_cascade_level();
+                int max = AppState::settings.num_shadow_cascades;
                 ImGui::SliderInt("Cascade Level", &m_shadow_map_cascade_level_debug, 0, max - 1);
             }
         }

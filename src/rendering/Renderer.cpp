@@ -58,7 +58,7 @@ namespace volumeshOS::Internal
 
     void Renderer::render(bool render_bg)
     {
-        GlobalViewerSettings& settings = *GlobalViewerSettings::getInstance();
+        auto& settings = AppState::settings;
 
         frame.current = (frame.current + 1) % frame.limit;
         frame.is_rendering_background = render_bg;
@@ -86,7 +86,7 @@ namespace volumeshOS::Internal
         // Render Meshes
         passes.pre_pass->render(*this);
 
-        if (settings.get_mesh_mode() == ModeEnum::Only_Vertices)
+        if (settings.rendering_mode == RenderingMode::ONLY_VERTICES)
         {
             if (render_bg)
             {
@@ -96,12 +96,12 @@ namespace volumeshOS::Internal
         }
         else
         {
-            if (settings.get_ambient_occlusion_activated())
+            if (settings.ssao_active)
             {
                 passes.ssao_pass->render(*this);
             }
 
-            if (settings.get_shadows_activated())
+            if (settings.shadows_active)
             {
                 passes.shadow_pass->render(*this);
             }
@@ -116,23 +116,22 @@ namespace volumeshOS::Internal
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
 
             // Render transparent objects
-            if (settings.get_transparency_activated())
+            if (settings.transparency_active)
             {
-                int m_transparency = settings.get_transparency_mode();
-                switch (m_transparency)
+                switch (settings.transparency_mode)
                 {
-                    case DEPTH_PEELING:
+                    case TransparencyMode::DEPTH_PEELING:
                         passes.transparency_pass_dp->render(*this);
                         break;
-                    case WEIGHTED_BLENDED :
+                    case TransparencyMode::WEIGHTED_BLENDED:
                         passes.transparency_pass_wb->render(*this);
                     default:
                         return;
                 }
             }
 
-            // Render Selection
-            if (settings.get_selection_activated())
+            // Render SelectionMode
+            if (settings.selection_active)
             {
                 passes.selection_pass->render(*this);
                 passes.selection_hover_pass->render(*this);
@@ -264,12 +263,12 @@ namespace volumeshOS::Internal
                         auto mesh = mesh_list->get_mesh(mesh_id);
                         glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
 
-                        auto mode = GlobalViewerSettings::getInstance()->get_selection_mode();
-                        if (mode == Selection::ALL)
+                        auto mode = AppState::settings.selection_mode;
+                        if (mode == SelectionMode::ALL)
                         {
                             new_target = mesh->get_data().position;
                         }
-                        else if(mode != Selection::Off)
+                        else if(mode != SelectionMode::OFF)
                         {
                             auto transform = camera->world * mesh->get_data().get_transform();
                             auto pos_mesh_space = glm::vec4(passes.selection_hover_pass->hover_position, 1.0f);

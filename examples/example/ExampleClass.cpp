@@ -80,7 +80,7 @@ void ExampleClass::toolbar_demonstration_ui(){
         Window::instance().set_custom_imgui(std::bind(&ExampleClass::selection_demonstration_ui, this));
         Window::instance().remove_all_meshes();
 
-        // Selection Run Setup
+        // SelectionMode Run Setup
 
         // OVM Setup
         OpenVolumeMesh::GeometricPolyhedralMeshV3d m_mesh_1;
@@ -184,7 +184,7 @@ void ExampleClass::selection_demonstration_ui(){
         bounding_run();
     }
 
-    // Selection Slider
+    // SelectionMode Slider
     int pre_level = selection_level;
     int pre_type = selection_type;
     ImGui::SliderInt("Level", &selection_level, 0, 100);

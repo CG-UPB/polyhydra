@@ -16,7 +16,7 @@
 #include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/ShapePass.h"
-#include "../util/ModeEnum.h"
+#include "../util/Enums.h"
 #include "../rendering/Renderer.h"
 
 namespace volumeshOS::Internal
@@ -72,7 +72,6 @@ namespace volumeshOS::Internal
 
         // selected texture for rendering (mostly for debugging)
         int m_viewport_texture = FINAL_IMAGE;
-        int m_transparency = WEIGHTED_BLENDED;
         int m_shadow_map_cascade_level_debug = 0;
 
 

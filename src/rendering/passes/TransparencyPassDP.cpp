@@ -1,7 +1,7 @@
 
 #include "TransparencyPassDP.h"
 #include "../meshes/CommonMeshes.h"
-#include "../../settings/GlobalViewerSettings.h"
+#include "../../settings/AppState.h"
 
 namespace volumeshOS::Internal
 {
@@ -69,8 +69,8 @@ namespace volumeshOS::Internal
 
     void TransparencyPassDP::render(const Renderer& renderer)
     {
-        auto& settings = *GlobalViewerSettings::getInstance();
-        int num_passes = settings.get_number_passes();
+        auto& settings = AppState::settings;
+        int num_passes = settings.num_depth_peeling_passes;
         for (int i = 0; i < num_passes; i++)
         {
             if (i % 2 == 0)
@@ -157,7 +157,7 @@ namespace volumeshOS::Internal
             glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
             glm::vec3 light_pos(cam->view * glm::vec4(light.light_dir, 1.0));
 
-            bool use_vertex_normals = GlobalViewerSettings::getInstance()->get_mesh_mode() == Phong_Vertexnormals;
+            bool use_vertex_normals = AppState::settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
             // set all of our uniforms
             m_transparency_shader->set_uniform_mat4f("u_transform", transform);

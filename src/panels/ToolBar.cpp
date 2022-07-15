@@ -51,8 +51,7 @@ namespace volumeshOS::Internal
         ImGui::SetNextItemWidth(slider_width);
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
 
-        int mesh_mode = GlobalViewerSettings::getInstance()->get_mesh_mode();
-        int old_mode = mesh_mode;
+        int rendering_mode = static_cast<int>(AppState::settings.rendering_mode);
         const char *element_mode_types[] =
                 {
                         "Wireframe",
@@ -60,23 +59,21 @@ namespace volumeshOS::Internal
                         "Phong Facenormals",
                         "Phong Vertexnormals"
                 };
-        ImGui::Combo("##Manual Mode Selection:", &mesh_mode, element_mode_types,
+        ImGui::Combo("##Manual Mode SelectionMode:", &rendering_mode, element_mode_types,
                      IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
-//        Tooltips::HelpMarkerWithQuestionMark("Here you can choose which of our modes you want to use. For more "
-//                                             "extensive explanations take a look in the documentation");
-        GlobalViewerSettings::getInstance()->set_mesh_mode(mesh_mode);
+        AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
 
         ImGuiUtil::add_padding_y(0.5f);
         ImGui::Separator();
         ImGuiUtil::add_padding_y(0.5f);
         ImGuiUtil::push_bold_font();
-        ImGui::Text("Selection");
+        ImGui::Text("SelectionMode");
         ImGui::PopFont();
         ImGuiUtil::add_padding_y(0.5f);
 
         const char *selection_modes[] =
                 {
-                        "Off", "Vertices", "Edges", "Halffaces", "Cells", "All"
+                        "OFF", "Vertices", "Edges", "Halffaces", "Cells", "All"
                 };
 
         ImGui::Text("Mode");
@@ -89,11 +86,11 @@ namespace volumeshOS::Internal
                 IM_ARRAYSIZE(selection_modes),
                 IM_ARRAYSIZE(selection_modes)
         );
-        GlobalViewerSettings::getInstance()->set_selection_mode(m_current_selection_mode);
-        GlobalViewerSettings::getInstance()->set_selection_activated(m_current_selection_mode != Selection::Off);
+        AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
+        AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
 
-        // Selection-variables are set here
-        // Selection of single elements by typing in their ID
+        // SelectionMode-variables are set here
+        // SelectionMode of single elements by typing in their ID
         const char *element_selection_types[] =
                 {
                         "Face", "Vertex", "Edge", "Cell"
@@ -153,7 +150,7 @@ namespace volumeshOS::Internal
                 m_mesh_position[0] = pos[0];
                 m_mesh_position[1] = pos[1];
                 m_mesh_position[2] = pos[2];
-                m_mesh_scale = scl[0];
+                m_mesh_scale = scl;
 
                 ImGui::Text("Position");
                 ImGui::SameLine();
@@ -264,15 +261,14 @@ namespace volumeshOS::Internal
                     if (!m_digging_activated)
                     {
                         m_digging_activated = true;
-                        m_current_selection_mode = Selection::CELL;
-                        GlobalViewerSettings::getInstance()->set_selection_activated(true);
-                        GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
+                        m_current_selection_mode = static_cast<int>(SelectionMode::CELL);
+                        AppState::settings.selection_active = true;
+                        AppState::settings.selection_mode = SelectionMode::CELL;
                     }
                     else
                     {
                         m_digging_activated = false;
                     }
-                    GlobalViewerSettings::getInstance()->set_digging_active(m_digging_activated);
                     clicked_digging++;
                 }
                 if (clicked_digging & 1)
@@ -294,16 +290,15 @@ namespace volumeshOS::Internal
                     if (!m_isolation_started)
                     {
                         m_isolation_started = true;
-                        m_current_selection_mode = Selection::CELL;
-                        GlobalViewerSettings::getInstance()->set_selection_activated(true);
-                        GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
+                        m_current_selection_mode = static_cast<int>(SelectionMode::CELL);
+                        AppState::settings.selection_active = true;
+                        AppState::settings.selection_mode = SelectionMode::CELL;
                     }
                     else
                     {
                         m_isolation_started = false;
                         active_mesh.reset_visibility();
                     }
-                    GlobalViewerSettings::getInstance()->set_isolation_state(m_isolation_started);
                     clicked++;
                 }
                 if (clicked & 1)

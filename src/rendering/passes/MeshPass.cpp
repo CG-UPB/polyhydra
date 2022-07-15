@@ -9,10 +9,10 @@ namespace volumeshOS::Internal
         renderer.buffers.target_framebuffer_ms->bind();
         for (const auto& mesh : renderer.render_list)
         {
-            auto settings = GlobalViewerSettings::getInstance();
-            bool draw_wireframe = settings->get_mesh_mode() == Wireframe;
-            float wireframe_size = settings->get_wireframe_size();
-            bool use_vertex_normals = settings->get_mesh_mode() == Phong_Vertexnormals;
+            auto& settings = AppState::settings;
+            bool draw_wireframe = settings.rendering_mode == RenderingMode::WIREFRAME;
+            float wireframe_size = settings.wireframe_size;
+            bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
             if (draw_wireframe)
             {
@@ -81,7 +81,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color.get_rgba());
             m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-            m_mesh_shader->set_uniform_int("u_cascade_level", settings->get_cascade_level() - 1);
+            m_mesh_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
 
 
             m_mesh_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
@@ -119,8 +119,8 @@ namespace volumeshOS::Internal
 
             // settings
             m_mesh_shader->set_uniform_bool("u_draw_wireframe", draw_wireframe);
-            m_mesh_shader->set_uniform_bool("u_draw_shadows", settings->get_shadows_activated());
-            m_mesh_shader->set_uniform_bool("u_draw_ao", settings->get_ambient_occlusion_activated());
+            m_mesh_shader->set_uniform_bool("u_draw_shadows", settings.shadows_active);
+            m_mesh_shader->set_uniform_bool("u_draw_ao", settings.ssao_active);
             m_mesh_shader->set_uniform_float("u_wireframe_size", wireframe_size);
             m_mesh_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
 

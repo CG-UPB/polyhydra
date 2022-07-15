@@ -132,7 +132,7 @@ void Demo::color_splash_init()
     // Add Mesh
     m_hand_mesh = window->add_mesh(&m_mesh);
 
-    // Set Selection Callback
+    // Set SelectionMode Callback
     window->set_callback_face_selection(std::bind(&Demo::color_splash_hit, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     window->camera_focus_on(0,0,0, 0,0,10);
@@ -167,7 +167,7 @@ void Demo::color_splash_hit_threaded(int mesh_id, int element_id, bool selected)
 
     Color splash_color = Color((rand()%1000)/1000.0f, (rand()%1000)/1000.0f, (rand()%1000)/1000.0f, m_splash_strength);
 
-    //std::cout << "Selection Callback: " << mesh_id << " " << element_id << " " << selected << std::endl;
+    //std::cout << "SelectionMode Callback: " << mesh_id << " " << element_id << " " << selected << std::endl;
     //std::cout << "Color: " << splash_color.r << " " << splash_color.g << " " << splash_color.b << std::endl;
     if(selected)
     {

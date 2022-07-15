@@ -3,7 +3,7 @@
 #include "vospch.h"
 
 #include "WindowPanel.h"
-#include "../settings/GlobalViewerSettings.h"
+#include "../settings/AppState.h"
 
 namespace volumeshOS::Internal
 {

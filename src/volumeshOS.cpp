@@ -10,6 +10,8 @@
 
 #include "Window.h"
 #include "mesh/MeshList.h"
+#include "panels/NewFileDialog.h"
+#include "settings/AppState.h"
 
 namespace volumeshOS
 {
@@ -60,6 +62,68 @@ namespace volumeshOS
     {
         window->close();
     }
+
+
+    void on_gui_render(const std::function<void()>& callback)
+    {
+        Internal::AppState::callbacks.on_gui_render = callback;
+    }
+
+    void on_cell_hover(const std::function<void(const VMesh, OpenVolumeMesh::CellHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_cell_hover = callback;
+    }
+
+    void on_face_hover(const std::function<void(const VMesh, OpenVolumeMesh::FaceHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_face_hover = callback;
+    }
+
+    void on_halfface_hover(const std::function<void(const VMesh, OpenVolumeMesh::HalfFaceHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_halfface_hover = callback;
+    }
+
+    void on_edge_hover(const std::function<void(const VMesh, OpenVolumeMesh::EdgeHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_edge_hover = callback;
+    }
+
+    void on_vertex_hover(const std::function<void(const VMesh, OpenVolumeMesh::VertexHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_vertex_hover = callback;
+    }
+
+    void on_cell_select(const std::function<void(const VMesh, OpenVolumeMesh::CellHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_cell_select = callback;
+    }
+
+    void on_face_select(const std::function<void(const VMesh, OpenVolumeMesh::FaceHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_face_select = callback;
+    }
+
+    void on_halfface_select(const std::function<void(const VMesh, OpenVolumeMesh::HalfFaceHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_halfface_select = callback;
+    }
+
+    void on_edge_select(const std::function<void(const VMesh, OpenVolumeMesh::EdgeHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_edge_select = callback;
+    }
+
+    void on_vertex_select(const std::function<void(const VMesh, OpenVolumeMesh::VertexHandle)>& callback)
+    {
+        Internal::AppState::callbacks.on_vertex_select = callback;
+    }
+
+    void on_position_select(const std::function<void(float, float, float)>& callback)
+    {
+        Internal::AppState::callbacks.on_position_select = callback;
+    }
+
 
     VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
     {
@@ -433,7 +497,7 @@ namespace volumeshOS
         return mesh_list->get_position(mesh.get_id());
     }
 
-    std::array<float, 3> get_scale(const VMesh& mesh)
+    float get_scale(const VMesh& mesh)
     {
         assert(mesh.is_valid());
         return mesh_list->get_scale(mesh.get_id());
@@ -491,6 +555,12 @@ namespace volumeshOS
     {
         assert(mesh.is_valid());
         return mesh_list->get_visibility(mesh.get_id(), cell);
+    }
+
+    const char* file_dialog(const std::string& title)
+    {
+        Internal::NewFileDialog dialog;
+        return dialog.open_dialog(title.c_str());
     }
 
 }

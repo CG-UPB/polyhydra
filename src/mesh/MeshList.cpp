@@ -347,11 +347,9 @@ namespace volumeshOS::Internal
         return pos;
     }
 
-    std::array<float, 3> MeshList::get_scale(const MeshID id)
+    float MeshList::get_scale(const MeshID id)
     {
-        auto s = get_mesh(id)->get_data().scale;
-        std::array<float, 3> scl = {s[0], s[1], s[2]};
-        return scl;
+        return get_mesh(id)->get_data().scale.x;
     }
 
     std::array<float, 3> MeshList::get_rotation(const MeshID id)

@@ -3,8 +3,8 @@
 #include "vospch.h"
 
 #include "WindowPanel.h"
-#include "../settings/GlobalViewerSettings.h"
-#include "../util/ModeEnum.h"
+#include "../settings/AppState.h"
+#include "../util/Enums.h"
 
 namespace volumeshOS::Internal
 {
@@ -28,7 +28,7 @@ namespace volumeshOS::Internal
 
     private:
 
-        int m_current_selection_mode = Selection::Off;
+        int m_current_selection_mode = static_cast<int>(SelectionMode::OFF);
         int m_manual_selection_type = 0;
         int m_previous_manual_selection_type = 0;
         int m_manual_selection_id = -1;

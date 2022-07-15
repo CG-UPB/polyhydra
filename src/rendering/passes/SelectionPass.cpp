@@ -102,15 +102,15 @@ namespace volumeshOS::Internal
         glm::vec3 view_dir = -glm::normalize(renderer.camera->get_front());
         auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
-        // Get Selection Mode
+        // Get SelectionMode Mode
         // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
-        int selection_mode = GlobalViewerSettings::getInstance()->get_selection_mode();
+        auto selection_mode = AppState::settings.selection_mode;
 
 
-        // Faces should not be selectable in Vertex or Edge Selection mode
+        // Faces should not be selectable in Vertex or Edge SelectionMode mode
         bool faces_selectable = false;
 
-        if(selection_mode == Selection::ALL || selection_mode == Selection::Face || selection_mode == Selection::CELL)
+        if(selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::FACE || selection_mode == SelectionMode::CELL)
         {
             faces_selectable = true;
         }
@@ -137,7 +137,7 @@ namespace volumeshOS::Internal
 
         m_selection_shader->unbind();
 
-        if(selection_mode == Selection::ALL || selection_mode == Selection::Edge)
+        if(selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::EDGE)
         {
             // Draw cylinders for each Edge
             glDisable(GL_CULL_FACE);
@@ -167,7 +167,7 @@ namespace volumeshOS::Internal
 
         glDepthMask(GL_TRUE);
 
-        if (selection_mode == Selection::ALL || selection_mode == Selection::Vertex)
+        if (selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::VERTEX)
         {
 
             // Draw spheres for each Vertex
