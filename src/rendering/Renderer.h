@@ -23,6 +23,9 @@
 namespace volumeshOS::Internal
 {
     class SSAOPass;
+    class TransparencyPassWB;
+    class TransparencyPassDP;
+    class ShadowMapPass;
 
     class Renderer
     {

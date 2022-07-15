@@ -165,7 +165,7 @@ namespace volumeshOS::Internal
         renderer.passes.pre_pass->get_framebuffer()->bind();
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        renderer.passes.pre_pass->clear_position_buffer();
+        renderer.passes.pre_pass->clear_position_buffer(renderer);
 
         load_options_from_settings();
         if (m_options.active)

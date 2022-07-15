@@ -53,6 +53,7 @@ namespace volumeshOS::Internal
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, frame.width / 2, frame.height / 2);
         input.last.x = (float) width / 2.0f;
         input.last.y = (float) height / 2.0f;
+        camera->set_viewport_size((float) width, (float) height);
     }
 
     void Renderer::render(bool render_bg)

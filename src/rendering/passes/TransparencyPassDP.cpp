@@ -1,7 +1,7 @@
 
 #include "TransparencyPassDP.h"
-#include "panels/Window.h"
 #include "../meshes/CommonMeshes.h"
+#include "../../settings/GlobalViewerSettings.h"
 
 namespace volumeshOS::Internal
 {
@@ -69,16 +69,17 @@ namespace volumeshOS::Internal
 
     void TransparencyPassDP::render(const Renderer& renderer)
     {
-        int num_passes = renderer.m_settings.get_number_passes();
+        auto& settings = *GlobalViewerSettings::getInstance();
+        int num_passes = settings.get_number_passes();
         for (int i = 0; i < num_passes; i++)
         {
             if (i % 2 == 0)
             {
-                renderer.passes.transparency_pass_dp->m_transparent_framebuffer0->bind();
+                m_transparent_framebuffer0->bind();
             }
             else
             {
-                renderer.passes.transparency_pass_dp->m_transparent_framebuffer1->bind();
+                m_transparent_framebuffer1->bind();
             }
             glClearDepth(0.0f);
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -120,11 +121,11 @@ namespace volumeshOS::Internal
 
             if (i % 2 == 0)
             {
-                renderer.passes.transparency_pass_dp->m_transparent_framebuffer0->unbind();
+                m_transparent_framebuffer0->unbind();
             }
             else
             {
-                renderer.passes.transparency_pass_dp->m_transparent_framebuffer1->unbind();
+                m_transparent_framebuffer1->unbind();
             }
             render_composition(renderer, i, num_passes);
         }

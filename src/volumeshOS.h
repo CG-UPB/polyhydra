@@ -79,6 +79,10 @@ namespace volumeshOS
     void clear(const VMesh& mesh);
 
 
+    // Returns a list of all loaded meshes
+    [[nodiscard]] std::vector<VMesh> get_meshes();
+
+
     // Load a configuration file for a mesh
     void load_configuration(const VMesh& mesh, const std::string& path);
 
@@ -233,7 +237,7 @@ namespace volumeshOS
     [[nodiscard]] float get_specular_coefficient(const VMesh& mesh);
 
     // Returns the position of a mesh
-    [[nodiscard]] std::tuple<float, float, float> get_position(const VMesh& mesh);
+    [[nodiscard]] std::array<float, 3> get_position(const VMesh& mesh);
 
     // Returns the scale of a mesh
     [[nodiscard]] float get_scale(const VMesh& mesh);
@@ -245,10 +249,13 @@ namespace volumeshOS
     [[nodiscard]] float get_slice_factor(const VMesh& mesh);
 
     // Returns the lock direction of the slice plane
-    [[nodiscard]] float get_slice_lock(const VMesh& mesh);
+    [[nodiscard]] bool get_slice_lock(const VMesh& mesh);
 
     // Returns the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
     [[nodiscard]] float get_peel_level(const VMesh& mesh);
+
+    // Returns the number of cell depth layers of the mesh
+    [[nodiscard]] int get_max_peel_depth(const VMesh& mesh);
 
     // Returns the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
     [[nodiscard]] float get_cell_rounding(const VMesh& mesh);
@@ -261,6 +268,12 @@ namespace volumeshOS
 
     // Returns the visibility of the mesh
     [[nodiscard]] bool get_visibility(const VMesh& mesh);
+
+    // Returns the current mesh in focus
+    [[nodiscard]] VMesh get_focused_mesh();
+
+    // Returns true if the mesh is a valid handle
+    [[nodiscard]] bool is_valid(const VMesh& mesh);
 
 
     /* Camera */
@@ -565,7 +578,7 @@ namespace volumeshOS
         }
 
         // Set currently active mesh
-        inline void set_focused_mesh(const VMesh& mesh)
+        inline void set_focused_mesh(const VMesh& mesh) const
         {
             volumeshOS::set_focused_mesh(*this);
         }
@@ -626,7 +639,7 @@ namespace volumeshOS
         }
 
         // Returns the position of a mesh
-        [[nodiscard]] inline std::tuple<float, float, float> get_position() const
+        [[nodiscard]] inline std::array<float, 3> get_position() const
         {
             return volumeshOS::get_position(*this);
         }
@@ -650,7 +663,7 @@ namespace volumeshOS
         }
 
         // Returns the lock direction of the slice plane
-        [[nodiscard]] inline float get_slice_lock() const
+        [[nodiscard]] inline bool get_slice_lock() const
         {
             return volumeshOS::get_slice_lock(*this);
         }
@@ -659,6 +672,12 @@ namespace volumeshOS
         [[nodiscard]] inline float get_peel_level() const
         {
             return volumeshOS::get_peel_level(*this);
+        }
+
+        // Returns the number of cell depth layers of the mesh
+        [[nodiscard]] inline int get_max_peel_depth() const
+        {
+            return volumeshOS::get_max_peel_depth(*this);
         }
 
         // Returns the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
@@ -683,6 +702,12 @@ namespace volumeshOS
         [[nodiscard]] inline bool get_visibility() const
         {
             return volumeshOS::get_visibility(*this);
+        }
+
+        // Returns true if the mesh is a valid handle
+        [[nodiscard]] inline bool is_valid() const
+        {
+            return volumeshOS::is_valid(*this);
         }
 
         // Returns the internal volumeshOS id of this mesh

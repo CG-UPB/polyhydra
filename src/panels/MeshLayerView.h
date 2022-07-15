@@ -14,11 +14,6 @@ namespace volumeshOS::Internal
     class MeshLayerView final: public WindowPanel
     {
     public:
-        /**
-         * creates an instance of the class
-         */
-        MeshLayerView();
-        ~MeshLayerView();
 
         /**
          * This method creates a UI window that lists the individual meshes. Each currently loaded mesh is listed with
@@ -28,8 +23,5 @@ namespace volumeshOS::Internal
          * the color of the mesh and a combo sets the rendering mode.
          */
         void show() override;
-    private:
-        // timer_treshold for the tooltipps
-        int m_timer_treshold = 3;
     };
 }

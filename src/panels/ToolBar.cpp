@@ -5,22 +5,11 @@
 #include "NewFileDialog.h"
 #include "../util/Tooltips.h"
 #include "../util/ImGuiUtil.h"
+#include "volumeshOS.h"
 
 
 namespace volumeshOS::Internal
 {
-
-
-    ToolBar::ToolBar()
-    {
-    }
-
-    // Destruktor
-    ToolBar::~ToolBar()
-    {
-        //delete instance;
-    }
-
 
     void ToolBar::show()
     {
@@ -52,9 +41,7 @@ namespace volumeshOS::Internal
 
             if (filename != nullptr)
             {
-                Window::instance().rendering_mutex.unlock();
-                Window::instance().take_screenshot(filename);
-                Window::instance().rendering_mutex.lock();
+                volumeshOS::export_image(filename);
             }
         }
 
@@ -123,29 +110,30 @@ namespace volumeshOS::Internal
         if (m_manual_selection_id != m_previous_manual_selection_id && m_manual_selection_id >= 0)
         {
             // Unselect the previous manually selected element
-            if (m_previous_manual_selection_id >= 0)
-            {
-                Window::instance().rendering_mutex.unlock();
-                Window::instance().unselect_element(Window::instance().get_mesh_focus(),
-                                                    m_previous_manual_selection_id,
-                                                    m_previous_manual_selection_type);
-                Window::instance().rendering_mutex.lock();
-            }
-            // Select the new manually selected element
-            Window::instance().rendering_mutex.unlock();
-            Window::instance().select_element(Window::instance().get_mesh_focus(), m_manual_selection_id,
-                                              m_manual_selection_type);
-            Window::instance().rendering_mutex.lock();
+//            if (m_previous_manual_selection_id >= 0)
+//            {
+//                Window::instance().rendering_mutex.unlock();
+//                Window::instance().unselect_element(Window::instance().get_mesh_focus(),
+//                                                    m_previous_manual_selection_id,
+//                                                    m_previous_manual_selection_type);
+//                Window::instance().rendering_mutex.lock();
+//                =
+//            }
+//            // Select the new manually selected element
+//            Window::instance().rendering_mutex.unlock();
+//            Window::instance().select_element(Window::instance().get_mesh_focus(), m_manual_selection_id,
+//                                              m_manual_selection_type);
+//            Window::instance().rendering_mutex.lock();
             m_previous_manual_selection_id = m_manual_selection_id;
             m_previous_manual_selection_type = m_manual_selection_type;
         }
 
-        int active_mesh = Window::instance().get_mesh_focus();
+        auto active_mesh = volumeshOS::get_focused_mesh();
 
         // If there is at least one mesh, the Active Mesh Settings (Slicing, Peeling, etc.) are available
-        if (active_mesh != -1)
+        if (active_mesh.is_valid())
         {
-            std::string header_name = "Mesh " + std::to_string(active_mesh);
+            std::string header_name = "Mesh " + std::to_string(active_mesh.get_id());
 
             ImGuiUtil::add_padding_y(0.5f);
             ImGui::Separator();
@@ -160,16 +148,12 @@ namespace volumeshOS::Internal
 
                 ImGui::TableNextColumn();
                 // Mesh transformations, such as position and scale
-                if (active_mesh >= 0)
-                {
-                    auto mesh = Window::instance().get_mesh_obj(active_mesh);
-                    auto pos = mesh->get_data().position;
-                    auto scl = mesh->get_data().scale;
-                    m_mesh_position[0] = pos.x;
-                    m_mesh_position[1] = pos.y;
-                    m_mesh_position[2] = pos.z;
-                    m_mesh_scale = scl.x;
-                }
+                auto pos = active_mesh.get_position();
+                auto scl = active_mesh.get_scale();
+                m_mesh_position[0] = pos[0];
+                m_mesh_position[1] = pos[1];
+                m_mesh_position[2] = pos[2];
+                m_mesh_scale = scl;
 
                 ImGui::Text("Position");
                 ImGui::SameLine();
@@ -178,20 +162,12 @@ namespace volumeshOS::Internal
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -10.0f, 10.0f, "%.1f"))
                 {
-                    if (active_mesh >= 0)
-                    {
-                        Window::instance().set_mesh_position(active_mesh, m_mesh_position[0],
-                                                             m_mesh_position[1],
-                                                             m_mesh_position[2]);
-                    }
+                    active_mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
                 }
                 ImGui::SameLine();
                 if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                 {
-                    if (active_mesh >= 0)
-                    {
-                        Window::instance().set_mesh_position(active_mesh, 0.0f, 0.0f, 0.0f);
-                    }
+                    active_mesh.set_position(0.0f, 0.0f, 0.0f);
                 }
                 ImGui::Separator();
                 ImGui::Text("Scale");
@@ -201,10 +177,7 @@ namespace volumeshOS::Internal
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f"))
                 {
-                    if (active_mesh >= 0)
-                    {
-                        Window::instance().set_mesh_scale(active_mesh, m_mesh_scale);
-                    }
+                    active_mesh.set_scale(m_mesh_scale);
                 }
                 ImGui::SameLine();
 
@@ -212,10 +185,7 @@ namespace volumeshOS::Internal
                 ImGui::PushID("ScaleReset");
                 if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                 {
-                    if (active_mesh >= 0)
-                    {
-                        Window::instance().set_mesh_scale(active_mesh, 1.0f);
-                    }
+                    active_mesh.set_scale(1.0f);
                 }
                 ImGui::PopID();
 
@@ -226,26 +196,22 @@ namespace volumeshOS::Internal
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This slider will slice through the mesh to show an "
                                                      "inview of the mesh");
-                m_slider_slicer = Window::instance().get_mesh_slice_level(active_mesh);
-                m_slicer_locked = Window::instance().get_mesh_slice_locked(active_mesh);
+                m_slider_slicer = active_mesh.get_slice_factor();
+                m_slicer_locked = active_mesh.get_slice_lock();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
                 ImGui::Text(" ");
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::Checkbox("Lock", &m_slicer_locked);
-                Window::instance().set_mesh_slice_level(active_mesh, m_slider_slicer);
-                Window::instance().set_mesh_slice_locked(active_mesh, m_slicer_locked);
+                active_mesh.set_slice_factor(m_slider_slicer);
+                active_mesh.set_slice_lock(m_slicer_locked);
                 ImGui::Separator();
                 ImGui::Text("Peel");
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This slider will peel the mesh like an onion");
-                m_slider_peel = Window::instance().get_mesh_peel_level(active_mesh);
-                float peel_max = 0.0f;
-                if (m_active_mesh >= 0)
-                {
-                    peel_max = (float)Window::instance().get_mesh_obj(active_mesh)->get_max_peel_depth() + 1.0f;
-                }
+                m_slider_peel = active_mesh.get_peel_level();
+                float peel_max = (float) active_mesh.get_max_peel_depth() + 1.0f;
 
                 // make it easier to get the slider onto an Integer
                 // thats helpful for peeling with transparent transition
@@ -258,8 +224,8 @@ namespace volumeshOS::Internal
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max);
 
-                Window::instance().set_mesh_peel_level(active_mesh, m_slider_peel);
-                m_cell_size = Window::instance().get_mesh_cell_size(active_mesh);
+                active_mesh.set_peel_level(m_slider_peel);
+                m_cell_size = active_mesh.get_cell_size();
                 ImGui::Separator();
                 ImGui::Text("Cell Size");
                 ImGui::SameLine();
@@ -268,18 +234,17 @@ namespace volumeshOS::Internal
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f))
                 {
-                    Window::instance().set_mesh_cell_size(active_mesh, m_cell_size);
+                    active_mesh.set_cell_size(m_cell_size);
                 }
                 ImGui::Separator();
                 ImGui::Text("Roundings");
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("This checkbox activates rounded corners for the edges of the meshes");
-                float actual_rounding_size = Window::instance().get_mesh_rounding_size(active_mesh);
+                float actual_rounding_size = active_mesh.get_cell_rounding();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
-                Window::instance().set_mesh_rounding_size(active_mesh, actual_rounding_size);
-                Window::instance().set_mesh_rounding_activated(active_mesh,actual_rounding_size > 0.0f);
+                active_mesh.set_cell_rounding(actual_rounding_size);
                 ImGui::Separator();
                 ImGui::Text("Digging");
                 ImGui::SameLine();
@@ -291,11 +256,7 @@ namespace volumeshOS::Internal
                 ImGui::PushID("Digging");
                 if (ImGui::Button("Reset"))
                 {
-                    if (active_mesh >= 0)
-                    {
-                        auto mesh = Window::instance().get_mesh_obj(active_mesh);
-                        mesh->get_mvb()->reset_digging();
-                    }
+                    active_mesh.reset_visibility();
                 }
                 ImGui::SameLine();
                 if (ImGui::Button(m_digging_activated ? "Deactivate" : "Activate"))
@@ -303,7 +264,6 @@ namespace volumeshOS::Internal
                     if (!m_digging_activated)
                     {
                         m_digging_activated = true;
-                        m_selection_activated = true;
                         m_current_selection_mode = Selection::CELL;
                         GlobalViewerSettings::getInstance()->set_selection_activated(true);
                         GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
@@ -334,19 +294,14 @@ namespace volumeshOS::Internal
                     if (!m_isolation_started)
                     {
                         m_isolation_started = true;
-                        m_selection_activated = true;
                         m_current_selection_mode = Selection::CELL;
                         GlobalViewerSettings::getInstance()->set_selection_activated(true);
                         GlobalViewerSettings::getInstance()->set_selection_mode(Selection::CELL);
                     }
                     else
                     {
-                        if (active_mesh >= 0)
-                        {
-                            m_isolation_started = false;
-                            auto mesh = Window::instance().get_mesh_obj(active_mesh);
-                            mesh->get_mvb()->reset_isolation();
-                        }
+                        m_isolation_started = false;
+                        active_mesh.reset_visibility();
                     }
                     GlobalViewerSettings::getInstance()->set_isolation_state(m_isolation_started);
                     clicked++;

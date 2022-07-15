@@ -20,6 +20,8 @@ namespace volumeshOS::Internal
 
         [[nodiscard]] std::shared_ptr<PrePassFrameBufferObject> get_framebuffer() const;
 
+        void clear_position_buffer(const Renderer& renderer);
+
     private:
 
         std::shared_ptr<Shader> m_clear_position_shader;

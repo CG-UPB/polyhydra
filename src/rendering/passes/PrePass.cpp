@@ -11,15 +11,8 @@ namespace volumeshOS::Internal
 
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        // clear to camera far value
-        m_clear_position_shader->bind();
-        m_clear_position_shader->set_uniform_float("u_far", renderer.camera->far);
-        VertexArrayObject::draw_screen_quad();
-        m_clear_position_shader->unbind();
+        clear_position_buffer(renderer);
 
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
@@ -53,7 +46,7 @@ namespace volumeshOS::Internal
             auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
 
             glm::vec3 cam_pos(renderer.camera->view * glm::vec4(renderer.camera->position, 1.0));
-            glm::vec3 light_pos(renderer.camera->view * glm::vec4(renderer.light->position, 1.0));
+            glm::vec3 light_pos(renderer.camera->view * glm::vec4(renderer.light.position, 1.0));
 
             // set all of our uniforms
             pre_phong_shader->set_uniform_mat4f("u_transform", transform);
@@ -99,5 +92,16 @@ namespace volumeshOS::Internal
     std::shared_ptr<PrePassFrameBufferObject> PrePass::get_framebuffer() const
     {
         return m_pre_pass_framebuffer;
+    }
+
+    void PrePass::clear_position_buffer(const Renderer& renderer)
+    {
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        m_clear_position_shader->bind();
+        m_clear_position_shader->set_uniform_float("u_far", renderer.camera->far);
+        VertexArrayObject::draw_screen_quad();
+        m_clear_position_shader->unbind();
     }
 }

@@ -36,7 +36,6 @@ namespace volumeshOS::Internal
             m_meshFrameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             m_screen_quad_frameBuffer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
             renderer->resize(m_viewportPanelWidth, m_viewportPanelHeight);
-            m_render_data.camera.set_viewport_size(width, height);
         }
     }
 
@@ -60,7 +59,7 @@ namespace volumeshOS::Internal
 
         renderer->set_target_framebuffer(export_framebuffer_ms, export_framebuffer);
         renderer->resize(export_width, export_height);
-        renderer->render(&m_render_data, false);
+        renderer->render(false);
 
         glFlush();
         glFinish();
@@ -394,7 +393,7 @@ namespace volumeshOS::Internal
             }
         }
         ImGui::End();
-        renderer->m_selection_pass.set_debug_mode(m_viewport_texture == SELECTION);
+        renderer->passes.selection_pass->set_debug_mode(m_viewport_texture == SELECTION);
     }
 
     unsigned int MeshView::get_selected_texture()
@@ -404,17 +403,17 @@ namespace volumeshOS::Internal
             case FINAL_IMAGE:
                 return m_screen_quad_frameBuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
-                return renderer->m_selection_frame_buffer->get_texture(GL_COLOR_ATTACHMENT0);
+                return renderer->buffers.selection_frame_buffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:
-                return renderer->m_ssao_pass->get_ssao_texture();
+                return renderer->passes.ssao_pass->get_ssao_texture();
             case SSAO_BLUR:
-                return renderer->m_ssao_pass->get_blur_texture();
+                return renderer->passes.ssao_pass->get_blur_texture();
             case TRANSPARENCY_ACCUM:
-                return renderer->m_transparency_pass_wb->get_accum_texture();
+                return renderer->passes.transparency_pass_wb->get_accum_texture();
             case TRANSPARENCY_REVEAL:
-                return renderer->m_transparency_pass_wb->get_reveal_texture();
+                return renderer->passes.transparency_pass_wb->get_reveal_texture();
             case SHADOW_MAP:
-                return renderer->m_shadow_pass->shadow_maps[m_shadow_map_cascade_level_debug];
+                return renderer->passes.shadow_pass->shadow_maps[m_shadow_map_cascade_level_debug];
         }
         return -1;
     }
