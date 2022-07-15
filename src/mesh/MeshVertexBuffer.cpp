@@ -47,10 +47,10 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
-    MeshVertexBuffer::MeshVertexBuffer(OVMesh mesh):
-        m_current_loading_cell_it(mesh.cells_begin()), m_normals(mesh)
+    MeshVertexBuffer::MeshVertexBuffer(std::shared_ptr<OVMesh> mesh):
+        m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
     {
-        m_mesh = std::make_shared<OVMesh>(mesh);
+        m_mesh = mesh;
         // first update the normal face attribute for all faces
         m_normals.update_vertex_normals();
         m_original_vertices = get_vertices(m_mesh);
