@@ -8,6 +8,8 @@ namespace volumeshOS
 
     // General
 
+    void initialize();
+
     // Open volumeshOS context and start rendering
     void open();
 
@@ -117,9 +119,6 @@ namespace volumeshOS
 
     // Returns the color of a cell from a given mesh
     [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
-
-    // Returns the color of a face from a given mesh
-    [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::FaceHandle face);
 
     // Returns the color of a halfface from a given mesh
     [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface);
@@ -405,12 +404,6 @@ namespace volumeshOS
         [[nodiscard]] inline Color get_color(OpenVolumeMesh::CellHandle cell) const
         {
             return volumeshOS::get_color(*this, cell);
-        }
-
-        // Returns the color of a face from a given mesh
-        [[nodiscard]] inline Color get_color(OpenVolumeMesh::FaceHandle face) const
-        {
-            return volumeshOS::get_color(*this, face);
         }
 
         // Returns the color of a halfface from a given mesh

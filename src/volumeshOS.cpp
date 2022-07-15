@@ -45,7 +45,7 @@ namespace volumeshOS
     void open()
     {
         // initialize references and data
-        initialize();
+        //initialize();
 
         // render loop
         while (!window->should_close())
@@ -129,7 +129,7 @@ namespace volumeshOS
     {
         int id = mesh_list->next_id();
         VMesh vmesh(id);
-        commands.emplace_back([&id, &instance]{
+        commands.emplace_back([id, instance]{
             mesh_list->add_mesh(id, instance);
         });
         return vmesh;
@@ -139,15 +139,15 @@ namespace volumeshOS
     {
         int id = mesh_list->next_id();
         VMesh vmesh(id);
-        commands.emplace_back([&id, &path]{
-            mesh_list->add_mesh(id, path);
+        commands.emplace_back([id, path]{
+            mesh_list->add_mesh(0, path);
         });
         return vmesh;
     }
 
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
     {
-        commands.emplace_back([&mesh, &instance]{
+        commands.emplace_back([&mesh, instance]{
             mesh_list->set_mesh(mesh.get_id(), instance);
         });
     }
@@ -171,6 +171,39 @@ namespace volumeshOS
         commands.emplace_back([]{
             mesh_list->delete_meshes();
         });
+    }
+
+    std::vector<VMesh> get_meshes()
+    {
+        std::vector<VMesh> meshes;
+        mesh_list->iterate([&meshes](auto id, auto mesh){
+            meshes.push_back(VMesh(id));
+        });
+        return meshes;
+    }
+
+    VMesh get_focused_mesh()
+    {
+        if(auto id = mesh_list->get_focused_mesh_id())
+        {
+            return VMesh(id);
+        }
+        return VMesh(-1);
+    }
+
+    bool is_valid(const VMesh& mesh)
+    {
+        return mesh.get_id() >= 0;
+    }
+
+    void load_configuration(const VMesh& mesh, const std::string& path)
+    {
+
+    }
+
+    void save_configuration(const VMesh& mesh, const std::string& path)
+    {
+
     }
 
     void set_color(const Color& color)
@@ -467,6 +500,16 @@ namespace volumeshOS
         }
     }
 
+    void export_image()
+    {
+
+    }
+
+    void export_image(const std::string& path)
+    {
+
+    }
+
     float get_ambient(const VMesh& mesh)
     {
         assert(mesh.is_valid());
@@ -562,5 +605,32 @@ namespace volumeshOS
         Internal::NewFileDialog dialog;
         return dialog.open_dialog(title.c_str());
     }
+
+    Color get_color(const VMesh& mesh)
+    {
+        return mesh_list->get_color(mesh.get_id());
+    }
+
+    Color get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        return mesh_list->get_color(mesh.get_id(), cell);
+    }
+
+    Color get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface)
+    {
+        return mesh_list->get_color(mesh.get_id(), halfface);
+    }
+
+    /*
+    Color get_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge)
+    {
+        return mesh_list->get_color(mesh.get_id(), edge);
+    }
+
+    Color get_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
+    {
+        return mesh_list->get_color(mesh.get_id(), vertex);
+    }
+    */
 
 }

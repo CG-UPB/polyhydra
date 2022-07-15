@@ -238,7 +238,7 @@ namespace volumeshOS::Internal
         translate(glm::vec3(0.0f));
         scale(glm::vec3(1.0f));
 
-        m_mvb = std::make_shared<MeshVertexBuffer>(*m_mesh);
+        m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
     }
 
     void MeshObject::update_vertex_buffer()

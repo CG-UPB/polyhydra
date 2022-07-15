@@ -46,6 +46,8 @@ namespace volumeshOS::Internal
         // get a specific mesh
         std::shared_ptr<MeshObject> get_focused_mesh();
 
+        // get ID of focused mesh
+        MeshID get_focused_mesh_id();
 
         /* SelectionMode */
 
@@ -184,6 +186,21 @@ namespace volumeshOS::Internal
         // Returns the visibility of the mesh
         bool get_visibility(MeshID id);
 
+        // Returns the color of the mesh
+        Color get_color(MeshID id);
+
+        // Returns the color of a cell from a given mesh
+        Color get_color(MeshID id, OpenVolumeMesh::CellHandle cell);
+
+        // Returns the color of a halfface from a given mesh
+        Color get_color(MeshID id, OpenVolumeMesh::HalfFaceHandle halfface);
+
+        // Returns the color of an edge from a given mesh
+        Color get_color(MeshID id, OpenVolumeMesh::EdgeHandle edge);
+
+        // Returns the color of a vertex from a given mesh
+        Color get_color(MeshID id, OpenVolumeMesh::VertexHandle vertex);
+
         /* Utility */
 
         // iterate over meshes and execute func if id matches
@@ -198,7 +215,7 @@ namespace volumeshOS::Internal
         void calculate_selection_offsets();
 
         // update OVM-Mesh from file
-        static OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* load_from_file(const std::string& path);
+//        static OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* load_from_file(const std::string& path);
 
         // list of MeshObjects
         std::unordered_map<int, std::shared_ptr<MeshObject>> m_mesh_list;

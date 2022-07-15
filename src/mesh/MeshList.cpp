@@ -12,14 +12,15 @@ namespace volumeshOS::Internal
 
     MeshID MeshList::next_id()
     {
-        return ++m_id_count;
+        return m_id_count++;
     }
 
     void MeshList::add_mesh(MeshID mesh_id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
     {
 
         auto new_mesh = std::make_shared<MeshObject>(mesh_id);
-        new_mesh->set_mesh_name(std::to_string(mesh->n_vertices()));
+        //int x = mesh->n_vertices();
+        new_mesh->set_mesh_name("test");
         new_mesh->set_mesh(mesh);
 
         // add mesh and its id to our list
@@ -35,8 +36,10 @@ namespace volumeshOS::Internal
 
     void MeshList::add_mesh(MeshID mesh_id, const std::string& path)
     {
-        auto ovm_mesh = load_from_file(path);
-        add_mesh(mesh_id, ovm_mesh);
+        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> ovm_mesh;
+        OpenVolumeMesh::IO::FileManager file_manager;
+        file_manager.readFile(path, ovm_mesh);
+        add_mesh(mesh_id, &ovm_mesh);
     }
 
     void MeshList::set_mesh(const MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* ovm_mesh)
@@ -51,8 +54,10 @@ namespace volumeshOS::Internal
     void MeshList::set_mesh(const MeshID id, const std::string& path)
     {
         auto f = [&path](const std::shared_ptr<MeshObject>& mesh) -> void{
-            auto ovm_mesh = load_from_file(path);
-            mesh->set_mesh(ovm_mesh);
+            OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> ovm_mesh;
+            OpenVolumeMesh::IO::FileManager file_manager;
+            file_manager.readFile(path, ovm_mesh);
+            mesh->set_mesh(&ovm_mesh);
         };
 
         execute_for_mesh(f, id);
@@ -95,6 +100,15 @@ namespace volumeshOS::Internal
     std::shared_ptr<MeshObject> MeshList::get_focused_mesh()
     {
         return get_mesh(m_focused_mesh);
+    }
+
+    MeshID MeshList::get_focused_mesh_id()
+    {
+        if (auto mesh = get_mesh(m_focused_mesh))
+        {
+            return mesh->get_id();
+        }
+        return -1;
     }
 
     void MeshList::set_ambient(MeshID id, float ambient)
@@ -355,7 +369,13 @@ namespace volumeshOS::Internal
     std::array<float, 3> MeshList::get_rotation(const MeshID id)
     {
         auto r = get_mesh(id)->get_data().rotation;
-        std::array<float, 3> rot = {0.0, 0.0, 0.0};
+        float yaw, pitch, roll = 0.0f;
+
+        pitch = -asin(r[0][2]);
+        yaw = asin(r[1][2] / cos(pitch));
+        roll = acos(r[0][0] / cos(roll));
+
+        std::array<float, 3> rot = {yaw, pitch, roll};
         return rot;
     }
 
@@ -399,12 +419,40 @@ namespace volumeshOS::Internal
         return get_mesh(id)->is_element_selected(cell.idx(), EntityType::Cell);
     }
 
+    Color MeshList::get_color(const MeshID id)
+    {
+        return get_mesh(id)->get_data().color;
+    }
+
+    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::CellHandle cell)
+    {
+        return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
+    }
+
+    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::HalfFaceHandle halfface)
+    {
+        return get_mesh(id)->get_mvb()->get_halfface_color(halfface.idx());
+    }
+
+    /*
+    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::EdgeHandle edge)
+    {
+        return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
+    }
+
+    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::VertexHandle vertex)
+    {
+        return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
+    }
+    */
+
 
     void MeshList::execute_for_mesh(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
     {
-        auto mesh = get_mesh(id);
-        assert(mesh != nullptr);
-        func(mesh);
+        if(auto mesh = get_mesh(id))
+        {
+            func(mesh);
+        }
     }
 
     void MeshList::iterate(const std::function<void(MeshID id, std::shared_ptr<MeshObject>)>& func)
@@ -418,13 +466,13 @@ namespace volumeshOS::Internal
         }
     }
 
-    OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* MeshList::load_from_file(const std::string& path)
-    {
-        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* ovm_mesh;
-        OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(path, *ovm_mesh);
-        return ovm_mesh;
-    }
+//    OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* MeshList::load_from_file(const std::string& path)
+//    {
+//        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> ovm_mesh;
+//        OpenVolumeMesh::IO::FileManager file_manager;
+//        file_manager.readFile(path, ovm_mesh);
+//        return ovm_mesh;
+//    }
 
     void MeshList::calculate_selection_offsets()
     {

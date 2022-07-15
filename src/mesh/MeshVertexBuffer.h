@@ -149,7 +149,7 @@ namespace volumeshOS::Internal
     {
     public:
 
-        explicit MeshVertexBuffer(OVMesh mesh);
+        explicit MeshVertexBuffer(std::shared_ptr<OVMesh> mesh);
 
         /**
          * converts selection id of vertices to OVM id
