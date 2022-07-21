@@ -219,9 +219,11 @@ namespace volumeshOS::Internal
                 }
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max);
+                if( ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max))
+                {
+                    active_mesh.set_peel_level(m_slider_peel);
+                }
 
-                active_mesh.set_peel_level(m_slider_peel);
                 m_cell_size = active_mesh.get_cell_size();
                 ImGui::Separator();
                 ImGui::Text("Cell Size");
@@ -242,6 +244,10 @@ namespace volumeshOS::Internal
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
                 active_mesh.set_cell_rounding(actual_rounding_size);
+                if(actual_rounding_size != 0.0f)
+                {
+                    active_mesh.activate_rounding(true);
+                }
                 ImGui::Separator();
                 ImGui::Text("Digging");
                 ImGui::SameLine();

@@ -40,6 +40,7 @@ namespace volumeshOS::Internal
 
         // Toolbox Variables
         float peel_level            = 0.0f;
+        int max_peel_depth          = 0;
         float slice_level           = 0.0f;
         float cell_size             = 1.0f;
         bool slice_locked           = false;
@@ -232,8 +233,6 @@ namespace volumeshOS::Internal
         const int key_multiplier = 1000000;
 
         std::string m_mesh_name = "default";
-
-        int m_max_peel_depth = 0;
 
         bool m_just_locked;
 

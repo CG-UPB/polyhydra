@@ -136,6 +136,7 @@ namespace volumeshOS
         VMesh vmesh(id);
         commands.emplace_back([id, instance]{
             mesh_list->add_mesh(id, instance);
+            focus(VMesh(id));
         });
         return vmesh;
     }
@@ -155,7 +156,7 @@ namespace volumeshOS
         int id = mesh_list->next_id();
         VMesh vmesh(id);
         commands.emplace_back([id, path]{
-            mesh_list->add_mesh(0, path);
+            mesh_list->add_mesh(id, path);
         });
         return vmesh;
     }
@@ -435,6 +436,20 @@ namespace volumeshOS
     {
         commands.emplace_back([mesh, rounding]{
             mesh_list->set_cell_rounding(mesh.get_id(), rounding);
+        });
+    }
+
+    void activate_rounding(const VMesh& mesh, float rounding)
+    {
+        commands.emplace_back([mesh, rounding]{
+            mesh_list->activate_rounding(mesh.get_id(), rounding);
+        });
+    }
+
+    bool activate_rounding(const VMesh& mesh, bool rounding)
+    {
+        commands.emplace_back([mesh, rounding]{
+            mesh_list->activate_rounding(mesh.get_id(), rounding);
         });
     }
 

@@ -220,6 +220,7 @@ namespace volumeshOS::Internal
         {
             return m_selected_cells.contains(id);
         }
+        return false;
     }
 
     void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
@@ -346,7 +347,7 @@ namespace volumeshOS::Internal
             }
         }
 
-        m_max_peel_depth = max_depth;
+        m_data.max_peel_depth = max_depth;
     }
 
     void MeshObject::set_face_color(int ovm_id, Color color)
@@ -517,7 +518,7 @@ namespace volumeshOS::Internal
 
     int MeshObject::get_max_peel_depth() const
     {
-        return m_max_peel_depth;
+        return m_data.max_peel_depth;
     }
 
     std::shared_ptr<MeshVertexBuffer> MeshObject::get_mvb() const

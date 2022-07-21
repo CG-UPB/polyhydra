@@ -174,6 +174,9 @@ namespace volumeshOS::Internal
         // Returns the number of cell depth layers of the mesh
         int get_max_peel_depth(MeshID id);
 
+        // Activate Roundings
+        void activate_rounding(MeshID id, bool rounding);
+
         // Returns the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
         float get_cell_rounding(MeshID id);
 

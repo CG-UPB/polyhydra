@@ -216,6 +216,14 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
+    void MeshList::activate_rounding(MeshID id, bool rounding)
+    {
+        auto f = [rounding](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().rounding_active = rounding;
+        };
+        execute_for_mesh(f, id);
+    }
+
     void MeshList::set_cell_size(const MeshID id, const float size)
     {
         assert(0.0f <= size <= 1.0f);
@@ -397,7 +405,7 @@ namespace volumeshOS::Internal
 
     int MeshList::get_max_peel_depth(const MeshID id)
     {
-        return get_mesh(id)->get_data().peel_level;
+        return get_mesh(id)->get_max_peel_depth();
     }
 
     float MeshList::get_cell_rounding(const MeshID id)
@@ -450,7 +458,8 @@ namespace volumeshOS::Internal
 
     void MeshList::execute_for_mesh(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
     {
-        if(auto mesh = get_mesh(id))
+        auto mesh = get_mesh(id);
+        if( mesh != nullptr)
         {
             func(mesh);
         }
@@ -460,7 +469,7 @@ namespace volumeshOS::Internal
     {
         for(const auto& [id, mesh] : m_mesh_list)
         {
-            if(mesh)
+            if(mesh != nullptr)
             {
                 func(id, mesh);
             }

@@ -139,7 +139,7 @@ namespace volumeshOS::Internal
         //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
         renderer.buffers.target_framebuffer_ms->bind();
-        renderer.passes.transparency_pass_wb->render_composition();
+        render_composition();
         renderer.buffers.target_framebuffer_ms->unbind();
     }
 
