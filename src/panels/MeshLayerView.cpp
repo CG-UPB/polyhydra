@@ -27,11 +27,9 @@ namespace volumeshOS::Internal
             ImGui::PushID(id);
             // name is "Mesh" with unique ID
             std::string str = "Mesh " + std::to_string(id);
-            ImGui::RadioButton(str.c_str(),&active_mesh_id, id);
-            // if radiobutton is double-clicked, set actual mesh in focus
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+            if(ImGui::RadioButton(str.c_str(),&active_mesh_id, id))
             {
-                volumeshOS::set_focused_mesh(mesh);
+                volumeshOS::set_focused_mesh(VMesh(active_mesh_id));
             }
 
             Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active now. The filter functions of "
@@ -147,7 +145,6 @@ namespace volumeshOS::Internal
             ImGui::Separator();
             ImGui::PopID();
         }
-        volumeshOS::set_focused_mesh(active_mesh);
         ImGui::PopStyleColor();
         ImGui::End();
     }

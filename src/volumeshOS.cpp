@@ -446,7 +446,7 @@ namespace volumeshOS
         });
     }
 
-    bool activate_rounding(const VMesh& mesh, bool rounding)
+    void activate_rounding(const VMesh& mesh, bool rounding)
     {
         commands.emplace_back([mesh, rounding]{
             mesh_list->activate_rounding(mesh.get_id(), rounding);
@@ -467,7 +467,7 @@ namespace volumeshOS
         });
     }
 
-    void set_focused_mesh(const VMesh& mesh)
+    void set_focused_mesh(VMesh mesh)
     {
         commands.emplace_back([mesh](){
             mesh_list->set_focused_mesh(mesh.get_id());

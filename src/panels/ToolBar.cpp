@@ -242,12 +242,12 @@ namespace volumeshOS::Internal
                 float actual_rounding_size = active_mesh.get_cell_rounding();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
-                active_mesh.set_cell_rounding(actual_rounding_size);
-                if(actual_rounding_size != 0.0f)
+                if (ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic))
                 {
-                    active_mesh.activate_rounding(true);
+                    active_mesh.set_cell_rounding(actual_rounding_size);
+                    active_mesh.activate_rounding((actual_rounding_size != 0.0f));
                 }
+
                 ImGui::Separator();
                 ImGui::Text("Digging");
                 ImGui::SameLine();

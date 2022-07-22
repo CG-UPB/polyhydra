@@ -211,7 +211,7 @@ namespace volumeshOS
     void set_cell_rounding(const VMesh& mesh, float rounding);
 
     // Activate roundings
-    bool activate_rounding(const VMesh& mesh, bool rounding);
+    void activate_rounding(const VMesh& mesh, bool rounding);
 
     // Set the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
     void set_cell_size(const VMesh& mesh, float size);
@@ -223,7 +223,7 @@ namespace volumeshOS
     void set_visibility(const VMesh& mesh, bool visible);
 
     // set currently active mesh
-    void set_focused_mesh(const VMesh& mesh);
+    void set_focused_mesh(VMesh mesh);
 
 
     // Reset the visibility so that all cells are visible
@@ -586,7 +586,7 @@ namespace volumeshOS
         }
 
         // Set currently active mesh
-        inline void set_focused_mesh(const VMesh& mesh) const
+        inline void set_focused_mesh(VMesh mesh) const
         {
             volumeshOS::set_focused_mesh(*this);
         }
@@ -694,7 +694,7 @@ namespace volumeshOS
             return volumeshOS::get_cell_rounding(*this);
         }
 
-        [[nodiscard]] inline bool activate_rounding(bool rounding) const
+        inline void activate_rounding(bool rounding) const
         {
             return volumeshOS::activate_rounding(*this, rounding);
         }
