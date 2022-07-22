@@ -245,7 +245,7 @@ namespace volumeshOS::Internal
         const auto inverse = glm::inverse(proj * cam->view);
 
 
-//        float ar = (float)renderer->m_viewportPanelHeight / (float)renderer->m_viewportPanelWidth;
+//        float ar = (float)renderer->m_viewport_panel_height / (float)renderer->m_viewport_panel_width;
 //
 //        float tan_half_hfov = tanf(glm::radians(cam.zoom / 2.0f));
 //        float tan_half_vfov = tanf(glm::radians((cam.zoom * ar) / 2.0f));

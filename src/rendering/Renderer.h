@@ -27,11 +27,18 @@ namespace volumeshOS::Internal
     class TransparencyPassDP;
     class ShadowMapPass;
 
+    struct ImageExportOptions
+    {
+        int width                       = -1;
+        int height                      = -1;
+        bool transparent_background     = true;
+    };
+
     class Renderer
     {
     public:
 
-        Renderer(int width, int height, const std::shared_ptr<FrameBufferObject>& initial_target_ms, const std::shared_ptr<FrameBufferObject>& initial_target);
+        Renderer(int width, int height);
 
         void set_selection_callback(std::function<void(int, int)> callback) { selection_callback = std::move(callback); };
 
@@ -39,7 +46,7 @@ namespace volumeshOS::Internal
 
         void render(bool render_bg = true);
 
-        void set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target);
+        void export_image(const std::string& path, const ImageExportOptions& options = ImageExportOptions{});
 
     public:
 
@@ -98,7 +105,5 @@ namespace volumeshOS::Internal
         void handle_input();
         void handle_camera_input();
         void handle_mesh_input();
-        void render_transparency_wb();
-        void render_transparency_dp();
     };
 }

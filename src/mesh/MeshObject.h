@@ -149,7 +149,7 @@ namespace volumeshOS::Internal
 
         int get_max_peel_depth() const;
 
-        std::tuple<int, int>& selection_offset()
+        const std::array<int, 2>& selection_offset()
         {
             return m_selection_offset;
         };
@@ -224,7 +224,7 @@ namespace volumeshOS::Internal
 
         std::map<int, int> m_created_shapes;
 
-        std::tuple<int, int> m_selection_offset;
+        std::array<int, 2> m_selection_offset;
 
         std::pair<glm::vec3, glm::vec3> m_transformed_bb;
 

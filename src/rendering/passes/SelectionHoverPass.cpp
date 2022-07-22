@@ -113,6 +113,12 @@ namespace volumeshOS::Internal
         // Remember Element data
         m_hovered_type = type;
         m_hovered_id = id;
+
+        if (mesh == nullptr)
+        {
+            return;
+        }
+
         m_hovered_mesh = mesh->get_id();
 
         auto mesh_transform = mesh->get_data().get_transform();

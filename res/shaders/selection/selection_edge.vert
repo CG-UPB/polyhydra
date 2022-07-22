@@ -16,7 +16,7 @@ uniform mat4 u_view;
 uniform float u_cell_size;
 uniform float u_average_cell_size;
 
-uniform int u_peel_depth;
+uniform float u_peel_depth;
 uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;

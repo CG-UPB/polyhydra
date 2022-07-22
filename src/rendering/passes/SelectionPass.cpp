@@ -91,7 +91,7 @@ namespace volumeshOS::Internal
 
         // Cell operations
         float cell_size = mesh->get_data().cell_size;
-        int peel_depth = mesh->get_data().peel_level;
+        float peel_depth = mesh->get_data().peel_level;
         float slice_depth = mesh->get_data().slice_level;
 
         auto bb = mesh->get_world_bb(view_transform);
@@ -126,7 +126,7 @@ namespace volumeshOS::Internal
         m_selection_shader->set_uniform_bool("u_debug_mode", m_debug);
         m_selection_shader->set_uniform_bool("u_faces_selectable", faces_selectable);
         m_selection_shader->set_uniform_float("u_cell_size", cell_size);
-        m_selection_shader->set_uniform_int("u_peel_depth", peel_depth);
+        m_selection_shader->set_uniform_float("u_peel_depth", peel_depth);
         m_selection_shader->set_uniform_float("u_slice_depth", slice_depth);
         m_selection_shader->set_uniform_vec3f("u_min", min);
         m_selection_shader->set_uniform_vec3f("u_max", max);
@@ -152,7 +152,7 @@ namespace volumeshOS::Internal
             m_selection_cylinder_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
             m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
-            m_selection_cylinder_shader->set_uniform_int("u_peel_depth", peel_depth);
+            m_selection_cylinder_shader->set_uniform_float("u_peel_depth", peel_depth);
             m_selection_cylinder_shader->set_uniform_float("u_slice_depth", slice_depth);
             m_selection_cylinder_shader->set_uniform_vec3f("u_min", min);
             m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
@@ -181,7 +181,7 @@ namespace volumeshOS::Internal
             m_selection_sphere_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
             m_selection_sphere_shader->set_uniform_bool("u_debug_mode", m_debug);
             m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
-            m_selection_sphere_shader->set_uniform_int("u_peel_depth", peel_depth);
+            m_selection_sphere_shader->set_uniform_float("u_peel_depth", peel_depth);
             m_selection_sphere_shader->set_uniform_float("u_slice_depth", slice_depth);
             m_selection_sphere_shader->set_uniform_vec3f("u_min", min);
             m_selection_sphere_shader->set_uniform_vec3f("u_max", max);

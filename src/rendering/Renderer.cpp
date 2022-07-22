@@ -2,22 +2,23 @@
 #include "Renderer.h"
 
 #include "input/Input.h"
+#include "../util/StringUtil.h"
+
+#include <stb_image_write.h>
 
 namespace volumeshOS::Internal
 {
 
     Renderer::Renderer(
             int width,
-            int height,
-            const std::shared_ptr<FrameBufferObject>& initial_target_ms,
-            const std::shared_ptr<FrameBufferObject>& initial_target
+            int height
     )
     {
         frame.width = width;
         frame.height = height;
 
-        buffers.target_framebuffer_ms = initial_target_ms;
-        buffers.target_framebuffer = initial_target;
+        buffers.target_framebuffer_ms = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        buffers.target_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         buffers.selection_frame_buffer = std::make_shared<FrameBufferObject>(width / 2, height / 2,
                                                                              FrameBufferObject::RGBA_AND_DEPTH);
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
@@ -39,6 +40,7 @@ namespace volumeshOS::Internal
 
         mesh_list = std::make_shared<MeshList>();
         camera = std::make_shared<Camera>();
+        camera->set_viewport_size((float) width, (float) height);
     }
 
     void Renderer::resize(int width, int height)
@@ -50,6 +52,8 @@ namespace volumeshOS::Internal
         passes.pre_pass->resize_buffers(frame.width, frame.height);
         passes.ssao_pass->resize_buffers(frame.width, frame.height);
         passes.shadow_pass->resize_buffers(frame.width * 2, frame.height * 2);
+        buffers.target_framebuffer_ms->resize(frame.width, frame.height);
+        buffers.target_framebuffer->resize(frame.width, frame.height);
         buffers.selection_frame_buffer->resize(frame.width / 2, frame.height / 2);
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, frame.width / 2, frame.height / 2);
         input.last.x = (float) width / 2.0f;
@@ -315,10 +319,78 @@ namespace volumeshOS::Internal
         camera->update();
     }
 
-    void Renderer::set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms,
-                                          std::shared_ptr<FrameBufferObject> target)
+    void Renderer::export_image(const std::string& path, const ImageExportOptions& options)
     {
-        buffers.target_framebuffer_ms = std::move(target_ms);
-        buffers.target_framebuffer = std::move(target);
+        int prev_width = frame.width;
+        int prev_height = frame.height;
+
+        int export_width = options.width > 0 ? options.width : frame.width;
+        int export_height = options.height > 0 ? options.height : frame.height;
+
+        // we need to do this since some passes need the current width and height for rendering
+        frame.width = export_width;
+        frame.height = export_height;
+
+        auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
+
+        auto prev_target_framebuffer_ms = buffers.target_framebuffer_ms;
+        auto prev_target_framebuffer = buffers.target_framebuffer;
+
+        buffers.target_framebuffer_ms = export_framebuffer_ms;
+        buffers.target_framebuffer = export_framebuffer;
+
+        resize(export_width, export_height);
+        render(!options.transparent_background);
+
+        glFlush();
+        glFinish();
+
+        export_framebuffer_ms->unbind();
+        export_framebuffer->bind();
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        int sWidth = export_framebuffer->get_width();
+        int sHeight = export_framebuffer->get_height();
+        std::vector<unsigned char> buffer(4 * sWidth * sHeight);
+
+        glReadPixels(0, 0, sWidth, sHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+
+        // since we are rendering on a transparent background, we need to undo the pre-multiplication
+        for (size_t i = 0; i < buffer.size() / 4; i++)
+        {
+            float r = (float) ((int) buffer[i * 4]) / 255.0f;
+            float g = (float) ((int) buffer[i * 4 + 1]) / 255.0f;
+            float b = (float) ((int) buffer[i * 4 + 2]) / 255.0f;
+            float a = (float) ((int) buffer[i * 4 + 3]) / 255.0f;
+            float alpha = std::max(a, 0.00001f);
+            buffer[i * 4] = (unsigned char) ((int) ((r / alpha) * 255.0f));
+            buffer[i * 4 + 1] = (unsigned char) ((int) ((g / alpha) * 255.0f));
+            buffer[i * 4 + 2] = (unsigned char) ((int) ((b / alpha) * 255.0f));
+        }
+
+        stbi_flip_vertically_on_write(true);
+
+        auto split = StringUtil::split_str(path, ".");
+        std::string extension = split[split.size() - 1];
+
+        if (extension == "bmp")
+        {
+            stbi_write_bmp(path.c_str(), sWidth, sHeight, 4, buffer.data());
+        }
+        else if (extension == "png")
+        {
+            stbi_write_png(path.c_str(), sWidth, sHeight, 4, buffer.data(), 4 * sWidth);
+        }
+
+        export_framebuffer->unbind();
+
+        // restore the old width and height
+        frame.width = prev_width;
+        frame.height = prev_height;
+        buffers.target_framebuffer_ms = prev_target_framebuffer_ms;
+        buffers.target_framebuffer = prev_target_framebuffer;
+        resize(frame.width, frame.height);
     }
 }

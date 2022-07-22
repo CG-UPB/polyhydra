@@ -1,7 +1,6 @@
 
 #include "PrePass.h"
 #include "../Renderer.h"
-#include "../gl/Shader.h"
 
 namespace volumeshOS::Internal
 {

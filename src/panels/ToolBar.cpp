@@ -273,6 +273,7 @@ namespace volumeshOS::Internal
                     {
                         m_digging_activated = false;
                     }
+                    AppState::settings.digging_active = m_digging_activated;
                     clicked_digging++;
                 }
                 if (clicked_digging & 1)
@@ -303,6 +304,7 @@ namespace volumeshOS::Internal
                         m_isolation_started = false;
                         active_mesh.reset_visibility();
                     }
+                    AppState::settings.isolation_active = m_isolation_started;
                     clicked++;
                 }
                 if (clicked & 1)
