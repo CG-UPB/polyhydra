@@ -259,7 +259,7 @@ namespace volumeshOS::Internal
                 camera->update();
                 return;
             }
-            if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
+            if (ImGui::IsWindowHovered())
             {
                 if (Input::mouse_double_clicked())
                 {

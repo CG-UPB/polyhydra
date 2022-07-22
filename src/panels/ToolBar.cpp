@@ -130,13 +130,11 @@ namespace volumeshOS::Internal
         // If there is at least one mesh, the Active Mesh Settings (Slicing, Peeling, etc.) are available
         if (active_mesh.is_valid())
         {
-            std::string header_name = "Mesh " + std::to_string(active_mesh.get_id());
-
             ImGuiUtil::add_padding_y(0.5f);
             ImGui::Separator();
             ImGuiUtil::add_padding_y(0.5f);
             ImGuiUtil::push_bold_font();
-            ImGui::Text("%s", header_name.c_str());
+            ImGui::Text("%s", active_mesh.get_name().c_str());
             ImGui::PopFont();
             ImGuiUtil::add_padding_y(0.5f);
 

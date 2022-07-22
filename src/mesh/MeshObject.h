@@ -18,21 +18,14 @@ namespace volumeshOS::Internal
             return transformation;
         }
 
-        void update_transform()
-        {
-            glm::mat4 rot = glm::translate(glm::mat4(1.0), position) * rotation;
-            glm::mat4 scl = scaling * glm::translate(glm::mat4(1.0), -position);
-            transformation = scl * rot * translation;
-        }
+        void update_transform();
 
-        glm::mat4 translation       = glm::mat4(1.0f);
-        glm::mat4 scaling           = glm::mat4(1.0f);
         glm::mat4 rotation          = glm::mat4(1.0f);
         glm::mat4 transformation    = glm::mat4(1.0f);
 
         // Rendering Variables
-        Color color                 = Color{0.76f, 0.76f, 0.76f, 1.0f};
-        Color selection_color       = Color{0.76f, 0.76f, 0.76f, 0.0f};
+        Color color                 = Color{1.0f, 1.0f, 1.0f, 1.0f};
+        Color selection_color       = Color{1.0f, 1.0f, 1.0f, 0.0f};
         float ambient_strength      = 1.0f;
         float diffuse_strength      = 1.0f;
         float specular_strength     = 0.3f;
@@ -44,8 +37,8 @@ namespace volumeshOS::Internal
         float slice_level           = 0.0f;
         float cell_size             = 1.0f;
         bool slice_locked           = false;
-        bool rounding_active        = false;
-        float rounding_size         = 0.0f;
+        bool rounding_active        = true;
+        float rounding_size         = 0.1f;
 
         // Transform Variables
         glm::vec3 position          = {0.0f, 0.0f, 0.0f};
@@ -195,11 +188,11 @@ namespace volumeshOS::Internal
 
         [[nodiscard]] std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> get_ovm() const;
 
-        void translate(glm::vec3 vec);
+        void translate(const glm::vec3& vec);
 
-        void scale(glm::vec3 vec);
+        void scale(const glm::vec3& vec);
 
-        void rotate(float angle, glm::vec3 axis);
+        void rotate(float angle, const glm::vec3& axis);
 
     private:
         /**

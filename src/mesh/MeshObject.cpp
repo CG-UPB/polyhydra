@@ -536,28 +536,31 @@ namespace volumeshOS::Internal
         return m_mvb->get_max_bounding_box();
     }
 
-    void MeshObject::translate(glm::vec3 vec)
+    void MeshObject::translate(const glm::vec3& vec)
     {
-        m_data.translation = glm::mat4(1.0f);
         m_data.position = vec;
-        m_data.translation = glm::translate(m_data.translation,  vec - m_data.position_offset);
-
         m_data.update_transform();
     }
 
-    void MeshObject::scale(glm::vec3 vec)
+    void MeshObject::scale(const glm::vec3& vec)
     {
-        m_data.scaling = glm::mat4(1.0f);
         m_data.scale = vec;
-        m_data.scaling = glm::scale(m_data.scaling, vec * m_data.scale_normalization );
         m_data.update_transform();
     }
 
-    void MeshObject::rotate(float angle, glm::vec3 axis)
+    void MeshObject::rotate(float angle, const glm::vec3& axis)
     {
         m_data.rotation = glm::rotate(m_data.rotation, angle, glm::normalize(axis));
-
         m_data.update_transform();
+    }
+
+    void MeshData::update_transform()
+    {
+        auto scaling = glm::scale(glm::mat4(1.0f), scale * scale_normalization);
+        auto translation = glm::translate(glm::mat4(1.0f),  position - position_offset);
+        glm::mat4 rot = glm::translate(glm::mat4(1.0), position) * rotation;
+        glm::mat4 scl = scaling * glm::translate(glm::mat4(1.0), -position);
+        transformation = rot * scl * translation;
     }
 
 }

@@ -161,11 +161,6 @@ namespace volumeshOS::Internal
 
     void SSAOPass::render(const Renderer& renderer)
     {
-        renderer.passes.pre_pass->get_framebuffer()->bind();
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        renderer.passes.pre_pass->clear_position_buffer(renderer);
-
         load_options_from_settings();
         if (m_options.active)
         {
@@ -224,12 +219,6 @@ namespace volumeshOS::Internal
             glClear(GL_COLOR_BUFFER_BIT);
             m_blur_framebuffer->unbind();
         }
-
-        glBindTexture(GL_TEXTURE_2D, renderer.passes.pre_pass->get_framebuffer()->get_position_texture());
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        renderer.passes.pre_pass->get_framebuffer()->unbind();
-
     }
 
     void SSAOPass::resize_buffers(int width, int height)

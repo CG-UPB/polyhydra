@@ -7,7 +7,7 @@ namespace volumeshOS::Internal
 {
     void PrePass::render(const Renderer& renderer)
     {
-        renderer.passes.pre_pass->get_framebuffer()->bind();
+        m_pre_pass_framebuffer->bind();
 
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -76,6 +76,13 @@ namespace volumeshOS::Internal
             vao->draw();
         }
         pre_phong_shader->unbind();
+
+        // we generate a mipmap for the position, this is used for ssao
+        // this needs to happen every frame, since the fragment position values always change
+        glBindTexture(GL_TEXTURE_2D, m_pre_pass_framebuffer->get_position_texture());
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        m_pre_pass_framebuffer->unbind();
     }
 
     PrePass::PrePass(int width, int height)

@@ -24,11 +24,12 @@ namespace volumeshOS::Internal
         {
             int id = mesh.get_id();
             ImGui::PushID(id);
-            // name is "Mesh" with unique ID
-            std::string str = "Mesh " + std::to_string(id);
-            if(ImGui::RadioButton(str.c_str(),&active_mesh_id, id))
+            if(ImGui::RadioButton(mesh.get_name().c_str(), &active_mesh_id, id))
             {
                 volumeshOS::set_focused_mesh(VMesh(active_mesh_id));
+            }
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
                 volumeshOS::focus_camera(VMesh(active_mesh_id));
             }
 

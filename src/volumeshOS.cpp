@@ -511,7 +511,6 @@ namespace volumeshOS
         commands.emplace_back([mesh](){
             mesh_list->set_focused_mesh(mesh.get_id());
         });
-        focus_camera(mesh);
     }
 
     void get_focused_mesh(const VMesh& mesh)
