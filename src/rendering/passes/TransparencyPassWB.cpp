@@ -30,10 +30,10 @@ namespace volumeshOS::Internal
                 }
         };
         m_transparent_framebuffer = std::make_shared<FrameBufferObject>(width, height, transparent_attachments);
-        generate_transparency_framebuffer(renderer, width, height);
+        generate_transparency_framebuffer(renderer);
     }
 
-    void TransparencyPassWB::generate_transparency_framebuffer(const Renderer& renderer, int width, int height)
+    void TransparencyPassWB::generate_transparency_framebuffer(const Renderer& renderer)
     {
         m_transparent_framebuffer->bind();
 
@@ -53,8 +53,9 @@ namespace volumeshOS::Internal
 
     void TransparencyPassWB::render(const Renderer& renderer)
     {
-        bind_transparent_buffer();
+        m_transparent_framebuffer->bind();
         clear_framebuffer();
+
         glDepthMask(GL_FALSE);
         glEnable(GL_BLEND);
         glBlendFunci(0, GL_ONE, GL_ONE);
@@ -115,8 +116,8 @@ namespace volumeshOS::Internal
             m_transparency_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
             m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-            m_transparency_shader->set_uniform_int("u_viewport_width", renderer.buffers.target_framebuffer->get_width());
-            m_transparency_shader->set_uniform_int("u_viewport_height", renderer.buffers.target_framebuffer->get_height());
+            m_transparency_shader->set_uniform_int("u_viewport_width", renderer.buffers.target_framebuffer_ms->get_width());
+            m_transparency_shader->set_uniform_int("u_viewport_height", renderer.buffers.target_framebuffer_ms->get_height());
             m_transparency_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
             m_transparency_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
             m_transparency_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
@@ -128,10 +129,10 @@ namespace volumeshOS::Internal
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
-            m_transparency_shader->unbind();
             vao->draw();
+            m_transparency_shader->unbind();
         }
-        unbind_transparent_buffer();
+        m_transparent_framebuffer->unbind();
 
         glDepthFunc(GL_ALWAYS);
         glEnable(GL_BLEND);
@@ -141,6 +142,10 @@ namespace volumeshOS::Internal
         renderer.buffers.target_framebuffer_ms->bind();
         render_composition();
         renderer.buffers.target_framebuffer_ms->unbind();
+
+//        glDisable(GL_BLEND);
+//        glClearDepth(1.0f);
+//        glEnable(GL_CULL_FACE);
     }
 
     void TransparencyPassWB::render_composition()
@@ -150,29 +155,18 @@ namespace volumeshOS::Internal
         m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, get_reveal_texture());
         VertexArrayObject::draw_screen_quad();
         m_composite_shader->unbind();
-
     }
 
     void TransparencyPassWB::resize_buffers(const Renderer& renderer, int width, int height)
     {
         m_transparent_framebuffer->resize(width, height);
-        generate_transparency_framebuffer(renderer, width, height);
+        generate_transparency_framebuffer(renderer);
     }
 
     void TransparencyPassWB::clear_framebuffer() const
     {
         glClearBufferfv(GL_COLOR, 0, &m_zeros[0]);
         glClearBufferfv(GL_COLOR, 1, &m_ones[0]);
-    }
-
-    void TransparencyPassWB::bind_transparent_buffer()
-    {
-        m_transparent_framebuffer->bind();
-    }
-
-    void TransparencyPassWB::unbind_transparent_buffer()
-    {
-        m_transparent_framebuffer->unbind();
     }
 
     unsigned int TransparencyPassWB::get_accum_texture()

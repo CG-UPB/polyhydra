@@ -22,9 +22,7 @@ namespace volumeshOS::Internal
         GLuint m_accum_texture;
         GLuint m_depth_texture;
 
-        void generate_transparency_framebuffer(const Renderer& renderer, int width, int height);
-        void bind_transparent_buffer();
-        void unbind_transparent_buffer();
+        void generate_transparency_framebuffer(const Renderer& renderer);
 
         unsigned int get_accum_texture();
         unsigned int get_reveal_texture();

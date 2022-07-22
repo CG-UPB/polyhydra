@@ -192,6 +192,7 @@ namespace volumeshOS::Internal
         // handle the things related to our mesh rendering canvas
         handle_resize();
 
+
         renderer->render();
 
         // store the current top left position, so we can draw text here later on top of our canvas

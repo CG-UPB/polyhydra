@@ -47,13 +47,13 @@ namespace volumeshOS::Internal
     {
         frame.width = width;
         frame.height = height;
+        buffers.target_framebuffer_ms->resize(frame.width, frame.height);
+        buffers.target_framebuffer->resize(frame.width, frame.height);
         passes.transparency_pass_wb->resize_buffers(*this, frame.width, frame.height);
         passes.transparency_pass_dp->resize_buffers(frame.width, frame.height);
         passes.pre_pass->resize_buffers(frame.width, frame.height);
         passes.ssao_pass->resize_buffers(frame.width, frame.height);
         passes.shadow_pass->resize_buffers(frame.width * 2, frame.height * 2);
-        buffers.target_framebuffer_ms->resize(frame.width, frame.height);
-        buffers.target_framebuffer->resize(frame.width, frame.height);
         buffers.selection_frame_buffer->resize(frame.width / 2, frame.height / 2);
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, frame.width / 2, frame.height / 2);
         input.last.x = (float) width / 2.0f;
@@ -88,6 +88,11 @@ namespace volumeshOS::Internal
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         buffers.target_framebuffer_ms->unbind();
+
+//        buffers.target_framebuffer->bind();
+//        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        buffers.target_framebuffer->unbind();
 
         // Render Meshes
         passes.pre_pass->render(*this);
@@ -132,6 +137,7 @@ namespace volumeshOS::Internal
                         break;
                     case TransparencyMode::WEIGHTED_BLENDED:
                         passes.transparency_pass_wb->render(*this);
+                        break;
                     default:
                         return;
                 }

@@ -41,19 +41,20 @@ namespace volumeshOS::Internal
                 if (ImGui::BeginPopup("transparency Popup"))
                 {
                     auto transparency_mode = settings.transparency_mode;
-                    if (ImGui::RadioButton("Weighted Blended", transparency_mode == TransparencyMode::WEIGHTED_BLENDED))
-                    {
-                        settings.transparency_mode = TransparencyMode::WEIGHTED_BLENDED;
-                    }
+
                     if (ImGui::RadioButton("Depth Peeling", transparency_mode == TransparencyMode::DEPTH_PEELING))
                     {
                         settings.transparency_mode = TransparencyMode::DEPTH_PEELING;
                     }
-
                     if (transparency_mode == TransparencyMode::DEPTH_PEELING)
                     {
                         ImGui::SliderInt("DP_Passes", &settings.num_depth_peeling_passes, 0, 50);
                     }
+                    if (ImGui::RadioButton("Weighted Blended", transparency_mode == TransparencyMode::WEIGHTED_BLENDED))
+                    {
+                        settings.transparency_mode = TransparencyMode::WEIGHTED_BLENDED;
+                    }
+
                     ImGui::EndPopup();
                 }
             }
