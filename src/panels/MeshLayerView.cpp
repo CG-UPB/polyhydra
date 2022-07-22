@@ -1,6 +1,5 @@
 
 #include "MeshLayerView.h"
-#include "Window.h"
 #include "../util/Tooltips.h"
 #include "NewFileDialog.h"
 #include "../util/ImGuiUtil.h"
@@ -25,9 +24,7 @@ namespace volumeshOS::Internal
         {
             int id = mesh.get_id();
             ImGui::PushID(id);
-            // name is "Mesh" with unique ID
-            std::string str = "Mesh " + std::to_string(id);
-            ImGui::RadioButton(str.c_str(),&active_mesh_id, id);
+            ImGui::RadioButton(mesh.get_name().c_str(), &active_mesh_id, id);
             // if radiobutton is double-clicked, set actual mesh in focus
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {

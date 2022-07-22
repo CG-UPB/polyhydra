@@ -56,6 +56,7 @@ namespace volumeshOS::Internal
         // Other
         bool visible                = true;
         int selection_id_offset     = 0;
+        std::string name            = "default";
     };
 
     class MeshObject
@@ -177,17 +178,6 @@ namespace volumeshOS::Internal
             return m_data;
         }
 
-
-        void set_mesh_name(const std::string &name)
-        {
-            m_mesh_name = name;
-        }
-
-        std::string get_mesh_name()
-        {
-            return m_mesh_name;
-        }
-
         [[nodiscard]] std::shared_ptr<MeshVertexBuffer> get_mvb() const;
 
         [[nodiscard]] int get_num_visible_vertices() const;
@@ -231,8 +221,6 @@ namespace volumeshOS::Internal
         std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> m_mesh;
 
         const int key_multiplier = 1000000;
-
-        std::string m_mesh_name = "default";
 
         bool m_just_locked;
 

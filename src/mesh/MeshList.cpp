@@ -6,13 +6,7 @@ namespace volumeshOS::Internal
     MeshList::MeshList()
     {
         m_total_meshes = 0;
-        m_id_count = 0;
         m_focused_mesh = -1;
-    }
-
-    MeshID MeshList::next_id()
-    {
-        return m_id_count++;
     }
 
     void MeshList::add_mesh(MeshID mesh_id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
@@ -20,7 +14,6 @@ namespace volumeshOS::Internal
 
         auto new_mesh = std::make_shared<MeshObject>(mesh_id);
         //int x = mesh->n_vertices();
-        new_mesh->set_mesh_name("test");
         new_mesh->set_mesh(mesh);
 
         // add mesh and its id to our list
@@ -273,6 +266,13 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
+    void MeshList::set_name(MeshID id, const std::string& name)
+    {
+        auto f = [name](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().name = name;
+        };
+        execute_for_mesh(f, id);
+    }
 
     void MeshList::set_color(const Color& color)
     {
@@ -428,6 +428,11 @@ namespace volumeshOS::Internal
         return get_mesh(id)->is_element_selected(cell.idx(), EntityType::Cell);
     }
 
+    const std::string& MeshList::get_name(MeshID id)
+    {
+        return get_mesh(id)->get_data().name;
+    }
+
     Color MeshList::get_color(const MeshID id)
     {
         return get_mesh(id)->get_data().color;
@@ -498,7 +503,5 @@ namespace volumeshOS::Internal
     {
         return m_mesh_list.find(id) != m_mesh_list.end() ? m_mesh_list[id] : nullptr;
     }
-
-
 
 };

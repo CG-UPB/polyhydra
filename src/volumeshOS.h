@@ -61,16 +61,16 @@ namespace volumeshOS
     /* VMesh manipulation */
 
     // Add mesh from ovm instance, return new wrapper
-    [[nodiscard]] VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);
+    [[nodiscard]] VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance, const char* name = nullptr);
 
     // Add mesh from file path, return new wrapper
-    [[nodiscard]] VMesh load(const std::string& path);
+    [[nodiscard]] VMesh load(const std::string& path, const char* name = nullptr);
 
     // Add mesh from file path, return new wrapper
-    [[nodiscard]] VMesh load(const char* path);
+    [[nodiscard]] VMesh load(const char* path, const char* name = nullptr);
 
     // Add mesh from file path, return new wrapper
-    [[nodiscard]] VMesh load_from_dialog(const std::string& title);
+    [[nodiscard]] VMesh load_from_dialog(const std::string& title, const char* name = nullptr);
 
 
     // Set mesh from ovm instance without generating a new id
@@ -137,6 +137,13 @@ namespace volumeshOS
 
     // Returns the color of a vertex from a given mesh
     [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex);
+
+
+    // Set name of a mesh
+    void set_name(const VMesh& mesh, const std::string& name);
+
+    // Returns the name of a mesh
+    [[nodiscard]] const std::string& get_name(const VMesh& mesh);
 
 
     // Select one cell of a mesh
@@ -621,6 +628,12 @@ namespace volumeshOS
             volumeshOS::hide(*this, cell);
         }
 
+        // Set the name of a mesh
+        inline void set_name(const std::string& name) const
+        {
+            volumeshOS::set_name(*this, name);
+        }
+
 
         // Returns the ambient term for the phong lighting model of a mesh
         [[nodiscard]] inline float get_ambient() const
@@ -715,6 +728,12 @@ namespace volumeshOS
         [[nodiscard]] inline bool get_visibility() const
         {
             return volumeshOS::get_visibility(*this);
+        }
+
+        // Returns the name of the mesh
+        [[nodiscard]] inline const std::string& get_name() const
+        {
+            return volumeshOS::get_name(*this);
         }
 
         // Returns true if the mesh is a valid handle
