@@ -29,6 +29,7 @@ namespace volumeshOS::Internal
         // select mesh as currently focused (for settings and camera)
         set_focused_mesh(mesh_id);
 
+
         // calculate the range of the selection ids per mesh
         calculate_selection_offsets();
 

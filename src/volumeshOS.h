@@ -300,7 +300,7 @@ namespace volumeshOS
     void set_camera_mode(Mode mode);
 
     // Set the camera view direction to point to a given mesh
-    void focus(const VMesh& mesh);
+    void focus_camera(const VMesh& mesh);
 
 
     /* Global settings */

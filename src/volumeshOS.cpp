@@ -136,8 +136,8 @@ namespace volumeshOS
         VMesh vmesh(id);
         commands.emplace_back([id, instance]{
             mesh_list->add_mesh(id, instance);
-            focus(VMesh(id));
         });
+        focus_camera(VMesh(id));
         return vmesh;
     }
 
@@ -146,8 +146,9 @@ namespace volumeshOS
         int id = mesh_list->next_id();
         VMesh vmesh(id);
         commands.emplace_back([id, path]{
-            mesh_list->add_mesh(0, path);
+            mesh_list->add_mesh(id, path);
         });
+        focus_camera(VMesh(id));
         return vmesh;
     }
 
@@ -158,6 +159,7 @@ namespace volumeshOS
         commands.emplace_back([id, path]{
             mesh_list->add_mesh(id, path);
         });
+        focus_camera(VMesh(id));
         return vmesh;
     }
 
@@ -472,6 +474,7 @@ namespace volumeshOS
         commands.emplace_back([mesh](){
             mesh_list->set_focused_mesh(mesh.get_id());
         });
+        focus_camera(mesh);
     }
 
     void get_focused_mesh(const VMesh& mesh)
@@ -531,15 +534,15 @@ namespace volumeshOS
         });
     }
 
-    void focus(const VMesh& mesh)
+    void focus_camera(const VMesh& mesh)
     {
-        if(auto mesh_obj = mesh_list->get_mesh(mesh.get_id()))
-        {
-            auto pos = mesh_obj->get_data().position;
-            commands.emplace_back([pos](){
-                camera->look_at(pos);
-            });
-        }
+        commands.emplace_back([mesh]{
+            if(auto mesh_obj = mesh_list->get_mesh(mesh.get_id()))
+            {
+                auto pos = mesh_obj->get_data().position;
+                camera->animated_look_at(pos);
+            }
+        });
     }
 
     void export_image()

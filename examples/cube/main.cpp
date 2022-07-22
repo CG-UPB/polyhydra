@@ -13,6 +13,7 @@ int main()
         if (ImGui::Button("Run Algorithm") && mesh.is_valid())
         {
             volumeshOS::log("Running algorithm");
+            volumeshOS::focus_camera(mesh);
         }
         ImGui::End();
     });

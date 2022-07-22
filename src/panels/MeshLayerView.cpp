@@ -30,6 +30,7 @@ namespace volumeshOS::Internal
             if(ImGui::RadioButton(str.c_str(),&active_mesh_id, id))
             {
                 volumeshOS::set_focused_mesh(VMesh(active_mesh_id));
+                volumeshOS::focus_camera(VMesh(active_mesh_id));
             }
 
             Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active now. The filter functions of "
