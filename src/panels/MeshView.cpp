@@ -176,6 +176,8 @@ namespace volumeshOS::Internal
         if (!anything_hovered || !ImGui::IsWindowHovered())
         {
             renderer->passes.selection_hover_pass->hover(nullptr, SELECTION_TYPE_NONE, 0);
+            m_hovered_element_type = SELECTION_TYPE_NONE;
+            m_hovered_element_ovm_id = -1;
         }
     }
 
@@ -213,15 +215,7 @@ namespace volumeshOS::Internal
         ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
         ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
         ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
-
-        // Show hovered element type and id
-        if (AppState::settings.selection_active)
-        {
-            std::string element_name = SELECTION_TYPE_NAME[m_hovered_element_type];
-            element_name += " : " + std::to_string(m_hovered_element_ovm_id);
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text( "%s", element_name.c_str());
-        }
+        float y_pos = ImGui::GetCursorPosY();
 
         // display mesh loading percentage
         const auto mesh = renderer->mesh_list->get_focused_mesh();
@@ -238,7 +232,7 @@ namespace volumeshOS::Internal
                         std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
                 );
             }
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, y_pos});
             ImGui::Text("vertices: %zu", mesh->get_ovm()->n_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
             ImGui::Text("edges: %zu",mesh->get_ovm()->n_edges());
@@ -246,6 +240,15 @@ namespace volumeshOS::Internal
             ImGui::Text("faces: %zu", mesh->get_ovm()->n_faces());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
             ImGui::Text("cells: %zu", mesh->get_ovm()->n_cells());
+        }
+
+        // Show hovered element type and id
+        if (AppState::settings.selection_active && m_hovered_element_type != SELECTION_TYPE_NONE)
+        {
+            std::string element_name = SELECTION_TYPE_NAME[m_hovered_element_type];
+            element_name += " : " + std::to_string(m_hovered_element_ovm_id);
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text( "%s", element_name.c_str());
         }
 
         ImGui::End();
