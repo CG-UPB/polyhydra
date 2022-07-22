@@ -49,7 +49,7 @@ namespace volumeshOS::Internal
 
             // volumeshOS Operations
             glm::vec3 view_dir = -glm::normalize(cam->get_front());
-            auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
+            auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
             glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
             //glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
@@ -70,8 +70,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
             m_mesh_shader->set_uniform_vec3f("u_min", mesh->get_world_bb(view_transform).first);
             m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
-            m_mesh_shader->set_uniform_vec3f("u_slice_direction", mesh->get_slice_dir(view_transform, -glm::normalize(
-                    cam->get_front())));
+            m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
             m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
             m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);

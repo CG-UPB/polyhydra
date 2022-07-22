@@ -164,7 +164,7 @@ namespace volumeshOS::Internal
 
         std::pair<glm::vec3, glm::vec3> &get_world_bb(const glm::mat4 &transform);
 
-        glm::vec3 &get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir);
+        glm::vec3 &get_slice_dir(const glm::mat4 &world_transform, const glm::vec3 &view_dir);
 
         MeshData& get_data()
         {

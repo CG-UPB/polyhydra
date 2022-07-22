@@ -42,7 +42,7 @@ namespace volumeshOS::Internal
 
             // volumeshOS Operations
             glm::vec3 view_dir = -glm::normalize(renderer.camera->get_front());
-            auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
+            auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
             glm::vec3 cam_pos(renderer.camera->view * glm::vec4(renderer.camera->position, 1.0));
             glm::vec3 light_pos(renderer.camera->view * glm::vec4(renderer.light.position, 1.0));

@@ -498,19 +498,19 @@ namespace volumeshOS::Internal
     }
 
 
-    glm::vec3& MeshObject::get_slice_dir(const glm::mat4& view_transform, const glm::vec3& view_dir)
+    glm::vec3& MeshObject::get_slice_dir(const glm::mat4& world_transform, const glm::vec3& view_dir)
     {
         if (!m_data.slice_locked)
         {
             m_just_locked = true;
-            m_slice_dir = glm::vec3(glm::inverse(view_transform) * glm::vec4(view_dir, 1.0f));
+            m_slice_dir = glm::vec3(glm::inverse(world_transform) * glm::vec4(view_dir, 0.0f));
         }
         else
         {
             if (m_just_locked)
             {
                 m_just_locked = false;
-                m_slice_dir = glm::vec3(glm::inverse(view_transform) * glm::vec4(view_dir, 1.0f));
+                m_slice_dir = glm::vec3(glm::inverse(m_data.get_transform()) * glm::vec4(view_dir, 0.0f));
             }
         }
         return m_slice_dir;

@@ -110,7 +110,7 @@ namespace volumeshOS::Internal
 
                 // volumeshOS Operations
                 glm::vec3 view_dir = -glm::normalize(cam->get_front());
-                auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
+                auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
                 // Shader uniforms
                 m_shadow_shader->set_uniform_float("u_cell_size", cell_size);

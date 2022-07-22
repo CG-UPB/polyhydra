@@ -100,7 +100,7 @@ namespace volumeshOS::Internal
 
         // volumeshOS Operations
         glm::vec3 view_dir = -glm::normalize(renderer.camera->get_front());
-        auto slice_direction = mesh->get_slice_dir(view_transform, view_dir);
+        auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
         // Get SelectionMode Mode
         // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
