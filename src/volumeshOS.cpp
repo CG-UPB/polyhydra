@@ -21,6 +21,7 @@ namespace volumeshOS
     static std::unique_ptr<Internal::Window> window        = nullptr;
     static std::shared_ptr<Internal::MeshList> mesh_list   = nullptr;
     static std::shared_ptr<Internal::Camera> camera        = nullptr;
+    static int current_mesh_id                             = 0;
 
     void initialize()
     {
@@ -36,6 +37,11 @@ namespace volumeshOS
         mesh_list = nullptr;
         window->clean_up();
         window = nullptr;
+    }
+
+    int next_id()
+    {
+        return current_mesh_id++;
     }
 
     void execute_commands()
@@ -130,44 +136,68 @@ namespace volumeshOS
     }
 
 
-    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
+    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance, const char* name)
     {
-        int id = mesh_list->next_id();
+        int id = next_id();
         VMesh vmesh(id);
-        commands.emplace_back([id, instance]{
+        commands.emplace_back([id, instance, name]{
             mesh_list->add_mesh(id, instance);
+            if (name != nullptr)
+            {
+                mesh_list->set_name(id, name);
+            }
         });
         focus_camera(VMesh(id));
         return vmesh;
     }
 
-    VMesh load(const std::string& path)
+    VMesh load(const std::string& path, const char* name)
     {
-        int id = mesh_list->next_id();
+        int id = next_id();
         VMesh vmesh(id);
-        commands.emplace_back([id, path]{
+        commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
+            if (name != nullptr)
+            {
+                mesh_list->set_name(id, name);
+            }
+            else
+            {
+                FS_NAMESPACE::path file_path(path);
+                auto file_name = file_path.stem().filename().string();
+                mesh_list->set_name(id, file_name);
+            }
         });
         focus_camera(VMesh(id));
         return vmesh;
     }
 
-    VMesh load(const char* path)
+    VMesh load(const char* path, const char* name)
     {
-        int id = mesh_list->next_id();
+        int id = next_id();
         VMesh vmesh(id);
-        commands.emplace_back([id, path]{
+        commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
+            if (name != nullptr)
+            {
+                mesh_list->set_name(id, name);
+            }
+            else
+            {
+                FS_NAMESPACE::path file_path(path);
+                auto file_name = file_path.stem().filename().string();
+                mesh_list->set_name(id, file_name);
+            }
         });
         focus_camera(VMesh(id));
         return vmesh;
     }
 
-    VMesh load_from_dialog(const std::string& title)
+    VMesh load_from_dialog(const std::string& title, const char* name)
     {
         if (auto file = volumeshOS::file_dialog(title))
         {
-            return volumeshOS::load(file);
+            return volumeshOS::load(file, name);
         }
         return VMesh(-1);
     }
@@ -286,6 +316,13 @@ namespace volumeshOS
         });
     }
     */
+
+    void set_name(const VMesh& mesh, const std::string& name)
+    {
+        commands.emplace_back([mesh, name]{
+            mesh_list->set_name(mesh.get_id(), name);
+        });
+    }
 
     void select(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
     {
@@ -682,5 +719,10 @@ namespace volumeshOS
         return mesh_list->get_color(mesh.get_id(), vertex);
     }
     */
+
+    [[nodiscard]] const std::string& get_name(const VMesh& mesh)
+    {
+        return mesh_list->get_name(mesh.get_id());
+    }
 
 }

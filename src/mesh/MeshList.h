@@ -138,6 +138,9 @@ namespace volumeshOS::Internal
         // Hide a cell of a mesh
         void hide(MeshID id, OpenVolumeMesh::CellHandle cell);
 
+        // Set the name of a mesh
+        void set_name(MeshID id, const std::string& name);
+
 
         /* Getter */
 
@@ -189,6 +192,9 @@ namespace volumeshOS::Internal
         // Returns the visibility of the mesh
         bool get_visibility(MeshID id);
 
+        // Returns the name of a mesh
+        const std::string& get_name(MeshID id);
+
         // Returns the color of the mesh
         Color get_color(MeshID id);
 
@@ -225,9 +231,6 @@ namespace volumeshOS::Internal
 
         // number of total meshes
         int m_total_meshes;
-
-        // id counter
-        int m_id_count;
 
         // id of the focused mesh
         MeshID m_focused_mesh;
