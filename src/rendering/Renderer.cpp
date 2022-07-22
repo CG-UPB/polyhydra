@@ -304,18 +304,19 @@ namespace volumeshOS::Internal
                 camera->handle_key_movement(Input::get_wasd_movement_vector());
             }
 
-            if (Input::key_pressed(Input::SWITCH_CAMERA_MODE))
+            if(ImGui::IsWindowFocused())
             {
-                glm::vec3 new_target = camera->target;
-                if (auto mesh = mesh_list->get_focused_mesh())
+                if (Input::key_pressed(Input::SWITCH_CAMERA_MODE))
                 {
-                    new_target = mesh->get_data().position;
+                    glm::vec3 new_target = camera->target;
+                    if (auto mesh = mesh_list->get_focused_mesh())
+                    {
+                        new_target = mesh->get_data().position;
+                    }
+                    camera->switch_mode(new_target);
                 }
-                camera->switch_mode(new_target);
             }
-
         }
-
         camera->update();
     }
 

@@ -145,10 +145,15 @@ namespace volumeshOS::Internal
                 // Mesh transformations, such as position and scale
                 auto pos = active_mesh.get_position();
                 auto scl = active_mesh.get_scale();
+                auto rot = active_mesh.get_rotation();
                 m_mesh_position[0] = pos[0];
                 m_mesh_position[1] = pos[1];
                 m_mesh_position[2] = pos[2];
                 m_mesh_scale = scl;
+                m_mesh_rotation[0] = glm::degrees(rot[0]);
+                m_mesh_rotation[1] = glm::degrees(rot[1]);
+                m_mesh_rotation[2] = glm::degrees(rot[2]);
+
 
                 ImGui::Text("Position");
                 ImGui::SameLine();
@@ -185,6 +190,35 @@ namespace volumeshOS::Internal
                 ImGui::PopID();
 
                 ImGui::Separator();
+
+                ImGui::Text("Rotation");
+                ImGui::SameLine();
+                Tooltips::HelpMarkerWithQuestionMark("Adjust the mesh rotation");
+                ImGui::SetNextItemWidth(slider_width - 50.0f);
+                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                if (ImGui::DragFloat3("##Rotation", m_mesh_rotation, 1.0f, -180.0f, 180.0f, "%.1f"))
+                {
+                    auto x = (m_mesh_rotation[0] + 180.0f) - glm::degrees(rot[0]) + 180.0f;
+                    auto y = (m_mesh_rotation[1] + 180.0f) - glm::degrees(rot[1]) + 180.0f;
+                    auto z = (m_mesh_rotation[2] + 180.0f) - glm::degrees(rot[2]) + 180.0f;
+                    auto epsilon = 0.01;
+
+                    if(x >= epsilon || y >= epsilon || z >= epsilon)
+                    {
+                        active_mesh.set_rotation(glm::radians(x), glm::radians(y), glm::radians(z));
+                    }
+
+                }
+                ImGui::SameLine();
+                ImGui::PushID("RotationReset");
+                if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
+                {
+                    active_mesh.reset_rotation();
+                }
+                ImGui::PopID();
+
+                ImGui::Separator();
+
 
                 // Mesh Filters
                 ImGui::Text("Slicer");

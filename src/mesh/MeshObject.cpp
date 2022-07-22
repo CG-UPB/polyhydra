@@ -554,6 +554,12 @@ namespace volumeshOS::Internal
         m_data.update_transform();
     }
 
+    void MeshObject::reset_rotation()
+    {
+        m_data.rotation = glm::mat4(1.0f);
+        m_data.update_transform();
+    }
+
     void MeshData::update_transform()
     {
         auto scaling = glm::scale(glm::mat4(1.0f), scale * scale_normalization);

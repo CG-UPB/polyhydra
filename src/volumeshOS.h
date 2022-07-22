@@ -205,6 +205,9 @@ namespace volumeshOS
     // Set the rotation of a mesh using euler angles
     void set_rotation(const VMesh& mesh, float x, float y, float z);
 
+    // Resets the rotation of a mesh
+    void reset_rotation(const VMesh& mesh);
+
     // Set the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
     void set_slice_factor(const VMesh& mesh, float factor);
 
@@ -560,6 +563,11 @@ namespace volumeshOS
         inline void set_rotation(float x, float y, float z) const
         {
             volumeshOS::set_rotation(*this, x, y, z);
+        }
+
+        inline void reset_rotation() const
+        {
+            volumeshOS::reset_rotation(*this);
         }
 
         // Set the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)

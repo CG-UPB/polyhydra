@@ -108,6 +108,9 @@ namespace volumeshOS::Internal
         // Set the rotation of a mesh using euler angles
         void set_rotation(MeshID id, float x, float y, float z);
 
+        // Resets rotation
+        void reset_rotation(MeshID id);
+
         // Set the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
         void set_slice_factor(MeshID id, float factor);
 

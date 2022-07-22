@@ -450,6 +450,13 @@ namespace volumeshOS
         });
     }
 
+    void reset_rotation(const VMesh& mesh)
+    {
+        commands.emplace_back([mesh]{
+            mesh_list->reset_rotation(mesh.get_id());
+        });
+    }
+
     void set_slice_factor(const VMesh& mesh, const float level)
     {
         commands.emplace_back([mesh, level]{

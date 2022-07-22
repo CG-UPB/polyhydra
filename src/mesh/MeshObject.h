@@ -38,7 +38,7 @@ namespace volumeshOS::Internal
         float cell_size             = 1.0f;
         bool slice_locked           = false;
         bool rounding_active        = true;
-        float rounding_size         = 0.1f;
+        float rounding_size         = 0.2f;
 
         // Transform Variables
         glm::vec3 position          = {0.0f, 0.0f, 0.0f};
@@ -193,6 +193,8 @@ namespace volumeshOS::Internal
         void scale(const glm::vec3& vec);
 
         void rotate(float angle, const glm::vec3& axis);
+
+        void reset_rotation();
 
     private:
         /**
