@@ -94,7 +94,7 @@ namespace volumeshOS::Internal
 
         // settings
         m_ground_shader->set_uniform_bool("u_draw_shadows", settings.shadows_active);
-        m_ground_shader->set_uniform_bool("u_draw_ao", settings.ssao_active);
+        m_ground_shader->set_uniform_bool("u_draw_ao",  false);
 
         // input textures
         m_ground_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,

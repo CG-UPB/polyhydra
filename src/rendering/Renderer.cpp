@@ -122,6 +122,7 @@ namespace volumeshOS::Internal
             {
                 passes.background_pass->render(*this);
             }
+
             passes.mesh_pass->render(*this);
             passes.ground_pass->render(*this);
 
