@@ -34,7 +34,7 @@ uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
-uniform mat4 u_light_transform;
+mat4 u_light_transform;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;

@@ -8,6 +8,7 @@
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/BackgroundPass.h"
+#include "../rendering/passes/GroundPass.h"
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
@@ -69,6 +70,7 @@ namespace volumeshOS::Internal
         struct
         {
             std::shared_ptr<BackgroundPass> background_pass             = nullptr;
+            std::shared_ptr<GroundPass> ground_pass                     = nullptr;
             std::shared_ptr<PrePass> pre_pass                           = nullptr;
             std::shared_ptr<ShadowMapPass> shadow_pass                  = nullptr;
             std::shared_ptr<MeshPass> mesh_pass                         = nullptr;

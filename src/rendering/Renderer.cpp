@@ -24,6 +24,7 @@ namespace volumeshOS::Internal
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
 
         passes.background_pass = std::make_shared<BackgroundPass>();
+        passes.ground_pass = std::make_shared<GroundPass>();
         passes.pre_pass = std::make_shared<PrePass>(width, height);
         passes.shadow_pass = std::make_shared<ShadowMapPass>(width * 2, height * 2);
         passes.mesh_pass = std::make_shared<MeshPass>();
@@ -121,8 +122,9 @@ namespace volumeshOS::Internal
             {
                 passes.background_pass->render(*this);
             }
-
             passes.mesh_pass->render(*this);
+            passes.ground_pass->render(*this);
+
 
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
