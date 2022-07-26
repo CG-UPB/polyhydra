@@ -13,17 +13,6 @@ namespace volumeshOS::Internal
 
         GroundPass();
 
-        /**
-         * Sets the background color
-         * @param color
-         */
-        void set_ground_color(const glm::vec4& color);
-        /**
-         * Returns current background color
-         * @return
-         */
-        [[nodiscard]] const glm::vec4& get_ground_color() const;
-
         void render(const Renderer& renderer) override;
 
     private:

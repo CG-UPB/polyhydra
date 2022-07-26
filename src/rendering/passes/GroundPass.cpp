@@ -15,7 +15,8 @@ namespace volumeshOS::Internal
         // Create plane mesh
         m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices(100.0f, 100.0f, -5.0f),
                                                     CommonMeshes::PlaneXZ::indices());
-        m_vao->add_attribute(CommonMeshes::PlaneXZ::normals(), 1, 2);
+        m_vao->add_attribute(CommonMeshes::PlaneXZ::normals(), 1, 3);
+        m_vao->add_attribute(CommonMeshes::PlaneXZ::uvs(), 2, 2);
         m_ground_shader = Shader::get("ground");;
     }
 
@@ -27,10 +28,8 @@ namespace volumeshOS::Internal
         auto& settings = AppState::settings;
 
         glDisable(GL_CULL_FACE);
-//        glFrontFace(GL_CW);
-
-        glDisable(GL_BLEND);
-
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
@@ -118,13 +117,4 @@ namespace volumeshOS::Internal
 
     }
 
-    void GroundPass::set_ground_color(const glm::vec4& color)
-    {
-        m_top_color = color;
-    }
-
-    const glm::vec4& GroundPass::get_ground_color() const
-    {
-        return m_top_color;
-    }
 }

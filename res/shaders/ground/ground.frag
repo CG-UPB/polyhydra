@@ -4,6 +4,7 @@ const int MAX_CASCADE_LEVEL = 8;
 
 in vec3 v_pos;
 in vec3 v_normal;
+in vec2 v_uv;
 in vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 in float v_clipspace_z;
 
@@ -159,5 +160,21 @@ void main()
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
     vec3 result = (ambient + (1.0 - shadow + 0.2) * (diffuse + specular)) / norm * used_color;
 
-    FragColor = vec4(result, 1.0);
+
+    //vec2 coord = (mat3(transpose(inverse(u_view))) * v_pos).xz;
+    vec2 coord = v_uv * 50.0;
+
+    vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+    float line = min(grid.x, grid.y);
+
+    float color = min(line, 1.0);
+    color = pow(color, 1.0 / 2.2);
+
+    //FragColor = vec4(grid, grid, grid, 1.0);
+    float alpha = 0.8;
+    if(color == 1.0)
+    {
+        alpha = 0.0;
+    }
+    FragColor = vec4(vec3(color), alpha);
 }

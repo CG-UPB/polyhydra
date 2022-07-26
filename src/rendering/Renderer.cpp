@@ -124,6 +124,7 @@ namespace volumeshOS::Internal
             }
 
             passes.mesh_pass->render(*this);
+
             passes.ground_pass->render(*this);
 
 

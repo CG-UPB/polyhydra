@@ -21,6 +21,7 @@ const ivec4 lookup[8] = ivec4[](
 in vec3 v_Pos[3];
 in vec3 v_Normal[3];
 in vec4 v_Color[3];
+in vec2 v_UV[3];
 in mat4 v_LightSpacePos0[3];
 in mat4 v_LightSpacePos1[3];
 flat in int v_Visible[3];
@@ -31,6 +32,7 @@ uniform mat4 u_view;
 
 out vec3 v_pos;
 out vec3 v_normal;
+out vec2 v_uv;
 out vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 flat out int v_visible;
 out float v_clipspace_z;
@@ -48,11 +50,12 @@ void set_light_space_pos(int vertex_index)
     v_pos_ls[7] = v_LightSpacePos1[vertex_index][3];
 }
 
-void vertex(vec4 screen_pos, vec3 pos, vec3 normal)
+void vertex(vec4 screen_pos, vec3 pos, vec3 normal, vec2 uv)
 {
     gl_Position = screen_pos;
     v_pos = pos;
     v_normal = normal;
+    v_uv = uv;
     v_clipspace_z = screen_pos.z;
     EmitVertex();
 }
@@ -73,13 +76,13 @@ void main()
 
 
     set_light_space_pos(0);
-    vertex(screen_pos0, viewspace_pos0.xyz, v_Normal[0]);
+    vertex(screen_pos0, viewspace_pos0.xyz, v_Normal[0], v_UV[0]);
 
     set_light_space_pos(1);
-    vertex(screen_pos1, viewspace_pos1.xyz, v_Normal[1]);
+    vertex(screen_pos1, viewspace_pos1.xyz, v_Normal[1], v_UV[1]);
 
     set_light_space_pos(2);
-    vertex(screen_pos2, viewspace_pos2.xyz, v_Normal[2]);
+    vertex(screen_pos2, viewspace_pos2.xyz, v_Normal[2], v_UV[2]);
 
     EndPrimitive();
 }
