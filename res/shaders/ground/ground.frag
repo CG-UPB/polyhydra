@@ -142,20 +142,21 @@ void main()
 
     if(u_grid)
     {
-        vec2 coord = v_uv * 50.0;
+        vec2 coord = v_uv * 200.0;
 
-        vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+        vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord) * 0.9;
         float line = min(grid.x, grid.y);
 
         float col = min(line, 1.0);
         col = pow(col, 1.0 / 1.2);
 
-        //FragColor = vec4(grid, grid, grid, 1.0);
+        color = color - col * vec3(1.0 - color.x, 1.0 - color.y, 1.0 - color.z);
+        alpha = 1.0 - col;
         if(col == 1.0)
         {
-            alpha = 0.0;
+            discard;
         }
-        color = color + col * vec3(1.0 - color.x, 1.0 - color.y, 1.0 - color.z);
+
 
     }else
     {
@@ -178,7 +179,7 @@ void main()
         vec3 specular = u_spec_strength * spec * light_color;
 
         float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-        color = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+        color = (1.0 - shadow * 0.5) * color;
     }
 
     FragColor = vec4(color, alpha);

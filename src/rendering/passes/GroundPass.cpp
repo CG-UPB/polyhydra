@@ -8,12 +8,10 @@
 namespace volumeshOS::Internal
 {
 
-    GroundPass::GroundPass() :
-            m_top_color(glm::vec4(0.5, 0.5, 0.0, 1.0)),
-            m_bottom_color(glm::vec4(0.4, 0.4, 0.0, 1.0))
+    GroundPass::GroundPass()
     {
         // Create plane mesh
-        m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices(300.0f, 300.0f, -5.0f),
+        m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices(1000.0f, 1000.0f, -5.0f),
                                                     CommonMeshes::PlaneXZ::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXZ::normals(), 1, 3);
         m_vao->add_attribute(CommonMeshes::PlaneXZ::uvs(), 2, 2);

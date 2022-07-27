@@ -17,11 +17,6 @@ namespace volumeshOS::Internal
 
     private:
 
-        // Rendering Variables
-
-        // Colors
-        glm::vec4 m_top_color;
-        glm::vec4 m_bottom_color;
         // A simple plane mesh that is always visible but behind all other objects
         std::unique_ptr<VertexArrayObject> m_vao;
         // Simple gradient shader
