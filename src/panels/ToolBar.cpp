@@ -124,6 +124,33 @@ namespace volumeshOS::Internal
             m_previous_manual_selection_id = m_manual_selection_id;
             m_previous_manual_selection_type = m_manual_selection_type;
         }
+        ImGui::Separator();
+        ImGuiUtil::push_bold_font();
+        ImGui::Text("Grid");
+        ImGui::PopFont();
+
+        bool visible = AppState::settings.ground_options.visible;
+        bool grid = AppState::settings.ground_options.grid;
+        glm::vec3 ground_color = AppState::settings.ground_options.color;
+        float new_color[4];
+        new_color[0] = ground_color.r;
+        new_color[1] = ground_color.g;
+        new_color[2] = ground_color.b;
+        if(ImGui::ColorEdit3("Ground Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        {
+            ground_color = glm::vec3(new_color[0], new_color[1], new_color[2]);
+            AppState::settings.ground_options.color = ground_color;
+        }
+        if(ImGui::Checkbox("visible", &visible))
+        {
+            AppState::settings.ground_options.visible = visible;
+        }
+
+        if(ImGui::Checkbox("grid", &grid))
+        {
+            AppState::settings.ground_options.grid = grid;
+        }
+
 
         auto active_mesh = volumeshOS::get_focused_mesh();
 

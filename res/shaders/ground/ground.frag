@@ -8,6 +8,10 @@ in vec2 v_uv;
 in vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 in float v_clipspace_z;
 
+uniform bool u_visible;
+uniform bool u_grid;
+uniform vec3 u_color;
+uniform float u_height;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
@@ -31,9 +35,6 @@ uniform int u_viewport_height;
 uniform float u_bias_min;
 uniform float u_bias_max;
 uniform float u_bias_modifier;
-
-uniform bool u_visible;
-
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
@@ -136,45 +137,49 @@ void main()
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
     }
 
-    // Phong Shading
-    vec3 used_color = vec3(0.7, 0.7, 0.7);
+    vec3 color = u_color;
+    float alpha = 1.0;
 
-    //ambient
-    float ao_factor = 1.0;
-    if(u_draw_ao)
+    if(u_grid)
     {
-        ao_factor = texture(u_ssao_texture, uv).r;
-    }
-    vec3 ambient = u_ambient_strength * light_color * ao_factor;
+        vec2 coord = v_uv * 50.0;
 
-    //diffuse
-    float diff = max(0.0, dot(l, n));
-    vec3 diffuse = u_diffuse_strength * diff * light_color;
+        vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+        float line = min(grid.x, grid.y);
 
-    //specular
-    vec3 v = normalize(u_cam_pos - v_pos);
-    vec3 r = reflect(-l, n);
-    float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
-    vec3 specular = u_spec_strength * spec * light_color;
+        float col = min(line, 1.0);
+        col = pow(col, 1.0 / 1.2);
 
-    float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-    vec3 result = (ambient + (1.0 - shadow + 0.2) * (diffuse + specular)) / norm * used_color;
+        //FragColor = vec4(grid, grid, grid, 1.0);
+        if(col == 1.0)
+        {
+            alpha = 0.0;
+        }
+        color = color + col * vec3(1.0 - color.x, 1.0 - color.y, 1.0 - color.z);
 
-
-    //vec2 coord = (mat3(transpose(inverse(u_view))) * v_pos).xz;
-    vec2 coord = v_uv * 50.0;
-
-    vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
-    float line = min(grid.x, grid.y);
-
-    float color = min(line, 1.0);
-    color = pow(color, 1.0 / 2.2);
-
-    //FragColor = vec4(grid, grid, grid, 1.0);
-    float alpha = 0.8;
-    if(color == 1.0)
+    }else
     {
-        alpha = 0.0;
+        //ambient
+        float ao_factor = 1.0;
+        if(u_draw_ao)
+        {
+            ao_factor = texture(u_ssao_texture, uv).r;
+        }
+        vec3 ambient = u_ambient_strength * light_color * ao_factor;
+
+        //diffuse
+        float diff = max(0.0, dot(l, n));
+        vec3 diffuse = u_diffuse_strength * diff * light_color;
+
+        //specular
+        vec3 v = normalize(u_cam_pos - v_pos);
+        vec3 r = reflect(-l, n);
+        float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
+        vec3 specular = u_spec_strength * spec * light_color;
+
+        float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
+        color = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
     }
-    FragColor = vec4(vec3(color), alpha);
+
+    FragColor = vec4(color, alpha);
 }

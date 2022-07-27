@@ -13,7 +13,7 @@ namespace volumeshOS::Internal
             m_bottom_color(glm::vec4(0.4, 0.4, 0.0, 1.0))
     {
         // Create plane mesh
-        m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices(100.0f, 100.0f, -5.0f),
+        m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices(300.0f, 300.0f, -5.0f),
                                                     CommonMeshes::PlaneXZ::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXZ::normals(), 1, 3);
         m_vao->add_attribute(CommonMeshes::PlaneXZ::uvs(), 2, 2);
@@ -26,13 +26,19 @@ namespace volumeshOS::Internal
         renderer.buffers.target_framebuffer_ms->bind();
 
         auto& settings = AppState::settings;
+        auto ground_options = settings.ground_options;
 
         glDisable(GL_CULL_FACE);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
+
+        if(settings.ground_options.grid)
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendEquation(GL_FUNC_ADD);
+        }
 
 
         m_ground_shader->bind();
@@ -52,6 +58,11 @@ namespace volumeshOS::Internal
 
 
         // Shader uniforms
+        m_ground_shader->set_uniform_bool("u_visible", ground_options.visible);
+        m_ground_shader->set_uniform_bool("u_grid", ground_options.grid);
+        m_ground_shader->set_uniform_vec3f("u_color", ground_options.color);
+        m_ground_shader->set_uniform_float("u_height", ground_options.height);
+
         m_ground_shader->set_uniform_mat4f("u_transform", transform);
         m_ground_shader->set_uniform_mat4f("u_projection", cam->projection);
         m_ground_shader->set_uniform_mat4f("u_view", cam->view);
@@ -59,10 +70,9 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_ground_shader->set_uniform_vec3f("u_light_color", light.color);
         m_ground_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
-        m_ground_shader->set_uniform_bool("u_visible", true);
         m_ground_shader->set_uniform_float("u_spec_strength",0.3f);
         m_ground_shader->set_uniform_float("u_spec_exponent",8.0f);
-        m_ground_shader->set_uniform_float("u_ambient_strength",1.0f);
+        m_ground_shader->set_uniform_float("u_ambient_strength",0.9f);
         m_ground_shader->set_uniform_float("u_diffuse_strength", 1.0f);
 
         m_ground_shader->set_uniform_int("u_viewport_width", renderer.frame.width);

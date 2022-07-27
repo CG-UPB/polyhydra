@@ -260,6 +260,7 @@ void main()
     float shadow = 0.0;
     if (u_draw_shadows)
     {
+
         // shadow calculation
         // calculate cascade level
         int cascade_idx = -1;

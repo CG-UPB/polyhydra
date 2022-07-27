@@ -90,11 +90,6 @@ namespace volumeshOS::Internal
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         buffers.target_framebuffer_ms->unbind();
 
-//        buffers.target_framebuffer->bind();
-//        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//        buffers.target_framebuffer->unbind();
-
         // Render Meshes
         passes.pre_pass->render(*this);
 
@@ -117,6 +112,7 @@ namespace volumeshOS::Internal
             {
                 passes.shadow_pass->render(*this);
             }
+
 
             if (render_bg)
             {
