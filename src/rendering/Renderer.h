@@ -56,6 +56,7 @@ namespace volumeshOS::Internal
         Light light;
         std::vector<std::shared_ptr<MeshObject>> render_list;
         std::function<void(int, int)> selection_callback;
+        glm::vec3 hover_position = {0.0, 0.0, 0.0};
 
         // render buffers
         struct

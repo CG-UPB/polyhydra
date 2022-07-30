@@ -83,6 +83,11 @@ namespace volumeshOS::Internal
                 callbacks.on_cell_hover(VMesh(mesh->get_id()), cell);
                 m_hovered_element_type = SELECTION_TYPE_CELL;
                 m_hovered_element_ovm_id = cell.idx();
+
+                auto pos = mesh->get_ovm()->barycenter(cell);
+                renderer->hover_position[0] = pos[0];
+                renderer->hover_position[1] = pos[1];
+                renderer->hover_position[2] = pos[2];
             }
         }
         else
@@ -100,12 +105,16 @@ namespace volumeshOS::Internal
             if (face.is_valid())
             {
                 callbacks.on_face_hover(VMesh(mesh->get_id()), face);
+                auto pos = mesh->get_ovm()->barycenter(face);
+                renderer->hover_position[0] = pos[0];
+                renderer->hover_position[1] = pos[1];
+                renderer->hover_position[2] = pos[2];
             }
             callbacks.on_halfface_hover(VMesh(mesh->get_id()), halfface);
             m_hovered_element_type = SELECTION_TYPE_HALFFACE;
             m_hovered_element_ovm_id = halfface.idx();
         }
-        renderer->passes.selection_hover_pass->hover(nullptr, SELECTION_TYPE_NONE, 0);
+        renderer->passes.selection_hover_pass->hover(mesh, SELECTION_TYPE_NONE, 0);
     }
 
     void MeshView::handle_mouse_hover(int type, int picked_id)
@@ -125,6 +134,10 @@ namespace volumeshOS::Internal
                         if (vertex.is_valid())
                         {
                             handle_vertex_hover(mesh, vertex);
+                            auto pos = mesh->get_ovm()->vertex(vertex);
+                            renderer->hover_position[0] = pos[0];
+                            renderer->hover_position[1] = pos[1];
+                            renderer->hover_position[2] = pos[2];
                         }
                         else
                         {
@@ -139,6 +152,10 @@ namespace volumeshOS::Internal
                         if (edge.is_valid())
                         {
                             handle_edge_hover(mesh, edge);
+                            auto pos = mesh->get_ovm()->barycenter(edge);
+                            renderer->hover_position[0] = pos[0];
+                            renderer->hover_position[1] = pos[1];
+                            renderer->hover_position[2] = pos[2];
                         }
                         else
                         {

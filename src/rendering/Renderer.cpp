@@ -289,7 +289,7 @@ namespace volumeshOS::Internal
                         else if (mode != SelectionMode::OFF)
                         {
                             auto transform = camera->world * mesh->get_data().get_transform();
-                            auto pos_mesh_space = glm::vec4(passes.selection_hover_pass->hover_position, 1.0f);
+                            auto pos_mesh_space = glm::vec4(hover_position, 1.0f);
                             //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
                             new_target = glm::vec3(transform * pos_mesh_space);
                         }
