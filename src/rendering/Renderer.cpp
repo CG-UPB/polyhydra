@@ -24,6 +24,7 @@ namespace volumeshOS::Internal
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
 
         passes.background_pass = std::make_shared<BackgroundPass>();
+        passes.ground_pass = std::make_shared<GroundPass>();
         passes.pre_pass = std::make_shared<PrePass>(width, height);
         passes.shadow_pass = std::make_shared<ShadowMapPass>(width * 2, height * 2);
         passes.mesh_pass = std::make_shared<MeshPass>();
@@ -91,11 +92,6 @@ namespace volumeshOS::Internal
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         buffers.target_framebuffer_ms->unbind();
 
-//        buffers.target_framebuffer->bind();
-//        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//        buffers.target_framebuffer->unbind();
-
         // Render Meshes
         passes.pre_pass->render(*this);
 
@@ -106,6 +102,7 @@ namespace volumeshOS::Internal
                 passes.background_pass->render(*this);
             }
             passes.vertex_only_pass->render(*this);
+            passes.ground_pass->render(*this);
         }
         else
         {
@@ -119,12 +116,16 @@ namespace volumeshOS::Internal
                 passes.shadow_pass->render(*this);
             }
 
+
             if (render_bg)
             {
                 passes.background_pass->render(*this);
             }
 
             passes.mesh_pass->render(*this);
+
+            passes.ground_pass->render(*this);
+
 
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
@@ -213,7 +214,7 @@ namespace volumeshOS::Internal
             input.mesh_moving = false;
         }
 
-        if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
+        if (ImGui::IsWindowHovered())
         {
             if (auto mesh = mesh_list->get_focused_mesh())
             {
@@ -289,14 +290,10 @@ namespace volumeshOS::Internal
                         glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
 
                         auto mode = AppState::settings.selection_mode;
-                        if (mode == SelectionMode::ALL)
-                        {
-                            new_target = mesh->get_data().position;
-                        }
-                        else if (mode != SelectionMode::OFF)
+                        if (mode != SelectionMode::OFF)
                         {
                             auto transform = camera->world * mesh->get_data().get_transform();
-                            auto pos_mesh_space = glm::vec4(passes.selection_hover_pass->hover_position, 1.0f);
+                            auto pos_mesh_space = glm::vec4(hover_position, 1.0f);
                             //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
                             new_target = glm::vec3(transform * pos_mesh_space);
                         }

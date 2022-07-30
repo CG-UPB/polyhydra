@@ -7,6 +7,17 @@
 
 namespace volumeshOS::Internal
 {
+    struct GroundOptions
+    {
+        bool visible    = true;
+        bool grid       = true;
+        float height    = -5.0f;
+        int size        = 1000;
+        int tiles       = 200;
+        glm::vec3 color = {0.5, 0.5, 0.5};
+
+    };
+
     struct SSAOOptions
     {
         bool active         = true;
@@ -25,6 +36,7 @@ namespace volumeshOS::Internal
             SelectionMode selection_mode        = SelectionMode::OFF;
             SSAOMode ssao_mode                  = SSAOMode::QUALITY;
             SSAOOptions ssao_custom_options     = {};
+            GroundOptions ground_options        = {};
             bool shapes_active                  = true;
             bool selection_active               = false;
             bool transparency_active            = false;

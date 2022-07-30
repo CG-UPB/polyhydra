@@ -8,6 +8,7 @@
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/BackgroundPass.h"
+#include "../rendering/passes/GroundPass.h"
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
@@ -60,6 +61,7 @@ namespace volumeshOS::Internal
         Light light;
         std::vector<std::shared_ptr<MeshObject>> render_list;
         std::function<void(int, int)> selection_callback;
+        glm::vec3 hover_position = {0.0, 0.0, 0.0};
 
         // render buffers
         struct
@@ -74,6 +76,7 @@ namespace volumeshOS::Internal
         struct
         {
             std::shared_ptr<BackgroundPass> background_pass             = nullptr;
+            std::shared_ptr<GroundPass> ground_pass                     = nullptr;
             std::shared_ptr<PrePass> pre_pass                           = nullptr;
             std::shared_ptr<ShadowMapPass> shadow_pass                  = nullptr;
             std::shared_ptr<MeshPass> mesh_pass                         = nullptr;

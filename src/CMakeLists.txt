@@ -92,7 +92,19 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/util/Log.h
 
         ${VOLUMESHOS_SRC}/vospch.h
-        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h panels/WindowPanel.h mesh/MeshSerializer.h mesh/MeshSerializer.cpp settings/AppState.cpp rendering/shapes/ShapeRenderer.h rendering/shapes/ShapeRenderer.cpp)
+        volumeshOS.h
+        volumeshOS.cpp
+        mesh/MeshList.cpp
+        mesh/MeshList.h
+        util/Types.h
+        panels/WindowPanel.h
+        mesh/MeshSerializer.h
+        mesh/MeshSerializer.cpp
+        settings/AppState.cpp
+        rendering/passes/GroundPass.cpp
+        rendering/passes/GroundPass.h
+        rendering/shapes/ShapeRenderer.h
+        rendering/shapes/ShapeRenderer.cpp)
 
 add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
 

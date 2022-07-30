@@ -30,6 +30,7 @@ namespace volumeshOS::Internal
          * Utility shaders.
          */
         static std::shared_ptr<Shader> background_shader() { return get("background"); }
+        //static std::shared_ptr<Shader> ground_shader() { return get("ground"); }
         static std::shared_ptr<Shader> basic_shape_shader() { return get("basic_shape"); }
         static std::shared_ptr<Shader> quad_circle_shader() { return get("quad_circle"); }
         static std::shared_ptr<Shader> flat_color_shader() { return get("flat_color"); }
