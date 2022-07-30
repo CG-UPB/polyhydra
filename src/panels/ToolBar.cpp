@@ -19,14 +19,14 @@ namespace volumeshOS::Internal
             return;
         }
 
-        float slider_width = 180.0f;
-        float padding_right = 20.0f;
 
         ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
+        ImGui::Separator();
         ImGuiUtil::push_bold_font();
-        ImGui::Text("Global");
+        ImGui::Text("Settings");
         ImGui::PopFont();
+
 
         ImGui::SameLine(ImGui::GetWindowWidth() - 38.0f - padding_right);
 
@@ -35,7 +35,7 @@ namespace volumeshOS::Internal
         {
             NewFileDialog file_dialog;
 
-            char const *filename;
+            char const* filename;
 
             filename = file_dialog.save_dialog("Open Snapshot File");
 
@@ -45,91 +45,28 @@ namespace volumeshOS::Internal
             }
         }
 
-        ImGuiUtil::add_padding_y(0.5f);
-
-        ImGui::Text("Rendering");
-        ImGui::SetNextItemWidth(slider_width);
-        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-
-        int rendering_mode = static_cast<int>(AppState::settings.rendering_mode);
-        const char *element_mode_types[] =
-                {
-                        "Wireframe",
-                        "Only Vertices",
-                        "Phong Facenormals",
-                        "Phong Vertexnormals"
-                };
-        ImGui::Combo("##Manual Mode SelectionMode:", &rendering_mode, element_mode_types,
-                     IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
-        AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
-
-        ImGuiUtil::add_padding_y(0.5f);
-        ImGui::Separator();
-        ImGuiUtil::add_padding_y(0.5f);
-        ImGuiUtil::push_bold_font();
-        ImGui::Text("SelectionMode");
-        ImGui::PopFont();
-        ImGuiUtil::add_padding_y(0.5f);
-
-        const char *selection_modes[] =
-                {
-                        "OFF", "Vertices", "Edges", "Halffaces", "Cells", "All"
-                };
-
-        ImGui::Text("Mode");
-        ImGui::SetNextItemWidth(slider_width);
-        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-        ImGui::Combo(
-                "##SelectionMode",
-                &m_current_selection_mode,
-                selection_modes,
-                IM_ARRAYSIZE(selection_modes),
-                IM_ARRAYSIZE(selection_modes)
-        );
-        AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
-        AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
-
-        // SelectionMode-variables are set here
-        // SelectionMode of single elements by typing in their ID
-        const char *element_selection_types[] =
-                {
-                        "Face", "Vertex", "Edge", "Cell"
-                };
-        ImGui::Text("Select by ID");
-        ImGui::SetNextItemWidth(slider_width);
-        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-        ImGui::Combo("  ", &m_manual_selection_type, element_selection_types,
-                     IM_ARRAYSIZE(element_selection_types), IM_ARRAYSIZE(element_selection_types));
-        ImGui::Text(" ");
-        ImGui::SetNextItemWidth(slider_width);
-        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-        ImGui::InputInt("##ManualSelectionID", &m_manual_selection_id);
-        if (m_manual_selection_id != m_previous_manual_selection_id && m_manual_selection_id >= 0)
-        {
-            // Unselect the previous manually selected element
-//            if (m_previous_manual_selection_id >= 0)
-//            {
-//                Window::instance().rendering_mutex.unlock();
-//                Window::instance().unselect_element(Window::instance().get_mesh_focus(),
-//                                                    m_previous_manual_selection_id,
-//                                                    m_previous_manual_selection_type);
-//                Window::instance().rendering_mutex.lock();
-//                =
-//            }
-//            // Select the new manually selected element
-//            Window::instance().rendering_mutex.unlock();
-//            Window::instance().select_element(Window::instance().get_mesh_focus(), m_manual_selection_id,
-//                                              m_manual_selection_type);
-//            Window::instance().rendering_mutex.lock();
-            m_previous_manual_selection_id = m_manual_selection_id;
-            m_previous_manual_selection_type = m_manual_selection_type;
-        }
-        ImGui::Separator();
-
         /* ##########  TEST  ############*/
+
+        show_rendering_mode_menu();
+        show_selection_menu();
+        show_camera_menu();
+
+        ImGui::Separator();
+        ImGuiUtil::push_bold_font();
+        ImGui::Text("Graphics");
+        ImGui::PopFont();
+
 
         show_ground_menu();
         show_shadow_menu();
+        show_ambient_occlusion_menu();
+        show_transparency_menu();
+
+        ImGui::Separator();
+        ImGuiUtil::push_bold_font();
+        ImGui::Text("Mesh List");
+        ImGui::PopFont();
+//        show_mesh_list();
 
         /* ##########  TEST  ############*/
 
@@ -211,7 +148,7 @@ namespace volumeshOS::Internal
                     auto z = (m_mesh_rotation[2] + 180.0f) - glm::degrees(rot[2]) + 180.0f;
                     auto epsilon = 0.01;
 
-                    if(x >= epsilon || y >= epsilon || z >= epsilon)
+                    if (x >= epsilon || y >= epsilon || z >= epsilon)
                     {
                         active_mesh.set_rotation(glm::radians(x), glm::radians(y), glm::radians(z));
                     }
@@ -253,13 +190,13 @@ namespace volumeshOS::Internal
                 // make it easier to get the slider onto an Integer
                 // thats helpful for peeling with transparent transition
                 float tolerance = 0.05;
-                if((int)(m_slider_peel + tolerance) != (int)(m_slider_peel - tolerance))
+                if ((int) (m_slider_peel + tolerance) != (int) (m_slider_peel - tolerance))
                 {
-                    m_slider_peel = (float)(int)(m_slider_peel + tolerance);
+                    m_slider_peel = (float) (int) (m_slider_peel + tolerance);
                 }
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                if( ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max))
+                if (ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max))
                 {
                     active_mesh.set_peel_level(m_slider_peel);
                 }
@@ -278,7 +215,8 @@ namespace volumeshOS::Internal
                 ImGui::Separator();
                 ImGui::Text("Roundings");
                 ImGui::SameLine();
-                Tooltips::HelpMarkerWithQuestionMark("This checkbox activates rounded corners for the edges of the meshes");
+                Tooltips::HelpMarkerWithQuestionMark(
+                        "This checkbox activates rounded corners for the edges of the meshes");
                 float actual_rounding_size = active_mesh.get_cell_rounding();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
@@ -326,7 +264,8 @@ namespace volumeshOS::Internal
                 ImGui::Separator();
                 ImGui::Text("Isolation");
                 ImGui::SameLine();
-                Tooltips::HelpMarkerWithQuestionMark("Isolate a single cell by clicking on it. Click again to reset the isolation");
+                Tooltips::HelpMarkerWithQuestionMark(
+                        "Isolate a single cell by clicking on it. Click again to reset the isolation");
 
                 static int clicked = 0;
                 ImGui::PushID("Isolation");
@@ -362,19 +301,93 @@ namespace volumeshOS::Internal
         ImGui::End();
     }
 
-    void ToolBar::show_shadow_menu()
+    void ToolBar::show_rendering_mode_menu()
     {
-        auto& settings = AppState::settings;
-
-        ImGui::Checkbox("###Shadows", &settings.shadows_active);
-        ImGui::SameLine();
-        if(!ImGui::CollapsingHeader("Shadows"))
+        if (!ImGui::CollapsingHeader("Rendering Modes"))
         {
             return;
         }
-        ImGui::SliderInt("Cascades", &settings.num_shadow_cascades, 1, 8);
+
+        ImGui::SetNextItemWidth(slider_width);
+        //ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+
+        int rendering_mode = static_cast<int>(AppState::settings.rendering_mode);
+        const char* element_mode_types[] =
+                {
+                        "Wireframe",
+                        "Only Vertices",
+                        "Phong Facenormals",
+                        "Phong Vertexnormals"
+                };
+        ImGui::Combo("##Manual Mode SelectionMode:", &rendering_mode, element_mode_types,
+                     IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
+        AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
+
+        ImGuiUtil::add_padding_y(0.5f);
+    }
+
+
+    void ToolBar::show_selection_menu()
+    {
+        auto& settings = AppState::settings;
+
+        if (!ImGui::CollapsingHeader("Selection"))
+        {
+            return;
+        }
+
+        const char* selection_modes[] =
+                {
+                        "OFF", "Vertices", "Edges", "Halffaces", "Cells", "All"
+                };
+
+        ImGui::Text("Mode");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        ImGui::Combo(
+                "##SelectionMode",
+                &m_current_selection_mode,
+                selection_modes,
+                IM_ARRAYSIZE(selection_modes),
+                IM_ARRAYSIZE(selection_modes)
+        );
+        AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
+        AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
+
+        // SelectionMode-variables are set here
+        // SelectionMode of single elements by typing in their ID
+        const char* element_selection_types[] =
+                {
+                        "Face", "Vertex", "Edge", "Cell"
+                };
+        ImGui::Text("Select by ID");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        ImGui::Combo("  ", &m_manual_selection_type, element_selection_types,
+                     IM_ARRAYSIZE(element_selection_types), IM_ARRAYSIZE(element_selection_types));
+        ImGui::Text(" ");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        ImGui::InputInt("##ManualSelectionID", &m_manual_selection_id);
+        if (m_manual_selection_id != m_previous_manual_selection_id && m_manual_selection_id >= 0)
+        {
+            m_previous_manual_selection_id = m_manual_selection_id;
+            m_previous_manual_selection_type = m_manual_selection_type;
+        }
+
 
     }
+
+    void ToolBar::show_camera_menu()
+    {
+        auto& settings = AppState::settings;
+
+        if (!ImGui::CollapsingHeader("Camera"))
+        {
+            return;
+        }
+    }
+
 
     void ToolBar::show_ground_menu()
     {
@@ -382,7 +395,7 @@ namespace volumeshOS::Internal
 
         ImGui::Checkbox("###Ground", &settings.ground_options.visible);
         ImGui::SameLine();
-        if(!ImGui::CollapsingHeader("Ground"))
+        if (!ImGui::CollapsingHeader("Ground"))
         {
             return;
         }
@@ -395,13 +408,13 @@ namespace volumeshOS::Internal
         new_color[0] = ground_color.r;
         new_color[1] = ground_color.g;
         new_color[2] = ground_color.b;
-        if(ImGui::ColorEdit3("Ground Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        if (ImGui::ColorEdit3("Ground Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
             ground_color = glm::vec3(new_color[0], new_color[1], new_color[2]);
             AppState::settings.ground_options.color = ground_color;
         }
         ImGui::SameLine();
-        if(ImGui::Checkbox("grid", &grid))
+        if (ImGui::Checkbox("grid", &grid))
         {
             AppState::settings.ground_options.grid = grid;
         }
@@ -411,5 +424,110 @@ namespace volumeshOS::Internal
         }
 
     }
+
+    void ToolBar::show_shadow_menu()
+    {
+        auto& settings = AppState::settings;
+
+        ImGui::Checkbox("###Shadows", &settings.shadows_active);
+        ImGui::SameLine();
+        if (!ImGui::CollapsingHeader("Shadows"))
+        {
+            return;
+        }
+        ImGui::SliderInt("Cascades", &settings.num_shadow_cascades, 1, 8);
+
+    }
+
+
+    void ToolBar::show_ambient_occlusion_menu()
+    {
+        const char* dropdown_presets[5] = {
+                "OFF", "Quality", "Balanced", "Performance", "Custom"
+        };
+
+        static const int s_max_samples = 64;
+
+        auto& settings = AppState::settings;
+
+        ImGui::Checkbox("###Ambient Occlusion", &settings.ssao_active);
+        ImGui::SameLine();
+        if (!ImGui::CollapsingHeader("Ambient Occlusion"))
+        {
+            return;
+        }
+
+        ImVec2& padding = ImGui::GetStyle().FramePadding;
+        int selected_preset = static_cast<int>(settings.ssao_mode);
+        ImGui::Combo(
+                "##Preset",
+                &selected_preset,
+                dropdown_presets,
+                IM_ARRAYSIZE(dropdown_presets),
+                IM_ARRAYSIZE(dropdown_presets));
+        settings.ssao_mode = static_cast<SSAOMode>(selected_preset);
+
+        // custom options when users want to tweak the values themselves
+        if (settings.ssao_mode == SSAOMode::CUSTOM)
+        {
+            auto& actual_options = settings.ssao_custom_options;
+            actual_options.active = true;
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SliderInt("Samples", &actual_options.num_samples, 1, s_max_samples);
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SliderFloat("Radius", &actual_options.sample_radius, 0.0f, 3.0f);
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SliderFloat("Strength", &actual_options.strength, 0.0, 10.0);
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SliderFloat("Bias", &actual_options.z_bias, 0.0f, 0.1f);
+        }
+
+
+    }
+
+    void ToolBar::show_transparency_menu()
+    {
+        auto& settings = AppState::settings;
+
+        ImGui::Checkbox("###Transparency", &settings.transparency_active);
+        ImGui::SameLine();
+        if (!ImGui::CollapsingHeader("Transparency"))
+        {
+            return;
+        }
+
+        ImGui::Checkbox("Transparency", &settings.transparency_active);
+        ImGui::SameLine();
+        Tooltips::HelpMarkerWithQuestionMark("This checkbox activates transparency");
+
+        if (ImGui::Button("Transparency Settings"))
+        {
+            ImGui::OpenPopup("transparency Popup");
+        }
+        ImGui::SameLine();
+        Tooltips::HelpMarkerWithQuestionMark(
+                "This button will open a Popup where you can switch the transparency mode between Weighted blended and Depth Peeling."
+                "It is also possible to adjust the number of passes used for depth peeling (default-value is 12)");
+        if (ImGui::BeginPopup("transparency Popup"))
+        {
+            auto transparency_mode = settings.transparency_mode;
+
+            if (ImGui::RadioButton("Depth Peeling", transparency_mode == TransparencyMode::DEPTH_PEELING))
+            {
+                settings.transparency_mode = TransparencyMode::DEPTH_PEELING;
+            }
+            if (transparency_mode == TransparencyMode::DEPTH_PEELING)
+            {
+                ImGui::SliderInt("DP_Passes", &settings.num_depth_peeling_passes, 0, 50);
+            }
+            if (ImGui::RadioButton("Weighted Blended", transparency_mode == TransparencyMode::WEIGHTED_BLENDED))
+            {
+                settings.transparency_mode = TransparencyMode::WEIGHTED_BLENDED;
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
 
 } // namespace volumeshOS

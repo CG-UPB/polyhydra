@@ -27,6 +27,8 @@ namespace volumeshOS::Internal
         void show() override;
 
     private:
+        float slider_width = 180.0f;
+        float padding_right = 20.0f;
 
         int m_current_selection_mode = static_cast<int>(SelectionMode::OFF);
         int m_manual_selection_type = 0;
@@ -44,7 +46,17 @@ namespace volumeshOS::Internal
         float m_mesh_scale = 1.0f;
         float m_mesh_rotation[3] = {0.0f, 0.0f, 0.0f};
 
-        static void show_shadow_menu();
-        static void show_ground_menu();
+
+        void show_rendering_mode_menu();
+        void show_selection_menu();
+        void show_camera_menu();
+
+        void show_ground_menu();
+        void show_shadow_menu();
+        void show_ambient_occlusion_menu();
+        void show_transparency_menu();
+
+        void show_mesh_list();
+
     };
 }
