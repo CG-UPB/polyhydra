@@ -7,11 +7,6 @@
 namespace volumeshOS::Internal
 {
 
-    TrackBall::TrackBall(Camera& camera, float radius) :
-            m_camera(camera)
-    {
-    }
-
     glm::vec3 TrackBall::get_rotation_axis(const glm::vec2& start_position, const glm::vec2& end_position, glm::vec2 viewport_size)
     {
         // get start and end position in camera space
@@ -43,15 +38,31 @@ namespace volumeshOS::Internal
                            0.0f);
         p.y = -p.y;
         // calculate position on trackball
-        if (auto op_squared = p.x * p.x + p.y * p.y; op_squared <= 0.9f)
+        float r = 0.9f;
+
+        auto d = sqrt(p.x * p.x + p.y * p.y);
+        if(d <= (r / sqrt(2.0f)))
         {
-            p.z = sqrt(1.0f - op_squared);
+            p.z = sqrt(r * r - d * d);
         }
         else
         {
-            // if clicked position is too far away from trackball, return the nearest point
-            p = glm::normalize(p);
+            p.z = (r * r) / (2.0f * d);
+
         }
+        p = glm::normalize(p);
+
+//        if (auto op_squared = p.x * p.x + p.y * p.y; op_squared <= r)
+//        {
+//            p.z = sqrt(r - op_squared);
+//        }
+//        else
+//        {
+//            // if clicked position is too far away from trackball, return the nearest point
+//            p = glm::normalize(p);
+//        }
+
+
         return p;
     }
 }
