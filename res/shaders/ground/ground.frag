@@ -12,6 +12,7 @@ uniform bool u_visible;
 uniform bool u_grid;
 uniform vec3 u_color;
 uniform float u_height;
+uniform int u_tile_count;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
@@ -142,7 +143,7 @@ void main()
 
     if(u_grid)
     {
-        vec2 coord = v_uv * 200.0;
+        vec2 coord = v_uv * float(u_tile_count);
 
         vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord) * 0.9;
         float line = min(grid.x, grid.y);

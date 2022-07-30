@@ -27,13 +27,15 @@ uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
 uniform vec3 u_light_color;
 
+uniform float u_height;
+
 
 void main()
 {
 
     mat4 view_transform = u_view * u_transform;
 
-    vec3 pos = a_pos;
+    vec3 pos = a_pos + vec3(0.0, u_height, 0.0);
 
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
     v_Normal = mat3(transpose(inverse(view_transform))) * a_normal;

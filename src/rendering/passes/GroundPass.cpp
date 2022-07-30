@@ -10,8 +10,9 @@ namespace volumeshOS::Internal
 
     GroundPass::GroundPass()
     {
+        auto opt = AppState::settings.ground_options;
         // Create plane mesh
-        m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices(1000.0f, 1000.0f, -5.0f),
+        m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices((float)opt.size, (float)opt.size, 0.0f),
                                                     CommonMeshes::PlaneXZ::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXZ::normals(), 1, 3);
         m_vao->add_attribute(CommonMeshes::PlaneXZ::uvs(), 2, 2);
@@ -60,6 +61,7 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_bool("u_grid", ground_options.grid);
         m_ground_shader->set_uniform_vec3f("u_color", ground_options.color);
         m_ground_shader->set_uniform_float("u_height", ground_options.height);
+        m_ground_shader->set_uniform_int("u_tile_count", ground_options.tiles);
 
         m_ground_shader->set_uniform_mat4f("u_transform", transform);
         m_ground_shader->set_uniform_mat4f("u_projection", cam->projection);

@@ -100,6 +100,7 @@ namespace volumeshOS::Internal
                 passes.background_pass->render(*this);
             }
             passes.vertex_only_pass->render(*this);
+            passes.ground_pass->render(*this);
         }
         else
         {
@@ -205,7 +206,7 @@ namespace volumeshOS::Internal
             input.mesh_moving = false;
         }
 
-        if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
+        if (ImGui::IsWindowHovered())
         {
             if (auto mesh = mesh_list->get_focused_mesh())
             {

@@ -132,6 +132,7 @@ namespace volumeshOS::Internal
         bool visible = AppState::settings.ground_options.visible;
         bool grid = AppState::settings.ground_options.grid;
         glm::vec3 ground_color = AppState::settings.ground_options.color;
+        float height = AppState::settings.ground_options.height;
         float new_color[4];
         new_color[0] = ground_color.r;
         new_color[1] = ground_color.g;
@@ -149,6 +150,10 @@ namespace volumeshOS::Internal
         if(ImGui::Checkbox("grid", &grid))
         {
             AppState::settings.ground_options.grid = grid;
+        }
+        if (ImGui::DragFloat("height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
+        {
+            AppState::settings.ground_options.height = height;
         }
 
 

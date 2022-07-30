@@ -11,8 +11,10 @@ namespace volumeshOS::Internal
     {
         bool visible    = true;
         bool grid       = true;
-        float height    = -10.0f;
-        glm::vec3 color = {0.2, 0.2, 0.2};
+        float height    = -5.0f;
+        int size        = 1000;
+        int tiles       = 200;
+        glm::vec3 color = {0.5, 0.5, 0.5};
 
     };
 
