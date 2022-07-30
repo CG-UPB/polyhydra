@@ -107,7 +107,6 @@ namespace volumeshOS::Internal
         if(mesh != nullptr && type == SELECTION_TYPE_NONE)
         {
             m_hovered_mesh = mesh->get_id();
-            return;
         }
 
         // Do not doubly hover above an element

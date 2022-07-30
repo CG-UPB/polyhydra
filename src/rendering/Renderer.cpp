@@ -282,11 +282,7 @@ namespace volumeshOS::Internal
                         glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
 
                         auto mode = AppState::settings.selection_mode;
-                        if (mode == SelectionMode::ALL)
-                        {
-                            new_target = mesh->get_data().position;
-                        }
-                        else if (mode != SelectionMode::OFF)
+                        if (mode != SelectionMode::OFF)
                         {
                             auto transform = camera->world * mesh->get_data().get_transform();
                             auto pos_mesh_space = glm::vec4(hover_position, 1.0f);

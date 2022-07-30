@@ -125,37 +125,13 @@ namespace volumeshOS::Internal
             m_previous_manual_selection_type = m_manual_selection_type;
         }
         ImGui::Separator();
-        ImGuiUtil::push_bold_font();
-        ImGui::Text("Grid");
-        ImGui::PopFont();
 
-        bool visible = AppState::settings.ground_options.visible;
-        bool grid = AppState::settings.ground_options.grid;
-        glm::vec3 ground_color = AppState::settings.ground_options.color;
-        float height = AppState::settings.ground_options.height;
-        float new_color[4];
-        new_color[0] = ground_color.r;
-        new_color[1] = ground_color.g;
-        new_color[2] = ground_color.b;
-        if(ImGui::ColorEdit3("Ground Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
-        {
-            ground_color = glm::vec3(new_color[0], new_color[1], new_color[2]);
-            AppState::settings.ground_options.color = ground_color;
-        }
-        if(ImGui::Checkbox("visible", &visible))
-        {
-            AppState::settings.ground_options.visible = visible;
-        }
+        /* ##########  TEST  ############*/
 
-        if(ImGui::Checkbox("grid", &grid))
-        {
-            AppState::settings.ground_options.grid = grid;
-        }
-        if (ImGui::DragFloat("height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
-        {
-            AppState::settings.ground_options.height = height;
-        }
+        show_ground_menu();
+        show_shadow_menu();
 
+        /* ##########  TEST  ############*/
 
         auto active_mesh = volumeshOS::get_focused_mesh();
 
@@ -384,6 +360,56 @@ namespace volumeshOS::Internal
         }
         ImGui::PopStyleColor();
         ImGui::End();
+    }
+
+    void ToolBar::show_shadow_menu()
+    {
+        auto& settings = AppState::settings;
+
+        ImGui::Checkbox("###Shadows", &settings.shadows_active);
+        ImGui::SameLine();
+        if(!ImGui::CollapsingHeader("Shadows"))
+        {
+            return;
+        }
+        ImGui::SliderInt("Cascades", &settings.num_shadow_cascades, 1, 8);
+
+    }
+
+    void ToolBar::show_ground_menu()
+    {
+        auto& settings = AppState::settings;
+
+        ImGui::Checkbox("###Ground", &settings.ground_options.visible);
+        ImGui::SameLine();
+        if(!ImGui::CollapsingHeader("Ground"))
+        {
+            return;
+        }
+
+        bool visible = AppState::settings.ground_options.visible;
+        bool grid = AppState::settings.ground_options.grid;
+        glm::vec3 ground_color = AppState::settings.ground_options.color;
+        float height = AppState::settings.ground_options.height;
+        float new_color[4];
+        new_color[0] = ground_color.r;
+        new_color[1] = ground_color.g;
+        new_color[2] = ground_color.b;
+        if(ImGui::ColorEdit3("Ground Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        {
+            ground_color = glm::vec3(new_color[0], new_color[1], new_color[2]);
+            AppState::settings.ground_options.color = ground_color;
+        }
+        ImGui::SameLine();
+        if(ImGui::Checkbox("grid", &grid))
+        {
+            AppState::settings.ground_options.grid = grid;
+        }
+        if (ImGui::DragFloat("height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
+        {
+            AppState::settings.ground_options.height = height;
+        }
+
     }
 
 } // namespace volumeshOS
