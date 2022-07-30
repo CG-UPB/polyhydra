@@ -86,7 +86,12 @@ void main()
     // peeled, sliced, isolated or digged
     if (a_peel_depth + 1.0 <= u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
     {
+        v_Pos = vec3(0.0, 0.0, 0.0);
+        v_Normal = vec3(0.0, 0.0, 0.0);
+        v_Color = vec4(0.0, 0.0, 0.0, 0.0);
         v_Visible = 0;
+        v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
+        return;
     }
     
     // Roundings

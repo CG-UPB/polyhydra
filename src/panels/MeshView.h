@@ -15,7 +15,6 @@
 #include "../rendering/passes/TransparencyPassWB.h"
 #include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
-#include "../rendering/passes/ShapePass.h"
 #include "../util/Enums.h"
 #include "../rendering/Renderer.h"
 

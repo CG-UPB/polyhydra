@@ -47,7 +47,7 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
-    MeshVertexBuffer::MeshVertexBuffer(std::shared_ptr<OVMesh> mesh):
+    MeshVertexBuffer::MeshVertexBuffer(const std::shared_ptr<OVMesh>& mesh):
         m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
     {
         m_mesh = mesh;
@@ -1007,6 +1007,16 @@ namespace volumeshOS::Internal
         return get_cell_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, cell_id);
     }
 
+    float MeshVertexBuffer::get_cell_dig_value(int cell_id)
+    {
+        return get_cell_attribute<float>(VAO::MESH_FACE, Attribute::IS_DIGGED, cell_id);
+    }
+
+    float MeshVertexBuffer::get_cell_isolate_value(int cell_id)
+    {
+        return get_cell_attribute<float>(VAO::MESH_FACE, Attribute::IS_ISOLATED, cell_id);
+    }
+
     void MeshVertexBuffer::set_cell_selection(int cell_id, bool selected)
     {
         auto ch = OpenVolumeMesh::CellHandle {cell_id};
@@ -1344,6 +1354,16 @@ namespace volumeshOS::Internal
             return glm::vec4{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2], attrib_array[index + 3]};
         }
         return get_default_value<T>();
+    }
+
+    glm::vec3 MeshVertexBuffer::get_cell_center(int cell_id)
+    {
+        return m_cell_centers[cell_id];
+    }
+
+    float MeshVertexBuffer::get_cell_peel_depth(int cell_id)
+    {
+        return m_peel_depths[cell_id];
     }
 
     template void MeshVertexBuffer::update_cell_attribute<float>(VAO, Attribute, int, float);

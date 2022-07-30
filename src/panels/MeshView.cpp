@@ -73,10 +73,12 @@ namespace volumeshOS::Internal
                     if (settings.isolation_active)
                     {
                         mesh->get_mvb()->set_cell_isolated(cell.idx());
+                        renderer->shapes->set_isolate(cell.idx(), 1.0f);
                     }
                     else if (settings.digging_active)
                     {
                         mesh->get_mvb()->set_cell_digged(cell.idx(), true);
+                        renderer->shapes->set_dig(cell.idx(), 1.0f);
                     }
                     callbacks.on_cell_select(VMesh(mesh->get_id()), cell);
                 }

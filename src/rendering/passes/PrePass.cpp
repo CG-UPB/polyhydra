@@ -55,7 +55,7 @@ namespace volumeshOS::Internal
             pre_phong_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
             pre_phong_shader->set_uniform_vec3f("u_light_color", renderer.light.color);
             pre_phong_shader->set_uniform_float("u_cell_size", cell_size);
-            pre_phong_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
+            pre_phong_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
             pre_phong_shader->set_uniform_float("u_peel_depth", peel_depth);
             pre_phong_shader->set_uniform_float("u_slice_depth", slice_depth);
             pre_phong_shader->set_uniform_vec3f("u_min", min);

@@ -41,6 +41,7 @@ namespace volumeshOS::Internal
         mesh_list = std::make_shared<MeshList>();
         camera = std::make_shared<Camera>();
         camera->set_viewport_size((float) width, (float) height);
+        shapes = std::make_shared<ShapeRenderer>();
     }
 
     void Renderer::resize(int width, int height)
@@ -61,6 +62,11 @@ namespace volumeshOS::Internal
         camera->set_viewport_size((float) width, (float) height);
     }
 
+    bool Renderer::should_render_mesh(const std::shared_ptr<MeshObject>& mesh)
+    {
+        return mesh->get_data().visible && mesh->get_vao() != nullptr;
+    }
+
     void Renderer::render(bool render_bg)
     {
         auto& settings = AppState::settings;
@@ -72,17 +78,13 @@ namespace volumeshOS::Internal
         handle_input();
 
         render_list.clear();
-        mesh_list->iterate([&](auto id, auto mesh)
-                           {
-                               if (mesh->get_data().visible)
-                               {
-                                   mesh->update_vertex_buffer();
-                                   if (mesh->get_vao() != nullptr)
-                                   {
-                                       render_list.push_back(mesh);
-                                   }
-                               }
-                           });
+        mesh_list->iterate([&](auto id, auto mesh){
+            mesh->update_vertex_buffer();
+            if (should_render_mesh(mesh))
+            {
+                render_list.push_back(mesh);
+            }
+        });
 
         buffers.target_framebuffer_ms->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -149,6 +151,12 @@ namespace volumeshOS::Internal
                 passes.selection_pass->render(*this);
                 passes.selection_hover_pass->render(*this);
             }
+        }
+
+        // render shapes
+        if (settings.shapes_active)
+        {
+            shapes->render(*this);
         }
 
         // set render states

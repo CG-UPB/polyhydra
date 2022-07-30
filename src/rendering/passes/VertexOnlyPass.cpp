@@ -61,7 +61,7 @@ namespace volumeshOS::Internal
             m_vertex_only_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_vertex_only_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
             m_vertex_only_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-            m_vertex_only_shader->set_uniform_vec4f("u_color", mesh->get_data().color.get_rgba());
+            m_vertex_only_shader->set_uniform_vec4f("u_color", mesh->get_data().color);
             m_vertex_only_shader->set_uniform_float("u_size", size);
 
             mesh->get_mvb()->get_vertex_only_vao()->draw_instanced(mesh->get_num_visible_vertices());

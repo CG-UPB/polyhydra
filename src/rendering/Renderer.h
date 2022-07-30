@@ -15,7 +15,7 @@
 #include "../rendering/passes/TransparencyPassWB.h"
 #include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
-#include "../rendering/passes/ShapePass.h"
+#include "../rendering/shapes/ShapeRenderer.h"
 #include "../mesh/MeshList.h"
 #include "camera/Camera.h"
 #include "Light.h"
@@ -50,8 +50,13 @@ namespace volumeshOS::Internal
 
     public:
 
+        [[nodiscard]] static bool should_render_mesh(const std::shared_ptr<MeshObject>& mesh);
+
+    public:
+
         std::shared_ptr<MeshList> mesh_list     = nullptr;
         std::shared_ptr<Camera> camera          = nullptr;
+        std::shared_ptr<ShapeRenderer> shapes   = nullptr;
         Light light;
         std::vector<std::shared_ptr<MeshObject>> render_list;
         std::function<void(int, int)> selection_callback;
@@ -75,7 +80,6 @@ namespace volumeshOS::Internal
             std::shared_ptr<SSAOPass> ssao_pass                         = nullptr;
             std::shared_ptr<TransparencyPassWB> transparency_pass_wb    = nullptr;
             std::shared_ptr<TransparencyPassDP> transparency_pass_dp    = nullptr;
-            std::shared_ptr<ShapePass> shape_pass                       = nullptr;
             std::shared_ptr<SelectionPass> selection_pass               = nullptr;
             std::shared_ptr<SelectionHoverPass> selection_hover_pass    = nullptr;
             std::shared_ptr<VertexOnlyPass> vertex_only_pass            = nullptr;

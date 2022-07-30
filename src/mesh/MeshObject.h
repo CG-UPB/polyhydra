@@ -24,8 +24,8 @@ namespace volumeshOS::Internal
         glm::mat4 transformation    = glm::mat4(1.0f);
 
         // Rendering Variables
-        Color color                 = Color{1.0f, 1.0f, 1.0f, 1.0f};
-        Color selection_color       = Color{1.0f, 1.0f, 1.0f, 0.0f};
+        glm::vec4 color             = {1.0f, 1.0f, 1.0f, 1.0f};
+        glm::vec4 selection_color   = {1.0f, 1.0f, 1.0f, 0.0f};
         float ambient_strength      = 1.0f;
         float diffuse_strength      = 1.0f;
         float specular_strength     = 0.3f;
@@ -114,11 +114,11 @@ namespace volumeshOS::Internal
          */
         void set_selection_offset(int start);
 
-        void set_face_color(int ovm_id, Color color);
+        void set_face_color(int ovm_id, const glm::vec4& color);
 
-        void set_cell_color(int ovm_id, Color color);
+        void set_cell_color(int ovm_id, const glm::vec4& color);
 
-        void set_mesh_color(Color color);
+        void set_mesh_color(const glm::vec4& color);
 
         /**
          * updates the vertex_buffer

@@ -283,7 +283,7 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
-    void MeshList::set_color(const Color& color)
+    void MeshList::set_color(const glm::vec4& color)
     {
         auto f = [color](MeshID id, const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->set_mesh_color(color);
@@ -291,7 +291,7 @@ namespace volumeshOS::Internal
         iterate(f);
     }
 
-    void MeshList::set_color(const MeshID id, const Color& color)
+    void MeshList::set_color(const MeshID id, const glm::vec4& color)
     {
         auto f = [color](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->set_mesh_color(color);
@@ -299,7 +299,7 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
-    void MeshList::set_color(const MeshID id, OpenVolumeMesh::CellHandle cell, const Color& color)
+    void MeshList::set_color(const MeshID id, OpenVolumeMesh::CellHandle cell, const glm::vec4& color)
     {
         auto f = [this, id, cell, color](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->set_cell_color(cell.idx(), color);
@@ -307,7 +307,7 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
-    void MeshList::set_color(const MeshID id, OpenVolumeMesh::FaceHandle face, const Color& color)
+    void MeshList::set_color(const MeshID id, OpenVolumeMesh::FaceHandle face, const glm::vec4& color)
     {
         auto f = [this, id, face, color](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->set_face_color(face.idx(), color);
@@ -315,7 +315,7 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
-    void MeshList::set_color(const MeshID id, OpenVolumeMesh::HalfFaceHandle halfface, const Color& color)
+    void MeshList::set_color(const MeshID id, OpenVolumeMesh::HalfFaceHandle halfface, const glm::vec4& color)
     {
         auto f = [halfface, color](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->set_face_color(halfface.idx(), color);
@@ -372,11 +372,9 @@ namespace volumeshOS::Internal
         return get_mesh(id)->get_data().specular_exponent;
     }
 
-    std::array<float, 3> MeshList::get_position(const MeshID id)
+    const glm::vec3& MeshList::get_position(const MeshID id)
     {
-        auto p = get_mesh(id)->get_data().position;
-        std::array<float, 3> pos = {p[0], p[1], p[2]};
-        return pos;
+        return get_mesh(id)->get_data().position;
     }
 
     float MeshList::get_scale(const MeshID id)
@@ -384,7 +382,7 @@ namespace volumeshOS::Internal
         return get_mesh(id)->get_data().scale.x;
     }
 
-    std::array<float, 3> MeshList::get_rotation(const MeshID id)
+    glm::vec3 MeshList::get_rotation(const MeshID id)
     {
         auto r = get_mesh(id)->get_data().rotation;
         float yaw, pitch, roll = 0.0f;
@@ -408,8 +406,7 @@ namespace volumeshOS::Internal
             roll = atan2(-r[1][2], r[1][1]);
         }
 
-        std::array<float, 3> rot = {yaw, pitch, roll};
-        return rot;
+        return glm::vec3{yaw, pitch, roll};
     }
 
     float MeshList::get_slice_factor(const MeshID id)
@@ -457,33 +454,34 @@ namespace volumeshOS::Internal
         return get_mesh(id)->get_data().name;
     }
 
-    Color MeshList::get_color(const MeshID id)
+    glm::vec4 MeshList::get_color(const MeshID id)
     {
         return get_mesh(id)->get_data().color;
     }
 
-    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::CellHandle cell)
+    glm::vec4 MeshList::get_color(const MeshID id, OpenVolumeMesh::CellHandle cell)
     {
         return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
     }
 
-    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::HalfFaceHandle halfface)
+    glm::vec4 MeshList::get_color(const MeshID id, OpenVolumeMesh::HalfFaceHandle halfface)
     {
         return get_mesh(id)->get_mvb()->get_halfface_color(halfface.idx());
     }
 
-    /*
-    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::EdgeHandle edge)
+    glm::vec4 MeshList::get_color(const MeshID id, OpenVolumeMesh::EdgeHandle edge)
     {
-        return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
+        // TODO: Implement color for edges
+        return glm::vec4{};
+        // return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
     }
 
-    Color MeshList::get_color(const MeshID id, OpenVolumeMesh::VertexHandle vertex)
+    glm::vec4 MeshList::get_color(const MeshID id, OpenVolumeMesh::VertexHandle vertex)
     {
-        return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
+        // TODO: Implement color for vertices
+        return glm::vec4{};
+        // return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
     }
-    */
-
 
     void MeshList::execute_for_mesh(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
     {

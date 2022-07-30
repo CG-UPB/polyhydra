@@ -149,7 +149,7 @@ namespace volumeshOS::Internal
     {
     public:
 
-        explicit MeshVertexBuffer(std::shared_ptr<OVMesh> mesh);
+        explicit MeshVertexBuffer(const std::shared_ptr<OVMesh>& mesh);
 
         /**
          * converts selection id of vertices to OVM id
@@ -229,6 +229,10 @@ namespace volumeshOS::Internal
 
         void set_cell_isolated(int cell_id);
 
+        float get_cell_dig_value(int cell_id);
+
+        float get_cell_isolate_value(int cell_id);
+
         void reset_isolation();
 
         void reset_digging();
@@ -248,6 +252,10 @@ namespace volumeshOS::Internal
         float get_loading_percentage();
 
         void reset_hover();
+
+        [[nodiscard]] glm::vec3 get_cell_center(int cell_id);
+
+        [[nodiscard]]float get_cell_peel_depth(int cell_id);
 
     private:
 

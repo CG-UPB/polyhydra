@@ -6,18 +6,12 @@
 
 namespace volumeshOS::Internal
 {
-    using MeshID = int;
-    using HandleID = int;
-
-
     class MeshList
     {
     public:
         MeshList();
 
         /* Mesh Management */
-
-        int next_id();
 
         // add mesh by OVM-Mesh
         void add_mesh(MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
@@ -64,25 +58,25 @@ namespace volumeshOS::Internal
         void set_position();
 
         // Set color for all meshes (all cells and halffaces)
-        void set_color(const Color& color);
+        void set_color(const glm::vec4& color);
 
         // Set color for one mesh (all cells and halffaces)
-        void set_color(MeshID id, const Color& color);
+        void set_color(MeshID id, const glm::vec4& color);
 
         // Set color for one cell of a mesh
-        void set_color(MeshID id, OpenVolumeMesh::CellHandle cell, const Color& color);
+        void set_color(MeshID id, OpenVolumeMesh::CellHandle cell, const glm::vec4& color);
 
         // Set color for one face (both halffaces) of a mesh
-        void set_color(MeshID id, OpenVolumeMesh::FaceHandle face, const Color& color);
+        void set_color(MeshID id, OpenVolumeMesh::FaceHandle face, const glm::vec4& color);
 
         // Set color for one halfface of a mesh
-        void set_color(MeshID id, OpenVolumeMesh::HalfFaceHandle halfface, const Color& color);
+        void set_color(MeshID id, OpenVolumeMesh::HalfFaceHandle halfface, const glm::vec4& color);
 
         // Set color for one edge of a mesh
-        void set_color(MeshID id, OpenVolumeMesh::EdgeHandle edge, const Color& color);
+        void set_color(MeshID id, OpenVolumeMesh::EdgeHandle edge, const glm::vec4& color);
 
         // Set color for one vertex of a mesh
-        void set_color(MeshID id, OpenVolumeMesh::VertexHandle vertex, const Color& color);
+        void set_color(MeshID id, OpenVolumeMesh::VertexHandle vertex, const glm::vec4& color);
 
         // Set the ambient term for the phong lighting model of a mesh
         void set_ambient(MeshID id, float ambient);
@@ -160,13 +154,13 @@ namespace volumeshOS::Internal
         float get_specular_coefficient(MeshID id);
 
         // Returns the position of a mesh
-        std::array<float, 3> get_position(MeshID id);
+        const glm::vec3& get_position(MeshID id);
 
         // Returns the scale of a mesh
         float get_scale(MeshID id);
 
         // Returns the rotation of a mesh using euler angles
-        std::array<float, 3> get_rotation(MeshID id);
+        glm::vec3 get_rotation(MeshID id);
 
         // Returns the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
         float get_slice_factor(MeshID id);
@@ -199,19 +193,19 @@ namespace volumeshOS::Internal
         const std::string& get_name(MeshID id);
 
         // Returns the color of the mesh
-        Color get_color(MeshID id);
+        glm::vec4 get_color(MeshID id);
 
         // Returns the color of a cell from a given mesh
-        Color get_color(MeshID id, OpenVolumeMesh::CellHandle cell);
+        glm::vec4 get_color(MeshID id, OpenVolumeMesh::CellHandle cell);
 
         // Returns the color of a halfface from a given mesh
-        Color get_color(MeshID id, OpenVolumeMesh::HalfFaceHandle halfface);
+        glm::vec4 get_color(MeshID id, OpenVolumeMesh::HalfFaceHandle halfface);
 
         // Returns the color of an edge from a given mesh
-        Color get_color(MeshID id, OpenVolumeMesh::EdgeHandle edge);
+        glm::vec4 get_color(MeshID id, OpenVolumeMesh::EdgeHandle edge);
 
         // Returns the color of a vertex from a given mesh
-        Color get_color(MeshID id, OpenVolumeMesh::VertexHandle vertex);
+        glm::vec4 get_color(MeshID id, OpenVolumeMesh::VertexHandle vertex);
 
         /* Utility */
 

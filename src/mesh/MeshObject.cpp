@@ -4,10 +4,6 @@
 #include "../panels/LogWindow.h"
 #include "MeshProperties.h"
 
-#include "rendering/shapes/Sphere.h"
-#include "rendering/shapes/Box.h"
-#include "rendering/shapes/Cylinder.h"
-
 namespace volumeshOS::Internal
 {
 
@@ -19,105 +15,105 @@ namespace volumeshOS::Internal
 
     void MeshObject::select_element(int id, EntityType type)
     {
-        int shape_key = (int)type * key_multiplier + id;
-
-        // We can't select an element twice
-        bool already_selected = is_element_selected(id, type);
-        if (already_selected)
-            return;
-
-        if (type == EntityType::Face)
-        {
-            m_selected_faces.insert(id);
-
-            // Add Shape
-
-            OpenVolumeMesh::FaceHandle face(id);
-
-            m_mvb->set_face_selection(face.idx(), true);
-
-            /*
-            auto pick_pos = m_mesh->barycenter(face);
-            auto* shape = new Cylinder();
-            shape->set_scale(0.02f, 0.02f, 0.02f);
-            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-            shape->set_base_color(1.0f, 0.0f, 0.0f);
-
-            // There a guaranteed Mutex Guard around this method
-            Window::instance().rendering_mutex.unlock();
-            int shape_id = Window::instance().add_shape(shape);
-            Window::instance().rendering_mutex.lock();
-
-            m_created_shapes.insert({shape_key, shape_id});
-             */
-        }
-        else if (type == EntityType::Vertex)
-        {
-            m_selected_vertices.insert(id);
-
-            // Add Shape
-
-            OpenVolumeMesh::VertexHandle vertex(id);
-
-            auto pick_pos = m_mesh->vertex(vertex);
-            auto* shape = new Sphere();
-            shape->set_scale(0.02f, 0.02f, 0.02f);
-            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-            shape->set_base_color(0.0f, 1.0f, 0.0f);
-
-            // There a guaranteed Mutex Guard around this method
-            //int shape_id = Window::instance().add_shape(shape);
-
-            //m_created_shapes.insert({shape_key, shape_id});
-        }
-        else if (type == EntityType::Edge)
-        {
-            m_selected_edges.insert(id);
-
-            // Add Shape
-            OpenVolumeMesh::EdgeHandle edge(id);
-            auto vertices = m_mesh->edge_vertices(edge);
-            auto v0 = m_mesh->vertex(vertices[0]);
-            auto v1 = m_mesh->vertex(vertices[1]);
-            auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5,
-                                      v0[2] + (v1[2] - v0[2]) * 0.5);
-            auto* shape = new Box();
-            shape->set_scale(0.02f, 0.02f, 0.02f);
-            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-            shape->set_base_color(0.0f, 0.0f, 1.0f);
-
-            // There a guaranteed Mutex Guard around this method
-            //int shape_id = Window::instance().add_shape(shape);
-
-            //m_created_shapes.insert({shape_key, shape_id});
-        }
-        else if (type == EntityType::Cell)
-        {
-            m_selected_cells.insert(id);
-
-            OpenVolumeMesh::CellHandle cell(id);
-
-            //std::cout << cell.idx() << std::endl;
-            bool first = true;
-
-            std::vector<glm::vec3> vertices;
-            for (auto cv_it: m_mesh->cell_vertices(cell))
-            {
-                auto v_pos = m_mesh->vertex(cv_it);
-                vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
-            }
-
-            glm::vec3 pick_pos = VecUtil::get_bb_center(vertices);
-
-            auto* shape = new Sphere();
-            shape->set_scale(0.82f, 0.82f, 0.82f);
-            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
-            shape->set_base_color(0.0f, 1.0f, 0.0f);
-
-            // There a guaranteed Mutex Guard around this method
-            //int shape_id = Window::instance().add_shape(shape);
-
-        }
+//        int shape_key = (int)type * key_multiplier + id;
+//
+//        // We can't select an element twice
+//        bool already_selected = is_element_selected(id, type);
+//        if (already_selected)
+//            return;
+//
+//        if (type == EntityType::Face)
+//        {
+//            m_selected_faces.insert(id);
+//
+//            // Add Shape
+//
+//            OpenVolumeMesh::FaceHandle face(id);
+//
+//            m_mvb->set_face_selection(face.idx(), true);
+//
+//            /*
+//            auto pick_pos = m_mesh->barycenter(face);
+//            auto* shape = new Cylinder();
+//            shape->set_scale(0.02f, 0.02f, 0.02f);
+//            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+//            shape->set_base_color(1.0f, 0.0f, 0.0f);
+//
+//            // There a guaranteed Mutex Guard around this method
+//            Window::instance().rendering_mutex.unlock();
+//            int shape_id = Window::instance().add_shape(shape);
+//            Window::instance().rendering_mutex.lock();
+//
+//            m_created_shapes.insert({shape_key, shape_id});
+//             */
+//        }
+//        else if (type == EntityType::Vertex)
+//        {
+//            m_selected_vertices.insert(id);
+//
+//            // Add Shape
+//
+//            OpenVolumeMesh::VertexHandle vertex(id);
+//
+//            auto pick_pos = m_mesh->vertex(vertex);
+//            auto* shape = new Sphere();
+//            shape->set_scale(0.02f, 0.02f, 0.02f);
+//            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+//            shape->set_base_color(0.0f, 1.0f, 0.0f);
+//
+//            // There a guaranteed Mutex Guard around this method
+//            //int shape_id = Window::instance().add_shape(shape);
+//
+//            //m_created_shapes.insert({shape_key, shape_id});
+//        }
+//        else if (type == EntityType::Edge)
+//        {
+//            m_selected_edges.insert(id);
+//
+//            // Add Shape
+//            OpenVolumeMesh::EdgeHandle edge(id);
+//            auto vertices = m_mesh->edge_vertices(edge);
+//            auto v0 = m_mesh->vertex(vertices[0]);
+//            auto v1 = m_mesh->vertex(vertices[1]);
+//            auto pick_pos = glm::vec3(v0[0] + (v1[0] - v0[0]) * 0.5, v0[1] + (v1[1] - v0[1]) * 0.5,
+//                                      v0[2] + (v1[2] - v0[2]) * 0.5);
+//            auto* shape = new Box();
+//            shape->set_scale(0.02f, 0.02f, 0.02f);
+//            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+//            shape->set_base_color(0.0f, 0.0f, 1.0f);
+//
+//            // There a guaranteed Mutex Guard around this method
+//            //int shape_id = Window::instance().add_shape(shape);
+//
+//            //m_created_shapes.insert({shape_key, shape_id});
+//        }
+//        else if (type == EntityType::Cell)
+//        {
+//            m_selected_cells.insert(id);
+//
+//            OpenVolumeMesh::CellHandle cell(id);
+//
+//            //std::cout << cell.idx() << std::endl;
+//            bool first = true;
+//
+//            std::vector<glm::vec3> vertices;
+//            for (auto cv_it: m_mesh->cell_vertices(cell))
+//            {
+//                auto v_pos = m_mesh->vertex(cv_it);
+//                vertices.emplace_back(v_pos[0], v_pos[1], v_pos[2]);
+//            }
+//
+//            glm::vec3 pick_pos = VecUtil::get_bb_center(vertices);
+//
+//            auto* shape = new Sphere();
+//            shape->set_scale(0.82f, 0.82f, 0.82f);
+//            shape->set_position(pick_pos[0], pick_pos[1], pick_pos[2]);
+//            shape->set_base_color(0.0f, 1.0f, 0.0f);
+//
+//            // There a guaranteed Mutex Guard around this method
+//            //int shape_id = Window::instance().add_shape(shape);
+//
+//        }
     }
 
     void MeshObject::deselect_all()
@@ -350,19 +346,17 @@ namespace volumeshOS::Internal
         m_data.max_peel_depth = max_depth;
     }
 
-    void MeshObject::set_face_color(int ovm_id, Color color)
+    void MeshObject::set_face_color(int ovm_id, const glm::vec4& color)
     {
-        auto col = color.get_rgba();
-        m_mvb->set_face_color(ovm_id, col.r, col.g, col.b, col.a);
+        m_mvb->set_face_color(ovm_id, color.r, color.g, color.b, color.a);
     }
 
-    void MeshObject::set_cell_color(int ovm_id, Color color)
+    void MeshObject::set_cell_color(int ovm_id, const glm::vec4& color)
     {
-        auto col = color.get_rgba();
-        m_mvb->set_cell_color(ovm_id, col.r, col.g, col.b, col.a);
+        m_mvb->set_cell_color(ovm_id, color.r, color.g, color.b, color.a);
     }
 
-    void MeshObject::set_mesh_color(Color color)
+    void MeshObject::set_mesh_color(const glm::vec4& color)
     {
         m_data.color = color;
     }

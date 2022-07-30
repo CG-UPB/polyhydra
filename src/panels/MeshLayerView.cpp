@@ -47,14 +47,14 @@ namespace volumeshOS::Internal
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 
 
-            Color color = mesh.get_color();
+            auto color = mesh.get_color<glm::vec4>();
             float new_color[4];
-            new_color[0] = color.get_rgba().r;
-            new_color[1] = color.get_rgba().g;
-            new_color[2] = color.get_rgba().b;
-            new_color[3] = color.get_rgba().a;
+            new_color[0] = color.r;
+            new_color[1] = color.g;
+            new_color[2] = color.b;
+            new_color[3] = color.a;
             ImGui::ColorEdit4("Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
-            mesh.set_color(Color(new_color[0], new_color[1], new_color[2], new_color[3]));
+            mesh.set_color(glm::vec4{new_color[0], new_color[1], new_color[2], new_color[3]});
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
             // Advanced Settings

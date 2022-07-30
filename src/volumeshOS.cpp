@@ -21,7 +21,9 @@ namespace volumeshOS
     static std::unique_ptr<Internal::Window> window        = nullptr;
     static std::shared_ptr<Internal::MeshList> mesh_list   = nullptr;
     static std::shared_ptr<Internal::Camera> camera        = nullptr;
+    static std::shared_ptr<Internal::ShapeRenderer> shapes = nullptr;
     static int current_mesh_id                             = 0;
+    static int current_shape_id                            = 0;
 
     void initialize()
     {
@@ -29,19 +31,26 @@ namespace volumeshOS
         window->initialize();
         mesh_list = window->panels.mesh_view->renderer->mesh_list;
         camera = window->panels.mesh_view->renderer->camera;
+        shapes = window->panels.mesh_view->renderer->shapes;
     }
 
     void clean_up()
     {
+        shapes = nullptr;
         camera = nullptr;
         mesh_list = nullptr;
         window->clean_up();
         window = nullptr;
     }
 
-    int next_id()
+    int next_mesh_id()
     {
         return current_mesh_id++;
+    }
+
+    int next_shape_id()
+    {
+        return current_shape_id++;
     }
 
     void execute_commands()
@@ -135,10 +144,9 @@ namespace volumeshOS
         Internal::AppState::callbacks.on_position_select = callback;
     }
 
-
     VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance, const char* name)
     {
-        int id = next_id();
+        int id = next_mesh_id();
         VMesh vmesh(id);
         commands.emplace_back([id, instance, name]{
             mesh_list->add_mesh(id, instance);
@@ -153,7 +161,7 @@ namespace volumeshOS
 
     VMesh load(const std::string& path, const char* name)
     {
-        int id = next_id();
+        int id = next_mesh_id();
         VMesh vmesh(id);
         commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
@@ -174,7 +182,7 @@ namespace volumeshOS
 
     VMesh load(const char* path, const char* name)
     {
-        int id = next_id();
+        int id = next_mesh_id();
         VMesh vmesh(id);
         commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
@@ -253,7 +261,13 @@ namespace volumeshOS
 
     bool is_valid(const VMesh& mesh)
     {
-        return mesh.get_id() >= 0;
+        return mesh.get_id() >= 0 && mesh_list->get_mesh(mesh.get_id()) != nullptr;
+    }
+
+    [[nodiscard]] OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* get_ovm(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_mesh(mesh.get_id())->get_ovm().get();
     }
 
     void load_configuration(const VMesh& mesh, const std::string& path)
@@ -266,56 +280,65 @@ namespace volumeshOS
 
     }
 
-    void set_color(const Color& color)
+    template<typename Vec4T>
+    void set_color(const Vec4T& color)
     {
         commands.emplace_back([color]{
-            mesh_list->set_color(color);
+            auto col = Internal::to_glm_vec4(color);
+            mesh_list->set_color(col);
         });
     }
 
-    void set_color(const VMesh& mesh, const Color& color)
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, const Vec4T& color)
     {
         commands.emplace_back([mesh, color]{
-            mesh_list->set_color(mesh.get_id(), color);
+            auto col = Internal::to_glm_vec4(color);
+            mesh_list->set_color(mesh.get_id(), col);
         });
     }
 
-    void set_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, const Color& color)
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, const Vec4T& color)
     {
         commands.emplace_back([mesh, cell, color]{
-            mesh_list->set_color(mesh.get_id(), cell, color);
+            auto col = Internal::to_glm_vec4(color);
+            mesh_list->set_color(mesh.get_id(), cell, col);
         });
     }
 
-    void set_color(const VMesh& mesh, OpenVolumeMesh::FaceHandle face, const Color& color)
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::FaceHandle face, const Vec4T& color)
     {
         commands.emplace_back([mesh, face, color]{
-            mesh_list->set_color(mesh.get_id(), face, color);
+            auto col = Internal::to_glm_vec4(color);
+            mesh_list->set_color(mesh.get_id(), face, col);
         });
     }
 
-    /*
-    void set_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface, const Color& color)
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface, const Vec4T& color)
     {
-        commands.emplace_back([mesh, halfface, color]{
-            mesh_list->set_color(mesh.get_id(), halfface, color);
-        });
+//        commands.emplace_back([mesh, halfface, color]{
+//            mesh_list->set_color(mesh.get_id(), halfface, color);
+//        });
     }
 
-    void set_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge, const Color& color)
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge, const Vec4T& color)
     {
-        commands.emplace_back([mesh, edge, color]{
-            mesh_list->set_color(mesh.get_id(), edge, color);
-        });
+//        commands.emplace_back([mesh, edge, color]{
+//            mesh_list->set_color(mesh.get_id(), edge, color);
+//        });
     }
 
-    void set_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex, const Color& color)
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex, const Vec4T& color)
     {
-        commands.emplace_back([mesh, vertex, color]{
-            mesh_list->set_color(mesh.get_id(), vertex, color);
-        });
+//        commands.emplace_back([mesh, vertex, color]{
+//            mesh_list->set_color(mesh.get_id(), vertex, color);
+//        });
     }
-    */
 
     void set_name(const VMesh& mesh, const std::string& name)
     {
@@ -436,6 +459,15 @@ namespace volumeshOS
         });
     }
 
+    template<typename Vec3T>
+    void set_position(const VMesh& mesh, const Vec3T& position)
+    {
+        commands.emplace_back([mesh, position]{
+            auto pos = Internal::to_glm_vec3(position);
+            mesh_list->set_position(mesh.get_id(), pos.x, pos.y, pos.z);
+        });
+    }
+
     void set_scale(const VMesh& mesh, float scale)
     {
         commands.emplace_back([mesh, scale]{
@@ -447,6 +479,15 @@ namespace volumeshOS
     {
         commands.emplace_back([mesh, x, y, z]{
             mesh_list->set_rotation(mesh.get_id(), x, y, z);
+        });
+    }
+
+    template<typename Vec3T>
+    void set_rotation(const VMesh& mesh, const Vec3T& rotation)
+    {
+        commands.emplace_back([mesh, rotation]{
+            auto rot = Internal::to_glm_vec3(rotation);
+            mesh_list->set_rotation(mesh.get_id(), rot.x, rot.y, rot.z);
         });
     }
 
@@ -538,6 +579,7 @@ namespace volumeshOS
     {
         commands.emplace_back([mesh]{
             mesh_list->reset_visibility(mesh.get_id());
+            shapes->reset_visibility();
         });
     }
 
@@ -563,10 +605,28 @@ namespace volumeshOS
         });
     }
 
+    template<typename Vec3T>
+    void set_camera_position(const Vec3T& position)
+    {
+        commands.emplace_back([position]{
+            auto pos = Internal::to_glm_vec3(position);
+            camera->set_position(pos);
+        });
+    }
+
     void set_camera_view_direction(float x, float y, float z)
     {
         commands.emplace_back([x, y, z]{
             camera->set_view_direction(glm::vec3(x, y, z));
+        });
+    }
+
+    template<typename Vec3T>
+    void set_camera_view_direction(const Vec3T& direction)
+    {
+        commands.emplace_back([direction]{
+            auto dir = Internal::to_glm_vec3(direction);
+            camera->set_view_direction(dir);
         });
     }
 
@@ -627,10 +687,11 @@ namespace volumeshOS
         return mesh_list->get_specular_coefficient(mesh.get_id());
     }
 
-    std::array<float, 3> get_position(const VMesh& mesh)
+    template<typename Vec3T>
+    Vec3T get_position(const VMesh& mesh)
     {
         assert(mesh.is_valid());
-        return mesh_list->get_position(mesh.get_id());
+        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_position(mesh.get_id()));
     }
 
     float get_scale(const VMesh& mesh)
@@ -639,10 +700,11 @@ namespace volumeshOS
         return mesh_list->get_scale(mesh.get_id());
     }
 
-    std::array<float, 3> get_rotation(const VMesh& mesh)
+    template<typename Vec3T>
+    Vec3T get_rotation(const VMesh& mesh)
     {
         assert(mesh.is_valid());
-        return mesh_list->get_rotation(mesh.get_id());
+        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_rotation(mesh.get_id()));
     }
 
     float get_slice_factor(const VMesh& mesh)
@@ -699,36 +761,345 @@ namespace volumeshOS
         return dialog.open_dialog(title.c_str());
     }
 
-    Color get_color(const VMesh& mesh)
+    template<typename Vec4T>
+    Vec4T get_color(const VMesh& mesh)
     {
-        return mesh_list->get_color(mesh.get_id());
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id()));
     }
 
-    Color get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    template<typename Vec4T>
+    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
     {
-        return mesh_list->get_color(mesh.get_id(), cell);
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), cell));
     }
 
-    Color get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface)
+    template<typename Vec4T>
+    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface)
     {
-        return mesh_list->get_color(mesh.get_id(), halfface);
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), halfface));
     }
 
-    /*
-    Color get_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge)
+    template<typename Vec4T>
+    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge)
     {
-        return mesh_list->get_color(mesh.get_id(), edge);
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), edge));
     }
 
-    Color get_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
+    template<typename Vec4T>
+    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
     {
-        return mesh_list->get_color(mesh.get_id(), vertex);
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), vertex));
     }
-    */
+
 
     [[nodiscard]] const std::string& get_name(const VMesh& mesh)
     {
         return mesh_list->get_name(mesh.get_id());
     }
 
+    template<typename Type>
+    [[nodiscard]] ShapeType get_concrete_shape_type()
+    {
+        if constexpr (std::is_same_v<Type, VBox>)
+        {
+            return ShapeType::BOX;
+        }
+        else if constexpr (std::is_same_v<Type, VCylinder>)
+        {
+            return ShapeType::CYLINDER;
+        }
+        else if constexpr (std::is_same_v<Type, VSphere>)
+        {
+            return ShapeType::SPHERE;
+        }
+        assert(false && "Invalid shape type");
+    }
+
+    template<typename Type>
+    [[nodiscard]] Type get_concrete_shape_instance(int id)
+    {
+        if constexpr (std::is_same_v<Type, VBox>)
+        {
+            return VBox(id);
+        }
+        else if constexpr (std::is_same_v<Type, VCylinder>)
+        {
+            return VCylinder(id);
+        }
+        else if constexpr (std::is_same_v<Type, VSphere>)
+        {
+            return VSphere(id);
+        }
+        assert(false && "Invalid shape type");
+    }
+
+    template<typename ShapeType>
+    [[nodiscard]] ShapeType add_shape()
+    {
+        auto id = next_shape_id();
+        commands.emplace_back([id]{
+            Internal::ShapeDefinition shape;
+            shape.id = id;
+            shape.type = get_concrete_shape_type<ShapeType>();
+            shapes->add_shape(shape);
+        });
+        return get_concrete_shape_instance<ShapeType>(id);
+    }
+
+    template<typename ShapeType>
+    [[nodiscard]] ShapeType add_shape(const VMesh& mesh)
+    {
+        auto id = next_shape_id();
+        commands.emplace_back([id, mesh]{
+            Internal::ShapeDefinition shape;
+            shape.id = id;
+            shape.type = get_concrete_shape_type<ShapeType>();
+            shape.parent_mesh = mesh.get_id();
+            shapes->add_shape(shape);
+        });
+        return get_concrete_shape_instance<ShapeType>(id);
+    }
+
+    template<typename ShapeType>
+    [[nodiscard]] ShapeType add_shape(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        auto id = next_shape_id();
+        commands.emplace_back([id, mesh, cell]{
+            Internal::ShapeDefinition shape;
+            shape.id = id;
+            shape.type = get_concrete_shape_type<ShapeType>();
+            shape.parent_mesh = mesh.get_id();
+            shape.cell_id = cell.idx();
+            shapes->add_shape(shape);
+        });
+        return get_concrete_shape_instance<ShapeType>(id);
+    }
+
+    void remove_shape(const VShape& shape)
+    {
+        commands.emplace_back([shape]{
+            shapes->remove_shape(shape.get_id());
+        });
+    }
+
+    void remove_shapes()
+    {
+        commands.emplace_back([]{
+            shapes->remove_all();
+        });
+    }
+
+    void set_position(const VShape& shape, float x, float y, float z)
+    {
+        commands.emplace_back([shape, x, y, z]{
+            shapes->set_position(shape.get_id(), x, y, z);
+        });
+    }
+
+    template<typename Vec3T>
+    void set_position(const VShape& shape, const Vec3T& position)
+    {
+        commands.emplace_back([shape, position]{
+            auto pos = Internal::to_glm_vec3(position);
+            shapes->set_position(shape.get_id(), pos.x, pos.y, pos.z);
+        });
+    }
+
+    void set_scale(const VShape& shape, float scalar)
+    {
+        commands.emplace_back([shape, scalar]{
+            shapes->set_scale(shape.get_id(), scalar, scalar, scalar);
+        });
+    }
+
+    void set_scale(const VShape& shape, float x, float y, float z)
+    {
+        commands.emplace_back([shape, x, y, z]{
+            shapes->set_scale(shape.get_id(), x, y, z);
+        });
+    }
+
+    template<typename Vec3T>
+    void set_scale(const VShape& shape, const Vec3T& scale)
+    {
+        commands.emplace_back([shape, scale]{
+            auto scl = Internal::to_glm_vec3(scale);
+            shapes->set_scale(shape.get_id(), scl.x, scl.y, scl.z);
+        });
+    }
+
+    template<typename Vec4T>
+    void set_color(const VShape& shape, const Vec4T& color)
+    {
+        commands.emplace_back([shape, color]{
+            auto col = Internal::to_glm_vec4(color);
+            shapes->set_color(shape.get_id(), col.r, col.g, col.b);
+        });
+    }
+
+    template<typename Vec3T>
+    [[nodiscard]] Vec3T get_position(const VShape& shape)
+    {
+        return Internal::glm_vec3_to<Vec3T>(shapes->get_position(shape.get_id()));
+    }
+
+    template<typename Vec3T>
+    [[nodiscard]] Vec3T get_scale(const VShape& shape)
+    {
+        return Internal::glm_vec3_to<Vec3T>(shapes->get_scale(shape.get_id()));
+    }
+
+    template void set_color<glm::vec4>(const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const std::array<float, 4>&);
+
+    template void set_color<glm::vec4>(const VMesh&, const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const VMesh&, const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const VMesh&, const std::array<float, 4>&);
+
+    template void set_color<glm::vec4>(const VMesh&, OpenVolumeMesh::CellHandle, const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::CellHandle, const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::CellHandle, const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::CellHandle, const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::CellHandle, const std::array<float, 4>&);
+
+    template void set_color(const VMesh&, OpenVolumeMesh::FaceHandle, const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::FaceHandle, const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::FaceHandle, const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::FaceHandle, const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::FaceHandle, const std::array<float, 4>&);
+
+    template void set_color<glm::vec4>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const std::array<float, 4>&);
+
+    template void set_color<glm::vec4>(const VMesh&, OpenVolumeMesh::EdgeHandle, const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::EdgeHandle, const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::EdgeHandle, const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle, const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle, const std::array<float, 4>&);
+
+    template void set_color<glm::vec4>(const VMesh&, OpenVolumeMesh::VertexHandle, const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::VertexHandle, const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::VertexHandle, const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle, const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle, const std::array<float, 4>&);
+
+
+    template glm::vec4 get_color<glm::vec4>(const VMesh&);
+    template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&);
+    template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&);
+    template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&);
+    template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&);
+
+    template glm::vec4 get_color<glm::vec4>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::CellHandle);
+
+    template glm::vec4 get_color<glm::vec4>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
+    template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
+    template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
+    template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
+    template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
+
+    template glm::vec4 get_color<glm::vec4>(const VMesh&, OpenVolumeMesh::EdgeHandle);
+    template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::EdgeHandle);
+    template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::EdgeHandle);
+    template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle);
+    template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle);
+
+    template glm::vec4 get_color<glm::vec4>(const VMesh&, OpenVolumeMesh::VertexHandle);
+    template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::VertexHandle);
+    template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::VertexHandle);
+    template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle);
+    template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle);
+
+
+    template void set_position<glm::vec3>(const VMesh&, const glm::vec3&);
+    template void set_position<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
+    template void set_position<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
+    template void set_position<std::array<double, 3>>(const VMesh&, const std::array<double, 3>&);
+    template void set_position<std::array<float, 3>>(const VMesh&, const std::array<float, 3>&);
+
+    template void set_rotation<glm::vec3>(const VMesh&, const glm::vec3&);
+    template void set_rotation<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
+    template void set_rotation<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
+    template void set_rotation<std::array<double, 3>>(const VMesh&, const std::array<double, 3>&);
+    template void set_rotation<std::array<float, 3>>(const VMesh&, const std::array<float, 3>&);
+
+    template glm::vec3 get_position<glm::vec3>(const VMesh&);
+    template OpenVolumeMesh::Vec3d get_position<OpenVolumeMesh::Vec3d>(const VMesh&);
+    template OpenVolumeMesh::Vec3f get_position<OpenVolumeMesh::Vec3f>(const VMesh&);
+    template std::array<double, 3> get_position<std::array<double, 3>>(const VMesh&);
+    template std::array<float, 3> get_position<std::array<float, 3>>(const VMesh&);
+
+    template glm::vec3 get_rotation<glm::vec3>(const VMesh&);
+    template OpenVolumeMesh::Vec3d get_rotation<OpenVolumeMesh::Vec3d>(const VMesh&);
+    template OpenVolumeMesh::Vec3f get_rotation<OpenVolumeMesh::Vec3f>(const VMesh&);
+    template std::array<double, 3> get_rotation<std::array<double, 3>>(const VMesh&);
+    template std::array<float, 3> get_rotation<std::array<float, 3>>(const VMesh&);
+
+
+    template void set_camera_position<glm::vec3>(const glm::vec3&);
+    template void set_camera_position<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
+    template void set_camera_position<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
+    template void set_camera_position<std::array<double, 3>>(const std::array<double, 3>&);
+    template void set_camera_position<std::array<float, 3>>(const std::array<float, 3>&);
+
+    template void set_camera_view_direction<glm::vec3>(const glm::vec3&);
+    template void set_camera_view_direction<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
+    template void set_camera_view_direction<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
+    template void set_camera_view_direction<std::array<double, 3>>(const std::array<double, 3>&);
+    template void set_camera_view_direction<std::array<float, 3>>(const std::array<float, 3>&);
+
+
+    template VBox add_shape<VBox>();
+    template VCylinder add_shape<VCylinder>();
+    template VSphere add_shape<VSphere>();
+
+    template VBox add_shape<VBox>(const VMesh&);
+    template VCylinder add_shape<VCylinder>(const VMesh&);
+    template VSphere add_shape<VSphere>(const VMesh&);
+
+    template VBox add_shape<VBox>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template VCylinder add_shape<VCylinder>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template VSphere add_shape<VSphere>(const VMesh&, OpenVolumeMesh::CellHandle);
+
+    template void set_position<glm::vec3>(const VShape&, const glm::vec3&);
+    template void set_position<OpenVolumeMesh::Vec3d>(const VShape&, const OpenVolumeMesh::Vec3d&);
+    template void set_position<OpenVolumeMesh::Vec3f>(const VShape&, const OpenVolumeMesh::Vec3f&);
+    template void set_position<std::array<double, 3>>(const VShape&, const std::array<double, 3>&);
+    template void set_position<std::array<float, 3>>(const VShape&, const std::array<float, 3>&);
+
+    template void set_scale<glm::vec3>(const VShape&, const glm::vec3&);
+    template void set_scale<OpenVolumeMesh::Vec3d>(const VShape&, const OpenVolumeMesh::Vec3d&);
+    template void set_scale<OpenVolumeMesh::Vec3f>(const VShape&, const OpenVolumeMesh::Vec3f&);
+    template void set_scale<std::array<double, 3>>(const VShape&, const std::array<double, 3>&);
+    template void set_scale<std::array<float, 3>>(const VShape&, const std::array<float, 3>&);
+
+    template void set_color<glm::vec3>(const VShape&, const glm::vec3&);
+    template void set_color<OpenVolumeMesh::Vec3d>(const VShape&, const OpenVolumeMesh::Vec3d&);
+    template void set_color<OpenVolumeMesh::Vec3f>(const VShape&, const OpenVolumeMesh::Vec3f&);
+    template void set_color<std::array<double, 3>>(const VShape&, const std::array<double, 3>&);
+    template void set_color<std::array<float, 3>>(const VShape&, const std::array<float, 3>&);
+
+    template glm::vec3 get_position<glm::vec3>(const VShape&);
+    template OpenVolumeMesh::Vec3d get_position<OpenVolumeMesh::Vec3d>(const VShape&);
+    template OpenVolumeMesh::Vec3f get_position<OpenVolumeMesh::Vec3f>(const VShape&);
+    template std::array<double, 3> get_position<std::array<double, 3>>(const VShape&);
+    template std::array<float, 3> get_position<std::array<float, 3>>(const VShape&);
+
+    template glm::vec3 get_scale<glm::vec3>(const VShape&);
+    template OpenVolumeMesh::Vec3d get_scale<OpenVolumeMesh::Vec3d>(const VShape&);
+    template OpenVolumeMesh::Vec3f get_scale<OpenVolumeMesh::Vec3f>(const VShape&);
+    template std::array<double, 3> get_scale<std::array<double, 3>>(const VShape&);
+    template std::array<float, 3> get_scale<std::array<float, 3>>(const VShape&);
 }

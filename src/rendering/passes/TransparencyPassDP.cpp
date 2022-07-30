@@ -171,7 +171,7 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_transparency_shader->set_uniform_vec3f("u_light_color", light.color);
         m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
-        m_transparency_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
+        m_transparency_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
         m_transparency_shader->set_uniform_float("u_peel_depth", peel_depth);
         m_transparency_shader->set_uniform_float("u_slice_depth", slice_depth);
         m_transparency_shader->set_uniform_vec3f("u_min", min);

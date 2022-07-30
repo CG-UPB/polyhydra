@@ -65,7 +65,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
             m_mesh_shader->set_uniform_vec3f("u_light_color", light.color);
             m_mesh_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-            m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color.get_rgba());
+            m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
             m_mesh_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
             m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
             m_mesh_shader->set_uniform_vec3f("u_min", mesh->get_world_bb(view_transform).first);
@@ -78,7 +78,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
             m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
-            m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color.get_rgba());
+            m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);
             m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
             m_mesh_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
 

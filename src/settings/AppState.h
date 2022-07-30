@@ -25,6 +25,7 @@ namespace volumeshOS::Internal
             SelectionMode selection_mode        = SelectionMode::OFF;
             SSAOMode ssao_mode                  = SSAOMode::QUALITY;
             SSAOOptions ssao_custom_options     = {};
+            bool shapes_active                  = true;
             bool selection_active               = false;
             bool transparency_active            = false;
             bool ssao_active                    = true;

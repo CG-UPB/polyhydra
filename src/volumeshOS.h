@@ -5,6 +5,7 @@
 namespace volumeshOS
 {
     struct VMesh;
+    struct VShape;
 
     // General
 
@@ -90,6 +91,9 @@ namespace volumeshOS
     void clear(const VMesh& mesh);
 
 
+    // Returns the OpenVolumeMesh instance of a mesh
+    [[nodiscard]] OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* get_ovm(const VMesh& mesh);
+
     // Returns a list of all loaded meshes
     [[nodiscard]] std::vector<VMesh> get_meshes();
 
@@ -102,41 +106,53 @@ namespace volumeshOS
 
 
     // Set color for all meshes (all cells and halffaces)
-    void set_color(const Color& color);
+    template<typename Vec4T>
+    void set_color(const Vec4T& color);
 
     // Set color for one mesh (all cells and halffaces)
-    void set_color(const VMesh& mesh, const Color& color);
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, const Vec4T& color);
 
     // Set color for one cell of a mesh
-    void set_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, const Color& color);
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, const Vec4T& color);
 
     // Set color for one face (both halffaces) of a mesh
-    void set_color(const VMesh& mesh, OpenVolumeMesh::FaceHandle face, const Color& color);
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::FaceHandle face, const Vec4T& color);
 
     // Set color for one halfface of a mesh
-    void set_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface, const Color& color);
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface, const Vec4T& color);
 
     // Set color for one edge of a mesh
-    void set_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge, const Color& color);
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge, const Vec4T& color);
 
     // Set color for one vertex of a mesh
-    void set_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex, const Color& color);
+    template<typename Vec4T>
+    void set_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex, const Vec4T& color);
 
 
     // Returns the color of the mesh
-    [[nodiscard]] Color get_color(const VMesh& mesh);
+    template<typename Vec4T>
+    [[nodiscard]] Vec4T get_color(const VMesh& mesh);
 
     // Returns the color of a cell from a given mesh
-    [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
+    template<typename Vec4T>
+    [[nodiscard]] Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
 
     // Returns the color of a halfface from a given mesh
-    [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface);
+    template<typename Vec4T>
+    [[nodiscard]] Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface);
 
     // Returns the color of an edge from a given mesh
-    [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge);
+    template<typename Vec4T>
+    [[nodiscard]] Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge);
 
     // Returns the color of a vertex from a given mesh
-    [[nodiscard]] Color get_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex);
+    template<typename Vec4T>
+    [[nodiscard]] Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex);
 
 
     // Set name of a mesh
@@ -199,11 +215,19 @@ namespace volumeshOS
     // Set the position of a mesh
     void set_position(const VMesh& mesh, float x, float y, float z);
 
+    // Set the position of a mesh
+    template<typename Vec3T>
+    void set_position(const VMesh& mesh, const Vec3T& position);
+
     // Set the scale of a mesh
     void set_scale(const VMesh& mesh, float scale);
 
     // Set the rotation of a mesh using euler angles
     void set_rotation(const VMesh& mesh, float x, float y, float z);
+
+    // Set the rotation of a mesh
+    template<typename Vec3T>
+    void set_rotation(const VMesh& mesh, const Vec3T& rotation);
 
     // Resets the rotation of a mesh
     void reset_rotation(const VMesh& mesh);
@@ -259,13 +283,15 @@ namespace volumeshOS
     [[nodiscard]] float get_specular_coefficient(const VMesh& mesh);
 
     // Returns the position of a mesh
-    [[nodiscard]] std::array<float, 3> get_position(const VMesh& mesh);
+    template<typename Vec3T>
+    [[nodiscard]] Vec3T get_position(const VMesh& mesh);
 
     // Returns the scale of a mesh
     [[nodiscard]] float get_scale(const VMesh& mesh);
 
     // Returns the rotation of a mesh using euler angles
-    [[nodiscard]] std::array<float, 3> get_rotation(const VMesh& mesh);
+    template<typename Vec3T>
+    [[nodiscard]] Vec3T get_rotation(const VMesh& mesh);
 
     // Returns the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
     [[nodiscard]] float get_slice_factor(const VMesh& mesh);
@@ -298,13 +324,58 @@ namespace volumeshOS
     [[nodiscard]] bool is_valid(const VMesh& mesh);
 
 
+    /* Shapes */
+
+    template<typename ShapeType>
+    [[nodiscard]] ShapeType add_shape();
+
+    template<typename ShapeType>
+    [[nodiscard]] ShapeType add_shape(const VMesh& mesh);
+
+    template<typename ShapeType>
+    [[nodiscard]] ShapeType add_shape(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
+
+    void remove_shape(const VShape& shape);
+
+    void remove_shapes();
+
+    void set_position(const VShape& shape, float x, float y, float z);
+
+    template<typename Vec3T>
+    void set_position(const VShape& shape, const Vec3T& position);
+
+    void set_scale(const VShape& shape, float scalar);
+
+    void set_scale(const VShape& shape, float x, float y, float z);
+
+    template<typename Vec3T>
+    void set_scale(const VShape& shape, const Vec3T& scale);
+
+    template<typename Vec4T>
+    void set_color(const VShape& shape, const Vec4T& color);
+
+    template<typename Vec3T>
+    [[nodiscard]] Vec3T get_position(const VShape& shape);
+
+    template<typename Vec3T>
+    [[nodiscard]] Vec3T get_scale(const VShape& shape);
+
+
     /* Camera */
 
     // Set the position of the camera
     void set_camera_position(float x, float y, float z);
 
+    // Set the position of the camera
+    template<typename Vec3T>
+    void set_camera_position(const Vec3T& position);
+
     // Set the view direction of the camera
     void set_camera_view_direction(float x, float y, float z);
+
+    // Set the view direction of the camera
+    template<typename Vec3T>
+    void set_camera_view_direction(const Vec3T& direction);
 
     // Set the camera mode
     void set_camera_mode(Mode mode);
@@ -318,8 +389,13 @@ namespace volumeshOS
     // Set the direction of the light in the scene
     void set_light_direction(float x, float y, float z);
 
+    // Set the direction of the light in the scene
+    template<typename Vec3T>
+    void set_light_direction(const Vec3T& direction);
+
     // Set the viewport background color
-    void set_background_color(const Color& color);
+    template<typename Vec4T>
+    void set_background_color(const Vec4T& color);
 
 
     /* Miscellaneous */
@@ -342,6 +418,86 @@ namespace volumeshOS
     // Log a message
     void log(const std::string& message);
 
+
+    struct VShape
+    {
+        explicit VShape(int id = -1) : m_id(id)
+        {}
+
+        inline void remove() const
+        {
+            volumeshOS::remove_shape(*this);
+        }
+
+        inline void set_position(float x, float y, float z) const
+        {
+            volumeshOS::set_position(*this, x, y, z);
+        }
+
+        template<typename Vec3T>
+        inline void set_position(const Vec3T& position) const
+        {
+            volumeshOS::set_position<Vec3T>(*this, position);
+        }
+
+        inline void set_scale(float x, float y, float z) const
+        {
+            volumeshOS::set_scale(*this, x, y, z);
+        }
+
+        inline void set_scale(float scalar) const
+        {
+            volumeshOS::set_scale(*this, scalar);
+        }
+
+        template<typename Vec3T>
+        inline void set_scale(const Vec3T& scale) const
+        {
+            volumeshOS::set_scale<Vec3T>(*this, scale);
+        }
+
+        template<typename Vec4T>
+        inline void set_color(const Vec4T& color) const
+        {
+            volumeshOS::set_color<Vec4T>(*this, color);
+        }
+
+        template<typename Vec3T>
+        [[nodiscard]] inline Vec3T get_position() const
+        {
+            return volumeshOS::get_position<Vec3T>(*this);
+        }
+
+        template<typename Vec3T>
+        [[nodiscard]] inline Vec3T get_scale() const
+        {
+            return volumeshOS::get_scale<Vec3T>(*this);
+        }
+
+        // Returns the internal volumeshOS id of this shape
+        [[nodiscard]] int get_id() const
+        {
+            return m_id;
+        }
+
+    private:
+        int m_id;
+    };
+
+    struct VSphere : public VShape
+    {
+        using VShape::VShape;
+    };
+
+    struct VCylinder : public VShape
+    {
+        using VShape::VShape;
+    };
+
+    struct VBox : public VShape
+    {
+        using VShape::VShape;
+    };
 
     // Wrapper class to use meshes in an object-oriented way
     struct VMesh
@@ -368,6 +524,24 @@ namespace volumeshOS
         }
 
 
+        // Returns the OpenVolumeMesh instance of this mesh
+        [[nodiscard]] inline OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* get_ovm() const
+        {
+            return volumeshOS::get_ovm(*this);
+        }
+
+        template<typename ShapeType>
+        [[nodiscard]] inline ShapeType add_shape() const
+        {
+            return volumeshOS::add_shape<ShapeType>(*this);
+        }
+
+        template<typename ShapeType>
+        [[nodiscard]] inline ShapeType add_shape(OpenVolumeMesh::CellHandle cell) const
+        {
+            return volumeshOS::add_shape<ShapeType>(*this, cell);
+        }
+
         // Load a configuration file for a mesh
         inline void load_configuration(const std::string& path) const
         {
@@ -382,70 +556,81 @@ namespace volumeshOS
 
 
         // Set color for one mesh (all cells and halffaces)
-        inline void set_color(const Color& color) const
+        template<typename Vec4T>
+        inline void set_color(const Vec4T& color) const
         {
-            volumeshOS::set_color(*this, color);
+            volumeshOS::set_color<Vec4T>(*this, color);
         }
 
         // Set color for one cell of a mesh
-        inline void set_color(OpenVolumeMesh::CellHandle cell, const Color& color) const
+        template<typename Vec4T>
+        inline void set_color(OpenVolumeMesh::CellHandle cell, const Vec4T& color) const
         {
-            volumeshOS::set_color(*this, cell, color);
+            volumeshOS::set_color<Vec4T>(*this, cell, color);
         }
 
         // Set color for one face (both halffaces) of a mesh
-        inline void set_color(OpenVolumeMesh::FaceHandle face, const Color& color) const
+        template<typename Vec4T>
+        inline void set_color(OpenVolumeMesh::FaceHandle face, const Vec4T& color) const
         {
-            volumeshOS::set_color(*this, face, color);
+            volumeshOS::set_color<Vec4T>(*this, face, color);
         }
 
         // Set color for one halfface of a mesh
-        inline void set_color(OpenVolumeMesh::HalfFaceHandle halfface, const Color& color) const
+        template<typename Vec4T>
+        inline void set_color(OpenVolumeMesh::HalfFaceHandle halfface, const Vec4T& color) const
         {
-            volumeshOS::set_color(*this, halfface, color);
+            volumeshOS::set_color<Vec4T>(*this, halfface, color);
         }
 
         // Set color for one edge of a mesh
-        inline void set_color(OpenVolumeMesh::EdgeHandle edge, const Color& color) const
+        template<typename Vec4T>
+        inline void set_color(OpenVolumeMesh::EdgeHandle edge, const Vec4T& color) const
         {
-            volumeshOS::set_color(*this, edge, color);
+            volumeshOS::set_color<Vec4T>(*this, edge, color);
         }
 
         // Set color for one vertex of a mesh
-        inline void set_color(OpenVolumeMesh::VertexHandle vertex, const Color& color) const
+        template<typename Vec4T>
+        inline void set_color(OpenVolumeMesh::VertexHandle vertex, const Vec4T& color) const
         {
-            volumeshOS::set_color(*this, vertex, color);
+            volumeshOS::set_color<Vec4T>(*this, vertex, color);
         }
 
 
         // Returns the color of the mesh
-        [[nodiscard]] inline Color get_color() const
+        template<typename Vec4T>
+        [[nodiscard]] inline Vec4T get_color() const
         {
-            return volumeshOS::get_color(*this);
+            return volumeshOS::get_color<Vec4T>(*this);
         }
 
         // Returns the color of a cell from a given mesh
-        [[nodiscard]] inline Color get_color(OpenVolumeMesh::CellHandle cell) const
+        template<typename Vec4T>
+        [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::CellHandle cell) const
         {
-            return volumeshOS::get_color(*this, cell);
+            return volumeshOS::get_color<Vec4T>(*this, cell);
         }
 
         // Returns the color of a halfface from a given mesh
-        [[nodiscard]] inline Color get_color(OpenVolumeMesh::HalfFaceHandle halfface) const
+        template<typename Vec4T>
+        [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::HalfFaceHandle halfface) const
         {
-            return volumeshOS::get_color(*this, halfface);
+            return volumeshOS::get_color<Vec4T>(*this, halfface);
         }
 
         // Returns the color of an edge from a given mesh
-        [[nodiscard]] inline Color get_color(OpenVolumeMesh::EdgeHandle edge) const
+        template<typename Vec4T>
+        [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::EdgeHandle edge) const
         {
-            return volumeshOS::get_color(*this, edge);
+            return volumeshOS::get_color<Vec4T>(*this, edge);
         }
 
         // Returns the color of a vertex from a given mesh
-        [[nodiscard]] inline Color get_color(OpenVolumeMesh::VertexHandle vertex) const
+        template<typename Vec4T>
+        [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::VertexHandle vertex) const
         {
-            return volumeshOS::get_color(*this, vertex);
+            return volumeshOS::get_color<Vec4T>(*this, vertex);
         }
 
 
@@ -553,6 +738,13 @@ namespace volumeshOS
             volumeshOS::set_position(*this, x, y, z);
         }
 
+        // Set the position of a mesh
+        template<typename Vec3T>
+        inline void set_position(const Vec3T& position) const
+        {
+            volumeshOS::set_position<Vec3T>(*this, position);
+        }
+
         // Set the scale of a mesh
         inline void set_scale(float scale) const
         {
@@ -563,6 +755,13 @@ namespace volumeshOS
         inline void set_rotation(float x, float y, float z) const
         {
             volumeshOS::set_rotation(*this, x, y, z);
+        }
+
+        // Set the rotation of a mesh using euler angles
+        template<typename Vec3T>
+        inline void set_rotation(const Vec3T& rotation) const
+        {
+            volumeshOS::set_rotation<Vec3T>(*this, rotation);
         }
 
         inline void reset_rotation() const
@@ -668,9 +867,10 @@ namespace volumeshOS
         }
 
         // Returns the position of a mesh
-        [[nodiscard]] inline std::array<float, 3> get_position() const
+        template<typename Vec3T>
+        [[nodiscard]] inline Vec3T get_position() const
         {
-            return volumeshOS::get_position(*this);
+            return volumeshOS::get_position<Vec3T>(*this);
         }
 
         // Returns the scale of a mesh
@@ -680,9 +880,10 @@ namespace volumeshOS
         }
 
         // Returns the rotation of a mesh using euler angles
-        [[nodiscard]] inline std::array<float, 3> get_rotation() const
+        template<typename Vec3T>
+        [[nodiscard]] inline Vec3T get_rotation() const
         {
-            return volumeshOS::get_rotation(*this);
+            return volumeshOS::get_rotation<Vec3T>(*this);
         }
 
         // Returns the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)

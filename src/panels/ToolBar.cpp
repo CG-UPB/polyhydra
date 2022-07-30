@@ -143,9 +143,9 @@ namespace volumeshOS::Internal
 
                 ImGui::TableNextColumn();
                 // Mesh transformations, such as position and scale
-                auto pos = active_mesh.get_position();
+                auto pos = active_mesh.get_position<glm::vec3>();
                 auto scl = active_mesh.get_scale();
-                auto rot = active_mesh.get_rotation();
+                auto rot = active_mesh.get_rotation<glm::vec3>();
                 m_mesh_position[0] = pos[0];
                 m_mesh_position[1] = pos[1];
                 m_mesh_position[2] = pos[2];

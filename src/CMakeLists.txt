@@ -63,8 +63,6 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/MeshPass.h
         ${VOLUMESHOS_SRC}/rendering/passes/BackgroundPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/BackgroundPass.h
-        ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.cpp
-        ${VOLUMESHOS_SRC}/rendering/passes/ShapePass.h
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/SelectionPass.h
         ${VOLUMESHOS_SRC}/rendering/passes/VertexOnlyPass.cpp
@@ -81,12 +79,6 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/rendering/passes/PrePass.h
         ${VOLUMESHOS_SRC}/rendering/passes/SSAOPass.cpp
         ${VOLUMESHOS_SRC}/rendering/passes/SSAOPass.h
-        ${VOLUMESHOS_SRC}/rendering/shapes/Box.cpp
-        ${VOLUMESHOS_SRC}/rendering/shapes/Box.h
-        ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.cpp
-        ${VOLUMESHOS_SRC}/rendering/shapes/Sphere.h
-        ${VOLUMESHOS_SRC}/rendering/shapes/Cylinder.cpp
-        ${VOLUMESHOS_SRC}/rendering/shapes/Cylinder.h
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.cpp
         ${VOLUMESHOS_SRC}/rendering/gl/TextureIcon.h
 
@@ -100,7 +92,7 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/util/Log.h
 
         ${VOLUMESHOS_SRC}/vospch.h
-        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h panels/WindowPanel.h mesh/MeshSerializer.h mesh/MeshSerializer.cpp settings/AppState.cpp)
+        volumeshOS.h volumeshOS.cpp mesh/MeshList.cpp mesh/MeshList.h util/Types.h panels/WindowPanel.h mesh/MeshSerializer.h mesh/MeshSerializer.cpp settings/AppState.cpp rendering/shapes/ShapeRenderer.h rendering/shapes/ShapeRenderer.cpp)
 
 add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
 
