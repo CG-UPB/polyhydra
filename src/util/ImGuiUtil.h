@@ -4,7 +4,7 @@
 
 #include "UIUtil.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     class ImGuiUtil
     {

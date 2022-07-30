@@ -1,12 +1,9 @@
 #pragma once
 
 #include "RenderPass.h"
-#include "../Renderer.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
-    class Renderer;
-
     /**
      * Renders Meshes according to its set mesh properties
      */
@@ -14,17 +11,9 @@ namespace vOS
     {
     public:
 
-        explicit MeshPass(Renderer* renderer);
-        /**
-         * Deconstructor
-         */
+        MeshPass() = default;
         ~MeshPass() = default;
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
-
-
-    private:
-
-        Renderer* m_renderer;
+        void render(const Renderer& renderer) override;
     };
 }

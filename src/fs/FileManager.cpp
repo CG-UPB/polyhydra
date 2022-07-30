@@ -1,7 +1,7 @@
 
 #include "FileManager.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
 
     std::string FileManager::load_as_string(const FS_NAMESPACE::path& file_path, bool abs_path)

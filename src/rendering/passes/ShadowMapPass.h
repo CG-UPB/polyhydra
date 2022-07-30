@@ -2,8 +2,9 @@
 
 #include "RenderPass.h"
 #include "../../panels/MeshView.h"
+#include "rendering/gl/Shader.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
 
     class ShadowMapPass : public RenderPass
@@ -11,13 +12,13 @@ namespace vOS
 
     public:
 
-        ShadowMapPass(Renderer* renderer, int width, int height);
+        ShadowMapPass(int width, int height);
 
         void resize_buffers(int width, int height);
         void bind_for_writing(int cascade_idx);
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
-        void calculate_cascade(float near, float far, int  i);
-        void calculate_cascades(float near, float far, int cascade_levels);
+        void render(const Renderer& renderer) override;
+        void calculate_cascade(const Renderer& renderer, float near, float far, int  i);
+        void calculate_cascades(const Renderer& renderer, float near, float far, int cascade_levels);
         void set_cascade_index(int idx){cascade_idx = idx;};
         void clear_cascades();
 

@@ -2,13 +2,14 @@
 
 #include "vospch.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
-    typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> Mesh;
 
     class VecUtil
     {
     public:
+
+        typedef OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> Mesh;
 
         static void print_mat(const glm::mat4& mat)
         {
@@ -55,31 +56,31 @@ namespace vOS
             return std::string("[" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " + std::to_string(vec.z) + "]");
         }
 
-        [[nodiscard]] static inline glm::vec3 pos_to_vec3(const Mesh& mesh, OpenVolumeMesh::VertexHandle vertex_handle)
+        [[nodiscard]] static inline glm::vec3 pos_to_vec3(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>& mesh, OpenVolumeMesh::VertexHandle vertex_handle)
         {
             auto pos = mesh.vertex(vertex_handle);
             return {pos[0], pos[1], pos[2]};
         }
 
-        [[nodiscard]] static inline glm::vec3 pos_to_vec3(const Mesh& mesh, int vertex_handle)
+        [[nodiscard]] static inline glm::vec3 pos_to_vec3(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>& mesh, int vertex_handle)
         {
             auto pos = mesh.vertex(OpenVolumeMesh::VertexHandle{vertex_handle});
             return {pos[0], pos[1], pos[2]};
         }
 
-        [[nodiscard]] static inline glm::vec3 normal_to_vec3(const Mesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface_handle)
+        [[nodiscard]] static inline glm::vec3 normal_to_vec3(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>& mesh, OpenVolumeMesh::HalfFaceHandle halfface_handle)
         {
             auto normal = mesh.normal(halfface_handle);
             return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
         }
 
-        [[nodiscard]] static inline glm::vec3 normal_to_vec3(const Mesh& mesh, int halfface_id)
+        [[nodiscard]] static inline glm::vec3 normal_to_vec3(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>& mesh, int halfface_id)
         {
             auto normal = mesh.normal(OpenVolumeMesh::HalfFaceHandle{halfface_id});
             return glm::normalize(glm::vec3{std::isnan(normal[0]) ? 0.0 : normal[0], std::isnan(normal[1]) ? 0.0 : normal[1], std::isnan(normal[2]) ? 0.0 : normal[2]});
         }
 
-        [[nodiscard]] static inline std::array<glm::vec3, 2> edge_vertices(const Mesh& mesh, OpenVolumeMesh::EdgeHandle edge_handle)
+        [[nodiscard]] static inline std::array<glm::vec3, 2> edge_vertices(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>& mesh, OpenVolumeMesh::EdgeHandle edge_handle)
         {
             auto [v0, v1] = mesh.edge_vertices(edge_handle);
             return {pos_to_vec3(mesh, v0), pos_to_vec3(mesh, v1)};

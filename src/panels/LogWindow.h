@@ -2,24 +2,20 @@
 
 #include "vospch.h"
 
-#include "../ImguiRenderer.h"
+#include "WindowPanel.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     /**
-     * This class represents a LogWindow, which is shown in vOS and where the User could log some messages. It is
+     * This class represents a LogWindow, which is shown in volumeshOS and where the User could log some messages. It is
      * realised as Singleton
      */
     class LogWindow final: public WindowPanel
     {
         public:
 
+            LogWindow();
             ~LogWindow() override = default;
-            /**
-             * static Singleton method to get the class-object
-             * @return the class-object
-             */
-            static std::shared_ptr<LogWindow> getInstance();
 
             /**
              * clears the LogWindow - deletes all thats in the buffer
@@ -58,13 +54,6 @@ namespace vOS
             void show() override;
 
         private:
-            /**
-             * private Constructor for the Singleton
-             */
-            LogWindow();
-
-            // this variable holds the class-object for the Singleton
-            static std::shared_ptr<LogWindow> s_instance;
 
             // Variables that are used for Buffering and filtering
             ImGuiTextBuffer m_buffer;

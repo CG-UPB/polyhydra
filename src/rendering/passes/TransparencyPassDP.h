@@ -3,18 +3,18 @@
 #include "RenderPass.h"
 #include "../Renderer.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     class Renderer;
 
-    class TransparencyPass_DP : public RenderPass
+    class TransparencyPassDP : public RenderPass
     {
     public:
-        explicit TransparencyPass_DP(Renderer* renderer, int width, int height);
+        explicit TransparencyPassDP(int width, int height);
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh, int pass);
-        void render_composition(int current_passes, int max_passes);
+        void render(const Renderer& renderer) override;
+        void render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh);
+        void render_composition(const Renderer& renderer, int current_passes, int max_passes);
         void resize_buffers(int width, int height);
 
         GLuint m_texture;

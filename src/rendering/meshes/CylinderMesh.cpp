@@ -1,7 +1,7 @@
 
 #include "CylinderMesh.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     CylinderMesh::CylinderMesh(int samples, float radius, float height)
     {

@@ -4,128 +4,28 @@
 
 #include "../rendering/gl/VertexArrayObject.h"
 #include "MeshVertexBuffer.h"
-#include "nlohmann/json.hpp"
 #include "../util/VecUtil.h"
 
-namespace vOS
+
+namespace volumeshOS::Internal
 {
-
-    struct Color
-    {
-        Color(float _r, float _g, float _b) : r(_r), g(_g), b(_b), a(1)
-        {}
-
-        Color(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a)
-        {}
-
-        [[nodiscard]] glm::vec3 get_rgb() const
-        {
-            return {r, g, b};
-        }
-
-        [[nodiscard]] glm::vec4 get_rgba() const
-        {
-            return {r, g, b, a};
-        }
-
-        float r;
-        float g;
-        float b;
-        float a;
-    };
 
     struct MeshData
     {
-        [[nodiscard]] nlohmann::json to_json()
-        {
-            nlohmann::json j;
-
-            // Phong Data
-            j["phong_spec_strength"] = specular_strength;
-            j["phong_spec_exponent"] = specular_exponent;
-            j["phong_ambient_strength"] = ambient_strength;
-            j["phong_diffuse_strength"] = diffuse_strength;
-
-            // Toolbox Data
-            j["tool_slice_level"] = slice_level;
-            j["tool_slice_locked"] = slice_locked;
-            j["tool_peel_level"] = peel_level;
-            j["tool_cell_size"] = cell_size;
-
-            // Rendering Data
-            j["rendering_default_color"] = {color.r, color.g, color.b, color.a};
-            j["rendering_visible"] = visible;
-            j["rendering_selection_color"] = {selection_color.r, selection_color.g, selection_color.b,
-                                              selection_color.a};
-
-            // Transform Data
-            j["transform_position"] = {position.x, position.y, position.z};
-            j["transform_scale"] = {scale.x, scale.y, scale.z};
-
-            // Roundings
-            j["roundings activated"] = rounding_active;
-            j["rounding size"] = rounding_size;
-
-            return j;
-        }
-
-        void load_from_json(nlohmann::json j)
-        {
-            // Phong Data
-            specular_strength = j["phong_spec_strength"];
-            specular_exponent = j["phong_spec_exponent"];
-            ambient_strength = j["phong_ambient_strength"];
-            diffuse_strength = j["phong_diffuse_strength"];
-
-            // Toolbox Data
-            slice_level = j["tool_slice_level"];
-            slice_locked = j["tool_slice_locked"];
-            peel_level = j["tool_peel_level"];
-            cell_size = j["tool_cell_size"];
-
-            // Rendering Data
-            auto color_vec = j["rendering_default_color"];
-            color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
-            visible = j["rendering_visible"];
-            color_vec = j["rendering_selection_color"];
-            selection_color = Color(color_vec[0], color_vec[1], color_vec[2], color_vec[3]);
-
-
-            // Transform Data
-            auto pos_vec = j["transform_position"];
-            //position = glm::vec3(pos_vec[0], pos_vec[1], pos_vec[2]);
-            auto scale_vec = j["transform_scale"];
-            scale = glm::vec3(scale_vec[0], scale_vec[1], scale_vec[2]);
-
-            // Roundings
-            rounding_active = j["roundings activated"];
-            rounding_size = j["rounding size"];
-        }
-
 
         [[nodiscard]] const glm::mat4& get_transform() const
         {
             return transformation;
         }
 
-        void update_transform()
-        {
-            glm::mat4 rot(1.0f);
-            rot = glm::translate(glm::mat4(1.0), (position )) * rotation * glm::translate(glm::mat4(1.0), -(position )) ;
-            glm::mat4 scal(1.0f);
-            scal = glm::translate(glm::mat4(1.0), (position )) * scaling * glm::translate(glm::mat4(1.0), -(position )) ;
-            transformation =  scal * rot * translation;
-        }
+        void update_transform();
 
-        glm::mat4 translation = glm::mat4(1.0f);
-        glm::mat4 scaling = glm::mat4(1.0f);
-        glm::mat4 rotation = glm::mat4(1.0f);
-        glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::mat4 transformation = glm::mat4(1.0f);
+        glm::mat4 rotation          = glm::mat4(1.0f);
+        glm::mat4 transformation    = glm::mat4(1.0f);
 
         // Rendering Variables
-        Color color                 = {0.76f, 0.76f, 0.76f, 1.0f};
-        Color selection_color       = {0.76f, 0.76f, 0.76f, 0.0f};
+        glm::vec4 color             = {1.0f, 1.0f, 1.0f, 1.0f};
+        glm::vec4 selection_color   = {1.0f, 1.0f, 1.0f, 0.0f};
         float ambient_strength      = 1.0f;
         float diffuse_strength      = 1.0f;
         float specular_strength     = 0.3f;
@@ -133,11 +33,12 @@ namespace vOS
 
         // Toolbox Variables
         float peel_level            = 0.0f;
+        int max_peel_depth          = 0;
         float slice_level           = 0.0f;
         float cell_size             = 1.0f;
         bool slice_locked           = false;
-        bool rounding_active        = false;
-        float rounding_size         = 0.0f;
+        bool rounding_active        = true;
+        float rounding_size         = 0.2f;
 
         // Transform Variables
         glm::vec3 position          = {0.0f, 0.0f, 0.0f};
@@ -148,6 +49,7 @@ namespace vOS
         // Other
         bool visible                = true;
         int selection_id_offset     = 0;
+        std::string name            = "default";
     };
 
     class MeshObject
@@ -156,7 +58,7 @@ namespace vOS
 
         explicit MeshObject(int id);
 
-        // Selection Functionality
+        // SelectionMode Functionality
         std::unordered_set<int>& get_all_selected_faces()
         {
             return m_selected_faces;
@@ -182,19 +84,19 @@ namespace vOS
          * @param id ID to access element data
          * @param type declares type of element
          */
-        void select_element(int id, int type);
+        void select_element(int id, EntityType type);
 
         /**
          * Removes a shape on selected element (vertex, edge, face)
          * @param id ID to access element data
          * @param type declares type of element
          */
-        void unselect_element(int id, int type);
+        void deselect_element(int id, EntityType type);
 
         /**
          * Removes all shapes added by selection
          */
-        void unselect_all();
+        void deselect_all();
 
         /**
          * Checks if a specific element is selected
@@ -202,19 +104,7 @@ namespace vOS
          * @param type declares type of element
          * @return
          */
-        bool is_element_selected(int id, int type);
-
-        /**
-         * Uses OVM FileManager to load Mesh from file
-         * @param file_path path to file
-         */
-        void load_from_file(const std::string& file_path);
-
-        /**
-         * Uses OVM FileManager to save Mesh to file
-         * @param file_path path to file
-         */
-        void write_to_file(const std::string &file_path) const;
+        bool is_element_selected(int id, EntityType type);
 
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
 
@@ -224,7 +114,11 @@ namespace vOS
          */
         void set_selection_offset(int start);
 
-        void set_face_color(int ovm_id, Color color);
+        void set_face_color(int ovm_id, const glm::vec4& color);
+
+        void set_cell_color(int ovm_id, const glm::vec4& color);
+
+        void set_mesh_color(const glm::vec4& color);
 
         /**
          * updates the vertex_buffer
@@ -255,7 +149,7 @@ namespace vOS
 
         int get_max_peel_depth() const;
 
-        std::tuple<int, int>& selection_offset()
+        const std::array<int, 2>& selection_offset()
         {
             return m_selection_offset;
         };
@@ -268,43 +162,14 @@ namespace vOS
 
         glm::vec3 get_max();
 
-        /**
-         * Calculates bounding box of transformed vertices. Used for slicing into camera direction.
-         * @param transform Transformation matrix
-         * @return bounding box in mesh coorinates
-         */
         std::pair<glm::vec3, glm::vec3> &get_world_bb(const glm::mat4 &transform);
 
-        /**
-         * Calculates the direction the camera points to
-         * @param view_transform Transformation matrix
-         * @param view_dir camera direction
-         * @return direction vector
-         */
-        glm::vec3 &get_slice_dir(const glm::mat4 &view_transform, const glm::vec3 &view_dir);
+        glm::vec3 &get_slice_dir(const glm::mat4 &world_transform, const glm::vec3 &view_dir);
 
         MeshData& get_data()
         {
             return m_data;
         }
-
-
-        void set_mesh_name(const std::string &name)
-        {
-            m_mesh_name = name;
-        }
-
-        std::string get_mesh_name()
-        {
-            return m_mesh_name;
-        }
-
-        /**
-         * This is here for rendering the per vertex sphere picking. It must be in this class, because anywhere else,
-         * we would have to update the vertex array with the data every time we render.
-         *
-         * @return the instanced sphere vao for this mesh
-         */
 
         [[nodiscard]] std::shared_ptr<MeshVertexBuffer> get_mvb() const;
 
@@ -323,13 +188,13 @@ namespace vOS
 
         [[nodiscard]] std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> get_ovm() const;
 
-        void translate(glm::vec3 vec);
+        void translate(const glm::vec3& vec);
 
-        void scale(glm::vec3 vec);
+        void scale(const glm::vec3& vec);
 
-        void rotate(float angle, glm::vec3 axis);
+        void rotate(float angle, const glm::vec3& axis);
 
-        glm::vec3 get_up_direction();
+        void reset_rotation();
 
     private:
         /**
@@ -352,10 +217,6 @@ namespace vOS
 
         const int key_multiplier = 1000000;
 
-        std::string m_mesh_name = "default";
-
-        int m_max_peel_depth = 0;
-
         bool m_just_locked;
 
         std::unordered_set<int> m_selected_vertices;
@@ -365,7 +226,7 @@ namespace vOS
 
         std::map<int, int> m_created_shapes;
 
-        std::tuple<int, int> m_selection_offset;
+        std::array<int, 2> m_selection_offset;
 
         std::pair<glm::vec3, glm::vec3> m_transformed_bb;
 

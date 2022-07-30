@@ -3,7 +3,7 @@
 #include "RenderPass.h"
 #include "../../mesh/MeshObject.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     /**
      * Renders the entire scene again in which every element of every mesh is rendered in a unique
@@ -16,7 +16,7 @@ namespace vOS
         SelectionPass();
 
         ~SelectionPass() = default;
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
 
         /**
          * Renders specific Mesh
@@ -24,7 +24,7 @@ namespace vOS
          * @param data
          * @param mesh_id
          */
-        void render_mesh(std::shared_ptr<MeshObject> const& mesh, RenderData& data);
+        void render_mesh(const std::shared_ptr<MeshObject>& mesh, const Renderer& renderer);
         void set_debug_mode(bool mode);
         [[nodiscard]] bool is_debug_mode() const;
 

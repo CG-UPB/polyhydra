@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     class Camera;
 
@@ -10,15 +10,11 @@ namespace vOS
     {
     public:
 
-        TrackBall(Camera& camera, float radius);
-
         static glm::vec3 get_rotation_axis(const glm::vec2& start_position, const glm::vec2& end_position, glm::vec2 viewport_size);
         static float get_rotation_angle(const glm::vec2& start_position, const glm::vec2& end_position, glm::vec2 viewport_size);
 
     private:
 
         static glm::vec3 get_trackball_vector(const glm::vec2& screen_pos, glm::vec2 viewport_size);
-
-        Camera& m_camera;
     };
 }

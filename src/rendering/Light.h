@@ -2,9 +2,11 @@
 
 #include "vospch.h"
 
-namespace vOS {
+namespace volumeshOS::Internal
+{
 
-    class Light {
+    class Light
+    {
 
     public:
         Light();

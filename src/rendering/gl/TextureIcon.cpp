@@ -2,7 +2,7 @@
 #include "TextureIcon.h"
 #include "stb_image.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     TextureIcon::TextureIcon(const std::filesystem::path &file_path)
     {
@@ -16,7 +16,7 @@ namespace vOS
 
         if (image_data == nullptr)
         {
-            std::string message = "Failed to load texture: ";
+            std::string message = "Failed to update texture: ";
             message.append(file_path.string());
             throw std::runtime_error(message.c_str());
         }

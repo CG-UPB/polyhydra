@@ -3,7 +3,7 @@
 #include "OpenVolumeMesh/Geometry/VectorT.hh"
 #include "OpenVolumeMesh/Mesh/PolyhedralMesh.hh"
 
-namespace vOS
+namespace volumeshOS
 {
     class Dijkstra
     {

@@ -1,9 +1,10 @@
 
 #include "SelectionHoverPass.h"
 #include "../meshes/CommonMeshes.h"
-#include "../../Window.h"
+#include "../gl/Shader.h"
+#include "../Renderer.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     SelectionHoverPass::SelectionHoverPass(): m_hover_color(glm::vec4(0.9, 0.2, 0.2, 0.5))
     {
@@ -17,10 +18,9 @@ namespace vOS
         m_edge_vao = std::make_unique<VertexArrayObject>(CommonMeshes::Cylinder::vertices(), CommonMeshes::Cylinder::indices());
     }
 
-    void SelectionHoverPass::render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh)
+    void SelectionHoverPass::render(const Renderer& renderer)
     {
-        // If no element is hovered, return
-        if (m_hovered_type == SELECTION_TYPE_NONE || m_hovered_mesh != mesh->get_id())
+        if (m_hovered_type == SELECTION_TYPE_NONE)
         {
             return;
         }
@@ -31,67 +31,84 @@ namespace vOS
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-        // Transform Data
-        glm::mat4 transform = data.camera.world * mesh->get_data().get_transform();
+        renderer.buffers.target_framebuffer_ms->bind();
 
-        if (m_hovered_type == SELECTION_TYPE_FACE)
+        for (const auto& mesh : renderer.render_list)
         {
-            // Face
-            if (m_face_vao != nullptr)
+            // If no element is hovered, return
+            if (m_hovered_mesh != mesh->get_id())
             {
-                // Draw flat color quad
-                m_flat_color_shader->bind();
-                m_flat_color_shader->set_uniform_mat4f("u_transform", transform);
-                m_flat_color_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_flat_color_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_flat_color_shader->set_uniform_vec4f("u_color", m_hover_color);
-                m_face_vao->draw();
-                m_flat_color_shader->unbind();
+                continue;
+            }
+
+            // Transform Data
+            glm::mat4 transform = renderer.camera->world * mesh->get_data().get_transform();
+
+            if (m_hovered_type == SELECTION_TYPE_FACE)
+            {
+                // Face
+                if (m_face_vao != nullptr)
+                {
+                    // Draw flat color quad
+                    m_flat_color_shader->bind();
+                    m_flat_color_shader->set_uniform_mat4f("u_transform", transform);
+                    m_flat_color_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+                    m_flat_color_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+                    m_flat_color_shader->set_uniform_vec4f("u_color", m_hover_color);
+                    m_face_vao->draw();
+                    m_flat_color_shader->unbind();
+                }
+            }
+            else if (m_hovered_type == SELECTION_TYPE_VERTEX)
+            {
+                // Vertex
+                if (m_quad_vao != nullptr)
+                {
+                    // Draw flat color sphere
+                    m_quad_circle_shader->bind();
+                    m_quad_circle_shader->set_uniform_mat4f("u_transform", transform);
+                    m_quad_circle_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+                    m_quad_circle_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+                    m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
+                    m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
+                    m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
+                    m_quad_circle_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+                    m_quad_vao->draw();
+                    m_quad_circle_shader->unbind();
+                }
+            }
+            else if (m_hovered_type == SELECTION_TYPE_EDGE)
+            {
+                // Edge
+                if (m_edge_vao != nullptr)
+                {
+                    // Draw flat color cylinder
+                    glm::vec4 color(m_hover_color);
+                    color *= 0.5;
+                    m_edge_hover_shader->bind();
+                    m_edge_hover_shader->set_uniform_mat4f("u_mesh_transform", transform);
+                    m_edge_hover_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+                    m_edge_hover_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+                    m_edge_hover_shader->set_uniform_vec4f("u_color", color);
+                    m_edge_hover_shader->set_uniform_vec3f("u_from_vertex", m_hovered_edge_from);
+                    m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
+                    m_edge_hover_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+                    m_edge_hover_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+                    m_edge_vao->draw();
+                    m_edge_hover_shader->unbind();
+                }
             }
         }
-        else if (m_hovered_type == SELECTION_TYPE_VERTEX)
-        {
-            // Vertex
-            if (m_quad_vao != nullptr)
-            {
-                // Draw flat color sphere
-                m_quad_circle_shader->bind();
-                m_quad_circle_shader->set_uniform_mat4f("u_transform", transform);
-                m_quad_circle_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_quad_circle_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_quad_circle_shader->set_uniform_vec4f("u_hover_color", m_hover_color);
-                m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
-                m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
-                m_quad_circle_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-                m_quad_vao->draw();
-                m_quad_circle_shader->unbind();
-            }
-        }
-        else if (m_hovered_type == SELECTION_TYPE_EDGE)
-        {
-            // Edge
-            if (m_edge_vao != nullptr)
-            {
-                // Draw flat color cylinder
-                glm::vec4 color(m_hover_color);
-                color *= 0.5;
-                m_edge_hover_shader->bind();
-                m_edge_hover_shader->set_uniform_mat4f("u_mesh_transform", transform);
-                m_edge_hover_shader->set_uniform_mat4f("u_projection", data.camera.projection);
-                m_edge_hover_shader->set_uniform_mat4f("u_view", data.camera.view);
-                m_edge_hover_shader->set_uniform_vec4f("u_color", color);
-                m_edge_hover_shader->set_uniform_vec3f("u_from_vertex", m_hovered_edge_from);
-                m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
-                m_edge_hover_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-                m_edge_hover_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-                m_edge_vao->draw();
-                m_edge_hover_shader->unbind();
-            }
-        }
+        renderer.buffers.target_framebuffer_ms->unbind();
     }
 
-    void SelectionHoverPass::hover(const RenderData& data, int mesh_id, int type, int id)
+    void SelectionHoverPass::hover(const std::shared_ptr<MeshObject>& mesh, int type, int id)
     {
+        if(mesh != nullptr && type == SELECTION_TYPE_NONE)
+        {
+            m_hovered_mesh = mesh->get_id();
+        }
+
         // Do not doubly hover above an element
         if (m_hovered_id == id && m_hovered_type == type)
         {
@@ -101,12 +118,11 @@ namespace vOS
         // Remember Element data
         m_hovered_type = type;
         m_hovered_id = id;
-        m_hovered_mesh = mesh_id;
 
-        // Get MeshObject
-        auto mesh = Window::instance().get_mesh_obj(mesh_id);
-        if(mesh == nullptr)
+        if (mesh == nullptr)
+        {
             return;
+        }
 
         auto mesh_transform = mesh->get_data().get_transform();
 
@@ -124,26 +140,6 @@ namespace vOS
             {
                 m_face_vao->update_vertices(mesh_data.vertices, mesh_data.indices);
             }
-
-            glm::vec3 v = {0.0f, 0.0f, 0.0f};
-            for(int i = 0; i < mesh_data.vertices.size(); i++)
-            {
-                auto x = i % 3;
-                switch(x)
-                {
-                    case 0:
-                        v.x += mesh_data.vertices[i];
-                        break;
-                    case 1:
-                        v.y += mesh_data.vertices[i];
-                        break;
-                    case 2:
-                        v.z += mesh_data.vertices[i];
-                        break;
-                }
-            }
-            v /= mesh_data.vertices.size() / 3;
-            hover_position = v;
         }
         else if (m_hovered_type == SELECTION_TYPE_VERTEX)
         {
@@ -158,7 +154,6 @@ namespace vOS
                 m_hovered_vertex_position.z = pos[2];
                 m_hovered_vertex_position.w = 1.0f;
             }
-            hover_position = m_hovered_vertex_position;
         }
         else if (m_hovered_type == SELECTION_TYPE_EDGE)
         {
@@ -178,9 +173,6 @@ namespace vOS
                 m_hovered_edge_to.y = v1[1];
                 m_hovered_edge_to.z = v1[2];
 
-                hover_position.x = (m_hovered_edge_from.x + m_hovered_edge_to.x) / 2;
-                hover_position.y = (m_hovered_edge_from.y + m_hovered_edge_to.y) / 2;
-                hover_position.z = (m_hovered_edge_from.z + m_hovered_edge_to.z) / 2;
             }
         }
     }

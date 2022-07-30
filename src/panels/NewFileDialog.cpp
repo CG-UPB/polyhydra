@@ -1,15 +1,9 @@
 
 #include "NewFileDialog.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
-
-    NewFileDialog::NewFileDialog()
-    {
-        // empty constructor
-    }
-
-    char const* NewFileDialog::openDialog(const char* filedialog)
+    char const* NewFileDialog::open_dialog(const char* filedialog)
     {
 
         // Variable for the filename
@@ -20,8 +14,8 @@ namespace vOS
                 filedialog,
                 "",
                 1,
-                l_OpenfilterPattern,
-                NULL,
+                m_open_filter_pattern,
+                nullptr,
                 0);
 
         // error message if the file dialog was used wrong
@@ -33,12 +27,12 @@ namespace vOS
                     "ok",
                     "info",
                     1);
-            return NULL;
+            return nullptr;
         }
         return lTheOpenFileName;
     }
 
-    char const* NewFileDialog::saveDialog(const char* filedialog, std::string default_name)
+    char const* NewFileDialog::save_dialog(const char* filedialog, const std::string& default_name)
     {
         char const* lTheSaveFileName;
         // opens the save file dialog - for more information see https://github.com/native-toolkit/tinyfiledialogs
@@ -46,8 +40,8 @@ namespace vOS
                 filedialog,
                 default_name.c_str(),
                 2,
-                l_SavefilterPattern,
-                NULL);
+                m_save_filter_pattern,
+                nullptr);
 
         // error message if the file dialog was used wrong
         if (!lTheSaveFileName)
@@ -58,14 +52,14 @@ namespace vOS
                     "ok",
                     "info",
                     1);
-            return NULL;
+            return nullptr;
         }
 
         return lTheSaveFileName;
     }
 
 
-    char const* NewFileDialog::loadMeshSettings(const char* filedialog)
+    char const* NewFileDialog::load_mesh_settings(const char* filedialog)
     {
 
         // Variable for the filename
@@ -76,8 +70,8 @@ namespace vOS
                 filedialog,
                 "",
                 1,
-                l_LoadMeshfilterPattern,
-                NULL,
+                m_load_mesh_filter_pattern,
+                nullptr,
                 0);
 
         // error message if the file dialog was used wrong
@@ -89,12 +83,12 @@ namespace vOS
                     "ok",
                     "info",
                     1);
-            return NULL;
+            return nullptr;
         }
         return lTheOpenFileName;
     }
 
-    char const* NewFileDialog::saveMeshSettings(const char* filedialog)
+    char const* NewFileDialog::save_mesh_settings(const char* filedialog)
     {
         char const* lTheSaveFileName;
         // opens the save file dialog - for more information see https://github.com/native-toolkit/tinyfiledialogs
@@ -102,8 +96,8 @@ namespace vOS
                 filedialog,
                 "mesh.json",
                 1,
-                l_SaveMeshfilterPattern,
-                NULL);
+                m_save_mesh_filter_pattern,
+                nullptr);
 
         // error message if the file dialog was used wrong
         if (!lTheSaveFileName)
@@ -114,7 +108,7 @@ namespace vOS
                     "ok",
                     "info",
                     1);
-            return NULL;
+            return nullptr;
         }
 
         return lTheSaveFileName;

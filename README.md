@@ -72,7 +72,7 @@ We provide a selection of available modes that are preset and rendered with the 
 </p>
 The following is a listing and specific explanation of each mode:
 
-- [Wireframe](#wireframe-mode)
+- [WIREFRAME](#wireframe-mode)
 - [Only Vertices](#only-vertices-mode)
 - [Phong Facenormals](#phong-facenormals-mode)
 - [Phong Vertexnormals](#phong-vertexnormals-mode)
@@ -81,7 +81,7 @@ The following is a listing and specific explanation of each mode:
 - [Ambient Occlusion](#ambient-occlusion-mode)
 - [Shadows](#shadows-mode)
 
-### Wireframe Mode
+### WIREFRAME Mode
 In this mode, the meshes are rendered in wireframe only. 
 The possible features transparency, shadows and ambient occlusion are deactivated, because they are not considered useful in connection with wireframe. 
 Cell rounding is enabled by default, but can be disabled via the corresponding checkbox. 

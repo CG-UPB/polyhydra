@@ -2,13 +2,13 @@
 #include "Shader.h"
 #include "../../fs/FileManager.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     std::unordered_map<std::string, std::shared_ptr<Shader>> Shader::s_shaders;
 
     Shader::Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath)
     {
-        // load vertex and fragment shader contents
+        // update vertex and fragment shader contents
         std::string vertexSource = FileManager::load_as_string(vertexPath, true);
         std::string fragmentSource = FileManager::load_as_string(fragmentPath, true);
 
@@ -206,7 +206,7 @@ namespace vOS
             std::string name_without_extension = file.path().stem().string();
             std::string extension = file.path().extension().string();
 
-            // we only have a fragment shader for this, we will load that manually later
+            // we only have a fragment shader for this, we will update that manually later
             if (name_without_extension == "pre_mesh_phong"
                 || name_without_extension == "transparency_wb"
                 || name_without_extension == "transparency_dp")
@@ -236,7 +236,7 @@ namespace vOS
             *source = file.path();
         }
 
-        // we have collected all shader paths, so load them all
+        // we have collected all shader paths, so update them all
         for (auto& shader_source_path : shader_source_paths)
         {
             s_shaders[shader_source_path.first] = std::shared_ptr<Shader>(new Shader(
@@ -246,7 +246,7 @@ namespace vOS
             ));
         }
 
-        // manually load the pre pass shader, since only the fragment shader is different from the phong shader
+        // manually update the pre pass shader, since only the fragment shader is different from the phong shader
         FS_NAMESPACE::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
         FS_NAMESPACE::path transparency_path = FileManager::get_resource_path() / shader_path / "transparency";
 

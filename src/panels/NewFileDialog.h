@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../ImguiRenderer.h"
+#include "../Window.h"
 #include <tinyfiledialogs.h>
 
-namespace vOS
+namespace volumeshOS::Internal
 {
 
     /**
@@ -16,13 +16,6 @@ namespace vOS
     public:
 
         /**
-         * creates a new Object of the class, which could be used to create a file dialog
-         */
-        NewFileDialog();
-
-        ~NewFileDialog() = default;
-
-        /**
          *
          * This method creates a file dialog, which returns the path of a ovm-file, after the user has chosen some. If
          * the user cancels the Input, or gives a wrong file ending an error-prompt will be displayed and return value will be "NULL"
@@ -30,7 +23,7 @@ namespace vOS
          * @param filedialog - the title of the window prompt
          * @return char const * filename, or NULL
          */
-        char const* openDialog(const char* filedialog);
+        char const* open_dialog(const char* filedialog);
 
         /**
          *
@@ -41,7 +34,7 @@ namespace vOS
          * @param default_name - the default name of the file
          * @return char const * filename, or NULL
          */
-        char const* saveDialog(const char* filedialog, std::string default_name = "file.png");
+        char const* save_dialog(const char* filedialog, const std::string& default_name = "file.png");
 
         /**
          *
@@ -51,7 +44,7 @@ namespace vOS
          * @param filedialog - the title of the window prompt
          * @return char const * filename, or NULL
          */
-        char const* loadMeshSettings(const char* filedialog);
+        char const* load_mesh_settings(const char* filedialog);
 
         /**
          *
@@ -61,21 +54,19 @@ namespace vOS
          * @param filedialog - the title of the window prompt
          * @return char const * filename, or NULL
          */
-        char const* saveMeshSettings(const char* filedialog);
+        char const* save_mesh_settings(const char* filedialog);
 
     private:
 
-        // Buffer which is used for input of filename
-        char lBuffer[1024];
         // file ending for the openfile-dialog
-        char const* l_OpenfilterPattern[1] = {"*.ovm"};
+        const char* m_open_filter_pattern[1] = {"*.ovm"};
         // file endings for the savefile-dialog
-        char const* l_SavefilterPattern[2] = {"*.png", "*.bmp"};
+        const char* m_save_filter_pattern[2] = {"*.png", "*.bmp"};
 
-        // file ending for the load-mesh-data-dialog
-        char const* l_LoadMeshfilterPattern[1] = {"*.json"};
+        // file ending for the update-mesh-data-dialog
+        const char* m_load_mesh_filter_pattern[1] = {"*.json"};
         // file ending for the save-mesh-data-dialog
-        char const* l_SaveMeshfilterPattern[1] = {"*.json"};
+        const char* m_save_mesh_filter_pattern[1] = {"*.json"};
     };
 }
 

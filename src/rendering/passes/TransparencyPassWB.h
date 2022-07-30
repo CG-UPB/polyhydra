@@ -2,28 +2,27 @@
 
 #include "RenderPass.h"
 #include "../Renderer.h"
+#include "rendering/gl/Shader.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     class Renderer;
 
-    class TransparencyPass_WB : public RenderPass
+    class TransparencyPassWB : public RenderPass
     {
     public:
-        explicit TransparencyPass_WB(Renderer* renderer, int width, int height);
+        explicit TransparencyPassWB(const Renderer& renderer, int width, int height);
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
         void render_composition();
-        void resize_buffers(int width, int height);
+        void resize_buffers(const Renderer& renderer,int width, int height);
         void clear_framebuffer() const;
 
         GLuint m_reveal_texture;
         GLuint m_accum_texture;
         GLuint m_depth_texture;
 
-        void generate_transparency_framebuffer(int width, int height);
-        void bind_transparent_buffer();
-        void unbind_transparent_buffer();
+        void generate_transparency_framebuffer(const Renderer& renderer);
 
         unsigned int get_accum_texture();
         unsigned int get_reveal_texture();

@@ -4,7 +4,7 @@
 #include "../util/VecUtil.h"
 #include "MeshProperties.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     AttributeDefinitions MeshVertexBuffer::s_attribute_definitions{};
 
@@ -47,9 +47,10 @@ namespace vOS
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
-    MeshVertexBuffer::MeshVertexBuffer(const std::shared_ptr<Mesh>& mesh):
-        m_mesh(mesh), m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
+    MeshVertexBuffer::MeshVertexBuffer(const std::shared_ptr<OVMesh>& mesh):
+        m_current_loading_cell_it(mesh->cells_begin()), m_normals(*mesh)
     {
+        m_mesh = mesh;
         // first update the normal face attribute for all faces
         m_normals.update_vertex_normals();
         m_original_vertices = get_vertices(m_mesh);
@@ -172,7 +173,7 @@ namespace vOS
         return ((float) m_num_loaded_cells / (float) m_mesh->n_cells()) * 100.0f;
     }
 
-    void MeshVertexBuffer::add_cell_by_faces(const std::shared_ptr<Mesh>& mesh, Cell cell)
+    void MeshVertexBuffer::add_cell_by_faces(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
     {
         auto peel_property = mesh->request_cell_property<int>(MeshProperties::PROP_PEEL_DEPTH);
 
@@ -258,7 +259,7 @@ namespace vOS
             {
                 // get the corresponding edge vertex
                 auto vertex = mesh->from_vertex_handle(hfhe_it);
-                auto face = vOS::Mesh::face_handle(chf_it);
+                auto face = OVMesh::face_handle(chf_it);
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
                 vertex_normals.push_back(vertex_normal);
@@ -457,7 +458,7 @@ namespace vOS
         data.indices.push_back(m_current_rounded_index + i1);
     }
 
-    void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<Mesh>& mesh, Cell cell)
+    void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
     {
         int cell_vertex_offset = m_vertex_offset_rounded;
 
@@ -470,6 +471,7 @@ namespace vOS
         // start with the halffaces, because with them, we can navigate inside the current cell without other cells
         // if we would instead take the halfedges of a vertex for example, they would include other cells,
         // which we don't want
+        //mesh->set_color()
         for (auto chf_it: mesh->cell_halffaces(cell))
         {
             face_normals[chf_it.idx()] = halfface_normal_to_vec3(chf_it.idx());
@@ -641,7 +643,7 @@ namespace vOS
                 glm::vec3 edge_face_center_average = (face_centers[data.halfface_id] + face_centers[prev_data.halfface_id]) * 0.5f;
                 glm::vec3 edge_normal = glm::normalize(face_normal + prev_face_normal);
 
-                auto edge = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
+                auto edge = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle{data.halfedge_id});
                 // edge vertex
                 halfedge_vertex_indices[edge.idx()][data.from_vertex_id] = add_vertex_data_to_cell_data(
                         cell_data,
@@ -656,7 +658,7 @@ namespace vOS
                 );
                 total_cell_vertex_count++;
 
-                auto face = vOS::Mesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
+                auto face = OVMesh::face_handle(OpenVolumeMesh::HalfFaceHandle{data.halfface_id});
                 bool is_boundary = mesh->is_boundary(face);
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex_id) : -face_normal;
 
@@ -775,8 +777,8 @@ namespace vOS
                 const int to_corner_vertex_halfedge_id = face_vertex.to_vertex_halfedge_id;
                 const int next_to_corner_vertex_halfedge_id = face_vertex.next_to_vertex_halfedge_id;
 
-                const int to_corner_vertex_edge_id = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
-                const int next_to_corner_vertex_edge_id = vOS::Mesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
+                const int to_corner_vertex_edge_id = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
+                const int next_to_corner_vertex_edge_id = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
 
                 const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
 
@@ -819,7 +821,7 @@ namespace vOS
         m_current_rounded_index += (int) cell_data.vertex_positions.size() / 3;
     }
 
-    void MeshVertexBuffer::add_from_to_vertex(const std::shared_ptr<Mesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
+    void MeshVertexBuffer::add_from_to_vertex(const std::shared_ptr<OVMesh>& mesh, const OpenVolumeMesh::VertexHandle& from,
                                               const OpenVolumeMesh::VertexHandle& to)
     {
         VecUtil::push_vec3(
@@ -832,7 +834,7 @@ namespace vOS
         );
     }
 
-    std::vector<float> MeshVertexBuffer::get_vertices(const std::shared_ptr<Mesh>& mesh)
+    std::vector<float> MeshVertexBuffer::get_vertices(const std::shared_ptr<OVMesh>& mesh)
     {
         std::vector<float> vertices;
         vertices.reserve(mesh->n_vertices() * 3);
@@ -1003,6 +1005,16 @@ namespace vOS
     glm::vec4 MeshVertexBuffer::get_cell_color(int cell_id)
     {
         return get_cell_attribute<glm::vec4>(VAO::MESH_FACE, Attribute::COLOR, cell_id);
+    }
+
+    float MeshVertexBuffer::get_cell_dig_value(int cell_id)
+    {
+        return get_cell_attribute<float>(VAO::MESH_FACE, Attribute::IS_DIGGED, cell_id);
+    }
+
+    float MeshVertexBuffer::get_cell_isolate_value(int cell_id)
+    {
+        return get_cell_attribute<float>(VAO::MESH_FACE, Attribute::IS_ISOLATED, cell_id);
     }
 
     void MeshVertexBuffer::set_cell_selection(int cell_id, bool selected)
@@ -1342,6 +1354,16 @@ namespace vOS
             return glm::vec4{attrib_array[index], attrib_array[index + 1], attrib_array[index + 2], attrib_array[index + 3]};
         }
         return get_default_value<T>();
+    }
+
+    glm::vec3 MeshVertexBuffer::get_cell_center(int cell_id)
+    {
+        return m_cell_centers[cell_id];
+    }
+
+    float MeshVertexBuffer::get_cell_peel_depth(int cell_id)
+    {
+        return m_peel_depths[cell_id];
     }
 
     template void MeshVertexBuffer::update_cell_attribute<float>(VAO, Attribute, int, float);

@@ -5,7 +5,8 @@
 
 class GLFWwindow;
 
-namespace vOS {
+namespace volumeshOS::Internal
+{
     /**
      * This class fetches GLFW Keyboard and Mouse Inputs, translates them if keybinds are set, and operates on different classes depending on the input
      */

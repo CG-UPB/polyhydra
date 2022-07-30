@@ -4,7 +4,7 @@
 #include "RenderPass.h"
 #include "../gl/PrePassFrameBufferObject.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
 
     class PrePass : public RenderPass
@@ -15,11 +15,12 @@ namespace vOS
         PrePass(int width, int height);
 
         void resize_buffers(int width, int height);
-        void clear_position_buffer(const RenderData& data);
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData& data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
 
         [[nodiscard]] std::shared_ptr<PrePassFrameBufferObject> get_framebuffer() const;
+
+        void clear_position_buffer(const Renderer& renderer);
 
     private:
 

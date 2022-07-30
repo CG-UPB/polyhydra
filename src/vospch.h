@@ -24,6 +24,7 @@
 #include <limits>
 #include <array>
 #include <memory>
+#include <optional>
 
 // OpenVolumeMesh
 #include <OpenVolumeMesh/Geometry/VectorT.hh>
@@ -43,6 +44,9 @@
 
 // Log
 #include "util/Log.h"
+
+// Types
+#include "util/Types.h"
 
 // Other
 #define PI 3.14159265358979323846f

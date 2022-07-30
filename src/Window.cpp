@@ -1,904 +1,404 @@
 
 #include "Window.h"
 
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include "input/Input.h"
-#include "panels/LogWindow.h"
-#include "panels/MeshView.h"
-#include "panels/CustomUIPanel.h"
-#include "panels/NewFileDialog.h"
-#include "rendering/passes/ShapePass.h"
+#include "util/UIUtil.h"
+#include "fs/FileManager.h"
+#include "rendering/gl/Shader.h"
+#include "rendering/gl/VertexArrayObject.h"
 
-namespace vOS
+#include <stb_image.h>
+
+namespace volumeshOS::Internal
 {
-
-    Window& Window::instance()
+    static void glfw_error_callback(int error, const char* description)
     {
-        // Static mutex guard
-        static std::mutex s_mutex;
-        s_mutex.lock();
-        // Creates window instance
-        static Window inst;
-        // Unlock static mutex guard
-        s_mutex.unlock();
-        return inst;
+        fprintf(stderr, "Glfw Error %d: %s\n", error, description);
     }
 
-    Window::Window()
+    static void print_error(const std::string& description)
     {
-        // Create Custom UI Panel Object
-        m_custom_ui = std::make_unique<CustomUIPanel>();
+        fprintf(stderr, "Error: %s\n", description.c_str());
     }
 
-    void Window::initPanels()
+    Window::Window(int width, int height, std::string title):
+        m_width(width),
+        m_height(height),
+        m_title(std::move(title)),
+        m_window(nullptr)
+    {}
+
+    void Window::initialize()
     {
-        // Initializes Panels
-        m_mesh_view = std::make_unique<MeshView>(720, 480);
-        m_log_window = LogWindow::getInstance();
-        m_mesh_layer_view = std::make_unique<MeshLayerView>();
-        m_toolbar = std::make_unique<ToolBar>();
-        m_quality_panel = std::make_unique<QualityPanel>();
+        // initialize libraries
+        init_glfw();
+        init_imgui();
+        init_style();
+        Shader::load_all();
+        UIUtil::load_all();
+        VertexArrayObject::init();
+
+        // create ui panels
+        panels.log_window           = std::make_shared<LogWindow>();
+        panels.mesh_layer_view      = std::make_shared<MeshLayerView>();
+        panels.mesh_view            = std::make_shared<MeshView>(m_width, m_height);
+        panels.quality_settings     = std::make_shared<QualityPanel>();
+        panels.toolbar              = std::make_shared<ToolBar>();
+
+        m_open = true;
     }
 
-    void Window::setup()
+    void Window::clean_up()
     {
-        m_window_open = true;
-        // Create ImguiRenderer for Imgui communication
-        m_imgui_renderer = std::make_unique<ImguiRenderer>(1280, 720, "volumeshOS");
+        // clean up ui panels
+        panels.log_window           = nullptr;
+        panels.mesh_layer_view      = nullptr;
+        panels.mesh_view            = nullptr;
+        panels.quality_settings     = nullptr;
+        panels.toolbar              = nullptr;
 
-        // Create default UI Panels
-        initPanels();
+        // clean up
+        VertexArrayObject::clean_up();
+        UIUtil::clean_up();
+        Shader::delete_all();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+        glfwDestroyWindow(get_window());
+        glfwTerminate();
 
-        m_initialized = true;
-
-        // We initialized Vos, now we can activate the corresponding Callback Function, to let the programmer know
-        m_vos_initialized();
+        m_open = false;
     }
 
-    void Window::open()
+
+    void Window::init_glfw()
     {
-        // We should not allow calling this method while it is already running
-        if(m_is_in_render_loop)
-            return;
-
-        m_is_in_render_loop = true;
-        // Setup Vos
-        setup();
-
-        // Render window forever until window is closed by user
-        while (m_window_open)
+        // Setup window
+        glfwSetErrorCallback(glfw_error_callback);
+        if (!glfwInit())
         {
-            // Render single frame
-            render();
+            return;
         }
 
-        // Close Vos
-        close();
+        // Decide GL+GLSL versions
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+        // GL ES 2.0 + GLSL 100
+        m_glslVersion = "#version 100";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+        // GL 3.2 + GLSL 150
+        m_glslVersion = "#version 150";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+        // GL 3.0 + GLSL 130
+        m_glslVersion = "#version 330 core";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+        //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
+        glfwWindowHint(GLFW_DEPTH_BITS, 24);
+        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
-        m_is_in_render_loop= false;
+        // Create window with graphics context
+        m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
+        if (m_window == nullptr)
+        {
+            print_error("Failed to create window");
+            return;
+        }
+
+        GLFWimage images[1];
+        images[0].pixels = stbi_load("./res/icons/logo.png", &images[0].width, &images[0].height, 0, 4);
+        glfwSetWindowIcon(m_window, 1, images);
+        stbi_image_free(images[0].pixels);
+
+        glfwMakeContextCurrent(m_window);
+        glfwSwapInterval(1); // Enable vsync
+
+        Input::setup(m_window);
+
+        // update opengl functions
+        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+            print_error("Failed to initialize OpenGL context");
+            return;
+        }
+
+        glEnable(GL_MULTISAMPLE);
+    }
+
+    void Window::init_imgui()
+    {
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+        // we have to create a new string here, otherwise it would be deallocated from the stack before imgui uses it
+        FS_NAMESPACE::path iniPath = FileManager::get_resource_path() / "config.ini";
+        io.IniFilename = (new std::string(iniPath.string()))->c_str();
+
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+
+
+        // Setup Platform/Renderer backends
+        ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+        ImGui_ImplOpenGL3_Init(m_glslVersion.c_str());
+    }
+
+    void Window::init_style()
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+
+        // Rounding
+        style.FrameRounding = 4.0f;
+        style.GrabRounding = 4.0f;
+        style.WindowRounding = 6.0f;
+        style.PopupRounding = 6.0f;
+        style.WindowPadding = {20.0f, 20.0f};
+        style.FramePadding = {10.0f, 4.0f};
+        style.ItemSpacing = {12.0f, 10.0f};
+        style.TabRounding = 4.0f;
+        style.FrameBorderSize = 1.0f;
+        style.TabBorderSize = 1.0f;
+        style.GrabMinSize = 20.0f;
+        style.ChildBorderSize = 0.0f;
+
+        load_light_mode();
+    }
+
+    void Window::show_dock_space()
+    {
+        static bool dockSpaceOpen = true;
+        static ImGuiDockNodeFlags dockSpaceFlags = ImGuiDockNodeFlags_None;
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+        ImGuiWindowFlags window_flags =
+                        ImGuiWindowFlags_NoDocking |
+                        ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoCollapse |
+                        ImGuiWindowFlags_NoResize |
+                        ImGuiWindowFlags_NoMove |
+                        ImGuiWindowFlags_NoBringToFrontOnFocus |
+                        ImGuiWindowFlags_NoNavFocus;
+
+        if (dockSpaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
+            window_flags |= ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("DockSpace Demo", &dockSpaceOpen, window_flags);
+        ImGui::PopStyleVar(3);
+
+        // DockSpace
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiStyle& style = ImGui::GetStyle();
+        float minWinSizeX = style.WindowMinSize.x;
+        style.WindowMinSize.x = 370.0f;
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+        {
+            ImGuiID dockSpaceID = ImGui::GetID("MyDockSpace");
+            ImGui::DockSpace(dockSpaceID, ImVec2(0.0f, 0.0f), dockSpaceFlags);
+        }
+        style.WindowMinSize.x = minWinSizeX;
+    }
+
+    bool Window::should_close()
+    {
+        return glfwWindowShouldClose(get_window()) || !m_open;
     }
 
     void Window::close()
     {
-        // Destroy all meshes
-        remove_all_meshes();
-
-        rendering_mutex.lock();
-        m_window_open = false;
-        rendering_mutex.unlock();
+        m_open = false;
     }
 
-    void Window::end(){
-        // Breaks render loop in open() method
-        m_window_open = false;
+    void Window::pre_render_step()
+    {
+
+        glfwPollEvents();
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        show_dock_space();
+
+        //ImGui::ShowDemoWindow();
     }
 
     void Window::render()
     {
-        rendering_mutex.lock();
-        // Query whether the window has been closed by the user or not
-        bool window_closed = m_imgui_renderer->window_closed();
+        pre_render_step();
 
-        if (window_closed)
-        {
-            // Break render loop in open() method
-            m_window_open = false;
-            rendering_mutex.unlock();
-            return;
-        }
-        rendering_mutex.unlock();
+        panels.log_window->show();
+        panels.mesh_layer_view->show();
+        panels.mesh_view->show();
+        panels.quality_settings->show();
+        panels.toolbar->show();
 
-        // Bizarre Observation:
-        // Removing the rendering mutex from our panels, will result in the test algorithm to finish immediatly, before even a single render
-        // step has been done
-        // Having the mutex guard is extremely slow, though everything renders at a nice 60fps, the algorithm takes forever to complete
-        // However, outputting anything to the console in either thread significantly increases the algorithm speed without reducing the fps
-        // although it will be very abrupt in how many calculations are being done each step
+        AppState::callbacks.on_gui_render();
 
-        // Pre Render Setup
-
-        // Do NOT lock the pre render step, Imgui tries to bind to 60 fps which will result in every thread having to adhere to Imgui's fps mechanism
-        m_imgui_renderer->pre_render_step();
-
-        rendering_mutex.lock();
-
-        // Update ui color mode if necessary
-        if (m_update_ui_color_mode)
-        {
-            if (m_ui_color_mode == UI_COLOR_MODE_LIGHT)
-            {
-                m_imgui_renderer->load_light_mode();
-                m_mesh_view->m_renderer->m_background_pass.set_background_color({1.0f, 1.0f, 1.0f, 1.0f});
-            }
-            else if (m_ui_color_mode == UI_COLOR_MODE_DARK)
-            {
-                m_imgui_renderer->load_dark_mode();
-                m_mesh_view->m_renderer->m_background_pass.set_background_color({0.2f, 0.2f, 0.2f, 1.0f});
-            }
-            m_update_ui_color_mode = false;
-        }
-
-        // Draw all of our panels and renderers
-
-        // Mesh View
-        m_mesh_view->show();
-
-        // Log Window
-        m_log_window->show();
-
-        // QualityPanel
-        m_quality_panel->show();
-
-        // ToolBar
-        m_toolbar->show();
-
-        // MeshLayerView
-        m_mesh_layer_view->show();
-
-        rendering_mutex.unlock();
-
-        //ImGui::ShowDemoWindow();
-
-        // Custom UI is not guarded with mutex guards, to avoid self-deadlocking in linear threads / when no threads are used
-        m_custom_ui->show();
-
-        rendering_mutex.lock();
-        // Set new Custom UI Function after the previous custom ui function has run to its end
-        if (m_new_custom_ui_function_set)
-        {
-            m_new_custom_ui_function_set = false;
-
-            // Set to default if no actual function has been set
-            if (m_temporary_new_custom_ui_function == nullptr)
-                m_temporary_new_custom_ui_function = default_callback_function;
-            m_custom_ui->set_custom_callback((m_temporary_new_custom_ui_function));
-        }
-
-        // Post Render Step
-        m_imgui_renderer->post_render_step();
-
-        rendering_mutex.unlock();
-
-    }
-
-    // Setter Methods (Programmer to Vos) /////////////////////////////////////////////////////////
-
-    void Window::select_element(int mesh_id, int element_handle_id, int element_type)
-    {
-        rendering_mutex.lock();
-        // Get MeshObject
-        auto mesh = get_mesh_obj(mesh_id);
-
-        // Select desired element
-        if (mesh != nullptr)
-            mesh->select_element(element_handle_id, element_type);
-        rendering_mutex.unlock();
-
-        // Call the Selection Callback Function
-        if (element_type == 3)
-        {
-            m_on_face_selection(mesh_id, element_handle_id, true);
-        }
-        else if (element_type == 1)
-        {
-            m_on_vertex_selection(mesh_id, element_handle_id, true);
-        }
-        else if (element_type == 2)
-        {
-            m_on_edge_selection(mesh_id, element_handle_id, true);
-        }
-        else
-            m_on_cell_selection(mesh_id, element_handle_id, true);
-
-    }
-
-    void Window::unselect_element(int mesh_id, int element_handle_id, int element_type)
-    {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        auto mesh = get_mesh_obj(mesh_id);
-
-        // Unselect desired element
-        if (mesh != nullptr)
-            mesh->unselect_element(element_handle_id, element_type);
-
-        rendering_mutex.unlock();
-
-        // Call the Selection Callback Function
-        if (element_type == 0)
-        {
-            m_on_face_selection(mesh_id, element_handle_id, false);
-        }
-        else if (element_type == 1)
-        {
-            m_on_vertex_selection(mesh_id, element_handle_id, false);
-        }
-        else if (element_type == 2)
-        {
-            m_on_edge_selection(mesh_id, element_handle_id, false);
-        }
-        else
-            m_on_cell_selection(mesh_id, element_handle_id, false);
-
-    }
-
-    void Window::unselect_all_elements(int mesh_id)
-    {
-        rendering_mutex.lock();
-        // Get MeshObject
-        std::shared_ptr<MeshObject> mesh = get_mesh_obj(mesh_id);
-
-        // Unselect all elements
-        if (mesh != nullptr)
-            mesh->unselect_all();
-        rendering_mutex.unlock();
-    }
-
-    void Window::unselect_all_elements()
-    {
-        rendering_mutex.lock();
-        // Unselect all elements of all meshes
-        for (const auto& [id, element] : m_mesh_objects)
-        {
-            element->unselect_all();
-        }
-        rendering_mutex.unlock();
-    }
-
-    void Window::set_keybind_manual(int glfw_key_from, int glfw_key_to)
-    {
-        rendering_mutex.lock();
-        Input::set_keybind(glfw_key_from, glfw_key_to);
-        rendering_mutex.unlock();
-    }
-
-    void Window::set_intepret_input(bool interpret)
-    {
-        rendering_mutex.lock();
-        Input::accept_input(interpret);
-        rendering_mutex.unlock();
-    }
-
-    void Window::set_face_color(int mesh_id, int ovm_face_id, const Color& color)
-    {
-        get_mesh_obj(mesh_id)->set_face_color(ovm_face_id, color);
-    }
-
-    void Window::set_cell_color(int mesh_id, int ovm_cell_id, const Color& color)
-    {
-        get_mesh_obj(mesh_id)->get_mvb()->set_cell_color(ovm_cell_id, color.r, color.g, color.b, color.a);
-    }
-
-    Color Window::get_face_color(int mesh_id, int ovm_face_id)
-    {
-        rendering_mutex.lock();
-        auto ovm_face_handle = OpenVolumeMesh::FaceHandle(ovm_face_id);
-        int ovm_halfface_id = get_mesh_obj(mesh_id)->get_ovm()->face_halffaces(ovm_face_handle)[0].idx();
-        auto col = get_mesh_obj(mesh_id)->get_mvb()->get_halfface_color(ovm_halfface_id);
-        Color color = Color(col.r, col.g, col.b, col.a);
-        rendering_mutex.unlock();
-        return color;
-    }
-
-    Color Window::get_cell_color(int mesh_id, int ovm_cell_id)
-    {
-        rendering_mutex.lock();
-        auto col = get_mesh_obj(mesh_id)->get_mvb()->get_cell_color(ovm_cell_id);
-        Color color = Color(col.r, col.g, col.b, col.a);
-        rendering_mutex.unlock();
-        return color;
-    }
-
-    void Window::set_mesh_color(Color color)
-    {
-        set_mesh_color(0, color);
-    }
-
-    void Window::set_mesh_color(int mesh_id, const Color& color)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().color = color;
-    }
-
-    Color Window::get_mesh_color(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().color;
-    }
-
-
-    void Window::set_mesh_selection_color(int mesh_id, const Color& color)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().selection_color = color;
-    }
-
-    Color Window::get_mesh_selection_color(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().selection_color;
-    }
-
-    void Window::set_mesh_visibility(bool visible)
-    {
-        // Change MeshObject Data
-        set_mesh_visibility(0, visible);
-    }
-
-    void Window::set_mesh_visibility(int mesh_id, bool visible)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().visible = visible;
-    }
-
-    bool Window::get_mesh_visibility(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().visible;
-    }
-
-    void Window::set_mesh_slice_level(float slice_level)
-    {
-        set_mesh_slice_level(0, slice_level);
-    }
-
-    void Window::set_mesh_slice_level(int mesh_id, float slice_level)
-    {
-        // Change MeshObject Data
-            get_mesh_obj(mesh_id)->get_data().slice_level = slice_level;
-    }
-
-    float Window::get_mesh_slice_level(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().slice_level;
-    }
-
-    void Window::set_mesh_slice_locked(int mesh_id, bool locked)
-    {
-        // Change MeshObject Data
-            get_mesh_obj(mesh_id)->get_data().slice_locked = locked;
-    }
-
-    bool Window::get_mesh_slice_locked(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().slice_locked;
-    }
-
-    void Window::set_mesh_peel_level(float peel_level)
-    {
-        set_mesh_peel_level(0, peel_level);
-    }
-
-    void Window::set_mesh_peel_level(int mesh_id, float peel_level)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().peel_level = peel_level;
-    }
-
-    float Window::get_mesh_peel_level(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().peel_level;
-    }
-
-    void Window::set_mesh_cell_size(float cell_size)
-    {
-        set_mesh_cell_size(0, cell_size);
-    }
-
-    void Window::set_mesh_cell_size(int mesh_id, float cell_size)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().cell_size = cell_size;
-    }
-
-    float Window::get_mesh_cell_size(int mesh_id)
-    {
-        // Get MeshObject Data
-        return get_mesh_obj(mesh_id)->get_data().cell_size;
-    }
-
-
-    void Window::set_mesh_specular_exponent(int mesh_id, float exp)
-    {
-        get_mesh_obj(mesh_id)->get_data().specular_exponent = exp;
-    }
-
-    float Window::get_mesh_specular_exponent(int mesh_id)
-    {
-        return get_mesh_obj(mesh_id)->get_data().specular_exponent;
-    }
-
-    void Window::set_mesh_specular_strength(int mesh_id, float strength)
-    {
-        get_mesh_obj(mesh_id)->get_data().specular_strength = strength;
-    }
-
-    float Window::get_mesh_specular_strength(int mesh_id)
-    {
-        return get_mesh_obj(mesh_id)->get_data().specular_strength;
-    }
-
-    void Window::set_mesh_ambient_strength(int mesh_id, float strength)
-    {
-        get_mesh_obj(mesh_id)->get_data().ambient_strength = strength;
-    }
-
-    float Window::get_mesh_ambient_strength(int mesh_id)
-    {
-        return get_mesh_obj(mesh_id)->get_data().ambient_strength;
-    }
-
-    void Window::set_mesh_diffuse_strength(int mesh_id, float strength)
-    {
-        get_mesh_obj(mesh_id)->get_data().diffuse_strength = strength;
-    }
-
-    float Window::get_mesh_diffuse_strength(int mesh_id)
-    {
-        return get_mesh_obj(mesh_id)->get_data().diffuse_strength;
-    }
-
-    void Window::set_mesh_position(int mesh_id, float x, float y, float z)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->translate(glm::vec3(x, y, z));
-    }
-
-    void Window::set_mesh_scale(int mesh_id, float scale)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->scale(glm::vec3(scale, scale, scale));
-    }
-
-    void Window::set_mesh_rounding_size(int mesh_id, float r_size)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().rounding_size = r_size;
-    }
-
-    void Window::set_mesh_rounding_activated(int mesh_id, bool r_active)
-    {
-        // Change MeshObject Data
-        get_mesh_obj(mesh_id)->get_data().rounding_active = r_active;
-    }
-
-
-    float Window::get_mesh_rounding_size(int mesh_id)
-    {
-        return get_mesh_obj(mesh_id)->get_data().rounding_size;
-    }
-
-
-    bool Window::get_mesh_rounding_activated(int mesh_id)
-    {
-        return get_mesh_obj(mesh_id)->get_data().rounding_active;
-    }
-
-    void Window::set_custom_imgui(void_callback vc)
-    {
-        rendering_mutex.lock();
-        // Set Temporary Function
-        m_temporary_new_custom_ui_function = std::move(vc);
-        m_new_custom_ui_function_set = true;
-        rendering_mutex.unlock();
-    }
-
-    void Window::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh, int mesh_id)
-    {
-        rendering_mutex.lock();
-        // Create MeshObject
-        auto new_mesh_obj = std::make_shared<MeshObject>(mesh_id);
-        new_mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
-        new_mesh_obj->set_mesh(mesh);
-
-        // Check if mesh_id of mesh already exist: yes -> replace it, no -> just insert it
-        auto search = m_mesh_objects.find(mesh_id);
-        if (search != m_mesh_objects.end())
-        {
-            search->second = std::move(new_mesh_obj);
-        }
-        else
-        {
-            // Insert Mesh
-            m_mesh_objects.emplace(mesh_id, std::move(new_mesh_obj));
-        }
-
-        // If no other Mesh exists, focus the newly added Mesh
-        if (m_mesh_objects.size() == 1) {
-            rendering_mutex.unlock();
-            set_mesh_focus(mesh_id);
-            rendering_mutex.lock();
-        }
-        // Calculate Offsets
-        int offset = 0;
-        for (const auto& [id, mesh_obj] : m_mesh_objects)
-        {
-            mesh_obj->set_selection_offset(offset);
-            offset = std::get<1>(mesh_obj->selection_offset()) + 1;
-        }
-        rendering_mutex.unlock();
-    }
-
-    int Window::add_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
-    {
-        rendering_mutex.lock();
-        // Generate Index
-        int mesh_id = m_total_number_of_loaded_meshes++;
-
-        // Create MeshObject
-        auto new_mesh_obj = std::make_shared<MeshObject>(mesh_id);
-        new_mesh_obj->set_mesh_name(std::to_string(mesh->n_vertices()));
-        new_mesh_obj->set_mesh(mesh);
-
-        // Add mesh to our map
-        m_mesh_objects.emplace(mesh_id, std::move(new_mesh_obj));
-
-        // If no other Mesh exists, focus the newly added Mesh
-        if (m_mesh_objects.size() == 1) {
-
-            rendering_mutex.unlock();
-            set_mesh_focus(mesh_id);
-            rendering_mutex.lock();
-        }
-
-        // Calculate Offsets
-        int offset = 0;
-        for (const auto& [id, mesh_obj] : m_mesh_objects)
-        {
-            mesh_obj->set_selection_offset(offset);
-            offset = std::get<1>(mesh_obj->selection_offset()) + 1;
-        }
-        rendering_mutex.unlock();
-        return mesh_id;
-    }
-
-    void Window::remove_mesh(int index)
-    {
-        rendering_mutex.lock();
-        // Get MeshObject
-        auto mesh_obj = get_mesh_obj(index);
-
-        if (mesh_obj == nullptr)
-        {
-            // Mesh Object does not exist at given index
-            rendering_mutex.unlock();
-            return;
-        }
-
-        // Update Active Mesh
-        bool was_active_mesh = m_focused_mesh == index;
-        if (was_active_mesh)
-        {
-            int new_active_mesh = -1;
-            // Find the first element in our map
-            for (const auto& [id, obj] : m_mesh_objects)
-            {
-                new_active_mesh = id;
-                break;
-            }
-            // Set new active mesh
-            rendering_mutex.unlock();
-            set_mesh_focus(index);
-            rendering_mutex.lock();
-        }
-
-        // Delete from our Map
-        auto iterator = m_mesh_objects.find(index);
-
-        m_mesh_objects.erase(iterator);
-
-        rendering_mutex.unlock();
-    }
-
-    void Window::remove_all_meshes(){
-        rendering_mutex.lock();
-
-        std::vector<int> all_ids;
-
-        // Iterate all Meshes to get_rgb their IDs
-        for(const auto& [id, obj] : m_mesh_objects){
-            all_ids.push_back(id);
-        }
-
-        // Delete all Meshes by their ID
-        for(auto id : all_ids){
-            rendering_mutex.unlock();
-            remove_mesh(id);
-            rendering_mutex.lock();
-        }
-
-        rendering_mutex.unlock();
-    };
-
-
-    void Window::set_mesh_focus(int index)
-    {
-        if(index < 0)
-            return;
-
-        // Get MeshObject
-        auto search = m_mesh_objects.find(index);
-        if (search != m_mesh_objects.end())
-        {
-            m_focused_mesh = index;
-        }
-        // Focus Camera
-        auto mesh_obj = get_mesh_obj(m_focused_mesh);
-        if (mesh_obj != nullptr)
-        {
-            //m_renderer->set_zoom_point(mesh_obj->get_mesh_offset());
-        }
-    }
-
-    int Window::get_mesh_focus() const
-    {
-        return m_focused_mesh;
-    }
-
-    std::shared_ptr<MeshObject> Window::get_mesh_obj(int index)
-    {
-        return m_mesh_objects.find(index) != m_mesh_objects.end() ? m_mesh_objects[index] : nullptr;
+        post_render_step();
     }
 
-
-    void Window::take_screenshot(const std::string& filepath)
-    {
-        rendering_mutex.lock();
-        this->m_mesh_view->m_take_screenshot(filepath);
-        rendering_mutex.unlock();
-    }
-
-    char const * openFileDialog(const char * filedialog)
-    {
-        NewFileDialog file_dialog;
-
-        return file_dialog.openDialog(filedialog);
-    }
-
-    char const * saveFileDialog(const char * filedialog)
-    {
-        NewFileDialog file_dialog;
-
-        return file_dialog.saveDialog(filedialog);
-    }
-
-    void Window::remove_all_shapes(){
-        rendering_mutex.lock();
-
-        ShapePass::remove_all();
-        rendering_mutex.unlock();
-    }
-
-    void Window::remove_shape(unsigned int id)
-    {
-        rendering_mutex.lock();
-        ShapePass::remove_shape(id);
-        rendering_mutex.unlock();
-    }
-
-    unsigned int Window::add_shape(Shape* shape)
-    {
-        // Don't add a non-existing shape
-        if (shape == nullptr)
-            return -1;
-
-        rendering_mutex.lock();
-
-        // Give the shape a unique ID
-        unsigned int shape_id = shape_id_counter++;
-        shape->set_id((shape_id));
-        // Add shape to the ShapePass
-        ShapePass::add_shape(shape);
-        rendering_mutex.unlock();
-
-        return shape_id;
-    }
-
-    void Window::camera_set_position(float x, float y, float z)
-    {
-        rendering_mutex.lock();
-        m_mesh_view->m_render_data.camera.position = glm::vec3(x,y,z);
-        rendering_mutex.unlock();
-    }
-
-    void Window::camera_focus_on(int mesh_id, int ovm_face_id, float time)
-    {
-        rendering_mutex.lock();
-        // Get Face Normal
-        auto face_normal = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_face_normal(ovm_face_id);
-        auto face_barycenter = Window::instance().get_mesh_obj(mesh_id)->get_mvb()->get_halfface_barycenter(ovm_face_id);
-        // Focus
-        //m_mesh_view->m_render_data.camera.focus_spot(face_barycenter, face_normal, time);
-        rendering_mutex.unlock();
-    }
-
-    void Window::camera_focus_on(float target_x, float target_y, float target_z, float pos_x, float pos_y,
-                                 float pos_z, float time)
-    {
-        rendering_mutex.lock();
-        //m_mesh_view->m_render_data.camera.focus_spot({target_x,target_y,target_z}, {pos_x,pos_y,pos_z}, time);
-        rendering_mutex.unlock();
-    }
-
-    void Window::camera_mode(Mode mode)
+    void Window::post_render_step()
     {
-        rendering_mutex.lock();
 
-        m_mesh_view->m_render_data.camera.set_mode(mode);
-        rendering_mutex.unlock();
-    }
-
-    void Window::camera_set_orbital_target(float x, float y, float z, float radius)
-    {
-        rendering_mutex.lock();
-
-//        m_mesh_view->m_render_data.camera.m_orbital_origin = {x,y,z};
-//        if(radius >= 1)
-//            m_mesh_view->m_render_data.camera.radius = radius;
-        rendering_mutex.unlock();
-    }
-
-    void Window::camera_look_at(float x, float y, float z)
-    {
-        rendering_mutex.lock();
-        m_mesh_view->m_render_data.camera.look_at({x,y,z});
-        rendering_mutex.unlock();
-    }
-
-    void Window::save_mesh_data(int mesh_id, const std::string& json_file_path)
-    {
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        auto mesh_obj = get_mesh_obj(mesh_id);
-        // Save MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            try {
-
-
-                // Create Json Object from MeshData
-                nlohmann::json j = mesh_obj->get_data().to_json();
-
-                // Stream it into file
-                std::ofstream o(json_file_path);
-                o << j << std::endl;
-
-                // Close stream
-                o.close();
-            }catch(std::exception e){
-                std::cout << " Error saving " << json_file_path << std::endl;
-            }
-
-        }
-
-        rendering_mutex.unlock();
-    }
-
-    void Window::save_mesh_data(int mesh_id)
-    {
-        std::string filename;
-
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        auto mesh_obj = get_mesh_obj(mesh_id);
-        // Get MeshObject name
-        if (mesh_obj != nullptr)
-        {
-            filename = mesh_obj->get_mesh_name();
-        }else{
-            rendering_mutex.unlock();
-            return;
-        }
-        rendering_mutex.unlock();
-
-        save_mesh_data(mesh_id, filename);
-
-    }
-
-    void Window::load_mesh_data(int mesh_id)
-    {
-        std::string filename;
-
-        rendering_mutex.lock();
-
-        // Get MeshObject
-        auto mesh_obj = get_mesh_obj(mesh_id);
-        // Get MeshObject name
-        if (mesh_obj != nullptr)
-        {
-            filename = mesh_obj->get_mesh_name();
-        }else{
-            rendering_mutex.unlock();
-            return;
-        }
-        rendering_mutex.unlock();
-
-        load_mesh_data(mesh_id, filename);
-
-    }
-
-    void Window::load_mesh_data(int mesh_id, const std::string& json_file_path)
-    {
-        rendering_mutex.lock();
+        ImGui::End();
 
-        // Get MeshObject
-        auto mesh_obj = get_mesh_obj(mesh_id);
-        // Save MeshObject Data
-        if (mesh_obj != nullptr)
-        {
-            try{
-                // Stream from file to JSON
-                std::ifstream i(json_file_path);
-                nlohmann::json j;
-                i >> j;
+        // Rendering
+        ImGui::Render();
+        int displayWidth, displayHeight;
+        glfwGetFramebufferSize(get_window(), &displayWidth, &displayHeight);
 
-                // Read and set Json Data
-                mesh_obj->get_data().load_from_json(j);
+        glViewport(0, 0, displayWidth, displayHeight);
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                // Close stream
-                i.close();
-            }catch(std::exception& e){
-                std::cout << " Error loading " << json_file_path << std::endl;
-            }
-        }
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(get_window());
 
-        rendering_mutex.unlock();
+        Input::reset_offset();
     }
 
     void Window::load_light_mode()
     {
-        m_ui_color_mode = UI_COLOR_MODE_LIGHT;
-        m_update_ui_color_mode = true;
+        ImVec4* colors = ImGui::GetStyle().Colors;
+        colors[ImGuiCol_Text]                   = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
+        colors[ImGuiCol_TextDisabled]           = ImVec4(0.33f, 0.44f, 0.53f, 1.00f);
+        colors[ImGuiCol_WindowBg]               = ImVec4(1.00f, 1.00f, 1.00f, 0.89f);
+        colors[ImGuiCol_ChildBg]                = ImVec4(0.89f, 0.89f, 0.89f, 0.65f);
+        colors[ImGuiCol_PopupBg]                = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+        colors[ImGuiCol_Border]                 = ImVec4(0.74f, 0.74f, 0.74f, 0.49f);
+        colors[ImGuiCol_BorderShadow]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_FrameBg]                = ImVec4(1.00f, 1.00f, 1.00f, 0.66f);
+        colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.95f, 0.95f, 0.95f, 0.68f);
+        colors[ImGuiCol_FrameBgActive]          = ImVec4(0.94f, 0.94f, 0.94f, 1.00f);
+        colors[ImGuiCol_TitleBg]                = ImVec4(0.78f, 0.78f, 0.78f, 0.90f);
+        colors[ImGuiCol_TitleBgActive]          = ImVec4(0.81f, 0.81f, 0.81f, 0.83f);
+        colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.78f, 0.78f, 0.78f, 0.51f);
+        colors[ImGuiCol_MenuBarBg]              = ImVec4(0.77f, 0.77f, 0.77f, 1.00f);
+        colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.64f, 0.64f, 0.64f, 0.00f);
+        colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.68f, 0.68f, 0.68f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabHovered]   = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabActive]    = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+        colors[ImGuiCol_CheckMark]              = ImVec4(0.53f, 0.53f, 0.53f, 1.00f);
+        colors[ImGuiCol_SliderGrab]             = ImVec4(0.67f, 0.67f, 0.67f, 1.00f);
+        colors[ImGuiCol_SliderGrabActive]       = ImVec4(0.63f, 0.63f, 0.63f, 1.00f);
+        colors[ImGuiCol_Button]                 = ImVec4(0.79f, 0.79f, 0.79f, 0.74f);
+        colors[ImGuiCol_ButtonHovered]          = ImVec4(0.78f, 0.78f, 0.78f, 1.00f);
+        colors[ImGuiCol_ButtonActive]           = ImVec4(0.72f, 0.72f, 0.72f, 1.00f);
+        colors[ImGuiCol_Header]                 = ImVec4(0.73f, 0.73f, 0.73f, 0.75f);
+        colors[ImGuiCol_HeaderHovered]          = ImVec4(0.71f, 0.71f, 0.71f, 0.80f);
+        colors[ImGuiCol_HeaderActive]           = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
+        colors[ImGuiCol_Separator]              = ImVec4(0.80f, 0.80f, 0.80f, 0.92f);
+        colors[ImGuiCol_SeparatorHovered]       = ImVec4(0.39f, 0.39f, 0.39f, 0.78f);
+        colors[ImGuiCol_SeparatorActive]        = ImVec4(0.66f, 0.66f, 0.66f, 1.00f);
+        colors[ImGuiCol_ResizeGrip]             = ImVec4(0.18f, 0.18f, 0.18f, 0.25f);
+        colors[ImGuiCol_ResizeGripHovered]      = ImVec4(0.39f, 0.39f, 0.39f, 0.67f);
+        colors[ImGuiCol_ResizeGripActive]       = ImVec4(0.65f, 0.65f, 0.65f, 0.95f);
+        colors[ImGuiCol_Tab]                    = ImVec4(0.75f, 0.75f, 0.75f, 0.51f);
+        colors[ImGuiCol_TabHovered]             = ImVec4(0.65f, 0.65f, 0.65f, 0.80f);
+        colors[ImGuiCol_TabActive]              = ImVec4(1.00f, 1.00f, 1.00f, 0.82f);
+        colors[ImGuiCol_TabUnfocused]           = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
+        colors[ImGuiCol_TabUnfocusedActive]     = ImVec4(1.00f, 1.00f, 1.00f, 0.82f);
+        colors[ImGuiCol_DockingPreview]         = ImVec4(0.65f, 0.65f, 0.65f, 0.70f);
+        colors[ImGuiCol_DockingEmptyBg]         = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+        colors[ImGuiCol_PlotLines]              = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+        colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+        colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+        colors[ImGuiCol_PlotHistogramHovered]   = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+        colors[ImGuiCol_TableHeaderBg]          = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+        colors[ImGuiCol_TableBorderStrong]      = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);
+        colors[ImGuiCol_TableBorderLight]       = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
+        colors[ImGuiCol_TableRowBg]             = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_TableRowBgAlt]          = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+        colors[ImGuiCol_TextSelectedBg]         = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+        colors[ImGuiCol_DragDropTarget]         = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+        colors[ImGuiCol_NavHighlight]           = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+        colors[ImGuiCol_NavWindowingDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+        colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     }
 
     void Window::load_dark_mode()
     {
-        m_ui_color_mode = UI_COLOR_MODE_DARK;
-        m_update_ui_color_mode = true;
-    }
-
-    // Read Methods ///////////////////////////////////////////////////////////////////////////////
-
-
-    bool Window::has_mesh()
-    {
-        return !m_mesh_objects.empty();
-    }
-
-    bool Window::is_ready() const
-    {
-        return m_initialized;
-    }
-
-
-    bool Window::is_closed() const
-    {
-        return !m_window_open;
+        ImVec4* colors = ImGui::GetStyle().Colors;
+        colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
+        colors[ImGuiCol_TextDisabled]           = ImVec4(0.33f, 0.44f, 0.53f, 1.00f);
+        colors[ImGuiCol_WindowBg]               = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
+        colors[ImGuiCol_ChildBg]                = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
+        colors[ImGuiCol_PopupBg]                = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+        colors[ImGuiCol_Border]                 = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
+        colors[ImGuiCol_BorderShadow]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_FrameBg]                = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
+        colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+        colors[ImGuiCol_FrameBgActive]          = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+        colors[ImGuiCol_TitleBg]                = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+        colors[ImGuiCol_TitleBgActive]          = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+        colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+        colors[ImGuiCol_MenuBarBg]              = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
+        colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.02f, 0.39f);
+        colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabHovered]   = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabActive]    = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+        colors[ImGuiCol_CheckMark]              = ImVec4(0.88f, 0.88f, 0.88f, 1.00f);
+        colors[ImGuiCol_SliderGrab]             = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+        colors[ImGuiCol_SliderGrabActive]       = ImVec4(0.63f, 0.63f, 0.63f, 1.00f);
+        colors[ImGuiCol_Button]                 = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
+        colors[ImGuiCol_ButtonHovered]          = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+        colors[ImGuiCol_ButtonActive]           = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+        colors[ImGuiCol_Header]                 = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
+        colors[ImGuiCol_HeaderHovered]          = ImVec4(0.39f, 0.39f, 0.39f, 0.80f);
+        colors[ImGuiCol_HeaderActive]           = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+        colors[ImGuiCol_Separator]              = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
+        colors[ImGuiCol_SeparatorHovered]       = ImVec4(0.39f, 0.39f, 0.39f, 0.78f);
+        colors[ImGuiCol_SeparatorActive]        = ImVec4(0.66f, 0.66f, 0.66f, 1.00f);
+        colors[ImGuiCol_ResizeGrip]             = ImVec4(0.18f, 0.18f, 0.18f, 0.25f);
+        colors[ImGuiCol_ResizeGripHovered]      = ImVec4(0.39f, 0.39f, 0.39f, 0.67f);
+        colors[ImGuiCol_ResizeGripActive]       = ImVec4(0.65f, 0.65f, 0.65f, 0.95f);
+        colors[ImGuiCol_Tab]                    = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
+        colors[ImGuiCol_TabHovered]             = ImVec4(0.65f, 0.65f, 0.65f, 0.80f);
+        colors[ImGuiCol_TabActive]              = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+        colors[ImGuiCol_TabUnfocused]           = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+        colors[ImGuiCol_TabUnfocusedActive]     = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+        colors[ImGuiCol_DockingPreview]         = ImVec4(0.65f, 0.65f, 0.65f, 0.70f);
+        colors[ImGuiCol_DockingEmptyBg]         = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+        colors[ImGuiCol_PlotLines]              = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+        colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+        colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+        colors[ImGuiCol_PlotHistogramHovered]   = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+        colors[ImGuiCol_TableHeaderBg]          = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+        colors[ImGuiCol_TableBorderStrong]      = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);
+        colors[ImGuiCol_TableBorderLight]       = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
+        colors[ImGuiCol_TableRowBg]             = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_TableRowBgAlt]          = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+        colors[ImGuiCol_TextSelectedBg]         = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+        colors[ImGuiCol_DragDropTarget]         = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+        colors[ImGuiCol_NavHighlight]           = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+        colors[ImGuiCol_NavWindowingDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+        colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     }
 
 }

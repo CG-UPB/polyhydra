@@ -8,113 +8,109 @@
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/BackgroundPass.h"
+#include "../rendering/passes/GroundPass.h"
 #include "../rendering/passes/SelectionPass.h"
 #include "../rendering/passes/SelectionHoverPass.h"
 #include "../rendering/passes/PrePass.h"
 #include "../rendering/passes/ShadowMapPass.h"
-#include "../rendering/passes/ShadowColorFilterPass.h"
-#include "../rendering/passes/TransparentShadowMapPass.h"
-#include "../rendering/passes/TransparencyPass_WB.h"
-#include "../rendering/passes/TransparencyPass_DP.h"
+#include "../rendering/passes/TransparencyPassWB.h"
+#include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
-#include "../rendering/passes/ShapePass.h"
-#include "../Window.h"
+#include "../rendering/shapes/ShapeRenderer.h"
+#include "../mesh/MeshList.h"
+#include "camera/Camera.h"
+#include "Light.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
-    class MeshPass;
     class SSAOPass;
+    class TransparencyPassWB;
+    class TransparencyPassDP;
     class ShadowMapPass;
-    class ShadowColorFilterPass;
-    class TransparentShadowMapPass;
-    class TransparencyPass_WB;
-    class TransparencyPass_DP;
 
-    typedef std::function<void(int type, int picked_id)> SelectionCallback;
+    struct ImageExportOptions
+    {
+        int width                       = -1;
+        int height                      = -1;
+        bool transparent_background     = true;
+    };
 
     class Renderer
     {
     public:
 
-        Renderer(int width, int height, std::shared_ptr<FrameBufferObject> initial_target_ms, std::shared_ptr<FrameBufferObject> initial_target);
+        Renderer(int width, int height);
 
-        void set_selection_callback(SelectionCallback callback) { m_selection_callback = std::move(callback); };
+        void set_selection_callback(std::function<void(int, int)> callback) { selection_callback = std::move(callback); };
 
         void resize(int width, int height);
 
-        void render(RenderData* render_data, bool render_bg = true);
+        void render(bool render_bg = true);
 
-        void set_target_framebuffer(std::shared_ptr<FrameBufferObject> target_ms, std::shared_ptr<FrameBufferObject> target);
+        void export_image(const std::string& path, const ImageExportOptions& options = ImageExportOptions{});
+
+    public:
+
+        [[nodiscard]] static bool should_render_mesh(const std::shared_ptr<MeshObject>& mesh);
+
+    public:
+
+        std::shared_ptr<MeshList> mesh_list     = nullptr;
+        std::shared_ptr<Camera> camera          = nullptr;
+        std::shared_ptr<ShapeRenderer> shapes   = nullptr;
+        Light light;
+        std::vector<std::shared_ptr<MeshObject>> render_list;
+        std::function<void(int, int)> selection_callback;
+        glm::vec3 hover_position = {0.0, 0.0, 0.0};
+
+        // render buffers
+        struct
+        {
+            std::shared_ptr<FrameBufferObject> target_framebuffer_ms    = nullptr;
+            std::shared_ptr<FrameBufferObject> target_framebuffer       = nullptr;
+            std::shared_ptr<FrameBufferObject> selection_frame_buffer   = nullptr;
+            std::shared_ptr<PixelBufferObject> pixel_buffer             = nullptr;
+        } buffers;
+
+        // render passes
+        struct
+        {
+            std::shared_ptr<BackgroundPass> background_pass             = nullptr;
+            std::shared_ptr<GroundPass> ground_pass                     = nullptr;
+            std::shared_ptr<PrePass> pre_pass                           = nullptr;
+            std::shared_ptr<ShadowMapPass> shadow_pass                  = nullptr;
+            std::shared_ptr<MeshPass> mesh_pass                         = nullptr;
+            std::shared_ptr<SSAOPass> ssao_pass                         = nullptr;
+            std::shared_ptr<TransparencyPassWB> transparency_pass_wb    = nullptr;
+            std::shared_ptr<TransparencyPassDP> transparency_pass_dp    = nullptr;
+            std::shared_ptr<SelectionPass> selection_pass               = nullptr;
+            std::shared_ptr<SelectionHoverPass> selection_hover_pass    = nullptr;
+            std::shared_ptr<VertexOnlyPass> vertex_only_pass            = nullptr;
+        } passes;
+
+        // frame attributes
+        struct
+        {
+            int limit                       = 4;
+            int current                     = 0;
+            int width                       = 0;
+            int height                      = 0;
+            bool is_rendering_background    = false;
+        } frame;
+
+        // input handling
+        struct
+        {
+            glm::vec2 last                  = {0.0f, 0.0f};
+            glm::vec2 pos                   = {0.0f, 0.0f};
+            glm::vec2 offset                = {0.0f, 0.0f};
+            bool mesh_moving                = false;
+        } input;
 
     private:
 
         void handle_input();
         void handle_camera_input();
         void handle_mesh_input();
-        void render_mesh(RenderData& render_data, const std::shared_ptr<MeshObject>& mesh);
-        void render_selection(RenderData& render_data);
-        void render_pre_pass(RenderData& render_data);
-        void render_shadow_map(RenderData& render_data);
-        void render_ssao_pass(RenderData& render_data);
-        void render_background(RenderData& render_data);
-        void render_meshes(RenderData& render_data);
-        void render_transparency(RenderData& render_data);
-        void render_transparency_wb(RenderData& render_data);
-        void render_transparency_dp(RenderData& render_data);
-        void query_selection(int type, int id);
-
-        // render buffers
-        std::shared_ptr<FrameBufferObject> m_target_ms                          = nullptr;
-        std::shared_ptr<FrameBufferObject> m_target                             = nullptr;
-        std::shared_ptr<FrameBufferObject> m_selectionFrameBuffer               = nullptr;
-        std::shared_ptr<PixelBufferObject> m_pixel_buffer                       = nullptr;
-
-        // render passes
-        std::shared_ptr<PrePass> m_pre_pass                                     = nullptr;
-        std::shared_ptr<ShadowMapPass> m_shadow_pass                            = nullptr;
-        std::shared_ptr<ShadowColorFilterPass> m_shadow_color_filter_pass       = nullptr;
-        std::shared_ptr<TransparentShadowMapPass> m_transparent_shadow_pass     = nullptr;
-        std::shared_ptr<MeshPass> m_mesh_pass                                   = nullptr;
-        std::shared_ptr<SSAOPass> m_ssao_pass                                   = nullptr;
-        std::shared_ptr<TransparencyPass_WB> m_transparency_pass_wb             = nullptr;
-        std::shared_ptr<TransparencyPass_DP> m_transparency_pass_dp             = nullptr;
-        BackgroundPass m_background_pass;
-        ShapePass m_shape_pass;
-        SelectionPass m_selection_pass;
-        SelectionHoverPass m_selection_hover_pass;
-        VertexOnlyPass m_vertex_only_pass;
-
-        int m_frame_limit = 4;
-        int m_current_frame = 0;
-
-        int m_viewportPanelWidth;
-        int m_viewportPanelHeight;
-
-        bool m_is_rendering_background = false;
-        bool mesh_moving = false;
-
-        // Input handling
-        float last_x = 0.0f;
-        float last_y = 0.0f;
-        float xpos = 0.0f;
-        float ypos = 0.0f;
-        float x_offset = 0.0f;
-        float y_offset = 0.0f;
-
-        RenderData* m_render_data = nullptr;
-
-        GlobalViewerSettings& m_settings;
-
-        SelectionCallback m_selection_callback;
-
-        friend class Window;
-        friend class MeshView;
-        friend class MeshPass;
-        friend class SSAOPass;
-        friend class ShadowMapPass;
-        friend class ShadowColorFilterPass;
-        friend class TransparentShadowMapPass;
-        friend class TransparencyPass_WB;
-        friend class TransparencyPass_DP;
     };
 }

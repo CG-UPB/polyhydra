@@ -1,26 +1,12 @@
 
 #include "MeshLayerView.h"
-#include "../Window.h"
 #include "../util/Tooltips.h"
 #include "NewFileDialog.h"
 #include "../util/ImGuiUtil.h"
+#include "volumeshOS.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
-
-
-    MeshLayerView::MeshLayerView() {
-        // empty constructor
-    }
-
-    // Destruktor
-    MeshLayerView::~MeshLayerView()
-    {
-        //delete instance;
-    }
-
-
-
     void MeshLayerView::show()
     {
         if(!ImGui::Begin("Meshes"))
@@ -32,20 +18,19 @@ namespace vOS
         ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
         // create a line for every loaded mesh
-        int active_mesh = Window::instance().get_mesh_focus();
-        for(const auto& [id, mesh] : Window::instance().get_mesh_list())
+        auto active_mesh = volumeshOS::get_focused_mesh();
+        int active_mesh_id = active_mesh.get_id();
+        for(const auto& mesh : volumeshOS::get_meshes())
         {
+            int id = mesh.get_id();
             ImGui::PushID(id);
-            // name is "Mesh" with unique ID
-            std::string str = "Mesh " + std::to_string(id);
-            ImGui::RadioButton(str.c_str(),&active_mesh, id);
-            // if radiobutton is double-clicked, set actual mesh in focus
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+            if(ImGui::RadioButton(mesh.get_name().c_str(), &active_mesh_id, id))
             {
-                LogWindow::getInstance()->addLog("New Focus Mesh");
-                Window::instance().rendering_mutex.unlock();
-                Window::instance().set_mesh_focus(id);
-                Window::instance().rendering_mutex.lock();
+                volumeshOS::set_focused_mesh(VMesh(active_mesh_id));
+            }
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                volumeshOS::focus_camera(VMesh(active_mesh_id));
             }
 
             Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active now. The filter functions of "
@@ -53,21 +38,23 @@ namespace vOS
 
             ImGui::SameLine(ImGui::GetWindowWidth() - 135.0f);
 
-            bool visible = Window::instance().get_mesh_visibility(id);
-            ImGui::Checkbox("##Visible", &visible);
+            bool visible = mesh.get_visibility();
+            if(ImGui::Checkbox("##Visible", &visible))
+            {
+                mesh.set_visibility(visible);
+            }
             ImGui::SameLine();
-            Window::instance().set_mesh_visibility(id, visible);
             Tooltips::ToolTipByHovering("If the Checkbox is clicked, the mesh is visible");
 
 
-            Color color = Window::instance().get_mesh_color(id);
-            float m_color[4];
-            m_color[0] = color.get_rgba().r;
-            m_color[1] = color.get_rgba().g;
-            m_color[2] = color.get_rgba().b;
-            m_color[3] = color.get_rgba().a;
-            ImGui::ColorEdit4("Color",m_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
-            Window::instance().set_mesh_color(id, Color(m_color[0], m_color[1], m_color[2], m_color[3]));
+            auto color = mesh.get_color<glm::vec4>();
+            float new_color[4];
+            new_color[0] = color.r;
+            new_color[1] = color.g;
+            new_color[2] = color.b;
+            new_color[3] = color.a;
+            ImGui::ColorEdit4("Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
+            mesh.set_color(glm::vec4{new_color[0], new_color[1], new_color[2], new_color[3]});
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
             // Advanced Settings
@@ -91,13 +78,11 @@ namespace vOS
 
                     char const *filename;
 
-                    filename = file_dialog.saveMeshSettings("Save Mesh Settings File");
+                    filename = file_dialog.save_mesh_settings("Save Mesh Settings File");
 
                     if (filename != nullptr)
                     {
-                        Window::instance().rendering_mutex.unlock();
-                        Window::instance().save_mesh_data(id, filename);
-                        Window::instance().rendering_mutex.lock();
+                        mesh.save_configuration(filename);
                     }
                 }
                 ImGui::SameLine();
@@ -107,12 +92,10 @@ namespace vOS
 
                     char const *filename;
 
-                    filename = file_dialog.loadMeshSettings("Save Mesh Settings File");
+                    filename = file_dialog.load_mesh_settings("Save Mesh Settings File");
                     if (filename != nullptr)
                     {
-                        Window::instance().rendering_mutex.unlock();
-                        Window::instance().load_mesh_data(id, filename);
-                        Window::instance().rendering_mutex.lock();
+                        mesh.load_configuration(filename);
                     }
                 }
 
@@ -129,49 +112,43 @@ namespace vOS
                 float slider_width = 200.0f;
                 float padding_right = 20.0f;
 
-                int active_mesh = id;
                 // Ambient
                 ImGui::Text("Ambient:");
-                float ambient_value = Window::instance().get_mesh_ambient_strength(active_mesh);
+                float ambient_value = mesh.get_ambient();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f);
-                Window::instance().set_mesh_ambient_strength(active_mesh, ambient_value);
+                mesh.set_ambient(ambient_value);
 
                 // Diffuse
                 ImGui::Text("Diffuse:");
-                float diffuse_value = Window::instance().get_mesh_diffuse_strength(active_mesh);
+                float diffuse_value = mesh.get_diffuse();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f);
-                Window::instance().set_mesh_diffuse_strength(active_mesh, diffuse_value);
+                mesh.set_diffuse(diffuse_value);
 
                 // Specular
                 ImGui::Text("Specular:");
-                float specular_value = Window::instance().get_mesh_specular_strength(active_mesh);
+                float specular_value = mesh.get_specular();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f);
-                Window::instance().set_mesh_specular_strength(active_mesh, specular_value);
+                mesh.set_specular(specular_value);
 
                 // Specular Exponent
                 ImGui::Text("Specular Exponent:");
-                float specular_exp = Window::instance().get_mesh_specular_exponent(active_mesh);
+                float specular_exp = mesh.get_specular_coefficient();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f);
-                Window::instance().set_mesh_specular_exponent(active_mesh, specular_exp);
+                mesh.set_specular_coefficient(specular_exp);
                 ImGui::EndPopup();
             }
             ImGui::Separator();
             ImGui::PopID();
         }
-        Window::instance().rendering_mutex.unlock();
-        Window::instance().set_mesh_focus(active_mesh);
-        Window::instance().rendering_mutex.lock();
-
         ImGui::PopStyleColor();
-
         ImGui::End();
     }
-} // namespace vOS
+} // namespace volumeshOS

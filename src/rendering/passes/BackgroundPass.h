@@ -2,7 +2,7 @@
 
 #include "RenderPass.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     /**
      * Renders the Background visible when no other Mesh occupies the Viewfield
@@ -10,9 +10,7 @@ namespace vOS
     class BackgroundPass : public RenderPass
     {
     public:
-        /**
-         * Constructor
-         */
+
         BackgroundPass();
 
         /**
@@ -26,7 +24,7 @@ namespace vOS
          */
         [[nodiscard]] const glm::vec4& get_background_color() const;
 
-        void render(std::shared_ptr<VertexArrayObject> vao, const RenderData &data, std::shared_ptr<MeshObject> mesh) override;
+        void render(const Renderer& renderer) override;
 
     private:
 

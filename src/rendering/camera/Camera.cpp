@@ -3,15 +3,15 @@
 #include "input/Input.h"
 #include "../../util/VecUtil.h"
 
-namespace vOS {
+namespace volumeshOS::Internal
+{
 
     /**
      * 1) Trackball
      *
      */
 
-    Camera::Camera() :
-            m_trackball(*this, 1.0f)
+    Camera::Camera()
     {
 
         set_viewport_size(800, 600);
@@ -254,6 +254,11 @@ namespace vOS {
 
     glm::vec3 Camera::get_up() const
     {
+        return glm::transpose(view)[1];
+    }
+
+    glm::vec3 Camera::get_world_up() const
+    {
         return m_world_up;
     }
 
@@ -261,5 +266,16 @@ namespace vOS {
     {
         return glm::transpose(view)[0];
     }
+
+    void Camera::set_position(const glm::vec3 pos)
+    {
+        position = pos;
+    }
+
+    void Camera::set_view_direction(const glm::vec3 direction)
+    {
+
+    }
+
 
 }

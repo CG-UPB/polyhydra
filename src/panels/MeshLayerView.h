@@ -2,10 +2,10 @@
 
 #include "vospch.h"
 
-#include "../ImguiRenderer.h"
-#include "../settings/GlobalViewerSettings.h"
+#include "WindowPanel.h"
+#include "../settings/AppState.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     /**
      * This class represents the UI-Prompt, which shows a Mesh List. It shows some options for every single mesh, that
@@ -14,11 +14,6 @@ namespace vOS
     class MeshLayerView final: public WindowPanel
     {
     public:
-        /**
-         * creates an instance of the class
-         */
-        MeshLayerView();
-        ~MeshLayerView();
 
         /**
          * This method creates a UI window that lists the individual meshes. Each currently loaded mesh is listed with
@@ -28,8 +23,5 @@ namespace vOS
          * the color of the mesh and a combo sets the rendering mode.
          */
         void show() override;
-    private:
-        // timer_treshold for the tooltipps
-        int m_timer_treshold = 3;
     };
 }

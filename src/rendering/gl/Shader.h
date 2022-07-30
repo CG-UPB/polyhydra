@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
     class Shader
     {
@@ -30,13 +30,14 @@ namespace vOS
          * Utility shaders.
          */
         static std::shared_ptr<Shader> background_shader() { return get("background"); }
+        //static std::shared_ptr<Shader> ground_shader() { return get("ground"); }
         static std::shared_ptr<Shader> basic_shape_shader() { return get("basic_shape"); }
         static std::shared_ptr<Shader> quad_circle_shader() { return get("quad_circle"); }
         static std::shared_ptr<Shader> flat_color_shader() { return get("flat_color"); }
         static std::shared_ptr<Shader> vertex_only_shader() { return get("vertex_only"); };
 
         /**
-         * Selection shaders.
+         * SelectionMode shaders.
          */
         static std::shared_ptr<Shader> selection_face() { return get("selection_face"); }
         static std::shared_ptr<Shader> selection_vertex_shader() { return get("selection_vertex"); }

@@ -2,7 +2,7 @@
 #include "Light.h"
 #include "../input/Input.h"
 
-namespace vOS
+namespace volumeshOS::Internal
 {
 
     Light::Light()

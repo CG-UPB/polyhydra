@@ -34,7 +34,7 @@ uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
-uniform mat4 u_light_transform;
+mat4 u_light_transform;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
@@ -84,9 +84,14 @@ void main()
 
     // criteria for beeing invisible:
     // peeled, sliced, isolated or digged
-    if (a_peel_depth + 1.0 <= u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
+    if (a_peel_depth + 1.0 <= u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
     {
+        v_Pos = vec3(0.0, 0.0, 0.0);
+        v_Normal = vec3(0.0, 0.0, 0.0);
+        v_Color = vec4(0.0, 0.0, 0.0, 0.0);
         v_Visible = 0;
+        v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
+        return;
     }
     
     // Roundings
