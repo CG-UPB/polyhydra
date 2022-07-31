@@ -21,6 +21,7 @@ namespace volumeshOS::Internal
 
 
         ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+        ImGui::SetScrollX(1);
 
         ImGui::Separator();
         ImGuiUtil::push_bold_font();
@@ -28,7 +29,7 @@ namespace volumeshOS::Internal
         ImGui::PopFont();
 
 
-        ImGui::SameLine(ImGui::GetWindowWidth() - 38.0f - padding_right);
+        ImGui::SameLine(ImGui::GetWindowWidth() - 38.0f - padding_right - 2.0f);
 
         // Snapshot Button uses the class Filedialog to save a screenshot
         if (ImGuiUtil::icon_button("camera.png"))
@@ -104,7 +105,7 @@ namespace volumeshOS::Internal
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("Adjust the mesh position");
                 ImGui::SetNextItemWidth(slider_width - 50.0f);
-                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right - 5.0f);
                 if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -10.0f, 10.0f, "%.1f"))
                 {
                     active_mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
@@ -307,6 +308,7 @@ namespace volumeshOS::Internal
         {
             return;
         }
+        shift_right();
 
         ImGui::SetNextItemWidth(slider_width);
         //ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
@@ -335,6 +337,7 @@ namespace volumeshOS::Internal
         {
             return;
         }
+        shift_right();
 
         const char* selection_modes[] =
                 {
@@ -360,6 +363,7 @@ namespace volumeshOS::Internal
                 {
                         "Face", "Vertex", "Edge", "Cell"
                 };
+        shift_right();
         ImGui::Text("Select by ID");
         ImGui::SetNextItemWidth(slider_width);
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
@@ -386,6 +390,7 @@ namespace volumeshOS::Internal
         {
             return;
         }
+        shift_right();
     }
 
 
@@ -399,25 +404,44 @@ namespace volumeshOS::Internal
         {
             return;
         }
+        shift_right();
 
         bool visible = AppState::settings.ground_options.visible;
+        bool solid = AppState::settings.ground_options.solid;
+        glm::vec3 solid_color = AppState::settings.ground_options.solid_color;
         bool grid = AppState::settings.ground_options.grid;
-        glm::vec3 ground_color = AppState::settings.ground_options.color;
+        glm::vec3 grid_color = AppState::settings.ground_options.grid_color;
         float height = AppState::settings.ground_options.height;
-        float new_color[4];
-        new_color[0] = ground_color.r;
-        new_color[1] = ground_color.g;
-        new_color[2] = ground_color.b;
-        if (ImGui::ColorEdit3("Ground Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        float new_color1[4];
+        new_color1[0] = solid_color.r;
+        new_color1[1] = solid_color.g;
+        new_color1[2] = solid_color.b;
+        if (ImGui::ColorEdit3("Ground Color", new_color1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
-            ground_color = glm::vec3(new_color[0], new_color[1], new_color[2]);
-            AppState::settings.ground_options.color = ground_color;
+            solid_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
+            AppState::settings.ground_options.solid_color = solid_color;
+        }
+        ImGui::SameLine();
+        if (ImGui::Checkbox("solid", &solid))
+        {
+            AppState::settings.ground_options.solid = solid;
+        }
+        shift_right();
+        float new_color2[4];
+        new_color2[0] = grid_color.r;
+        new_color2[1] = grid_color.g;
+        new_color2[2] = grid_color.b;
+        if (ImGui::ColorEdit3("Grid Color", new_color2, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        {
+            grid_color = glm::vec3(new_color2[0], new_color2[1], new_color2[2]);
+            AppState::settings.ground_options.grid_color = grid_color;
         }
         ImGui::SameLine();
         if (ImGui::Checkbox("grid", &grid))
         {
             AppState::settings.ground_options.grid = grid;
         }
+        shift_right();
         if (ImGui::DragFloat("height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
         {
             AppState::settings.ground_options.height = height;
@@ -435,6 +459,8 @@ namespace volumeshOS::Internal
         {
             return;
         }
+        shift_right();
+
         ImGui::SliderInt("Cascades", &settings.num_shadow_cascades, 1, 8);
 
     }
@@ -456,6 +482,8 @@ namespace volumeshOS::Internal
         {
             return;
         }
+        ImGui::InvisibleButton("###invisible-padding", ImVec2(ImGui::GetCursorPosX() - 1, ImGui::GetStyle().FramePadding.y));
+        ImGui::SameLine();
 
         ImVec2& padding = ImGui::GetStyle().FramePadding;
         int selected_preset = static_cast<int>(settings.ssao_mode);
@@ -495,39 +523,33 @@ namespace volumeshOS::Internal
         {
             return;
         }
+        shift_right();
 
-        ImGui::Checkbox("Transparency", &settings.transparency_active);
-        ImGui::SameLine();
-        Tooltips::HelpMarkerWithQuestionMark("This checkbox activates transparency");
+        auto transparency_mode = settings.transparency_mode;
 
-        if (ImGui::Button("Transparency Settings"))
+        if (ImGui::RadioButton("Depth Peeling", transparency_mode == TransparencyMode::DEPTH_PEELING))
         {
-            ImGui::OpenPopup("transparency Popup");
+            settings.transparency_mode = TransparencyMode::DEPTH_PEELING;
         }
-        ImGui::SameLine();
-        Tooltips::HelpMarkerWithQuestionMark(
-                "This button will open a Popup where you can switch the transparency mode between Weighted blended and Depth Peeling."
-                "It is also possible to adjust the number of passes used for depth peeling (default-value is 12)");
-        if (ImGui::BeginPopup("transparency Popup"))
+        //shift_right();
+        if (transparency_mode == TransparencyMode::DEPTH_PEELING)
         {
-            auto transparency_mode = settings.transparency_mode;
-
-            if (ImGui::RadioButton("Depth Peeling", transparency_mode == TransparencyMode::DEPTH_PEELING))
-            {
-                settings.transparency_mode = TransparencyMode::DEPTH_PEELING;
-            }
-            if (transparency_mode == TransparencyMode::DEPTH_PEELING)
-            {
-                ImGui::SliderInt("DP_Passes", &settings.num_depth_peeling_passes, 0, 50);
-            }
-            if (ImGui::RadioButton("Weighted Blended", transparency_mode == TransparencyMode::WEIGHTED_BLENDED))
-            {
-                settings.transparency_mode = TransparencyMode::WEIGHTED_BLENDED;
-            }
-
-            ImGui::EndPopup();
+            shift_right();
+            ImGui::SliderInt("DP_Passes", &settings.num_depth_peeling_passes, 0, 50);
         }
+        shift_right();
+        if (ImGui::RadioButton("Weighted Blended", transparency_mode == TransparencyMode::WEIGHTED_BLENDED))
+        {
+            settings.transparency_mode = TransparencyMode::WEIGHTED_BLENDED;
+        }
+
+
     }
 
+    void ToolBar::shift_right()
+    {
+        ImGui::InvisibleButton("###invisible-padding", ImVec2(ImGui::GetCursorPosX() - 2, ImGui::GetStyle().FramePadding.y));
+        ImGui::SameLine();
+    }
 
 } // namespace volumeshOS

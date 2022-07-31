@@ -9,8 +9,10 @@ in vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 in float v_clipspace_z;
 
 uniform bool u_visible;
+uniform bool u_solid;
+uniform vec3 u_solid_color;
 uniform bool u_grid;
-uniform vec3 u_color;
+uniform vec3 u_grid_color;
 uniform float u_height;
 uniform int u_tile_count;
 
@@ -138,29 +140,35 @@ void main()
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
     }
 
-    vec3 color = u_color;
     float alpha = 1.0;
+    vec3 color = vec3(0.0, 0.0, 0.0);
 
-    if(u_grid)
+    vec2 coord = v_uv * float(u_tile_count);
+
+    vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord) * 0.8;
+    float line = min(grid.x, grid.y);
+
+    float col = min(line, 1.0);
+    col = pow(col, 1.0 / 1.2);
+
+    if(u_grid && u_solid)
     {
-        vec2 coord = v_uv * float(u_tile_count);
-
-        vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord) * 0.9;
-        float line = min(grid.x, grid.y);
-
-        float col = min(line, 1.0);
-        col = pow(col, 1.0 / 1.2);
-
+        color = (1.0 - shadow * 0.5) * u_solid_color;
+        color =  (1.0 - col) * u_grid_color + col * color;
+    }
+    else if(u_grid && !u_solid)
+    {
+        color = u_grid_color;
         color = color - col * vec3(1.0 - color.x, 1.0 - color.y, 1.0 - color.z);
         alpha = 1.0 - col;
         if(col == 1.0)
         {
             discard;
         }
-
-
-    }else
+    }
+    else if(!u_grid && u_solid)
     {
+        color = u_solid_color;
         //ambient
         float ao_factor = 1.0;
         if(u_draw_ao)

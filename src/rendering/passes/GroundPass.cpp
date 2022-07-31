@@ -57,9 +57,11 @@ namespace volumeshOS::Internal
 
 
         // Shader uniforms
-        m_ground_shader->set_uniform_bool("u_visible", ground_options.visible);
+        m_ground_shader->set_uniform_bool("u_visible", ground_options.solid || ground_options.grid);
+        m_ground_shader->set_uniform_bool("u_solid", ground_options.solid);
+        m_ground_shader->set_uniform_vec3f("u_solid_color", ground_options.solid_color);
         m_ground_shader->set_uniform_bool("u_grid", ground_options.grid);
-        m_ground_shader->set_uniform_vec3f("u_color", ground_options.color);
+        m_ground_shader->set_uniform_vec3f("u_grid_color", ground_options.grid_color);
         m_ground_shader->set_uniform_float("u_height", ground_options.height);
         m_ground_shader->set_uniform_int("u_tile_count", ground_options.tiles);
 

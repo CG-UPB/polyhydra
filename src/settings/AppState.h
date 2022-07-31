@@ -10,12 +10,13 @@ namespace volumeshOS::Internal
     struct GroundOptions
     {
         bool visible    = true;
+        bool solid      = true;
+        glm::vec3 solid_color = {0.6, 0.6, 0.6};
         bool grid       = true;
+        glm::vec3 grid_color = {0.3, 0.3, 0.3};
         float height    = -5.0f;
         int size        = 1000;
         int tiles       = 200;
-        glm::vec3 color = {0.5, 0.5, 0.5};
-
     };
 
     struct SSAOOptions
