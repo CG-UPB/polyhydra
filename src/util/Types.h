@@ -137,13 +137,6 @@ namespace volumeshOS
         }
     }
 
-    enum class ShapeType
-    {
-        BOX,
-        CYLINDER,
-        SPHERE,
-    };
-
     enum class EntityType
     {
         Vertex,

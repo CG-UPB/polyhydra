@@ -346,6 +346,11 @@ namespace volumeshOS::Internal
         m_data.max_peel_depth = max_depth;
     }
 
+    void MeshObject::set_halfface_color(int ovm_id, const glm::vec4& color)
+    {
+        m_mvb->set_halfface_color(ovm_id, color.r, color.g, color.b, color.a);
+    }
+
     void MeshObject::set_face_color(int ovm_id, const glm::vec4& color)
     {
         m_mvb->set_face_color(ovm_id, color.r, color.g, color.b, color.a);

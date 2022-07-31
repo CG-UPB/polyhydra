@@ -11,9 +11,9 @@ namespace volumeshOS::Internal
     {
         bool visible    = true;
         bool solid      = true;
-        glm::vec3 solid_color = {0.6, 0.6, 0.6};
+        glm::vec3 solid_color = {1.0, 1.0, 1.0};
         bool grid       = true;
-        glm::vec3 grid_color = {0.3, 0.3, 0.3};
+        glm::vec3 grid_color = {0.8, 0.8, 0.8};
         float height    = -5.0f;
         int size        = 1000;
         int tiles       = 200;

@@ -426,5 +426,10 @@ namespace volumeshOS::Internal
                 return default_cylinder().normals();
             }
         };
+
+        struct Arrow
+        {
+
+        };
     };
 }

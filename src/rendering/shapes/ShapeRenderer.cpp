@@ -2,8 +2,8 @@
 #include "ShapeRenderer.h"
 
 #include "../../util/VecUtil.h"
-#include "../meshes/CommonMeshes.h"
 #include "../Renderer.h"
+#include "../../util/VecUtil.h"
 
 namespace volumeshOS::Internal
 {
@@ -15,6 +15,13 @@ namespace volumeshOS::Internal
 
     void ShapeRenderer::render(const Renderer& renderer)
     {
+        // add all shapes that may have been created or changed
+        for (const auto& command : m_on_before_render_commands)
+        {
+            command();
+        }
+        m_on_before_render_commands.clear();
+
         // since we store our data by mesh, we need to remove the shapes of deleted meshes here
         static std::vector<MeshID> removed_meshes;
         removed_meshes.clear();
@@ -41,6 +48,7 @@ namespace volumeshOS::Internal
         m_shape_shader->set_uniform_vec3f("u_light_color", light.color);
         m_shape_shader->set_uniform_vec3f("u_cam_pos", camera->position);
 
+        int draw_calls = 0;
         for (auto& [mesh_id, types] : m_render_data_by_mesh_by_type)
         {
             auto mesh_transform = glm::mat4(1.0f);
@@ -79,15 +87,18 @@ namespace volumeshOS::Internal
             m_shape_shader->set_uniform_mat4f("u_mesh_transform", mesh_transform);
             for (auto& [type, data] : types)
             {
-                if (data.needs_update)
+                if (data.needs_update && !data.shapes.empty())
                 {
-                    update_buffers(type, data, renderer);
+                    update_buffers(data, renderer);
                     data.needs_update = false;
                 }
                 int num_shapes = static_cast<int>(data.shapes.size());
                 data.vao->draw_instanced(num_shapes);
+                draw_calls++;
             }
         }
+
+        //Log::warn("Shape draw calls: " + std::to_string(draw_calls));
 
         m_shape_shader->unbind();
         renderer.buffers.target_framebuffer_ms->unbind();
@@ -107,16 +118,27 @@ namespace volumeshOS::Internal
         }
     }
 
-    void ShapeRenderer::add_shape(ShapeDefinition& shape)
+    void ShapeRenderer::add_shape(std::unique_ptr<BaseShape>&& shape)
     {
-        if (shape.cell_id != -1)
-        {
-            m_shapes_by_cell_id[shape.cell_id].push_back(shape.id);
-        }
-        m_mappings_by_id[shape.id] = std::make_pair(shape.parent_mesh, shape.type);
-        auto& shapes_of_type = m_render_data_by_mesh_by_type[shape.parent_mesh][shape.type];
-        shapes_of_type.shapes[shape.id] = shape;
-        shapes_of_type.needs_update = true;
+        ShapeID shape_id = shape->id;
+        m_shapes_by_id[shape_id] = std::move(shape);
+        // defer adding the shape to the next render call, then we can be sure all shapes have up-to-date values
+        m_on_before_render_commands.emplace_back([this, shape_id]{
+            auto shape_ptr = m_shapes_by_id[shape_id];
+            // this shape_ptr was removed before the next render call
+            if (shape_ptr == nullptr)
+            {
+                return;
+            }
+            if (shape_ptr->cell.is_valid())
+            {
+                m_shapes_by_cell_id[shape_ptr->cell.idx()].push_back(shape_ptr->id);
+            }
+            m_mappings_by_id[shape_ptr->id] = std::make_pair(shape_ptr->parent_mesh, shape_ptr->get_hashed_type());
+            auto& shapes_of_type = m_render_data_by_mesh_by_type[shape_ptr->parent_mesh][shape_ptr->get_hashed_type()];
+            shapes_of_type.shapes[shape_ptr->id] = shape_ptr;
+            shapes_of_type.needs_update = true;
+        });
     }
 
     void ShapeRenderer::remove_shape(ShapeID id)
@@ -126,9 +148,9 @@ namespace volumeshOS::Internal
             auto& [mesh_id, type] = m_mappings_by_id[id];
             auto& shapes_of_type = m_render_data_by_mesh_by_type[mesh_id][type];
             auto& shape = shapes_of_type.shapes[id];
-            if (shape.cell_id != -1)
+            if (shape->cell.is_valid())
             {
-                auto& shapes = m_shapes_by_cell_id[shape.cell_id];
+                auto& shapes = m_shapes_by_cell_id[shape->cell.idx()];
                 auto index = std::find(shapes.begin(), shapes.end(), id);
                 if (index != shapes.end())
                 {
@@ -138,6 +160,7 @@ namespace volumeshOS::Internal
             shapes_of_type.shapes.erase(id);
             shapes_of_type.needs_update = true;
             m_mappings_by_id.erase(id);
+            m_shapes_by_id.erase(id);
         }
     }
 
@@ -146,26 +169,27 @@ namespace volumeshOS::Internal
         m_render_data_by_mesh_by_type.clear();
         m_mappings_by_id.clear();
         m_shapes_by_cell_id.clear();
+        m_shapes_by_id.clear();
     }
 
-    void ShapeRenderer::update_buffers(ShapeType type, ShapeTypeRenderData& data, const Renderer& renderer)
+    void ShapeRenderer::update_buffers(ShapeTypeRenderData& data, const Renderer& renderer)
     {
         static ShapeVAOUpdateData update_data;
         update_data.clear();
         for (auto& [id, shape] : data.shapes)
         {
-            VecUtil::push_vec3(update_data.positions, shape.position);
-            VecUtil::push_vec3(update_data.scales, shape.scale);
-            VecUtil::push_vec4(update_data.rotations, shape.rotation);
-            VecUtil::push_vec3(update_data.colors, shape.color);
-            if (shape.cell_id != -1 && shape.parent_mesh != INVALID_MESH_ID)
+            VecUtil::push_vec3(update_data.positions, shape->position);
+            VecUtil::push_vec3(update_data.scales, shape->scale);
+            VecUtil::push_vec4(update_data.rotations, shape->rotation);
+            VecUtil::push_vec3(update_data.colors, shape->color);
+            if (shape->cell.is_valid() && shape->parent_mesh != INVALID_MESH_ID)
             {
                 // we can be sure that this mesh was not deleted, this is handled before in render
-                auto mvb = renderer.mesh_list->get_mesh(shape.parent_mesh)->get_mvb();
-                auto cell_center = mvb->get_cell_center(shape.cell_id);
-                auto cell_peel_depth = mvb->get_cell_peel_depth(shape.cell_id);
-                auto dig_value = mvb->get_cell_dig_value(shape.cell_id);
-                auto isolate_value = mvb->get_cell_isolate_value(shape.cell_id);
+                auto mvb = renderer.mesh_list->get_mesh(shape->parent_mesh)->get_mvb();
+                auto cell_center = mvb->get_cell_center(shape->cell.idx());
+                auto cell_peel_depth = mvb->get_cell_peel_depth(shape->cell.idx());
+                auto dig_value = mvb->get_cell_dig_value(shape->cell.idx());
+                auto isolate_value = mvb->get_cell_isolate_value(shape->cell.idx());
                 update_data.has_cell.push_back(1.0f);
                 VecUtil::push_vec3(update_data.cell_centers, cell_center);
                 update_data.peel_depths.push_back(cell_peel_depth);
@@ -183,7 +207,8 @@ namespace volumeshOS::Internal
         }
         if (data.vao == nullptr)
         {
-            data.vao = get_vao_for_type(type);
+            // we can be sure there is at least one element
+            data.vao = data.shapes.begin()->second->get_vao();
             data.vao->add_attribute(update_data.positions, 2, 3, true);
             data.vao->add_attribute(update_data.scales, 3, 3, true);
             data.vao->add_attribute(update_data.rotations, 4, 4, true);
@@ -205,54 +230,22 @@ namespace volumeshOS::Internal
         }
     }
 
-    std::unique_ptr<VertexArrayObject> ShapeRenderer::get_vao_for_type(ShapeType type)
-    {
-        switch (type)
-        {
-            case ShapeType::BOX:
-            {
-                auto vao = std::make_unique<VertexArrayObject>(
-                        CommonMeshes::Box::vertices(),
-                        CommonMeshes::Box::indices()
-                );
-                vao->add_attribute(CommonMeshes::Box::normals(), 1, 3, false);
-                return vao;
-            }
-            case ShapeType::CYLINDER:
-            {
-                auto vao = std::make_unique<VertexArrayObject>(
-                        CommonMeshes::Cylinder::vertices(),
-                        CommonMeshes::Cylinder::indices()
-                );
-                vao->add_attribute(CommonMeshes::Cylinder::normals(), 1, 3, false);
-                return vao;
-            }
-            case ShapeType::SPHERE:
-            {
-                auto vao = std::make_unique<VertexArrayObject>(
-                        CommonMeshes::Sphere::vertices(),
-                        CommonMeshes::Sphere::indices()
-                );
-                vao->add_attribute(CommonMeshes::Sphere::normals(), 1, 3, false);
-                return vao;
-            }
-        }
-        return nullptr;
-    }
-
     void ShapeRenderer::set_position(ShapeID id, float x, float y, float z)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
             shape->position = {x, y, z};
-            m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            m_on_before_render_commands.emplace_back([this, id]{
+                auto& [mesh_id, type] = m_mappings_by_id[id];
+                m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            });
         }
     }
 
     glm::vec3 ShapeRenderer::get_position(ShapeID id)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
             return shape->position;
@@ -262,17 +255,20 @@ namespace volumeshOS::Internal
 
     void ShapeRenderer::set_scale(ShapeID id, float x, float y, float z)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
             shape->scale = {x, y, z};
-            m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            m_on_before_render_commands.emplace_back([this, id]{
+                auto& [mesh_id, type] = m_mappings_by_id[id];
+                m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            });
         }
     }
 
     glm::vec3 ShapeRenderer::get_scale(ShapeID id)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
             return shape->scale;
@@ -280,19 +276,22 @@ namespace volumeshOS::Internal
         return { 0.0f, 0.0f, 0.0f };
     }
 
-    void ShapeRenderer::set_rotation(ShapeID id, float x, float y, float z)
+    void ShapeRenderer::set_rotation(ShapeID id, float x, float y, float z, float angle)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
-            shape->rotation = {x, y, z, 0.0f};
-            m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            shape->rotation = {x, y, z, angle};
+            m_on_before_render_commands.emplace_back([this, id]{
+                auto& [mesh_id, type] = m_mappings_by_id[id];
+                m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            });
         }
     }
 
     glm::vec4 ShapeRenderer::get_rotation(ShapeID id)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
             return shape->rotation;
@@ -302,17 +301,20 @@ namespace volumeshOS::Internal
 
     void ShapeRenderer::set_color(ShapeID id, float r, float g, float b)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
             shape->color = {r, g, b};
-            m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            m_on_before_render_commands.emplace_back([this, id]{
+                auto& [mesh_id, type] = m_mappings_by_id[id];
+                m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+            });
         }
     }
 
     glm::vec3 ShapeRenderer::get_color(ShapeID id)
     {
-        auto [mesh_id, type, shape] = get_shape(id);
+        auto shape = get_shape(id);
         if (shape != nullptr)
         {
             return shape->color;
@@ -322,71 +324,54 @@ namespace volumeshOS::Internal
 
     bool ShapeRenderer::is_valid(ShapeID id) const
     {
-        return id >= 0 && m_mappings_by_id.find(id) != m_mappings_by_id.end();
+        return id >= 0 && m_shapes_by_id.find(id) != m_shapes_by_id.end();
     }
 
-    std::tuple<MeshID, ShapeType, ShapeDefinition*> ShapeRenderer::get_shape(ShapeID id)
+    BaseShape* ShapeRenderer::get_shape(ShapeID id)
     {
         if (is_valid(id))
         {
-            auto& [mesh_id, type] = m_mappings_by_id[id];
-            auto* shape = &m_render_data_by_mesh_by_type[mesh_id][type].shapes[id];
-            return { mesh_id, type, shape };
+            return m_shapes_by_id[id].get();
         }
         Log::warn("Attempt to access invalid shape: " + std::to_string(id));
-        return { INVALID_MESH_ID, ShapeType::BOX, nullptr };
+        return nullptr;
     }
 
-    void ShapeRenderer::set_dig(int cell_id, float dig)
+    void ShapeRenderer::update_cell(int cell_id)
     {
-        // check if shapes for this cell exists
-        if (m_shapes_by_cell_id.find(cell_id) != m_shapes_by_cell_id.end())
-        {
-            auto& shapes_of_cell = m_shapes_by_cell_id[cell_id];
-            for (const auto& shape_id : shapes_of_cell)
+        m_on_before_render_commands.emplace_back([this, cell_id]{
+            // check if shapes for this cell exists
+            if (m_shapes_by_cell_id.find(cell_id) != m_shapes_by_cell_id.end())
             {
-                auto [mesh_id, type, shape] = get_shape(shape_id);
-                if (shape != nullptr)
+                auto& shapes_of_cell = m_shapes_by_cell_id[cell_id];
+                for (const auto& shape_id : shapes_of_cell)
                 {
-                    shape->is_dug = dig;
-                    m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+                    auto shape = get_shape(shape_id);
+                    if (shape != nullptr)
+                    {
+                        auto& [mesh_id, type] = m_mappings_by_id[shape_id];
+                        m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+                    }
                 }
             }
-        }
-    }
-
-    void ShapeRenderer::set_isolate(int cell_id, float isolate)
-    {
-        // check if shapes for this cell exists
-        if (m_shapes_by_cell_id.find(cell_id) != m_shapes_by_cell_id.end())
-        {
-            auto& shapes_of_cell = m_shapes_by_cell_id[cell_id];
-            for (const auto& shape_id : shapes_of_cell)
-            {
-                auto [mesh_id, type, shape] = get_shape(shape_id);
-                if (shape != nullptr)
-                {
-                    shape->is_isolated = isolate;
-                    m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
-                }
-            }
-        }
+        });
     }
 
     void ShapeRenderer::reset_visibility()
     {
-        for (const auto& [cell_id, shapes_of_cell] : m_shapes_by_cell_id)
-        {
-            for (const auto& shape_id : shapes_of_cell)
+        m_on_before_render_commands.emplace_back([this]{
+            for (const auto& [cell_id, shapes_of_cell] : m_shapes_by_cell_id)
             {
-                auto [mesh_id, type, shape] = get_shape(shape_id);
-                if (shape != nullptr)
+                for (const auto& shape_id : shapes_of_cell)
                 {
-                    shape->is_dug = 0.0f;
-                    shape->is_isolated = 0.0f;
-                    m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+                    auto shape = get_shape(shape_id);
+                    if (shape != nullptr)
+                    {
+                        auto& [mesh_id, type] = m_mappings_by_id[shape_id];
+                        m_render_data_by_mesh_by_type[mesh_id][type].needs_update = true;
+                    }
                 }
             }
-        }
+        });
     }
 }

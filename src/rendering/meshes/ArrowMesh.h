@@ -1,0 +1,13 @@
+#pragma once
+
+namespace volumeshOS::Internal
+{
+    struct ArrowMesh
+    {
+        explicit ArrowMesh(int samples = 20, float base_width_percentage = 0.5f, float tip_height_percentage = 0.3f);
+
+        std::vector<float> vertices         = {};
+        std::vector<unsigned int> indices   = {};
+        std::vector<float> normals          = {};
+    };
+}

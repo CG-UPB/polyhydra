@@ -318,7 +318,7 @@ namespace volumeshOS::Internal
     void MeshList::set_color(const MeshID id, OpenVolumeMesh::HalfFaceHandle halfface, const glm::vec4& color)
     {
         auto f = [halfface, color](const std::shared_ptr<MeshObject>& mesh) -> void{
-            mesh->set_face_color(halfface.idx(), color);
+            mesh->set_halfface_color(halfface.idx(), color);
         };
         execute_for_mesh(f, id);
     }

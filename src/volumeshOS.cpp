@@ -319,9 +319,10 @@ namespace volumeshOS
     template<typename Vec4T>
     void set_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface, const Vec4T& color)
     {
-//        commands.emplace_back([mesh, halfface, color]{
-//            mesh_list->set_color(mesh.get_id(), halfface, color);
-//        });
+        commands.emplace_back([mesh, halfface, color]{
+            auto col = Internal::to_glm_vec4(color);
+            mesh_list->set_color(mesh.get_id(), halfface, col);
+        });
     }
 
     template<typename Vec4T>
@@ -798,25 +799,33 @@ namespace volumeshOS
     }
 
     template<typename Type>
-    [[nodiscard]] ShapeType get_concrete_shape_type()
+    [[nodiscard]] std::unique_ptr<Internal::BaseShape> get_concrete_shape(int id)
     {
         if constexpr (std::is_same_v<Type, VBox>)
         {
-            return ShapeType::BOX;
+            return std::make_unique<Internal::BoxShape>(id);
         }
         else if constexpr (std::is_same_v<Type, VCylinder>)
         {
-            return ShapeType::CYLINDER;
+            return std::make_unique<Internal::CylinderShape>(id);
         }
         else if constexpr (std::is_same_v<Type, VSphere>)
         {
-            return ShapeType::SPHERE;
+            return std::make_unique<Internal::SphereShape>(id);
+        }
+        else if constexpr (std::is_same_v<Type, VCone>)
+        {
+            return std::make_unique<Internal::ConeShape>(id);
+        }
+        else if constexpr (std::is_same_v<Type, VArrow>)
+        {
+            return std::make_unique<Internal::ArrowShape>(id);
         }
         assert(false && "Invalid shape type");
     }
 
     template<typename Type>
-    [[nodiscard]] Type get_concrete_shape_instance(int id)
+    [[nodiscard]] Type get_shape_api(int id)
     {
         if constexpr (std::is_same_v<Type, VBox>)
         {
@@ -830,6 +839,14 @@ namespace volumeshOS
         {
             return VSphere(id);
         }
+        else if constexpr (std::is_same_v<Type, VCone>)
+        {
+            return VCone(id);
+        }
+        else if constexpr (std::is_same_v<Type, VArrow>)
+        {
+            return VArrow(id);
+        }
         assert(false && "Invalid shape type");
     }
 
@@ -838,12 +855,10 @@ namespace volumeshOS
     {
         auto id = next_shape_id();
         commands.emplace_back([id]{
-            Internal::ShapeDefinition shape;
-            shape.id = id;
-            shape.type = get_concrete_shape_type<ShapeType>();
-            shapes->add_shape(shape);
+            auto shape = get_concrete_shape<ShapeType>(id);
+            shapes->add_shape(std::move(shape));
         });
-        return get_concrete_shape_instance<ShapeType>(id);
+        return get_shape_api<ShapeType>(id);
     }
 
     template<typename ShapeType>
@@ -851,13 +866,11 @@ namespace volumeshOS
     {
         auto id = next_shape_id();
         commands.emplace_back([id, mesh]{
-            Internal::ShapeDefinition shape;
-            shape.id = id;
-            shape.type = get_concrete_shape_type<ShapeType>();
-            shape.parent_mesh = mesh.get_id();
-            shapes->add_shape(shape);
+            auto shape = get_concrete_shape<ShapeType>(id);
+            shape->parent_mesh = mesh.get_id();
+            shapes->add_shape(std::move(shape));
         });
-        return get_concrete_shape_instance<ShapeType>(id);
+        return get_shape_api<ShapeType>(id);
     }
 
     template<typename ShapeType>
@@ -865,14 +878,12 @@ namespace volumeshOS
     {
         auto id = next_shape_id();
         commands.emplace_back([id, mesh, cell]{
-            Internal::ShapeDefinition shape;
-            shape.id = id;
-            shape.type = get_concrete_shape_type<ShapeType>();
-            shape.parent_mesh = mesh.get_id();
-            shape.cell_id = cell.idx();
-            shapes->add_shape(shape);
+            auto shape = get_concrete_shape<ShapeType>(id);
+            shape->parent_mesh = mesh.get_id();
+            shape->cell = cell;
+            shapes->add_shape(std::move(shape));
         });
-        return get_concrete_shape_instance<ShapeType>(id);
+        return get_shape_api<ShapeType>(id);
     }
 
     void remove_shape(const VShape& shape)
@@ -902,6 +913,22 @@ namespace volumeshOS
         commands.emplace_back([shape, position]{
             auto pos = Internal::to_glm_vec3(position);
             shapes->set_position(shape.get_id(), pos.x, pos.y, pos.z);
+        });
+    }
+
+    void set_direction(const VShape& shape, float axis_x, float axis_y, float axis_z, float angle)
+    {
+        commands.emplace_back([shape, axis_x, axis_y, axis_z, angle]{
+            shapes->set_rotation(shape.get_id(), axis_x, axis_y, axis_z, angle);
+        });
+    }
+
+    template<typename Vec3T>
+    void set_direction(const VShape& shape, const Vec3T& axis, float angle)
+    {
+        commands.emplace_back([shape, axis, angle]{
+            auto dir = Internal::to_glm_vec3(axis);
+            shapes->set_rotation(shape.get_id(), dir.x, dir.y, dir.z, angle);
         });
     }
 
@@ -947,6 +974,22 @@ namespace volumeshOS
     [[nodiscard]] Vec3T get_scale(const VShape& shape)
     {
         return Internal::glm_vec3_to<Vec3T>(shapes->get_scale(shape.get_id()));
+    }
+
+    void set_tip_height(const VArrow& shape, float tip_height)
+    {
+        commands.emplace_back([shape, tip_height]{
+            auto* arrow = shapes->get_shape_and_update_buffers<Internal::ArrowShape>(shape.get_id());
+            arrow->tip_height_percentage = tip_height;
+        });
+    }
+
+    void set_base_width(const VArrow& shape, float base_width)
+    {
+        commands.emplace_back([shape, base_width]{
+            auto* arrow = shapes->get_shape_and_update_buffers<Internal::ArrowShape>(shape.get_id());
+            arrow->base_width_percentage = base_width;
+        });
     }
 
     template void set_color<glm::vec4>(const glm::vec4&);
@@ -1064,14 +1107,20 @@ namespace volumeshOS
     template VBox add_shape<VBox>();
     template VCylinder add_shape<VCylinder>();
     template VSphere add_shape<VSphere>();
+    template VCone add_shape<VCone>();
+    template VArrow add_shape<VArrow>();
 
     template VBox add_shape<VBox>(const VMesh&);
     template VCylinder add_shape<VCylinder>(const VMesh&);
     template VSphere add_shape<VSphere>(const VMesh&);
+    template VCone add_shape<VCone>(const VMesh&);
+    template VArrow add_shape<VArrow>(const VMesh&);
 
     template VBox add_shape<VBox>(const VMesh&, OpenVolumeMesh::CellHandle);
     template VCylinder add_shape<VCylinder>(const VMesh&, OpenVolumeMesh::CellHandle);
     template VSphere add_shape<VSphere>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template VCone add_shape<VCone>(const VMesh&, OpenVolumeMesh::CellHandle);
+    template VArrow add_shape<VArrow>(const VMesh&, OpenVolumeMesh::CellHandle);
 
     template void set_position<glm::vec3>(const VShape&, const glm::vec3&);
     template void set_position<OpenVolumeMesh::Vec3d>(const VShape&, const OpenVolumeMesh::Vec3d&);
@@ -1079,17 +1128,23 @@ namespace volumeshOS
     template void set_position<std::array<double, 3>>(const VShape&, const std::array<double, 3>&);
     template void set_position<std::array<float, 3>>(const VShape&, const std::array<float, 3>&);
 
+    template void set_direction<glm::vec3>(const VShape&, const glm::vec3&, float);
+    template void set_direction<OpenVolumeMesh::Vec3d>(const VShape&, const OpenVolumeMesh::Vec3d&, float);
+    template void set_direction<OpenVolumeMesh::Vec3f>(const VShape&, const OpenVolumeMesh::Vec3f&, float);
+    template void set_direction<std::array<double, 3>>(const VShape&, const std::array<double, 3>&, float);
+    template void set_direction<std::array<float, 3>>(const VShape&, const std::array<float, 3>&, float);
+
     template void set_scale<glm::vec3>(const VShape&, const glm::vec3&);
     template void set_scale<OpenVolumeMesh::Vec3d>(const VShape&, const OpenVolumeMesh::Vec3d&);
     template void set_scale<OpenVolumeMesh::Vec3f>(const VShape&, const OpenVolumeMesh::Vec3f&);
     template void set_scale<std::array<double, 3>>(const VShape&, const std::array<double, 3>&);
     template void set_scale<std::array<float, 3>>(const VShape&, const std::array<float, 3>&);
 
-    template void set_color<glm::vec3>(const VShape&, const glm::vec3&);
-    template void set_color<OpenVolumeMesh::Vec3d>(const VShape&, const OpenVolumeMesh::Vec3d&);
-    template void set_color<OpenVolumeMesh::Vec3f>(const VShape&, const OpenVolumeMesh::Vec3f&);
-    template void set_color<std::array<double, 3>>(const VShape&, const std::array<double, 3>&);
-    template void set_color<std::array<float, 3>>(const VShape&, const std::array<float, 3>&);
+    template void set_color<glm::vec4>(const VShape&, const glm::vec4&);
+    template void set_color<OpenVolumeMesh::Vec4d>(const VShape&, const OpenVolumeMesh::Vec4d&);
+    template void set_color<OpenVolumeMesh::Vec4f>(const VShape&, const OpenVolumeMesh::Vec4f&);
+    template void set_color<std::array<double, 4>>(const VShape&, const std::array<double, 4>&);
+    template void set_color<std::array<float, 4>>(const VShape&, const std::array<float, 4>&);
 
     template glm::vec3 get_position<glm::vec3>(const VShape&);
     template OpenVolumeMesh::Vec3d get_position<OpenVolumeMesh::Vec3d>(const VShape&);

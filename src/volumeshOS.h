@@ -6,6 +6,7 @@ namespace volumeshOS
 {
     struct VMesh;
     struct VShape;
+    struct VArrow;
 
     // General
 
@@ -344,6 +345,11 @@ namespace volumeshOS
     template<typename Vec3T>
     void set_position(const VShape& shape, const Vec3T& position);
 
+    void set_direction(const VShape& shape, float axis_x, float axis_y, float axis_z, float angle = 0.0f);
+
+    template<typename Vec3T>
+    void set_direction(const VShape& shape, const Vec3T& axis, float angle = 0.0f);
+
     void set_scale(const VShape& shape, float scalar);
 
     void set_scale(const VShape& shape, float x, float y, float z);
@@ -360,6 +366,9 @@ namespace volumeshOS
     template<typename Vec3T>
     [[nodiscard]] Vec3T get_scale(const VShape& shape);
 
+    void set_tip_height(const VArrow& shape, float tip_height);
+
+    void set_base_width(const VArrow& shape, float base_width);
 
     /* Camera */
 
@@ -440,6 +449,17 @@ namespace volumeshOS
             volumeshOS::set_position<Vec3T>(*this, position);
         }
 
+        inline void set_direction(float axis_x, float axis_y, float axis_z, float angle = 0.0f) const
+        {
+            volumeshOS::set_direction(*this, axis_x, axis_y, axis_z, angle);
+        }
+
+        template<typename Vec3T>
+        inline void set_direction(const Vec3T& axis, float angle = 0.0f) const
+        {
+            volumeshOS::set_direction<Vec3T>(*this, axis, angle);
+        }
+
         inline void set_scale(float x, float y, float z) const
         {
             volumeshOS::set_scale(*this, x, y, z);
@@ -497,6 +517,26 @@ namespace volumeshOS
     struct VBox : public VShape
     {
         using VShape::VShape;
+    };
+
+    struct VCone : public VShape
+    {
+        using VShape::VShape;
+    };
+
+    struct VArrow : public VShape
+    {
+        using VShape::VShape;
+
+        inline void set_tip_height(float tip_height) const
+        {
+            volumeshOS::set_tip_height(*this, tip_height);
+        }
+
+        inline void set_base_width(float base_width) const
+        {
+            volumeshOS::set_base_width(*this, base_width);
+        }
     };
 
     // Wrapper class to use meshes in an object-oriented way

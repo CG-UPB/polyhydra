@@ -40,6 +40,19 @@ mat4 get_rotation_matrix(vec3 axis, float angle)
                 0.0, 0.0, 0.0, 1.0);
 }
 
+mat4 look_at(vec3 direction, vec3 up)
+{
+    vec3 y_axis = normalize(direction);
+    vec3 x_axis = normalize(cross(up, y_axis));
+    vec3 z_axis = cross(y_axis, x_axis);
+    return mat4(
+        x_axis.x, y_axis.x, z_axis.x, 0.0,
+        x_axis.y, y_axis.y, z_axis.y, 0.0,
+        x_axis.z, y_axis.z, z_axis.z, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    );
+}
+
 void main()
 {
     v_visible = 1;
@@ -67,14 +80,20 @@ void main()
         position = a_cell_center + (position - a_cell_center) * u_cell_size;
         scale_offset = u_cell_size;
     }
-    mat4 transform = mat4(
+    mat4 translation = mat4(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        position.x, position.y, position.z, 1.0
+    );
+    mat4 scale = mat4(
         a_scale.x * scale_offset, 0.0, 0.0, 0.0,
         0.0, a_scale.y * scale_offset, 0.0, 0.0,
         0.0, 0.0, a_scale.z * scale_offset, 0.0,
-        position.x, position.y, position.z, 1.0
+        0.0, 0.0, 0.0, 1.0
     );
-    mat4 rotation = get_rotation_matrix(a_rotation.xyz, a_rotation.w);
-    transform = rotation * transform;
+    mat4 rotation = look_at(a_rotation.xyz, vec3(cos(a_rotation.w), 0.0, sin(a_rotation.w)));
+    mat4 transform = translation * inverse(rotation) * scale;
 
     v_pos = vec3(u_mesh_transform * transform * vec4(a_pos, 1.0));
     v_normal = mat3(transpose(inverse(u_mesh_transform * transform))) * a_normal;

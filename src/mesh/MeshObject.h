@@ -114,6 +114,8 @@ namespace volumeshOS::Internal
          */
         void set_selection_offset(int start);
 
+        void set_halfface_color(int ovm_id, const glm::vec4& color);
+
         void set_face_color(int ovm_id, const glm::vec4& color);
 
         void set_cell_color(int ovm_id, const glm::vec4& color);
