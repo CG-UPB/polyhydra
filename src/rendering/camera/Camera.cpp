@@ -17,7 +17,7 @@ namespace volumeshOS::Internal
         set_viewport_size(800, 600);
 
         // Init Position etc
-        position = glm::vec3{0.0f, 0.0f, 20.0f};
+        position = glm::vec3{0.0f, 0.0f, 13.0f};
         target = glm::vec3{0.0f, 0.0f, 0.0f};
         m_camera_front = glm::vec3{0.0f, 0.0f, -1.0f};
         m_camera_up = glm::vec3{0.0f, 1.0f, 0.0f};

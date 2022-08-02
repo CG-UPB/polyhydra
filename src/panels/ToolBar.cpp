@@ -57,7 +57,7 @@ namespace volumeshOS::Internal
         ImGui::Text("Graphics");
         ImGui::PopFont();
 
-        ImGui::SliderFloat("Gamma", &AppState::settings.gamma, 0.0f, 5.0f);
+        ImGui::DragFloat("Gamma", &AppState::settings.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
 
         show_ground_menu();
         show_shadow_menu();
@@ -106,7 +106,7 @@ namespace volumeshOS::Internal
                 ImGui::SameLine();
                 Tooltips::HelpMarkerWithQuestionMark("Adjust the mesh position");
                 ImGui::SetNextItemWidth(slider_width - 50.0f);
-                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right - 5.0f);
+                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -10.0f, 10.0f, "%.1f"))
                 {
                     active_mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
