@@ -211,6 +211,7 @@ namespace volumeshOS::Internal
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
+        glEnable(GL_FRAMEBUFFER_SRGB);
 
         if (renderer.frame.is_rendering_background)
         {
@@ -235,6 +236,7 @@ namespace volumeshOS::Internal
 
         renderer.buffers.target_framebuffer_ms->bind();
         m_composite_shader->bind();
+        m_composite_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
         m_composite_shader->set_uniform_int("u_current_pass", current_pass);
         m_composite_shader->set_uniform_int("u_max_passes", max_passes - 1);
 
@@ -247,7 +249,7 @@ namespace volumeshOS::Internal
         glDisable(GL_BLEND);
         glClearDepth(1.0f);
         glEnable(GL_CULL_FACE);
-
+        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
     void TransparencyPassDP::resize_buffers(int width, int height)

@@ -2,6 +2,8 @@
 
 const float EPSILON = 0.00001f;
 
+uniform float u_gamma;
+
 // sum(rgb * a, a)
 uniform sampler2D accumTexture;
 // prod(1 -a)
@@ -43,6 +45,6 @@ void main()
     vec3 average_color = accum.rgb / max(accum.a, EPSILON);
 
     // dst' = (accum.rgb / accum.a) * (1 - revealage) + dst
-    FragColor = vec4(average_color, 1.0 - revealage);
+    FragColor = vec4(pow(average_color, vec3(1.0 / u_gamma)), 1.0 - revealage);
 
 }

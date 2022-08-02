@@ -13,7 +13,7 @@ namespace volumeshOS::Internal
         bool solid      = true;
         glm::vec3 solid_color = {1.0, 1.0, 1.0};
         bool grid       = true;
-        glm::vec3 grid_color = {0.8, 0.8, 0.8};
+        glm::vec3 grid_color = {0.7, 0.7, 0.7};
         float height    = -5.0f;
         int size        = 1000;
         int tiles       = 200;
@@ -49,6 +49,7 @@ namespace volumeshOS::Internal
             int num_shadow_cascades             = 3;
             float wireframe_size                = 0.35f;
             float vertex_size                   = 0.4f;
+            float gamma                         = 2.2f;
         } settings;
 
         static void restore_default_settings()

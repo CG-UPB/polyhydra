@@ -150,11 +150,14 @@ namespace volumeshOS::Internal
 
     void TransparencyPassWB::render_composition()
     {
+        glEnable(GL_FRAMEBUFFER_SRGB);
         m_composite_shader->bind();
+        m_composite_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
         m_composite_shader->set_uniform_sampler2D("accumTexture", GL_TEXTURE0, get_accum_texture());
         m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, get_reveal_texture());
         VertexArrayObject::draw_screen_quad();
         m_composite_shader->unbind();
+        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
     void TransparencyPassWB::resize_buffers(const Renderer& renderer, int width, int height)

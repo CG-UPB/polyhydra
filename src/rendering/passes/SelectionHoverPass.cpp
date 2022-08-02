@@ -30,6 +30,7 @@ namespace volumeshOS::Internal
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_FRAMEBUFFER_SRGB);
 
         renderer.buffers.target_framebuffer_ms->bind();
 
@@ -44,22 +45,7 @@ namespace volumeshOS::Internal
             // Transform Data
             glm::mat4 transform = renderer.camera->world * mesh->get_data().get_transform();
 
-            if (m_hovered_type == SELECTION_TYPE_FACE)
-            {
-                // Face
-                if (m_face_vao != nullptr)
-                {
-                    // Draw flat color quad
-                    m_flat_color_shader->bind();
-                    m_flat_color_shader->set_uniform_mat4f("u_transform", transform);
-                    m_flat_color_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
-                    m_flat_color_shader->set_uniform_mat4f("u_view", renderer.camera->view);
-                    m_flat_color_shader->set_uniform_vec4f("u_color", m_hover_color);
-                    m_face_vao->draw();
-                    m_flat_color_shader->unbind();
-                }
-            }
-            else if (m_hovered_type == SELECTION_TYPE_VERTEX)
+            if (m_hovered_type == SELECTION_TYPE_VERTEX)
             {
                 // Vertex
                 if (m_quad_vao != nullptr)
@@ -73,6 +59,7 @@ namespace volumeshOS::Internal
                     m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
                     m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
                     m_quad_circle_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+                    m_quad_circle_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
                     m_quad_vao->draw();
                     m_quad_circle_shader->unbind();
                 }
@@ -94,12 +81,15 @@ namespace volumeshOS::Internal
                     m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
                     m_edge_hover_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
                     m_edge_hover_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+                    m_edge_hover_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
                     m_edge_vao->draw();
                     m_edge_hover_shader->unbind();
                 }
             }
         }
         renderer.buffers.target_framebuffer_ms->unbind();
+
+        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
     void SelectionHoverPass::hover(const std::shared_ptr<MeshObject>& mesh, int type, int id)

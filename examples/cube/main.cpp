@@ -27,7 +27,8 @@ int main()
                         auto color = glm::mix(n, glm::vec3{0.5f}, 0.5f);
                         arrow.set_position(center);
                         arrow.set_scale(0.1f, 0.5f, 0.1f);
-                        arrow.set_tip_height(0.2f);
+                        arrow.set_base_width(0.4f);
+                        arrow.set_tip_height(0.15f);
                         arrow.set_direction(normal);
                         arrow.set_color(glm::vec4{color, 1.0f});
                     }

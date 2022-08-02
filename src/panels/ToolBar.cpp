@@ -57,6 +57,7 @@ namespace volumeshOS::Internal
         ImGui::Text("Graphics");
         ImGui::PopFont();
 
+        ImGui::SliderFloat("Gamma", &AppState::settings.gamma, 0.0f, 5.0f);
 
         show_ground_menu();
         show_shadow_menu();

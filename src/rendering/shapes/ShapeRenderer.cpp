@@ -38,6 +38,7 @@ namespace volumeshOS::Internal
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
+        glEnable(GL_FRAMEBUFFER_SRGB);
 
         renderer.buffers.target_framebuffer_ms->bind();
         m_shape_shader->bind();
@@ -47,6 +48,7 @@ namespace volumeshOS::Internal
         m_shape_shader->set_uniform_vec3f("u_light_pos", light_pos);
         m_shape_shader->set_uniform_vec3f("u_light_color", light.color);
         m_shape_shader->set_uniform_vec3f("u_cam_pos", camera->position);
+        m_shape_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
 
         int draw_calls = 0;
         for (auto& [mesh_id, types] : m_render_data_by_mesh_by_type)
@@ -102,6 +104,8 @@ namespace volumeshOS::Internal
 
         m_shape_shader->unbind();
         renderer.buffers.target_framebuffer_ms->unbind();
+
+        glDisable(GL_FRAMEBUFFER_SRGB);
 
         // remove all shapes of meshes that are deleted
         for (const auto& mesh_id : removed_meshes)

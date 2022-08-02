@@ -33,6 +33,7 @@ namespace volumeshOS::Internal
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
             glDepthMask(GL_TRUE);
+            glEnable(GL_FRAMEBUFFER_SRGB);
 
             // Get shader
             auto m_mesh_shader = Shader::get("mesh_phong");
@@ -72,6 +73,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
             m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+            m_mesh_shader->set_uniform_float("u_gamma", settings.gamma);
             m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
             m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
             m_mesh_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
@@ -156,5 +158,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->unbind();
         }
         renderer.buffers.target_framebuffer_ms->unbind();
+
+        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 }

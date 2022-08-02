@@ -27,6 +27,7 @@ namespace volumeshOS::Internal
         glDepthFunc(GL_LESS);
         glDisable(GL_BLEND);
         glDepthMask(GL_FALSE);
+        glEnable(GL_FRAMEBUFFER_SRGB);
 
         renderer.buffers.target_framebuffer_ms->bind();
 
@@ -34,12 +35,15 @@ namespace volumeshOS::Internal
 
         // Rendering a simple gradient
         m_background_shader->bind();
+        m_background_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
         m_background_shader->set_uniform_vec4f("u_top_color", m_top_color);
         m_background_shader->set_uniform_vec4f("u_bottom_color", m_bottom_color);
         m_vao->draw();
         m_background_shader->unbind();
 
         renderer.buffers.target_framebuffer_ms->unbind();
+
+        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
     void BackgroundPass::set_background_color(const glm::vec4& color)

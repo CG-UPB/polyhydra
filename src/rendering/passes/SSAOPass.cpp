@@ -9,7 +9,7 @@ namespace volumeshOS::Internal
             .active         = true,
             .num_samples    = 64,
             .sample_radius  = 0.5,
-            .strength       = 1.5,
+            .strength       = 2.5,
             .z_bias         = 0.01
     };
 
@@ -18,7 +18,7 @@ namespace volumeshOS::Internal
             .active         = true,
             .num_samples    = 32,
             .sample_radius  = 0.5,
-            .strength       = 1.5,
+            .strength       = 2.5,
             .z_bias         = 0.015
     };
 
@@ -27,7 +27,7 @@ namespace volumeshOS::Internal
             .active         = true,
             .num_samples    = 16,
             .sample_radius  = 0.5,
-            .strength       = 1.5,
+            .strength       = 2.5,
             .z_bias         = 0.02
     };
 
