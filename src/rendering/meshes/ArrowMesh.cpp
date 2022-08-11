@@ -14,7 +14,7 @@ namespace volumeshOS::Internal
         ClosedCylinderMesh cylinder{samples, 0.5f * base_width_percentage, tip_start_height};
 
         std::vector<float> cylinder_vertices = cylinder.vertices();
-        std::vector<unsigned int> cylinder_indices = cylinder.indices();
+        std::vector<uint32_t> cylinder_indices = cylinder.indices();
         std::vector<float> cylinder_normals = cylinder.normals();
 
         for (int i = 0; i < cone.vertices.size() / 3; i++)
@@ -24,7 +24,7 @@ namespace volumeshOS::Internal
         }
         int index_offset = (int) cone.vertices.size() / 3;
 
-        for (unsigned int& cylinder_index : cylinder_indices)
+        for (uint32_t& cylinder_index : cylinder_indices)
         {
             // apply offset to indices of the cylinder
             cylinder_index += index_offset;

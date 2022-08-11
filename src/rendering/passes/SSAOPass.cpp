@@ -233,12 +233,12 @@ namespace volumeshOS::Internal
         return m_options;
     }
 
-    unsigned int SSAOPass::get_ssao_texture() const
+    uint32_t SSAOPass::get_ssao_texture() const
     {
         return m_ssao_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
     }
 
-    unsigned int SSAOPass::get_blur_texture() const
+    uint32_t SSAOPass::get_blur_texture() const
     {
         return m_blur_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
     }

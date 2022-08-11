@@ -417,7 +417,7 @@ namespace volumeshOS::Internal
         }
     }
 
-    unsigned int MeshVertexBuffer::add_vertex_data_to_cell_data(
+    uint32_t MeshVertexBuffer::add_vertex_data_to_cell_data(
             RoundedCellData& data,
             const float type,
             const glm::vec3& pos,
@@ -431,7 +431,7 @@ namespace volumeshOS::Internal
         auto& cell_center = m_cell_centers[data.cell_id];
         auto peel_depth = m_peel_depths[data.cell_id];
         auto min_edge_length = m_min_edge_lengths[data.cell_id];
-        unsigned int index = data.vertex_types.size();
+        uint32_t index = data.vertex_types.size();
         VecUtil::push_vec3(data.vertex_positions, pos);
         VecUtil::push_vec3(data.vertex_halfface_normals, hf_norm);
         VecUtil::push_vec3(data.vertex_normals, v_norm);
@@ -451,7 +451,7 @@ namespace volumeshOS::Internal
         return index;
     }
 
-    void MeshVertexBuffer::add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2) const
+    void MeshVertexBuffer::add_cell_triangle_indices(RoundedCellData& data, uint32_t i0, uint32_t i1, uint32_t i2) const
     {
         data.indices.push_back(m_current_rounded_index + i0);
         data.indices.push_back(m_current_rounded_index + i2);
@@ -568,16 +568,16 @@ namespace volumeshOS::Internal
         // basically, almost all of them map from ovm id to opengl index
 
         // for each halfface the vertex that lies in the center of the halfface
-        static std::unordered_map<int, unsigned int> face_center_indices;
+        static std::unordered_map<int, uint32_t> face_center_indices;
         face_center_indices.clear();
         // the index for each corner vertex of the cell
-        static std::unordered_map<int, unsigned int> corner_vertex_indices;
+        static std::unordered_map<int, uint32_t> corner_vertex_indices;
         corner_vertex_indices.clear();
         // for each halfface those vertices that are close to the edge, basically the smaller triangle in the middle
         static std::unordered_map<int, std::vector<RoundedFaceVertexData>> halfface_vertices_indices;
         halfface_vertices_indices.clear();
         // for each corner vertex of the halfface, the vertex on the inner triangle that is closest to the corner
-        static std::unordered_map<int, std::unordered_map<int, unsigned int>> corner_vertex_face_vertex_index;
+        static std::unordered_map<int, std::unordered_map<int, uint32_t>> corner_vertex_face_vertex_index;
         //corner_vertex_face_vertex_index.clear();
         // for each halfedge, and for a given corner vertex, the new vertex on the halfedge that is closest to the corner
         // *-----*---------he----------*-----*
@@ -585,7 +585,7 @@ namespace volumeshOS::Internal
         //       |                     |
         // this one for           this one for
         // the left corner        the right corner
-        static std::unordered_map<int, std::unordered_map<int, unsigned int>> halfedge_vertex_indices;
+        static std::unordered_map<int, std::unordered_map<int, uint32_t>> halfedge_vertex_indices;
         halfedge_vertex_indices.clear();
 
 
@@ -711,7 +711,7 @@ namespace volumeshOS::Internal
             {
                 use_vertex_normal = attrib_data.used_vertex_normal;
                 vertex_normal_average += attrib_data.v_norm;
-                unsigned int face_vertex_index = add_vertex_data_to_cell_data(
+                uint32_t face_vertex_index = add_vertex_data_to_cell_data(
                         cell_data,
                         attrib_data.type,
                         attrib_data.pos,
@@ -765,7 +765,7 @@ namespace volumeshOS::Internal
             // this is the current halfface ovm id that we are in
             const int halfface_id = it.first;
             // index of the halfface center vertex
-            const unsigned int face_center_index = face_center_indices[halfface_id];
+            const uint32_t face_center_index = face_center_indices[halfface_id];
             const auto& face_vertices_data = it.second;
             for (const auto& face_vertex : face_vertices_data)
             {
@@ -780,14 +780,14 @@ namespace volumeshOS::Internal
                 const int to_corner_vertex_edge_id = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.to_vertex_halfedge_id}).idx();
                 const int next_to_corner_vertex_edge_id = OVMesh::edge_handle(OpenVolumeMesh::HalfEdgeHandle {face_vertex.next_to_vertex_halfedge_id}).idx();
 
-                const unsigned int corner_vertex_index = corner_vertex_indices[corner_vertex_id];
+                const uint32_t corner_vertex_index = corner_vertex_indices[corner_vertex_id];
 
-                const unsigned int face_corner_vertex_index = face_vertex.index;
-                const unsigned int face_to_corner_vertex_index = corner_vertex_face_vertex_index[to_corner_vertex_id][halfface_id];
+                const uint32_t face_corner_vertex_index = face_vertex.index;
+                const uint32_t face_to_corner_vertex_index = corner_vertex_face_vertex_index[to_corner_vertex_id][halfface_id];
 
-                const unsigned int to_corner_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_edge_id][corner_vertex_id];
-                const unsigned int next_to_corner_vertex_halfedge_index = halfedge_vertex_indices[next_to_corner_vertex_edge_id][corner_vertex_id];
-                const unsigned int to_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_edge_id][to_corner_vertex_id];
+                const uint32_t to_corner_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_edge_id][corner_vertex_id];
+                const uint32_t next_to_corner_vertex_halfedge_index = halfedge_vertex_indices[next_to_corner_vertex_edge_id][corner_vertex_id];
+                const uint32_t to_vertex_halfedge_index = halfedge_vertex_indices[to_corner_vertex_edge_id][to_corner_vertex_id];
 
                 // face center
                 add_cell_triangle_indices(cell_data, face_center_index, face_corner_vertex_index, face_to_corner_vertex_index);

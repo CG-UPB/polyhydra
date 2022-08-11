@@ -67,7 +67,7 @@ namespace volumeshOS::Internal
         return m_vertices;
     }
 
-    const std::vector<unsigned int>& CylinderMesh::indices()
+    const std::vector<uint32_t>& CylinderMesh::indices()
     {
         return m_indices;
     }

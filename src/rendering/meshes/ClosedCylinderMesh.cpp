@@ -94,7 +94,7 @@ namespace volumeshOS::Internal
         return m_vertices;
     }
 
-    const std::vector<unsigned int>& ClosedCylinderMesh::indices()
+    const std::vector<uint32_t>& ClosedCylinderMesh::indices()
     {
         return m_indices;
     }

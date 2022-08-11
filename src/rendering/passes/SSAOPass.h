@@ -25,9 +25,9 @@ namespace volumeshOS::Internal
 
         void resize_buffers(int width, int height);
 
-        [[nodiscard]] unsigned int get_ssao_texture() const;
+        [[nodiscard]] uint32_t get_ssao_texture() const;
 
-        [[nodiscard]] unsigned int get_blur_texture() const;
+        [[nodiscard]] uint32_t get_blur_texture() const;
 
         // different presets to choose from
         static const SSAOOptions QUALITY_SSAO;
@@ -84,6 +84,6 @@ namespace volumeshOS::Internal
         std::shared_ptr<FrameBufferObject> m_blur_framebuffer;
         std::shared_ptr<Shader> m_ssao_shader;
         std::shared_ptr<Shader> m_ssao_blur_shader;
-        unsigned int m_noise_texture;
+        uint32_t m_noise_texture;
     };
 }

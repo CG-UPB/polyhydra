@@ -18,7 +18,7 @@ namespace volumeshOS::Internal
     struct HalffaceData
     {
         std::vector<VertexData> vertices{};
-        std::vector<unsigned int> indices{};
+        std::vector<uint32_t> indices{};
         std::vector<int> halfface_ids{};
 
         void clear()
@@ -39,7 +39,7 @@ namespace volumeshOS::Internal
 
     struct RoundedFaceVertexData
     {
-        unsigned int index = -1;
+        uint32_t index = -1;
         int corner_vertex_id = -1;
         int to_vertex_id = -1;
         int next_to_vertex_id = -1;
@@ -73,7 +73,7 @@ namespace volumeshOS::Internal
         std::vector<float> hovered{};
         std::vector<float> vertex_normals{};
         std::vector<float> min_edge_lengths{};
-        std::vector<unsigned int> indices{};
+        std::vector<uint32_t> indices{};
 
         void clear()
         {
@@ -266,7 +266,7 @@ namespace volumeshOS::Internal
 
         void add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
 
-        unsigned int add_vertex_data_to_cell_data(
+        uint32_t add_vertex_data_to_cell_data(
                 RoundedCellData& data,
                 float type,
                 const glm::vec3& pos,
@@ -278,7 +278,7 @@ namespace volumeshOS::Internal
                 float dihedral_angle
         );
 
-        void add_cell_triangle_indices(RoundedCellData& data, unsigned int i0, unsigned int i1, unsigned int i2) const;
+        void add_cell_triangle_indices(RoundedCellData& data, uint32_t i0, uint32_t i1, uint32_t i2) const;
 
         void add_cell_by_faces(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
 
@@ -383,8 +383,8 @@ namespace volumeshOS::Internal
         std::unordered_map<int, std::vector<std::shared_ptr<VertexArrayObject>>> m_vertex_arrays{};
 
         std::vector<float> m_original_vertices;
-        std::vector<unsigned int> m_indices_face;
-        std::vector<unsigned int> m_indices_rounded;
+        std::vector<uint32_t> m_indices_face;
+        std::vector<uint32_t> m_indices_rounded;
 
         int m_current_rounded_index = 0;
         int m_num_vertices_face = 0;

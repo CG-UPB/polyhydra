@@ -172,12 +172,12 @@ namespace volumeshOS::Internal
         glClearBufferfv(GL_COLOR, 1, &m_ones[0]);
     }
 
-    unsigned int TransparencyPassWB::get_accum_texture()
+    uint32_t TransparencyPassWB::get_accum_texture()
     {
         return m_transparent_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
     }
 
-    unsigned int TransparencyPassWB::get_reveal_texture()
+    uint32_t TransparencyPassWB::get_reveal_texture()
     {
         return m_transparent_framebuffer->get_texture(GL_COLOR_ATTACHMENT1);
     }

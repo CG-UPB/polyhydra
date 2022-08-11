@@ -57,7 +57,7 @@ namespace volumeshOS::Internal
          * @param texture the texture to attach
          * @param multisample is the texture multisampled?
          */
-        void attach_texture(int attachment, unsigned int texture, bool multisample = false);
+        void attach_texture(int attachment, uint32_t texture, bool multisample = false);
 
         /**
          * Resizes this framebuffer to a new width and height.
@@ -83,14 +83,14 @@ namespace volumeshOS::Internal
          * @param attachment attachment
          * @return texture id
          */
-        [[nodiscard]] unsigned int get_texture(int attachment);
+        [[nodiscard]] uint32_t get_texture(int attachment);
 
         /**
          * Returns the OpenGL id of this framebuffer.
          *
          * @return framebuffer id
          */
-        [[nodiscard]] unsigned int get_id() const;
+        [[nodiscard]] uint32_t get_id() const;
 
         /**
          * Returns the current width of this framebuffer.
@@ -130,7 +130,7 @@ namespace volumeshOS::Internal
          *
          * @return the framebuffer id
          */
-        unsigned int create_framebuffer();
+        uint32_t create_framebuffer();
 
         /**
          * Creates an attachment for this framebuffer with a given specification.
@@ -138,7 +138,7 @@ namespace volumeshOS::Internal
          * @param attachment attachment specification
          * @return the attachment texture id
          */
-        [[nodiscard]] unsigned int create_attachment(const FrameBufferAttachment& attachment) const;
+        [[nodiscard]] uint32_t create_attachment(const FrameBufferAttachment& attachment) const;
 
         /**
          * Checks if necessary values of a given attachment are set.
@@ -155,11 +155,11 @@ namespace volumeshOS::Internal
         int m_height;
 
         // internal ids and attachments
-        std::unordered_map<int, unsigned int> m_attachment_textures;
+        std::unordered_map<int, uint32_t> m_attachment_textures;
         std::vector<FrameBufferAttachment> m_attachments;
-        std::vector<unsigned int> m_draw_buffers;
-        std::vector<unsigned int> m_texture_ids;
-        unsigned int m_framebuffer_id;
+        std::vector<uint32_t> m_draw_buffers;
+        std::vector<uint32_t> m_texture_ids;
+        uint32_t m_framebuffer_id;
 
         // save previous configuration to restore them later
         int m_previous_frameBuffer_id;

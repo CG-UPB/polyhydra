@@ -44,9 +44,9 @@ namespace volumeshOS::Internal
              * @param offset index offset
              * @return vector of indices
              */
-            inline static std::vector<unsigned int> indices(unsigned int offset = 0)
+            inline static std::vector<uint32_t> indices(uint32_t offset = 0)
             {
-                return std::vector<unsigned int>{
+                return std::vector<uint32_t>{
                         offset + 0, offset + 1, offset + 2,
                         offset + 2, offset + 3, offset + 0
                 };
@@ -115,7 +115,7 @@ namespace volumeshOS::Internal
              * @param offset index offset
              * @return vector of indices
              */
-            inline static std::vector<unsigned int> indices(unsigned int offset = 0)
+            inline static std::vector<uint32_t> indices(uint32_t offset = 0)
             {
                 return PlaneXY::indices(offset);
             }
@@ -178,7 +178,7 @@ namespace volumeshOS::Internal
              * @param offset index offset
              * @return vector of indices
              */
-            inline static std::vector<unsigned int> indices(unsigned int offset = 0)
+            inline static std::vector<uint32_t> indices(uint32_t offset = 0)
             {
                 return PlaneXY::indices(offset);
             }
@@ -249,15 +249,15 @@ namespace volumeshOS::Internal
              *
              * @return vector of indices
              */
-            inline static std::vector<unsigned int> indices()
+            inline static std::vector<uint32_t> indices()
             {
-                std::vector<unsigned int> res;
-                std::vector<unsigned int> top = PlaneXZ::indices(0);
-                std::vector<unsigned int> bottom = PlaneXZ::indices(4);
-                std::vector<unsigned int> left = PlaneYZ::indices(8);
-                std::vector<unsigned int> right = PlaneYZ::indices(12);
-                std::vector<unsigned int> back = PlaneXY::indices(16);
-                std::vector<unsigned int> front = PlaneXY::indices(20);
+                std::vector<uint32_t> res;
+                std::vector<uint32_t> top = PlaneXZ::indices(0);
+                std::vector<uint32_t> bottom = PlaneXZ::indices(4);
+                std::vector<uint32_t> left = PlaneYZ::indices(8);
+                std::vector<uint32_t> right = PlaneYZ::indices(12);
+                std::vector<uint32_t> back = PlaneXY::indices(16);
+                std::vector<uint32_t> front = PlaneXY::indices(20);
                 res.insert(res.end(), top.begin(), top.end());
                 res.insert(res.end(), bottom.begin(), bottom.end());
                 res.insert(res.end(), left.begin(), left.end());
@@ -339,7 +339,7 @@ namespace volumeshOS::Internal
              *
              * @return vector of indices
              */
-            static const std::vector<unsigned int>& indices()
+            static const std::vector<uint32_t>& indices()
             {
                 return default_sphere().indices();
             }
@@ -411,7 +411,7 @@ namespace volumeshOS::Internal
              *
              * @return list of indices
              */
-            static const std::vector<unsigned int>& indices()
+            static const std::vector<uint32_t>& indices()
             {
                 return default_cylinder().indices();
             }

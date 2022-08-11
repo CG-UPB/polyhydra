@@ -23,11 +23,11 @@ namespace volumeshOS::Internal
         void clear_cascades();
 
         [[nodiscard]] std::shared_ptr<FrameBufferObject> get_framebuffer() const;
-        [[nodiscard]] unsigned int get_shadow_map() const;
+        [[nodiscard]] uint32_t get_shadow_map() const;
 
         static const int max_cascades = 8;
         int cascade_idx = 0;
-        unsigned int shadow_maps[max_cascades];
+        uint32_t shadow_maps[max_cascades];
         float cascade_ends[max_cascades];
         glm::mat4 cascade_views[max_cascades];
         glm::mat4 cascade_projections[max_cascades];

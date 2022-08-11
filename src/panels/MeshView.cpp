@@ -2,6 +2,7 @@
 #include "MeshView.h"
 #include "../util/StringUtil.h"
 #include "rendering/Renderer.h"
+#include "../util/ImGuiUtil.h"
 
 namespace volumeshOS::Internal
 {
@@ -279,12 +280,29 @@ namespace volumeshOS::Internal
     {
         if (ImGui::Begin("Debug"))
         {
+            auto& statistics = AppState::statistics;
+            ImGuiUtil::push_bold_font();
+            ImGui::Text("Statistics");
+            ImGui::PopFont();
+            float offset = 200.0f;
+            ImGui::Text("Draw calls:");
+            ImGui::SameLine(offset);
+            ImGui::Text("%d", statistics.draw_calls_per_frame);
+            ImGui::Text("Total drawn vertices:");
+            ImGui::SameLine(offset);
+            ImGui::Text("%d", statistics.total_rendered_vertices_per_frame);
+            ImGui::Text("Total drawn triangles:");
+            ImGui::SameLine(offset);
+            ImGui::Text("%d", statistics.total_rendered_triangles_per_frame);
+
+            ImGuiUtil::push_bold_font();
             ImGui::Text("Viewport");
+            ImGui::PopFont();
             if (ImGui::RadioButton("Final Image", m_viewport_texture == FINAL_IMAGE))
             {
                 m_viewport_texture = FINAL_IMAGE;
             }
-            if (ImGui::RadioButton("SelectionMode", m_viewport_texture == SELECTION))
+            if (ImGui::RadioButton("Selection", m_viewport_texture == SELECTION))
             {
                 m_viewport_texture = SELECTION;
                 AppState::settings.selection_active = true;
@@ -319,7 +337,7 @@ namespace volumeshOS::Internal
         renderer->passes.selection_pass->set_debug_mode(m_viewport_texture == SELECTION);
     }
 
-    unsigned int MeshView::get_selected_texture()
+    uint32_t MeshView::get_selected_texture()
     {
         switch (m_viewport_texture)
         {

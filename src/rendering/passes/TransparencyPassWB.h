@@ -24,8 +24,8 @@ namespace volumeshOS::Internal
 
         void generate_transparency_framebuffer(const Renderer& renderer);
 
-        unsigned int get_accum_texture();
-        unsigned int get_reveal_texture();
+        uint32_t get_accum_texture();
+        uint32_t get_reveal_texture();
 
     private:
         void clean_up_framebuffer();

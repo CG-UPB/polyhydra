@@ -45,17 +45,17 @@ namespace volumeshOS::Internal
             }
         }) {};
 
-        [[nodiscard]] inline unsigned int get_depth_texture()
+        [[nodiscard]] inline uint32_t get_depth_texture()
         {
             return get_texture(GL_DEPTH_ATTACHMENT);
         }
 
-        [[nodiscard]] inline unsigned int get_normal_texture()
+        [[nodiscard]] inline uint32_t get_normal_texture()
         {
             return get_texture(GL_COLOR_ATTACHMENT0);
         }
 
-        [[nodiscard]] inline unsigned int get_position_texture()
+        [[nodiscard]] inline uint32_t get_position_texture()
         {
             return get_texture(GL_COLOR_ATTACHMENT1);
         }

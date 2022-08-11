@@ -70,6 +70,9 @@ namespace volumeshOS::Internal
 
     void Renderer::render(bool render_bg)
     {
+        // reset statistics for the new frame
+        AppState::statistics = {};
+
         auto& settings = AppState::settings;
 
         frame.current = (frame.current + 1) % frame.limit;
