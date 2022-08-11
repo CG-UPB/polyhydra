@@ -19,7 +19,7 @@ namespace volumeshOS::Internal
          * @param width width
          * @param height height
          */
-        PixelBufferObject(unsigned int num_buffers, unsigned int width, unsigned int height);
+        PixelBufferObject(uint32_t num_buffers, uint32_t width, uint32_t height);
         ~PixelBufferObject();
 
         /**
@@ -44,9 +44,9 @@ namespace volumeshOS::Internal
         int m_current_index = 0;
 
         // width, height and ids
-        unsigned int m_width;
-        unsigned int m_height;
-        unsigned int m_num_buffers;
-        std::unique_ptr<unsigned int> m_pbo_ids;
+        uint32_t m_width;
+        uint32_t m_height;
+        uint32_t m_num_buffers;
+        std::unique_ptr<uint32_t> m_pbo_ids;
     };
 }

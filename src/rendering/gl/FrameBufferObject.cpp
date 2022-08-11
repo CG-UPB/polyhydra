@@ -77,16 +77,16 @@ namespace volumeshOS::Internal
         clean_up();
     }
 
-    void FrameBufferObject::attach_texture(int attachment, unsigned int texture, bool multisample)
+    void FrameBufferObject::attach_texture(int attachment, uint32_t texture, bool multisample)
     {
         int target = multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, texture, 0);
-        std::vector<unsigned int> new_draw_buffers = m_draw_buffers;
+        std::vector<uint32_t> new_draw_buffers = m_draw_buffers;
         new_draw_buffers.push_back(attachment);
         glDrawBuffers((int) new_draw_buffers.size(), new_draw_buffers.data());
     }
 
-    unsigned int FrameBufferObject::create_framebuffer()
+    uint32_t FrameBufferObject::create_framebuffer()
     {
         // specify all attachments as draw buffers
         m_draw_buffers.clear();
@@ -98,11 +98,11 @@ namespace volumeshOS::Internal
                 m_draw_buffers.push_back(attachment.attachment);
             }
         }
-        unsigned int fbo;
+        uint32_t fbo;
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-        if(m_draw_buffers.size() > 0)
+        if(!m_draw_buffers.empty())
         {
             glDrawBuffers((int) m_draw_buffers.size(), m_draw_buffers.data());
         }
@@ -140,7 +140,7 @@ namespace volumeshOS::Internal
         // create textures from attachments
         for (auto& attachment: m_attachments)
         {
-            unsigned int texture = create_attachment(attachment);
+            uint32_t texture = create_attachment(attachment);
             m_texture_ids.push_back(texture);
             m_attachment_textures[attachment.attachment] = texture;
         }
@@ -167,7 +167,7 @@ namespace volumeshOS::Internal
         init(width, height);
     }
 
-    unsigned int FrameBufferObject::get_texture(int attachment)
+    uint32_t FrameBufferObject::get_texture(int attachment)
     {
         auto texture = m_attachment_textures.find(attachment);
         if (texture == m_attachment_textures.end())
@@ -177,7 +177,7 @@ namespace volumeshOS::Internal
         return m_attachment_textures[attachment];
     }
 
-    unsigned int FrameBufferObject::get_id() const
+    uint32_t FrameBufferObject::get_id() const
     {
         return m_framebuffer_id;
     }
@@ -210,11 +210,11 @@ namespace volumeshOS::Internal
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 
-    unsigned int FrameBufferObject::create_attachment(const FrameBufferAttachment& attachment) const
+    uint32_t FrameBufferObject::create_attachment(const FrameBufferAttachment& attachment) const
     {
         check_attachment_valid(attachment);
 
-        unsigned int tex[1];
+        uint32_t tex[1];
         glGenTextures(1, tex);
         if (attachment.multisample)
         {

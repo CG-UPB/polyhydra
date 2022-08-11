@@ -31,7 +31,7 @@ namespace volumeshOS::Internal
          *
          * @return list of indices
          */
-        const std::vector<unsigned int>& indices();
+        const std::vector<uint32_t>& indices();
 
         /**
          * Returns a list of normals for this sphere
@@ -47,9 +47,9 @@ namespace volumeshOS::Internal
          */
         struct Face
         {
-            unsigned int v0;
-            unsigned int v1;
-            unsigned int v2;
+            uint32_t v0;
+            uint32_t v1;
+            uint32_t v2;
         };
 
         /**
@@ -59,7 +59,7 @@ namespace volumeshOS::Internal
          * @param v1 second vertex
          * @return
          */
-        unsigned int get_mid_point(unsigned int v0, unsigned int v1);
+        uint32_t get_mid_point(uint32_t v0, uint32_t v1);
 
         /**
          * Adds a vertex to this sphere.
@@ -69,13 +69,13 @@ namespace volumeshOS::Internal
          * @param z z value
          * @return index of the added vertex
          */
-        unsigned int add_vertex(float x, float y, float z);
+        uint32_t add_vertex(float x, float y, float z);
 
         // sphere data
-        unsigned int m_index;
+        uint32_t m_index;
         std::vector<float> m_vertices;
-        std::vector<unsigned int> m_indices;
+        std::vector<uint32_t> m_indices;
         std::vector<float> m_normals;
-        std::unordered_map<long, unsigned int> m_mid_point_cache;
+        std::unordered_map<long, uint32_t> m_mid_point_cache;
     };
 }

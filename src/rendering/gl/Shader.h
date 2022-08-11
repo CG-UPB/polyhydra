@@ -70,7 +70,7 @@ namespace volumeshOS::Internal
          * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
          * @param texture_id id of the texture to be bound
          */
-        void set_uniform_sampler2D(const std::string& name, unsigned int binding, unsigned int texture_id);
+        void set_uniform_sampler2D(const std::string& name, uint32_t binding, uint32_t texture_id);
 
         /**
          * Sets a uniform sampler2DMS for this shader.
@@ -79,7 +79,7 @@ namespace volumeshOS::Internal
          * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
          * @param texture_id id of the texture to be bound
          */
-        void set_uniform_sampler2DMS(const std::string& name, unsigned int binding, unsigned int texture_id);
+        void set_uniform_sampler2DMS(const std::string& name, uint32_t binding, uint32_t texture_id);
 
         /**
          * Sets a uniform mat4 for this shader.
@@ -160,7 +160,7 @@ namespace volumeshOS::Internal
         Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath);
 
         // opengl program id
-        unsigned int m_shaderID;
+        uint32_t m_shaderID;
 
         // we are caching the uniform locations, so we don't need to query them every frame
         std::unordered_map<std::string, int> m_locations;

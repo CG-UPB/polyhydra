@@ -24,13 +24,19 @@ namespace volumeshOS::Internal
          */
         static void clean_up();
 
+    private:
+
+        static std::unique_ptr<VertexArrayObject> s_screen_quad;
+
+    public:
+
         /**
          * Creates a new VertexArrayObject from vertices and indices.
          *
          * @param vertices vector of vertices, aligned like so [x0, y0, z0, x1, y1, z1, ...]
          * @param indices vector of indices making up the triangles, for example [0, 1, 2, 2, 3, 0, ...]
          */
-        VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
+        VertexArrayObject(const std::vector<float>& vertices, const std::vector<uint32_t>& indices);
 
         /**
          * Deletes this VertexArrayObject.
@@ -43,7 +49,7 @@ namespace volumeshOS::Internal
          * @param vertices new vertices
          * @param indices new indices
          */
-        void update_vertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
+        void update_vertices(const std::vector<float>& vertices, const std::vector<uint32_t>& indices);
 
         /**
          * Draws a single instance of this Vertex Array.
@@ -93,18 +99,21 @@ namespace volumeshOS::Internal
 
     private:
 
-        static std::unique_ptr<VertexArrayObject> s_screen_quad;
+        void update_statistics(int num_instances = 1) const;
+
+    private:
 
         // number of vertex indices
-        int m_numIndices;
+        int m_num_indices;
+        int m_num_vertices;
 
         // opengl buffer pointers
-        unsigned int m_vao;
-        unsigned int m_vbo;
-        unsigned int m_ibo;
+        uint32_t m_vao;
+        uint32_t m_vbo;
+        uint32_t m_ibo;
 
         // optional additional buffers
-        std::vector<unsigned int> m_buffers;
+        std::vector<uint32_t> m_buffers;
         std::unordered_map<int, int> m_location_buffer_index;
     };
 }

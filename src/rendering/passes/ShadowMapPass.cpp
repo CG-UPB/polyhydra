@@ -21,11 +21,11 @@ namespace volumeshOS::Internal
                         }
                 };
         m_shadow_framebuffer = std::make_shared<FrameBufferObject>(width, height, attachments);
-        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
+        uint32_t shadow_buffer = m_shadow_framebuffer->get_id();
 
-        for (unsigned int i = 0; i < max_cascades; i++)
+        for (uint32_t i = 0; i < max_cascades; i++)
         {
-            unsigned int tex;
+            uint32_t tex;
             glGenTextures(1, &tex);
             glBindTexture(GL_TEXTURE_2D, tex);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
@@ -164,11 +164,11 @@ namespace volumeshOS::Internal
     {
         m_shadow_framebuffer->resize(width, height);
         glDeleteTextures((int) max_cascades,  &shadow_maps[0]);
-        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
+        uint32_t shadow_buffer = m_shadow_framebuffer->get_id();
 
-        for(unsigned int i = 0; i < max_cascades; i++)
+        for(uint32_t i = 0; i < max_cascades; i++)
         {
-            unsigned int tex;
+            uint32_t tex;
             glGenTextures(1, &tex);
             glBindTexture(GL_TEXTURE_2D, tex);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
@@ -193,7 +193,7 @@ namespace volumeshOS::Internal
         return m_shadow_framebuffer;
     }
 
-    unsigned int ShadowMapPass::get_shadow_map() const
+    uint32_t ShadowMapPass::get_shadow_map() const
     {
         return m_shadow_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
     }
@@ -266,11 +266,11 @@ namespace volumeshOS::Internal
 //        frustum_corners.emplace_back(-xf, -yf, far, 1.0);
 //
 
-        for (unsigned int x = 0; x < 2; ++x)
+        for (uint32_t x = 0; x < 2; ++x)
         {
-            for (unsigned int y = 0; y < 2; ++y)
+            for (uint32_t y = 0; y < 2; ++y)
             {
-                for (unsigned int z = 0; z < 2; ++z)
+                for (uint32_t z = 0; z < 2; ++z)
                 {
                     glm::vec4 corner = inverse * glm::vec4(2.0f * (float) x - 1.0f, 2.0f * (float) y - 1.0f,
                                                            2.0f * (float) z - 1.0f, 1.0f);

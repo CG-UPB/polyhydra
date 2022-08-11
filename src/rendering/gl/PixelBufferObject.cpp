@@ -3,12 +3,12 @@
 
 namespace volumeshOS::Internal
 {
-    PixelBufferObject::PixelBufferObject(unsigned int num_buffers, unsigned int width, unsigned int height):
+    PixelBufferObject::PixelBufferObject(uint32_t num_buffers, uint32_t width, uint32_t height):
         m_num_buffers(num_buffers),
         m_width(width),
         m_height(height)
     {
-        m_pbo_ids = std::make_unique<unsigned int>(num_buffers);
+        m_pbo_ids = std::make_unique<uint32_t>(num_buffers);
         glGenBuffers((int) num_buffers, m_pbo_ids.get());
         for (int i = 0; i < num_buffers; i++)
         {

@@ -77,6 +77,13 @@ namespace volumeshOS::Internal
         {
             callbacks = AppCallbacks{};
         }
+
+        static struct RenderStatistics
+        {
+            int draw_calls_per_frame                = 0;
+            int total_rendered_vertices_per_frame   = 0;
+            int total_rendered_triangles_per_frame  = 0;
+        } statistics;
     };
 
 }

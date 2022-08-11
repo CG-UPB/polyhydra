@@ -4,7 +4,7 @@
 
 namespace volumeshOS::Internal
 {
-    TextureIcon::TextureIcon(const std::filesystem::path &file_path)
+    TextureIcon::TextureIcon(const FS_NAMESPACE::path& file_path)
     {
         unsigned char* image_data = stbi_load(
                 file_path.string().c_str(),
@@ -51,7 +51,7 @@ namespace volumeshOS::Internal
         return m_n_channels;
     }
 
-    unsigned int TextureIcon::get_id() const
+    uint32_t TextureIcon::get_id() const
     {
         return m_texture_id;
     }

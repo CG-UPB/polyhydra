@@ -19,8 +19,8 @@ namespace volumeshOS::Internal
 
         GLuint m_texture;
 
-        unsigned int m_width;
-        unsigned int m_height;
+        uint32_t m_width;
+        uint32_t m_height;
 
         std::shared_ptr<FrameBufferObject> m_transparent_framebuffer0;
         std::shared_ptr<FrameBufferObject> m_transparent_framebuffer1;

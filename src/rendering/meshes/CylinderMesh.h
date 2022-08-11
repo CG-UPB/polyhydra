@@ -33,7 +33,7 @@ namespace volumeshOS::Internal
          *
          * @return list of indices
          */
-        const std::vector<unsigned int>& indices();
+        const std::vector<uint32_t>& indices();
 
         /**
          * Returns the normals of this cylinder.
@@ -73,7 +73,7 @@ namespace volumeshOS::Internal
 
         // cylinder data
         std::vector<float> m_vertices;
-        std::vector<unsigned int> m_indices;
+        std::vector<uint32_t> m_indices;
         std::vector<float> m_normals;
     };
 }

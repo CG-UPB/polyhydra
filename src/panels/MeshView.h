@@ -36,7 +36,7 @@ namespace volumeshOS::Internal
         void handle_resize();
         void render_debug_menu();
         void handle_mouse_hover(int type, int picked_id);
-        [[nodiscard]] unsigned int get_selected_texture();
+        [[nodiscard]] uint32_t get_selected_texture();
 
     private:
 

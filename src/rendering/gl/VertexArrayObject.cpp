@@ -1,6 +1,7 @@
 
 #include "VertexArrayObject.h"
 #include "../meshes/CommonMeshes.h"
+#include "../../settings/AppState.h"
 
 namespace volumeshOS::Internal
 {
@@ -25,9 +26,10 @@ namespace volumeshOS::Internal
         s_screen_quad->draw();
     }
 
-    VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
+    VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
     {
-        m_numIndices = (int) indices.size();
+        m_num_indices = (int) indices.size();
+        m_num_vertices = (int) vertices.size() / 3;
 
         glGenVertexArrays(1, &m_vao);
         glBindVertexArray(m_vao);
@@ -54,33 +56,43 @@ namespace volumeshOS::Internal
         glDeleteBuffers(1, &m_vbo);
         glDeleteBuffers(1, &m_ibo);
 
-        for (unsigned int buffer: m_buffers)
+        for (uint32_t buffer: m_buffers)
         {
             glDeleteBuffers(1, &buffer);
         }
+    }
+
+    void VertexArrayObject::update_statistics(int num_instances) const
+    {
+        AppState::statistics.draw_calls_per_frame++;
+        AppState::statistics.total_rendered_vertices_per_frame += m_num_vertices * num_instances;
+        AppState::statistics.total_rendered_triangles_per_frame += (m_num_indices / 3) * num_instances;
     }
 
     void VertexArrayObject::draw() const
     {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_INT, nullptr);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
+        update_statistics();
     }
 
     void VertexArrayObject::draw_instanced(int num_instances) const
     {
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glDrawElementsInstanced(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr, num_instances);
+        glDrawElementsInstanced(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_INT, nullptr, num_instances);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
+        update_statistics(num_instances);
     }
 
-    void VertexArrayObject::update_vertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
+    void VertexArrayObject::update_vertices(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
     {
-        m_numIndices = (int) indices.size();
+        m_num_indices = (int) indices.size();
+        m_num_vertices = (int) vertices.size() / 3;
         glBindVertexArray(m_vao);
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
         glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_DYNAMIC_DRAW);
@@ -99,7 +111,7 @@ namespace volumeshOS::Internal
         { gl_type = GL_FLOAT; }
         else if constexpr(std::is_same_v<T, int>)
         { gl_type = GL_INT; }
-        else if constexpr(std::is_same_v<T, unsigned int>)
+        else if constexpr(std::is_same_v<T, uint32_t>)
         { gl_type = GL_UNSIGNED_INT; }
         else
         { throw std::invalid_argument("Invalid data type for gl buffer"); }
@@ -154,13 +166,13 @@ namespace volumeshOS::Internal
     // the template function in the header file, which would cause some problems
     template void VertexArrayObject::add_attribute<float>(const std::vector<float>&, int, int, bool);
     template void VertexArrayObject::add_attribute<int>(const std::vector<int>&, int, int, bool);
-    template void VertexArrayObject::add_attribute<unsigned int>(const std::vector<unsigned int>&, int, int, bool);
+    template void VertexArrayObject::add_attribute<uint32_t>(const std::vector<uint32_t>&, int, int, bool);
 
     template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int);
     template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int);
-    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>&, int);
+    template void VertexArrayObject::update_attribute<uint32_t>(const std::vector<uint32_t>&, int);
 
     template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int, int, int);
     template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int, int, int);
-    template void VertexArrayObject::update_attribute<unsigned int>(const std::vector<unsigned int>&, int, int, int);
+    template void VertexArrayObject::update_attribute<uint32_t>(const std::vector<uint32_t>&, int, int, int);
 }

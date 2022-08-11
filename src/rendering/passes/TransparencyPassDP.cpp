@@ -94,13 +94,13 @@ namespace volumeshOS::Internal
                     m_transparency_shader->bind();
                     if (i == 0)
                     {
-                        unsigned int depth_texture = renderer.buffers.target_framebuffer->get_texture(
+                        uint32_t depth_texture = renderer.buffers.target_framebuffer->get_texture(
                                 GL_DEPTH_ATTACHMENT);
                         m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
                     }
                     else
                     {
-                        unsigned int depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
+                        uint32_t depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
                         m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
                     }
                     render_mesh(renderer, mesh);
@@ -111,7 +111,7 @@ namespace volumeshOS::Internal
                 {
                     m_transparent_framebuffer1->bind();
                     m_transparency_shader->bind();
-                    unsigned int depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
+                    uint32_t depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
                     m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
                     render_mesh(renderer, mesh);
                     m_transparency_shader->unbind();
@@ -222,7 +222,7 @@ namespace volumeshOS::Internal
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        unsigned int new_layer;
+        uint32_t new_layer;
 
         if (current_pass % 2 == 0)
         {
@@ -263,7 +263,7 @@ namespace volumeshOS::Internal
 
     void TransparencyPassDP::update_draw_texture()
     {
-        //unsigned int texture = renderer.buffers.target_framebuffer_ms->get_texture(GL_COLOR_ATTACHMENT0);
+        //uint32_t texture = renderer.buffers.target_framebuffer_ms->get_texture(GL_COLOR_ATTACHMENT0);
 //        m_transparent_framebuffer0->bind();
 //        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture);
 //        m_transparent_framebuffer0->unbind();

@@ -14,8 +14,8 @@ namespace volumeshOS::Internal
 
         // create a new shader program
         m_shaderID = glCreateProgram();
-        unsigned int vertexID = glCreateShader(GL_VERTEX_SHADER);
-        unsigned int fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
+        uint32_t vertexID = glCreateShader(GL_VERTEX_SHADER);
+        uint32_t fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
 
         // setup vertex shader
         const GLchar* vertBuf = vertexSource.c_str();
@@ -42,7 +42,7 @@ namespace volumeshOS::Internal
         }
 
         // setup geometry shader, if it exists
-        unsigned int geometryID = -1;
+        uint32_t geometryID = -1;
         if (!geometryPath.empty())
         {
             std::string geometrySource = FileManager::load_as_string(geometryPath, true);
@@ -111,14 +111,14 @@ namespace volumeshOS::Internal
         return m_locations[name];
     }
 
-    void Shader::set_uniform_sampler2D(const std::string& name, unsigned int binding, unsigned int texture_id)
+    void Shader::set_uniform_sampler2D(const std::string& name, uint32_t binding, uint32_t texture_id)
     {
         glActiveTexture(binding);
         glBindTexture(GL_TEXTURE_2D, texture_id);
         this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
     }
 
-    void Shader::set_uniform_sampler2DMS(const std::string& name, unsigned int binding, unsigned int texture_id)
+    void Shader::set_uniform_sampler2DMS(const std::string& name, uint32_t binding, uint32_t texture_id)
     {
         glActiveTexture(binding);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_id);

@@ -132,7 +132,7 @@ namespace volumeshOS::Internal
                                                  renderer.passes.ssao_pass->get_blur_texture());
 
             // bind cascaded shadow map
-            std::vector<unsigned int> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
+            std::vector<uint32_t> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
                                                   GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
             for (int i = 0; i < s->max_cascades; i++)
             {

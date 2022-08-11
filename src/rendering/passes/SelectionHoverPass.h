@@ -40,7 +40,7 @@ namespace volumeshOS::Internal
         struct HoverMeshData
         {
             std::vector<float> vertices;
-            std::vector<unsigned int> indices;
+            std::vector<uint32_t> indices;
         };
 
         /**
