@@ -115,14 +115,16 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,
                                              renderer.passes.ssao_pass->get_blur_texture());
 
-        // bind cascaded shadow map
-        std::vector<uint32_t> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
-                                              GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
-        for (int i = 0; i < s->max_cascades; i++)
-        {
-            m_ground_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],
-                                                 s->shadow_maps[i]);
-        }
+//        // bind cascaded shadow map
+//        std::vector<uint32_t> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
+//                                              GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
+//        for (int i = 0; i < s->max_cascades; i++)
+//        {
+//            m_ground_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],
+//                                                 s->shadow_maps[i]);
+//        }
+
+        m_ground_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
 
         m_vao->draw();
 

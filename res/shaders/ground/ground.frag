@@ -45,7 +45,7 @@ uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_transparent_shadow_texture;
 uniform sampler2D u_color_filter_texture;
-uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
+uniform sampler2DArray u_shadow_texture;
 
 out vec4 FragColor;
 
@@ -72,12 +72,12 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     // range [0, 1]
     proj_coords = proj_coords * 0.5 + 0.5;
 
-    float closest_depth = texture(u_shadow_texture[0], proj_coords.xy).r;
+    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
     float current_depth = proj_coords.z;
 
     for(int i = 0; i < 4; i++)
     {
-        if(texture(u_shadow_texture[0], proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
+        if(texture(u_shadow_texture, vec3(proj_coords.xy + poisson_disk[i] / 1000.0, cascade_idx)).r < current_depth - bias)
         {
             shadow += 0.25;
         }

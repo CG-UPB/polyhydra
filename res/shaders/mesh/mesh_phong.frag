@@ -48,7 +48,7 @@ uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_transparent_shadow_texture;
 uniform sampler2D u_color_filter_texture;
-uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
+uniform sampler2DArray u_shadow_texture;
 
 out vec4 FragColor;
 
@@ -75,7 +75,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     // range [0, 1]
     proj_coords = proj_coords * 0.5 + 0.5;
 
-    float closest_depth = texture(u_shadow_texture[cascade_idx], proj_coords.xy).r;
+    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
     float current_depth = proj_coords.z;
     // shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
 
@@ -94,7 +94,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
 
     for(int i = 0; i < 4; i++)
     {
-        if(texture(u_shadow_texture[cascade_idx], proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth)
+        if(texture(u_shadow_texture, vec3(proj_coords.xy + poisson_disk[i] / 1000.0, float(cascade_idx))).r < current_depth - bias)
         {
             shadow += 0.25;
         }
@@ -262,7 +262,7 @@ void main()
         }
 
         // calculate bias (depending on cascade level)
-        float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
+        float bias = max(u_bias_max * (1.0f - dot(n, l)), u_bias_min);
         bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
 
         //cascade_idx = 0;

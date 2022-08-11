@@ -1,25 +1,17 @@
-#version 330 core
+#version 400 core
 
 layout (location = 0) in vec3 a_pos;
-layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_is_digged;
-layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
-layout (location = 7) in float a_is_triangle;
 layout (location = 8) in float a_vertex_type_rounded;
 layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
-layout (location = 12) in float a_is_selected;
-layout (location = 13) in float a_hovered;
-layout (location = 14) in vec3 a_vertex_normal;
 layout (location = 15) in float a_min_edge_length;
 
-out vec3 v_Pos;
 flat out int v_Visible;
-flat out int v_isTriangle;
 
 uniform bool u_rounding;
 uniform float u_rounding_size;
@@ -32,15 +24,15 @@ uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 uniform float u_average_cell_size;
 
-const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
-const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
-const float ROUNDED_VERTEX_TYPE_CORNER   = 2.0;
-const float ROUNDED_VERTEX_TYPE_CENTER   = 3.0;
+const float ROUNDED_VERTEX_TYPE_FACE    = 0.0;
+const float ROUNDED_VERTEX_TYPE_EDGE    = 1.0;
+const float ROUNDED_VERTEX_TYPE_CORNER  = 2.0;
+const float ROUNDED_VERTEX_TYPE_CENTER  = 3.0;
 
-const float EDGE_FACTOR = 1.0 / sqrt(2.0);
-const float CORNER_FACTOR = sqrt(2.0);
+const float EDGE_FACTOR                 = 1.0 / sqrt(2.0);
+const float CORNER_FACTOR               = sqrt(2.0);
 
-uniform mat4 u_light_view;
+uniform mat4 u_light_space_matrices[16];
 uniform mat4 u_light_projection;
 uniform mat4 u_transform;
 
@@ -53,7 +45,7 @@ void main()
 {
     v_Visible = 1;
 
-    mat4 view_transform = u_light_view * u_transform;
+    mat4 view_transform = inverse(u_light_projection) * u_light_space_matrices[0] * u_transform;
 
     vec3 min_slice = vec3(view_transform * vec4(u_min, 1.0));
     vec3 max_slice = vec3(view_transform * vec4(u_max, 1.0));
@@ -99,7 +91,5 @@ void main()
     }
 
     vec3 pos = a_center + (position - a_center) * u_cell_size;
-    v_Pos = vec3(u_transform * vec4(pos, 1.0));
-    v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
-
+    gl_Position = u_transform * vec4(pos, 1.0);
 }

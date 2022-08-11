@@ -73,6 +73,15 @@ namespace volumeshOS::Internal
         void set_uniform_sampler2D(const std::string& name, uint32_t binding, uint32_t texture_id);
 
         /**
+         * Sets a uniform sampler2D for this shader.
+         *
+         * @param name name of the uniform
+         * @param binding opengl texture binding, for example GL_TEXTURE0, GL_TEXTURE1, ...
+         * @param texture_id id of the texture to be bound
+         */
+        void set_uniform_sampler2DArray(const std::string& name, uint32_t binding, uint32_t texture_id);
+
+        /**
          * Sets a uniform sampler2DMS for this shader.
          *
          * @param name name of the uniform

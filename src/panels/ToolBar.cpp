@@ -177,7 +177,7 @@ namespace volumeshOS::Internal
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
-                //ImGui::Text(" ");
+                ImGui::Text(" ");
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::Checkbox("Lock", &m_slicer_locked);
                 active_mesh.set_slice_factor(m_slider_slicer);

@@ -15,5 +15,11 @@ namespace volumeshOS::Internal
         ~MeshPass() = default;
 
         void render(const Renderer& renderer) override;
+
+    private:
+
+        float m_bias_min = 0.000005f;
+        float m_bias_max = 0.0004f;
+        float m_bias_modifier = 0.1f;
     };
 }
