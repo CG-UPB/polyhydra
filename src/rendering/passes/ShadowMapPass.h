@@ -15,15 +15,12 @@ namespace volumeshOS::Internal
         ShadowMapPass(int width, int height);
 
         void resize_buffers(int width, int height);
-        void bind_for_writing(int cascade_idx);
         void render(const Renderer& renderer) override;
         void calculate_cascade(const Renderer& renderer, float near, float far, int  i);
-        void calculate_cascades(const Renderer& renderer, float near, float far, int cascade_levels);
-        void set_cascade_index(int idx){cascade_idx = idx;};
-        void clear_cascades();
+        void calculate_cascades(const Renderer& renderer);
+        [[nodiscard]] uint32_t get_depth_texture() const;
 
-        [[nodiscard]] std::shared_ptr<FrameBufferObject> get_framebuffer() const;
-        [[nodiscard]] uint32_t get_shadow_map() const;
+        [[nodiscard]] uint32_t get_debug_texture(int cascade_level);
 
         static const int max_cascades = 8;
         int cascade_idx = 0;
@@ -34,10 +31,23 @@ namespace volumeshOS::Internal
         glm::vec3 light_positions[max_cascades];
 
     private:
-        Renderer* m_renderer;
-        std::shared_ptr<Shader> m_shadow_shader;
-        std::shared_ptr<FrameBufferObject> m_shadow_framebuffer;
-        float m_z_mult = 2.5f;
 
+        void generate_cascade_textures(int width, int height);
+
+    private:
+
+        std::shared_ptr<Shader> m_debug_shader                  = nullptr;
+        std::shared_ptr<FrameBufferObject> m_debug_framebuffer  = nullptr;
+
+        std::shared_ptr<Shader> m_shadow_shader     = nullptr;
+        uint32_t m_shadow_framebuffer               = -1;
+        uint32_t m_depth_texture                    = -1;
+
+        int m_width;
+        int m_height;
+
+        float m_current_near                        = -1.0f;
+        float m_current_far                         = -1.0f;
+        int m_current_cascade_level                 = -1;
     };
 }

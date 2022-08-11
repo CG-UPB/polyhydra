@@ -118,6 +118,13 @@ namespace volumeshOS::Internal
         this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
     }
 
+    void Shader::set_uniform_sampler2DArray(const std::string& name, uint32_t binding, uint32_t texture_id)
+    {
+        glActiveTexture(binding);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, texture_id);
+        this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
+    }
+
     void Shader::set_uniform_sampler2DMS(const std::string& name, uint32_t binding, uint32_t texture_id)
     {
         glActiveTexture(binding);

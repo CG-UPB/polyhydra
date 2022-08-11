@@ -3,221 +3,162 @@
 
 namespace volumeshOS::Internal
 {
-    ShadowMapPass::ShadowMapPass(int width, int height)
+    ShadowMapPass::ShadowMapPass(int width, int height) : m_width(width), m_height(height)
     {
-        clear_cascades();
-
         m_shadow_shader = Shader::get("shadow_map");
+        m_debug_shader = Shader::get("shadow_debug");
+        m_debug_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
+        generate_cascade_textures(width, height);
+    }
 
-        std::vector<FrameBufferAttachment> attachments =
-                {
-                        FrameBufferAttachment{
-                                .internal_format    = GL_RGBA,
-                                .format             = GL_RGBA,
-                                .type               = GL_UNSIGNED_BYTE,
-                                .attachment         = GL_COLOR_ATTACHMENT0,
-                                .texture_filter     = GL_LINEAR,
-                                .texture_wrap       = GL_CLAMP_TO_EDGE
-                        }
-                };
-        m_shadow_framebuffer = std::make_shared<FrameBufferObject>(width, height, attachments);
-        uint32_t shadow_buffer = m_shadow_framebuffer->get_id();
+    void ShadowMapPass::generate_cascade_textures(int width, int height)
+    {
+        glGenFramebuffers(1, &m_shadow_framebuffer);
 
-        for (uint32_t i = 0; i < max_cascades; i++)
-        {
-            uint32_t tex;
-            glGenTextures(1, &tex);
-            glBindTexture(GL_TEXTURE_2D, tex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glGenTextures(1, &m_depth_texture);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, m_depth_texture);
+        glTexImage3D(
+                GL_TEXTURE_2D_ARRAY,
+                0,
+                GL_DEPTH_COMPONENT32F,
+                width,
+                height,
+                max_cascades + 1,
+                0,
+                GL_DEPTH_COMPONENT,
+                GL_FLOAT,
+                nullptr);
 
-            constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
-            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
-            shadow_maps[i] = tex;
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
+//        constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
+//        glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
 
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_framebuffer);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_texture, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
 
-        if(status != GL_FRAMEBUFFER_COMPLETE)
+        int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE)
         {
             std::cout << "Error: " << status << std::endl;
             exit(1);
         }
-    }
 
-    void ShadowMapPass::bind_for_writing(int cascade_idx)
-    {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[cascade_idx], 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void ShadowMapPass::render(const Renderer& renderer)
     {
         auto cam = renderer.camera;
         auto light = renderer.light;
-
-        // render opaque shadow map
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-
-        // calculate all cascade matrices
-        clear_cascades();
-
         auto& settings = AppState::settings;
 
-        int cascade_level = settings.num_shadow_cascades;
-
-        calculate_cascades(renderer, cam->near, cam->far, cascade_level);
-
-        for (int i = 0; i < cascade_level; i++)
+        if (cam->near != m_current_near || cam->far != m_current_far || settings.num_shadow_cascades != m_current_cascade_level)
         {
-            get_framebuffer()->bind();
-            set_cascade_index(i);
-            bind_for_writing(i);
+            m_current_near = cam->near;
+            m_current_far = cam->far;
+            m_current_cascade_level = settings.num_shadow_cascades;
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
-            glEnable(GL_DEPTH_TEST);
-            glDisable(GL_BLEND);
-            glDepthFunc(GL_LESS);
-            glDepthMask(GL_TRUE);
-            glEnable(GL_DEPTH_CLAMP);
+        }
+        calculate_cascades(renderer);
 
-            for (const auto& mesh: renderer.render_list)
+        m_shadow_shader->bind();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_framebuffer);
+
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
+        glViewport(0, 0, m_width, m_height);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glCullFace(GL_FRONT);  // peter panning
+
+        for (const auto& mesh: renderer.render_list)
+        {
+            // Transform
+            glm::mat4 transform = cam->world * mesh->get_data().get_transform();
+            glm::mat4 view_transform = cam->view * transform;
+
+            // Cell operations
+            float cell_size = mesh->get_data().cell_size;
+            float peel_depth = mesh->get_data().peel_level;
+            float slice_depth = mesh->get_data().slice_level;
+
+            auto bb = mesh->get_world_bb(view_transform);
+            auto min = bb.first;
+            auto max = bb.second;
+
+            // volumeshOS Operations
+            glm::vec3 view_dir = -glm::normalize(cam->get_front());
+            auto slice_direction = mesh->get_slice_dir(transform, view_dir);
+
+            // Shader uniforms
+            m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
+            m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
+            m_shadow_shader->set_uniform_float("u_slice_depth", slice_depth);
+            m_shadow_shader->set_uniform_vec3f("u_min", min);
+            m_shadow_shader->set_uniform_vec3f("u_max", max);
+            m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+            m_shadow_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+            m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
+            m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+
+            for (int i = 0; i < max_cascades; i++)
             {
-                //int i = cascade_idx;
-
-                m_shadow_shader->bind();
-                // Transform
-                glm::mat4 transform = cam->world * mesh->get_data().get_transform();
-                glm::mat4 view_transform = cam->view * transform;
-
-                // Cell operations
-                float cell_size = mesh->get_data().cell_size;
-                float peel_depth = mesh->get_data().peel_level;
-                float slice_depth = mesh->get_data().slice_level;
-
-                auto bb = mesh->get_world_bb(view_transform);
-                auto min = bb.first;
-                auto max = bb.second;
-
-                // volumeshOS Operations
-                glm::vec3 view_dir = -glm::normalize(cam->get_front());
-                auto slice_direction = mesh->get_slice_dir(transform, view_dir);
-
-                // Shader uniforms
-                m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
-                m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
-                m_shadow_shader->set_uniform_float("u_slice_depth", slice_depth);
-                m_shadow_shader->set_uniform_vec3f("u_min", min);
-                m_shadow_shader->set_uniform_vec3f("u_max", max);
-                m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
-                m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-                m_shadow_shader->set_uniform_bool("u_draw_wireframe", settings.rendering_mode == RenderingMode::WIREFRAME);
-                m_shadow_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
-                m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
-                m_shadow_shader->set_uniform_float("u_wireframe_size", settings.wireframe_size);
-                m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-
-
-                m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
-                m_shadow_shader->set_uniform_mat4f("u_light_view", cascade_views[i]);
-                m_shadow_shader->set_uniform_mat4f("u_transform", transform);
-
-                m_shadow_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
-                m_shadow_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
-
-                if (settings.rendering_mode == RenderingMode::WIREFRAME)
-                {
-                    mesh->get_mvb()->get_vao_by_face()->draw();
-                }
-                else
-                {
-                    auto vao = mesh->get_vao();
-                    if (mesh->get_data().rounding_active)
-                    {
-                        vao = mesh->get_mvb()->get_vao_rounded();
-                    }
-                    vao->draw();
-                }
+                auto light_space_mat = cascade_projections[i] * cascade_views[i];
+                m_shadow_shader->set_uniform_mat4f("u_light_space_matrices[" + std::to_string(i) + "]" , light_space_mat);
             }
+            m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[0]);
+            m_shadow_shader->set_uniform_mat4f("u_transform", transform);
 
-            m_shadow_shader->unbind();
-
-            glCullFace(GL_BACK);
-            glEnable(GL_CULL_FACE);
-            glDisable(GL_DEPTH_CLAMP);
-
-            get_framebuffer()->unbind();
+            auto vao = mesh->get_vao();
+            if (mesh->get_data().rounding_active)
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            vao->draw();
         }
 
+        glCullFace(GL_BACK);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        m_shadow_shader->unbind();
     }
 
     void ShadowMapPass::resize_buffers(int width, int height)
     {
-        m_shadow_framebuffer->resize(width, height);
-        glDeleteTextures((int) max_cascades,  &shadow_maps[0]);
-        uint32_t shadow_buffer = m_shadow_framebuffer->get_id();
-
-        for(uint32_t i = 0; i < max_cascades; i++)
-        {
-            uint32_t tex;
-            glGenTextures(1, &tex);
-            glBindTexture(GL_TEXTURE_2D, tex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-            constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
-            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
-            shadow_maps[i] = tex;
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
+        m_width = width;
+        m_height = height;
+        glDeleteTextures(1, &m_depth_texture);
+        glDeleteFramebuffers(1, &m_shadow_framebuffer);
+        m_debug_framebuffer->resize(width, height);
+        generate_cascade_textures(width, height);
     }
 
-    std::shared_ptr<FrameBufferObject> ShadowMapPass::get_framebuffer() const
-    {
-        return m_shadow_framebuffer;
-    }
-
-    uint32_t ShadowMapPass::get_shadow_map() const
-    {
-        return m_shadow_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
-    }
-
-    void ShadowMapPass::calculate_cascades(const Renderer& renderer, float near, float far, int cascade_level)
+    void ShadowMapPass::calculate_cascades(const Renderer& renderer)
     {
         // calculate near and far plane for each cascade
-//        for (int i = 1; i <= cascade_level; i++)
-//        {
-//            cascade_ends[i-1] = (float) i / (float)cascade_level * far;
-//        }
-        for (int i = cascade_level; i >= 1; i--)
+        for (int i = 1; i <= m_current_cascade_level; i++)
         {
-            cascade_ends[cascade_level - i] = (float)(1.0f / pow(2, (float)(i - 1))) * far;
+            cascade_ends[i-1] = (float) i / (float)m_current_cascade_level * m_current_far;
         }
+//        for (int i = m_current_cascade_level; i >= 1; i--)
+//        {
+//            cascade_ends[m_current_cascade_level - i] = (float)(1.0f / pow(2, (float)(i - 1))) * m_current_far;
+//        }
 
         // calculate frustum coordiantes for each cascade
         float n;
         float f;
-        for (int i = 0; i < cascade_level; i++)
+        for (int i = 0; i < m_current_cascade_level; i++)
         {
             if (i == 0)
             {
-                n = near;
+                n = m_current_near;
                 f = cascade_ends[i];
             } else
             {
@@ -236,35 +177,13 @@ namespace volumeshOS::Internal
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(
                 (float)glm::radians(cam->zoom),
-                (float)renderer.frame.height / (float)renderer.frame.width,
+                (float)m_width / (float)m_height,
                 near,
                 far
         );
 
         std::vector<glm::vec4> frustum_corners;
         const auto inverse = glm::inverse(proj * cam->view);
-
-
-//        float ar = (float)renderer->m_viewport_panel_height / (float)renderer->m_viewport_panel_width;
-//
-//        float tan_half_hfov = tanf(glm::radians(cam.zoom / 2.0f));
-//        float tan_half_vfov = tanf(glm::radians((cam.zoom * ar) / 2.0f));
-//
-//        float xn = near * tan_half_hfov;
-//        float xf = far * tan_half_hfov;
-//        float yn = near * tan_half_vfov;
-//        float yf = far * tan_half_vfov;
-//
-//        frustum_corners.emplace_back(xn, yn, near, 1.0);
-//        frustum_corners.emplace_back(-xn, yn, near, 1.0);
-//        frustum_corners.emplace_back(xn, -yn, near, 1.0);
-//        frustum_corners.emplace_back(-xn, -yn, near, 1.0);
-//
-//        frustum_corners.emplace_back(xf, yf, far, 1.0);
-//        frustum_corners.emplace_back(-xf, yf, far, 1.0);
-//        frustum_corners.emplace_back(xf, -yf, far, 1.0);
-//        frustum_corners.emplace_back(-xf, -yf, far, 1.0);
-//
 
         for (uint32_t x = 0; x < 2; ++x)
         {
@@ -297,20 +216,19 @@ namespace volumeshOS::Internal
         float max_y = std::numeric_limits<float>::min();
         float min_z = std::numeric_limits<float>::max();
         float max_z = std::numeric_limits<float>::min();
-        float a = 10.0f;
 
         for (auto &c: frustum_corners)
         {
             auto transformed_corner = cascade_views[i] * c;
-            min_x = std::min(min_x, transformed_corner.x - a);
-            max_x = std::max(max_x, transformed_corner.x + a);
-            min_y = std::min(min_y, transformed_corner.y - a);
-            max_y = std::max(max_y, transformed_corner.y + a);
-            min_z = std::min(min_z, transformed_corner.z - a);
-            max_z = std::max(max_z, transformed_corner.z + a);
+            min_x = std::min(min_x, transformed_corner.x);
+            max_x = std::max(max_x, transformed_corner.x);
+            min_y = std::min(min_y, transformed_corner.y);
+            max_y = std::max(max_y, transformed_corner.y);
+            min_z = std::min(min_z, transformed_corner.z);
+            max_z = std::max(max_z, transformed_corner.z);
         }
 
-        const float z_mult = 5.0;
+        const float z_mult = 10.0;
         if (min_z < 0)
         {
             min_z *= z_mult;
@@ -328,11 +246,22 @@ namespace volumeshOS::Internal
         cascade_projections[i] = glm::ortho(min_x, max_x, min_y, max_y, min_z, max_z);
     }
 
-    void ShadowMapPass::clear_cascades()
+    uint32_t ShadowMapPass::get_depth_texture() const
     {
-        std::fill_n(cascade_ends, max_cascades, 0.0);
-        std::fill_n(cascade_views, max_cascades, glm::mat4(0));
-        std::fill_n(cascade_projections, max_cascades, glm::mat4(0));
-        std::fill_n(light_positions, max_cascades, glm::vec3(0));
+        return m_depth_texture;
+    }
+
+    uint32_t ShadowMapPass::get_debug_texture(int cascade_level)
+    {
+        m_debug_shader->bind();
+        m_debug_framebuffer->bind();
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_debug_shader->set_uniform_sampler2DArray("u_depth_texture", GL_TEXTURE0, m_depth_texture);
+        m_debug_shader->set_uniform_int("u_cascade_level", cascade_level);
+        VertexArrayObject::draw_screen_quad();
+        m_debug_framebuffer->unbind();
+        m_debug_shader->unbind();
+        return m_debug_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
     }
 }

@@ -89,20 +89,19 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
 
-            float bias_min = 0.0005;
-            float bias_max = 0.04;
-            float bias_modifier = 0.1;
 
-//        if(ImGui::Begin("Shadow"))
-//        {
-//            ImGui::SliderFloat("bias_min", &bias_min, 0.000001, 0.005f);
-//            ImGui::SliderFloat("bias_max", &bias_max, 0.00005f, 0.005f);
+
+//            if(ImGui::Begin("Shadow"))
+//            {
+//                ImGui::DragFloat("bias_min", &m_bias_min, 0.001f, 0.0f, 0.1f);
+//                ImGui::DragFloat("bias_max", &m_bias_max, 0.001f, 0.0f, 0.1f);
+//                ImGui::DragFloat("bias_modifier", &m_bias_modifier, 0.01f, 0.0f, 0.5f);
+//            }
 //            ImGui::End();
-//        }
 
-            m_mesh_shader->set_uniform_float("u_bias_min", bias_min);
-            m_mesh_shader->set_uniform_float("u_bias_max", bias_max);
-            m_mesh_shader->set_uniform_float("u_bias_modifier", bias_modifier);
+            m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
+            m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);
+            m_mesh_shader->set_uniform_float("u_bias_modifier", m_bias_modifier);
 
 
             // shadow maps
@@ -114,7 +113,6 @@ namespace volumeshOS::Internal
                 m_mesh_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", s->cascade_views[i]);
                 m_mesh_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
             }
-
             m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
 
 
@@ -130,15 +128,18 @@ namespace volumeshOS::Internal
                                                  renderer.passes.pre_pass->get_framebuffer()->get_depth_texture());
             m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,
                                                  renderer.passes.ssao_pass->get_blur_texture());
+//
+//            // bind cascaded shadow map
+//            std::vector<uint32_t> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
+//                                                  GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
+//            for (int i = 0; i < s->max_cascades; i++)
+//            {
+//                m_mesh_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],
+//                                                     s->shadow_maps[i]);
+//            }
 
-            // bind cascaded shadow map
-            std::vector<uint32_t> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
-                                                  GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
-            for (int i = 0; i < s->max_cascades; i++)
-            {
-                m_mesh_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],
-                                                     s->shadow_maps[i]);
-            }
+            m_mesh_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
+
 
             // wireframe mode should always be non-rounded
             if (draw_wireframe)
