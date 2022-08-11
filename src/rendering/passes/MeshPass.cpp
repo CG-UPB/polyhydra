@@ -89,8 +89,8 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
 
-            float bias_min = 0.00005;
-            float bias_max = 0.004;
+            float bias_min = 0.0005;
+            float bias_max = 0.04;
             float bias_modifier = 0.1;
 
 //        if(ImGui::Begin("Shadow"))

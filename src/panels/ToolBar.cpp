@@ -177,7 +177,7 @@ namespace volumeshOS::Internal
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
-                ImGui::Text(" ");
+                //ImGui::Text(" ");
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 ImGui::Checkbox("Lock", &m_slicer_locked);
                 active_mesh.set_slice_factor(m_slider_slicer);
@@ -398,16 +398,7 @@ namespace volumeshOS::Internal
     void ToolBar::show_ground_menu()
     {
         auto& settings = AppState::settings;
-
-        ImGui::Checkbox("###Ground", &settings.ground_options.visible);
-        ImGui::SameLine();
-        if (!ImGui::CollapsingHeader("Ground"))
-        {
-            return;
-        }
-        shift_right();
-
-        bool visible = AppState::settings.ground_options.visible;
+        bool visible = settings.ground_options.visible;
         bool solid = AppState::settings.ground_options.solid;
         glm::vec3 solid_color = AppState::settings.ground_options.solid_color;
         bool grid = AppState::settings.ground_options.grid;
@@ -417,6 +408,20 @@ namespace volumeshOS::Internal
         new_color1[0] = solid_color.r;
         new_color1[1] = solid_color.g;
         new_color1[2] = solid_color.b;
+
+
+
+        if(ImGui::Checkbox("###Ground", &visible))
+        {
+            settings.ground_options.visible = visible;
+        }
+        ImGui::SameLine();
+        if (!ImGui::CollapsingHeader("Ground"))
+        {
+            return;
+        }
+
+        shift_right();
         if (ImGui::ColorEdit3("Ground Color", new_color1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
             solid_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
@@ -428,6 +433,7 @@ namespace volumeshOS::Internal
             AppState::settings.ground_options.solid = solid;
         }
         shift_right();
+
         float new_color2[4];
         new_color2[0] = grid_color.r;
         new_color2[1] = grid_color.g;
@@ -442,6 +448,7 @@ namespace volumeshOS::Internal
         {
             AppState::settings.ground_options.grid = grid;
         }
+
         shift_right();
         if (ImGui::DragFloat("height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
         {
@@ -547,10 +554,9 @@ namespace volumeshOS::Internal
 
     }
 
-    void ToolBar::shift_right()
+    void ToolBar::shift_right(int x)
     {
-        ImGui::InvisibleButton("###invisible-padding", ImVec2(ImGui::GetCursorPosX() - 2, ImGui::GetStyle().FramePadding.y));
-        ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (float)x);
     }
 
 } // namespace volumeshOS

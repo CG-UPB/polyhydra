@@ -94,7 +94,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
 void main()
 {
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
-    if(!u_visible)
+    if(!u_visible || !(u_solid || u_grid))
     {
         discard;
     }

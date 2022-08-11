@@ -57,6 +57,6 @@ namespace volumeshOS::Internal
         void show_transparency_menu();
 
         void show_mesh_list();
-        void shift_right();
+        static void shift_right(int x = 30);
     };
 }

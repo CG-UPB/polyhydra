@@ -46,7 +46,7 @@ namespace volumeshOS::Internal
             bool isolation_active               = false;
             bool digging_active                 = false;
             int num_depth_peeling_passes        = 15;
-            int num_shadow_cascades             = 3;
+            int num_shadow_cascades             = 8;
             float wireframe_size                = 0.35f;
             float vertex_size                   = 0.4f;
             float gamma                         = 2.2f;

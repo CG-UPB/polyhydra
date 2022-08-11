@@ -4,7 +4,9 @@
 int main()
 {
     volumeshOS::VMesh mesh;
-    volumeshOS::on_gui_render([&mesh](){
+    std::vector<volumeshOS::VArrow> arrows;
+    float len = 0.25f;
+    volumeshOS::on_gui_render([&mesh, &arrows, &len](){
         ImGui::Begin("MyPanel");
         if (ImGui::Button("Load Mesh"))
         {
@@ -26,11 +28,12 @@ int main()
                         auto n = glm::vec3{normal[0], normal[1], normal[2]};
                         auto color = glm::mix(n, glm::vec3{0.5f}, 0.5f);
                         arrow.set_position(center);
-                        arrow.set_scale(0.1f, 0.5f, 0.1f);
+                        arrow.set_scale(0.1f, len, 0.1f);
                         arrow.set_base_width(0.4f);
-                        arrow.set_tip_height(0.15f);
+                        arrow.set_tip_height(0.25f);
                         arrow.set_direction(normal);
                         arrow.set_color(glm::vec4{color, 1.0f});
+                        arrows.push_back(arrow);
                     }
                 }
             }
@@ -38,6 +41,7 @@ int main()
         if (ImGui::Button("Remove shapes"))
         {
             volumeshOS::remove_shapes();
+            arrows.clear();
         }
         if (ImGui::Button("Set boundary color") && mesh.is_valid())
         {
@@ -56,6 +60,14 @@ int main()
                 }
             }
         }
+        if(ImGui::DragFloat("Arrow Length", &len, 0.1f, 0.0f, 5.0f, "%.1f"))
+        {
+            for(auto arrow : arrows)
+            {
+                arrow.set_scale(0.1f, len, 0.1f);
+            }
+        }
+
         ImGui::End();
     });
     volumeshOS::open();
