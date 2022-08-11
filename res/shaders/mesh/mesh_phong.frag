@@ -94,7 +94,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
 
     for(int i = 0; i < 4; i++)
     {
-        if(texture(u_shadow_texture[cascade_idx], proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth)
+        if(texture(u_shadow_texture[cascade_idx], proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
         {
             shadow += 0.25;
         }
@@ -267,7 +267,8 @@ void main()
 
         //cascade_idx = 0;
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
-
+        FragColor = vec4(v_pos_ls[0] / 255.0);
+        return;
     }
 
     // Phong Shading

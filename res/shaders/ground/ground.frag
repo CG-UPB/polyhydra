@@ -72,12 +72,12 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     // range [0, 1]
     proj_coords = proj_coords * 0.5 + 0.5;
 
-    float closest_depth = texture(u_shadow_texture[0], proj_coords.xy).r;
+    float closest_depth = texture(u_shadow_texture[cascade_idx], proj_coords.xy).r;
     float current_depth = proj_coords.z;
 
     for(int i = 0; i < 4; i++)
     {
-        if(texture(u_shadow_texture[0], proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
+        if(texture(u_shadow_texture[cascade_idx], proj_coords.xy + poisson_disk[i] / 1000.0).r < current_depth - bias)
         {
             shadow += 0.25;
         }

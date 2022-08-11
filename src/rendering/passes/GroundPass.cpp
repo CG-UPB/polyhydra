@@ -53,7 +53,7 @@ namespace volumeshOS::Internal
 
         glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
         //glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
-        glm::mat3 mvp_ti = glm::mat3(glm::transpose(glm::inverse(cam->view)));
+        glm::mat3 mvp_ti = glm::mat3(glm::transpose(glm::inverse(view_transform)));
         glm::vec3 light_pos(glm::normalize(mvp_ti * light.light_dir));
 
 
