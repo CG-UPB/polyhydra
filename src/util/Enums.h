@@ -2,6 +2,12 @@
 
 namespace volumeshOS::Internal
 {
+    enum class CameraMode
+    {
+        ORBIT,
+        FLY
+    };
+
     enum class RenderingMode
     {
         WIREFRAME,

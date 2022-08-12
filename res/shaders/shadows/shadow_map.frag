@@ -6,7 +6,7 @@ flat in int v_visible;
 
 void main()
 {
-    if (v_visible == 0)
+    if (v_visible == 0 )
     {
         discard;
     }

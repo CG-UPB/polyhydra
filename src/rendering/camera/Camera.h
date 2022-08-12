@@ -4,6 +4,7 @@
 
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
+#include "util/Enums.h"
 
 #include "TrackBall.h"
 
@@ -28,6 +29,7 @@ namespace volumeshOS::Internal
         void handle_mouse_scroll(glm::vec2 scroll);
         void handle_mouse_movement(float x_offset, float y_offset);
         void handle_key_movement(glm::vec3 movement_vector);
+        void apply_changes() const;
 
         void animated_look_at(glm::vec3 new_target);
         void animation_step();
@@ -40,8 +42,8 @@ namespace volumeshOS::Internal
 
         void set_position(glm::vec3 position);
         void set_view_direction(glm::vec3 direction);
-        void set_mode(Mode mode);
-        Mode get_mode();
+        void set_mode(Internal::CameraMode mode);
+        CameraMode get_mode();
 
         // Matrices
         glm::mat4 world;
@@ -74,7 +76,7 @@ namespace volumeshOS::Internal
 
     private:
 
-        Mode m_mode = FLY;
+        Internal::CameraMode m_mode = CameraMode::FLY;
 
         float m_vertical_speed = 3.0f;
         float m_horizontal_speed = 3.0f;
@@ -94,6 +96,7 @@ namespace volumeshOS::Internal
         glm::vec3 animation_end_target = {0.0f, 0.0f , 0.0f};
         glm::vec3 animation_start_position = {0.0f, 0.0f , 0.0f};
         glm::vec3 animation_end_position = {0.0f, 0.0f , 0.0f};
+
     };
 
 }

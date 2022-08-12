@@ -301,7 +301,7 @@ namespace volumeshOS::Internal
                             new_target = glm::vec3(transform * pos_mesh_space);
                         }
 
-                        if (camera->get_mode() == FLY)
+                        if (camera->get_mode() == CameraMode::FLY)
                         {
                             camera->switch_mode(new_target);
                         }
@@ -316,6 +316,7 @@ namespace volumeshOS::Internal
                 camera->handle_mouse_scroll(Input::get_scroll_offset());
                 camera->handle_mouse_movement(input.offset.x, input.offset.y);
                 camera->handle_key_movement(Input::get_wasd_movement_vector());
+                camera->apply_changes();
             }
 
             if(ImGui::IsWindowFocused())

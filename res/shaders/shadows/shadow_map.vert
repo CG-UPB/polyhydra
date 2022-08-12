@@ -4,6 +4,7 @@ layout (location = 0) in vec3 a_pos;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_is_digged;
+layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
 layout (location = 8) in float a_vertex_type_rounded;
 layout (location = 9) in vec3 a_face_center_rounded;
@@ -12,7 +13,9 @@ layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 15) in float a_min_edge_length;
 
 flat out int v_Visible;
+flat out vec4 v_Color;
 
+uniform vec4 u_object_color;
 uniform bool u_rounding;
 uniform float u_rounding_size;
 uniform float u_cell_size;
@@ -44,6 +47,7 @@ float get_shrink_factor(float angle, float dist) {
 void main()
 {
     v_Visible = 1;
+    v_Color = a_color;
 
     mat4 view_transform = inverse(u_light_projection) * u_light_space_matrices[0] * u_transform;
 
@@ -58,7 +62,7 @@ void main()
     vec3 center = vec3(view_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
 
-    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
+    if (a_peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0 || u_object_color.a != 1.0)
     {
         v_Visible = 0;
     }

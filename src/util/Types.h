@@ -154,9 +154,4 @@ namespace volumeshOS
         Dark
     };
 
-    enum Mode
-    {
-        FLY,
-        ORBIT
-    };
 }

@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "input/Input.h"
 #include "../../util/VecUtil.h"
+#include "settings/AppState.h"
 
 namespace volumeshOS::Internal
 {
@@ -37,7 +38,7 @@ namespace volumeshOS::Internal
         m_horizontal_speed = 1.0f;
 
         //set_mode(FLY);
-        set_mode(ORBIT);
+        set_mode(CameraMode::ORBIT);
     }
 
     void Camera::set_viewport_size(float width, float height)
@@ -51,6 +52,13 @@ namespace volumeshOS::Internal
 
     void Camera::update()
     {
+        // Get data from AppSettings
+        auto mode = AppState::settings.camera_options.mode;
+        auto pos = AppState::settings.camera_options.position;
+        auto fov = AppState::settings.camera_options.fov;
+
+        position = pos;
+        zoom = fov;
 
         // Frame Delta
         auto current_frame = (float) ImGui::GetTime();
@@ -74,7 +82,7 @@ namespace volumeshOS::Internal
     void Camera::handle_key_movement(glm::vec3 movement_vector)
     {
         movement_vector *= delta * 10;
-        if (m_mode == FLY)
+        if (m_mode == CameraMode::FLY)
         {
             // Add the movement vector to the position
             glm::vec3 mov_vector = movement_vector.x * glm::normalize(get_right()) +
@@ -85,7 +93,7 @@ namespace volumeshOS::Internal
             position += mov_vector;
             target = position + view_dir;
 
-        } else if (m_mode == ORBIT)
+        } else if (m_mode == CameraMode::ORBIT)
         {
 
         }
@@ -94,7 +102,7 @@ namespace volumeshOS::Internal
     void Camera::handle_mouse_scroll(glm::vec2 scroll)
     {
         auto y_offset = scroll.y;
-        if (m_mode == FLY)
+        if (m_mode == CameraMode::FLY)
         {
             zoom -= m_zoom_strength * y_offset;
             if (zoom < 1.0f)
@@ -105,7 +113,7 @@ namespace volumeshOS::Internal
             {
                 zoom = 90.0f;
             }
-        } else if (m_mode == ORBIT)
+        } else if (m_mode == CameraMode::ORBIT)
         {
             auto step =  y_offset * glm::normalize(target - position);
             if(glm::length(target - (position + step) ) >= 1)
@@ -137,7 +145,7 @@ namespace volumeshOS::Internal
             return;
         }
 
-        if (m_mode == FLY)
+        if (m_mode == CameraMode::FLY)
         {
             glm::mat4 rotation_mat_x(1.0f);
             rotation_mat_x = glm::rotate(rotation_mat_x, angle_x, m_world_up);
@@ -147,7 +155,7 @@ namespace volumeshOS::Internal
             rotation_mat_y = glm::rotate(rotation_mat_y, angle_y, get_right());
             target = (rotation_mat_y * (pos - tgt)) + pos;
 
-        } else if (m_mode == ORBIT)
+        } else if (m_mode == CameraMode::ORBIT)
         {
             glm::mat4 rotation_mat_x(1.0f);
             rotation_mat_x = glm::rotate(rotation_mat_x, angle_x, m_world_up);
@@ -161,27 +169,27 @@ namespace volumeshOS::Internal
 
     void Camera::switch_mode(glm::vec3 new_orbit_target)
     {
-        if (m_mode == FLY)
+        if (m_mode == CameraMode::FLY)
         {
             auto extended_target = position + glm::length(glm::vec3(new_orbit_target) - position) *
                                                   glm::normalize(target - position);
             look_at(extended_target);
-            set_mode(ORBIT);
+            set_mode(CameraMode::ORBIT);
             animated_look_at(new_orbit_target);
         }
-        else if(m_mode == ORBIT)
+        else if(m_mode == CameraMode::ORBIT)
         {
-            set_mode(FLY);
+            set_mode(CameraMode::FLY);
             animated_look_at(position + glm::normalize(target - position));
         }
     }
 
-    void Camera::set_mode(Mode mode)
+    void Camera::set_mode(CameraMode mode)
     {
        m_mode = mode;
     }
 
-    Mode Camera::get_mode()
+    CameraMode Camera::get_mode()
     {
         return m_mode;
     }
@@ -195,7 +203,7 @@ namespace volumeshOS::Internal
             animation_end_target = new_target;
             animation_start_position = position;
             auto pos_dir = glm::normalize(new_target - position);
-            if(m_mode == ORBIT && glm::length(target - position) < glm::length(new_target -position))
+            if(m_mode == CameraMode::ORBIT && glm::length(target - position) < glm::length(new_target -position))
             {
                 animation_end_position = animation_end_target - pos_dir * glm::length(target - position);
             }
@@ -277,5 +285,11 @@ namespace volumeshOS::Internal
 
     }
 
+    void Camera::apply_changes() const
+    {
+        AppState::settings.camera_options.mode = m_mode;
+        AppState::settings.camera_options.position = position;
+        AppState::settings.camera_options.fov = zoom;
+    }
 
 }

@@ -13,12 +13,12 @@ namespace volumeshOS::Internal
 
     void ToolBar::show()
     {
-        if (!ImGui::Begin("Toolbar"))
+
+        if (!ImGui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoBackground))
         {
             ImGui::End();
             return;
         }
-
 
         ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
         ImGui::SetScrollX(1);
@@ -51,6 +51,7 @@ namespace volumeshOS::Internal
         show_rendering_mode_menu();
         show_selection_menu();
         show_camera_menu();
+        show_light_menu();
 
         ImGui::Separator();
         ImGuiUtil::push_bold_font();
@@ -107,7 +108,7 @@ namespace volumeshOS::Internal
                 Tooltips::HelpMarkerWithQuestionMark("Adjust the mesh position");
                 ImGui::SetNextItemWidth(slider_width - 50.0f);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -10.0f, 10.0f, "%.1f"))
+                if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -100.0f, 100.0f, "%.1f"))
                 {
                     active_mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
                 }
@@ -392,6 +393,88 @@ namespace volumeshOS::Internal
             return;
         }
         shift_right();
+
+        const char* camera_modes[] =
+                {
+                        "ORBIT", "FLY"
+                };
+        int camera_mode = static_cast<int>(settings.camera_options.mode);
+        ImGui::Text("Mode");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        if(ImGui::Combo(
+                "##CameraMode",
+                &camera_mode,
+                camera_modes,
+                IM_ARRAYSIZE(camera_modes),
+                IM_ARRAYSIZE(camera_modes)
+        ))
+        {
+            settings.camera_options.mode = static_cast<CameraMode>(camera_mode);
+        }
+        shift_right();
+
+        auto camera_position = settings.camera_options.position;
+        float position[4];
+        position[0] = camera_position.r;
+        position[1] = camera_position.g;
+        position[2] = camera_position.b;
+        ImGui::Text("Position");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        if (ImGui::DragFloat3("##CameraPosition", position, 0.1f, -100.0f, 100.0f, "%.1f"))
+        {
+            settings.camera_options.position = glm::vec3(position[0], position[1], position[2]);
+        }
+        shift_right();
+
+        float fov = settings.camera_options.fov;
+        ImGui::Text("FOV");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        if (ImGui::DragFloat("##CameraFOV", &fov, 1.0f, 1.0f, 90.0f))
+        {
+            settings.camera_options.fov = fov;
+        }
+
+    }
+
+    void ToolBar::show_light_menu()
+    {
+        auto& settings = AppState::settings;
+
+        if (!ImGui::CollapsingHeader("Light"))
+        {
+            return;
+        }
+        shift_right();
+
+        auto light_direction = settings.light_options.direction;
+        float direction[4];
+        direction[0] = light_direction.r;
+        direction[1] = light_direction.g;
+        direction[2] = light_direction.b;
+        ImGui::Text("Direction");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        if (ImGui::DragFloat3("##LightDirection", direction, 0.1f, -1.0f, 1.0f, "%.001f"))
+        {
+            settings.light_options.direction = glm::vec3(direction[0], direction[1], direction[2]);
+        }
+        shift_right();
+
+        auto light_color = settings.light_options.color;
+        float new_color1[4];
+        new_color1[0] = light_color.r;
+        new_color1[1] = light_color.g;
+        new_color1[2] = light_color.b;
+
+        ImGui::Text("Color");
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        if (ImGui::ColorEdit3("Light Color", new_color1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        {
+            settings.light_options.color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
+        }
     }
 
 
@@ -408,8 +491,6 @@ namespace volumeshOS::Internal
         new_color1[0] = solid_color.r;
         new_color1[1] = solid_color.g;
         new_color1[2] = solid_color.b;
-
-
 
         if(ImGui::Checkbox("###Ground", &visible))
         {

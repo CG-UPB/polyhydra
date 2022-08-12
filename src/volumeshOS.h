@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vospch.h"
+#include "util/Enums.h"
 
 namespace volumeshOS
 {
@@ -387,7 +388,7 @@ namespace volumeshOS
     void set_camera_view_direction(const Vec3T& direction);
 
     // Set the camera mode
-    void set_camera_mode(Mode mode);
+    void set_camera_mode(Internal::CameraMode mode);
 
     // Set the camera view direction to point to a given mesh
     void focus_camera(const VMesh& mesh);

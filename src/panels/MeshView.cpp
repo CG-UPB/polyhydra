@@ -240,6 +240,9 @@ namespace volumeshOS::Internal
 
         // display mesh loading percentage
         const auto mesh = renderer->mesh_list->get_focused_mesh();
+
+        const float progress_bar_width = 150.0f;
+        const float progress_bar_height = 30.0f;
         if (mesh != nullptr)
         {
             const auto mvb = mesh->get_mvb();
@@ -247,11 +250,14 @@ namespace volumeshOS::Internal
             {
                 ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
                 float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
-                ImGui::SetCursorPos({middle_x, topLeft.y});
-                ImGui::Text(
-                        "%s",
-                        std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
-                );
+                ImGui::SetCursorPos({middle_x - progress_bar_width / 2.0f, topLeft.y});
+//                ImGui::Text(
+//                        "%s",
+//                        std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
+//                );
+                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.7f, 0.7f, 0.7f, 1.0f));
+                ImGui::ProgressBar(mvb->get_loading_percentage() / 100.0f, ImVec2(progress_bar_width, progress_bar_height));
+                ImGui::PopStyleColor();
             }
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, y_pos});
             ImGui::Text("vertices: %zu", mesh->get_ovm()->n_vertices());

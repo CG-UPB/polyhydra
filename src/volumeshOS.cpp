@@ -631,7 +631,7 @@ namespace volumeshOS
         });
     }
 
-    void set_camera_mode(Mode mode)
+    void set_camera_mode(Internal::CameraMode mode)
     {
         commands.emplace_back([mode]{
             camera->set_mode(mode);

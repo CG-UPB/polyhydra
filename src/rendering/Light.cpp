@@ -7,7 +7,7 @@ namespace volumeshOS::Internal
 
     Light::Light()
     {
-        position =glm::vec3{20.0f, 20.0f, 20.0f};
+        position =glm::vec3{0.5f, 1.0f, 1.0f};
         color = glm::vec3{1.0f, 1.0f, 1.0f};
         target = glm::vec3{0.0f, 0.0f, 0.0f};
         light_dir = position;

@@ -243,7 +243,7 @@ namespace volumeshOS::Internal
 
         show_dock_space();
 
-        //ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
     }
 
     void Window::render()
@@ -253,7 +253,7 @@ namespace volumeshOS::Internal
         panels.log_window->show();
         panels.mesh_layer_view->show();
         panels.mesh_view->show();
-        panels.quality_settings->show();
+        //panels.quality_settings->show();
         panels.toolbar->show();
 
         AppState::callbacks.on_gui_render();

@@ -6,64 +6,18 @@
 
 namespace volumeshOS::Internal
 {
-    /**
-     * This class represents a LogWindow, which is shown in volumeshOS and where the User could log some messages. It is
-     * realised as Singleton
-     */
+
     class LogWindow final: public WindowPanel
     {
         public:
 
-            LogWindow();
-            ~LogWindow() override = default;
-
-            /**
-             * clears the LogWindow - deletes all thats in the buffer
-             */
-            void clear();
-            /**
-             * adds a Message to the LogWindow. The level specifies the criticality/topic of the message. Available levels are:
-             *
-             * 0 -> information
-             * 1 -> warning
-             * 2 -> error
-             * 3 -> critical
-             *
-             * @param fmt const char * which should be written on the LogWindwo
-             * @param level criticality of the message
-             */
-            void addLog(const char* fmt, int level = 0);
-
-            /**
-             * adds a Message to the LogWindow. The level specifies the criticality/topic of the message. Available levels are:
-             *
-             * 0 -> information
-             * 1 -> warning
-             * 2 -> error
-             * 3 -> critical
-             *
-             * @param fmt std::string which should be written on the LogWindwo
-             * @param level criticality of the message
-             */
-            void addLog(const std::string& fmt, int level = 0);
-
-            /**
-             *  This method is used to draw the LogWindow in every loop. It creates all the buttons and the lines of text
-             * variables
-             */
             void show() override;
+            void add_message(std::string msg);
 
         private:
 
-            // Variables that are used for Buffering and filtering
-            ImGuiTextBuffer m_buffer;
-            ImGuiTextFilter m_filter;
-            ImVector<int>   m_line_offsets;
-            std::string     m_levels[4];
+            std::vector<std::string> messages;
 
-            // autoscroll is a feature that could be activated
-            bool m_auto_scroll;
-            // not working: but the message should be written in colors - bugging with autoscroll feature
-            std::vector<ImVec4> m_colors;
+            static void show_message(const std::string& message);
     };
 }

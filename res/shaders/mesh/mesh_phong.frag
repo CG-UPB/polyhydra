@@ -263,7 +263,7 @@ void main()
 
         // calculate bias (depending on cascade level)
         float bias = max(u_bias_max * (1.0f - dot(n, l)), u_bias_min);
-        bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
+        //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
 
         //cascade_idx = 0;
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
@@ -292,7 +292,7 @@ void main()
     vec3 specular = u_spec_strength * spec * light_color;
 
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-    vec3 result = (ambient + (1.0 - shadow + 0.2) * (diffuse + specular)) / norm * used_color;
+    vec3 result = (ambient + (1.0 - shadow ) * (diffuse + specular)) / norm * used_color;
 
     FragColor = vec4(pow(result, vec3(1.0 / u_gamma)), v_color.a);
 }

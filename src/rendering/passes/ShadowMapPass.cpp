@@ -96,6 +96,7 @@ namespace volumeshOS::Internal
             auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
             // Shader uniforms
+            m_shadow_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
             m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
             m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
             m_shadow_shader->set_uniform_float("u_slice_depth", slice_depth);
@@ -172,7 +173,7 @@ namespace volumeshOS::Internal
     void ShadowMapPass::calculate_cascade(const Renderer& renderer, float near, float far, int i)
     {
         auto cam = renderer.camera;
-        auto light = renderer.light;
+        auto light = AppState::settings.light_options;
 
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(
@@ -205,7 +206,7 @@ namespace volumeshOS::Internal
         }
         center /= frustum_corners.size();
 
-        auto light_dir = glm::normalize(light.light_dir);
+        auto light_dir = glm::normalize(light.direction);
         //light.position = center + light_dir;
         light_positions[i] = center + light_dir;
         cascade_views[i] = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));

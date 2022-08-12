@@ -7,6 +7,19 @@
 
 namespace volumeshOS::Internal
 {
+    struct CameraOptions
+    {
+        CameraMode mode = CameraMode::ORBIT;
+        glm::vec3 position = {0.0f, 0.0f, 13.0f};
+        float fov = 45.0f;
+    };
+
+    struct LightOptions
+    {
+        glm::vec3 direction = {0.5f, 1.0f, 1.0f};
+        glm::vec3 color = {1.0f, 1.0f, 1.0f};
+    };
+
     struct GroundOptions
     {
         bool visible    = true;
@@ -38,6 +51,8 @@ namespace volumeshOS::Internal
             SSAOMode ssao_mode                  = SSAOMode::QUALITY;
             SSAOOptions ssao_custom_options     = {};
             GroundOptions ground_options        = {};
+            CameraOptions camera_options        = {};
+            LightOptions light_options          = {};
             bool shapes_active                  = true;
             bool selection_active               = false;
             bool transparency_active            = false;
