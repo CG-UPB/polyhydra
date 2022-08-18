@@ -73,7 +73,7 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_ground_shader->set_uniform_vec3f("u_light_color", light.color);
         m_ground_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
-        m_ground_shader->set_uniform_float("u_gamma", settings.gamma);
+        m_ground_shader->set_uniform_float("u_gamma", settings.general_options.gamma);
         m_ground_shader->set_uniform_float("u_spec_strength",0.3f);
         m_ground_shader->set_uniform_float("u_spec_exponent",8.0f);
         m_ground_shader->set_uniform_float("u_ambient_strength",0.9f);

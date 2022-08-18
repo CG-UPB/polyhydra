@@ -243,7 +243,7 @@ namespace volumeshOS::Internal
 
         show_dock_space();
 
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDemoWindow();
     }
 
     void Window::render()

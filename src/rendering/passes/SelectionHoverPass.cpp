@@ -59,7 +59,7 @@ namespace volumeshOS::Internal
                     m_quad_circle_shader->set_uniform_vec4f("u_position", m_hovered_vertex_position);
                     m_quad_circle_shader->set_uniform_float("u_scale", 0.15f);
                     m_quad_circle_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-                    m_quad_circle_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
+                    m_quad_circle_shader->set_uniform_float("u_gamma", AppState::settings.general_options.gamma);
                     m_quad_vao->draw();
                     m_quad_circle_shader->unbind();
                 }
@@ -81,7 +81,7 @@ namespace volumeshOS::Internal
                     m_edge_hover_shader->set_uniform_vec3f("u_to_vertex", m_hovered_edge_to);
                     m_edge_hover_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
                     m_edge_hover_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-                    m_edge_hover_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
+                    m_edge_hover_shader->set_uniform_float("u_gamma", AppState::settings.general_options.gamma);
                     m_edge_vao->draw();
                     m_edge_hover_shader->unbind();
                 }

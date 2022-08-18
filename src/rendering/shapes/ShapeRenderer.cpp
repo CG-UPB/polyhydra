@@ -48,7 +48,7 @@ namespace volumeshOS::Internal
         m_shape_shader->set_uniform_vec3f("u_light_pos", light_pos);
         m_shape_shader->set_uniform_vec3f("u_light_color", light.color);
         m_shape_shader->set_uniform_vec3f("u_cam_pos", camera->position);
-        m_shape_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
+        m_shape_shader->set_uniform_float("u_gamma", AppState::settings.general_options.gamma);
 
         int draw_calls = 0;
         for (auto& [mesh_id, types] : m_render_data_by_mesh_by_type)

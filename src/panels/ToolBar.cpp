@@ -58,8 +58,7 @@ namespace volumeshOS::Internal
         ImGui::Text("Graphics");
         ImGui::PopFont();
 
-        ImGui::DragFloat("Gamma", &AppState::settings.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
-
+        show_general_menu();
         show_ground_menu();
         show_shadow_menu();
         show_ambient_occlusion_menu();
@@ -382,6 +381,38 @@ namespace volumeshOS::Internal
         }
 
 
+    }
+
+    void ToolBar::show_general_menu()
+    {
+        auto& settings = AppState::settings;
+
+        shift_right(38);
+        if (!ImGui::CollapsingHeader("General"))
+        {
+            return;
+        }
+        shift_right();
+
+        ImGui::Text("Gamma");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        ImGui::DragFloat("##Gamma", &settings.general_options.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
+
+        auto& bg_color = settings.general_options.background_color;
+        float new_bg_color[3];
+        new_bg_color[0] = bg_color.r;
+        new_bg_color[1] = bg_color.g;
+        new_bg_color[2] = bg_color.b;
+
+        shift_right();
+        ImGui::Text("Background");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        if (ImGui::ColorEdit3("##Background", new_bg_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        {
+            settings.general_options.background_color = glm::vec3(new_bg_color[0], new_bg_color[1], new_bg_color[2]);
+        }
     }
 
     void ToolBar::show_camera_menu()
