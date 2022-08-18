@@ -206,7 +206,12 @@ namespace volumeshOS::Internal
         }
         center /= frustum_corners.size();
 
+        if(light.direction == glm::vec3(0.0f, 1.0f, 0.0f))
+        {
+            light.direction = glm::vec3(-0.01f, 1.0f, 0.01f);
+        }
         auto light_dir = glm::normalize(light.direction);
+
         //light.position = center + light_dir;
         light_positions[i] = center + light_dir;
         cascade_views[i] = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));

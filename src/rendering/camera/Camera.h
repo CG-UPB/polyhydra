@@ -10,6 +10,16 @@
 
 namespace volumeshOS::Internal
 {
+    struct Animation{
+        glm::vec3 target_start   = {0.0f, 0.0f , 0.0f};
+        glm::vec3 target_end     = {0.0f, 0.0f , 0.0f};
+        glm::vec3 position_start = {0.0f, 0.0f , 0.0f};
+        glm::vec3 position_end   = {0.0f, 0.0f , 0.0f};
+        float duration           = 0.4f;
+        float time_start         = 0.0f;
+        float time_current       = 0.0f;
+        float time_end           = 0.0f;
+    };
 
 /**
  * Camera class responsible for Data concerning the rendering camera. Position direction and other attributes are managed and changable through this class
@@ -21,7 +31,7 @@ namespace volumeshOS::Internal
 
         void set_viewport_size(float width, float height);
 
-        void switch_mode(glm::vec3 new_orbit_target = {0.0f, 0.0f, 0.0f});
+        void switch_mode();
 
         [[nodiscard]] glm::vec2 get_viewport_size() const;
 
@@ -42,6 +52,7 @@ namespace volumeshOS::Internal
 
         void set_position(glm::vec3 position);
         void set_view_direction(glm::vec3 direction);
+        void set_target(glm::vec3 target);
         void set_mode(Internal::CameraMode mode);
         CameraMode get_mode();
 
@@ -54,7 +65,7 @@ namespace volumeshOS::Internal
         glm::quat orientation;
 
         // Vectors
-        glm::vec3 position = {0.0f, 0.0f , 0.0f};
+        glm::vec3 position = {0.0f, 0.0f , 13.0f};
         glm::vec3 target = {0.0f, 0.0f , 0.0f};
 
         // Floats
@@ -72,11 +83,12 @@ namespace volumeshOS::Internal
 
         float zoom = 45.0f;
 
-        bool animation = false;
+        bool is_animating = false;
 
     private:
 
         Internal::CameraMode m_mode = CameraMode::FLY;
+        Internal::CameraMode new_mode = CameraMode::FLY;
 
         float m_vertical_speed = 3.0f;
         float m_horizontal_speed = 3.0f;
@@ -87,15 +99,15 @@ namespace volumeshOS::Internal
         glm::vec3 m_camera_right = {0,0,0};
         glm::vec3 m_camera_up = {0,0,0};
         glm::vec3 m_camera_front= {0,0,0};
+        glm::vec3 new_target = {0,0,0};
 
         float m_screen_width = 0;
         float m_screen_height = 0;
         float m_zoom_strength = 3.5;
 
-        glm::vec3 animation_start_target = {0.0f, 0.0f , 0.0f};
-        glm::vec3 animation_end_target = {0.0f, 0.0f , 0.0f};
-        glm::vec3 animation_start_position = {0.0f, 0.0f , 0.0f};
-        glm::vec3 animation_end_position = {0.0f, 0.0f , 0.0f};
+        Animation animation;
+
+        float smoothstep(float x);
 
     };
 

@@ -5,13 +5,14 @@
 #include "WindowPanel.h"
 #include "../settings/AppState.h"
 #include "../util/Enums.h"
+#include "rendering/camera/Camera.h"
 
 namespace volumeshOS::Internal
 {
 
     /**
      *  This class represents the toolbar. Various actions are possible in this toolbar. On the one hand there is the
-     *  possibility to use the snapshot function to save snapshots via a file dialog. Another possibility is the
+     *  possibility to use the snapshot function to save snapshots via file dialog. Another possibility is the
      *  activation of the selection feature, through which the individual elements of the meshes can be selected. It is
      *  also possible to specify whether only vertices, edges, faces or cells can be selected. Below this, on the
      *  toolbar, is the tab for the mesh settings, which are always displayed and applied to the active mesh.
@@ -23,10 +24,14 @@ namespace volumeshOS::Internal
         /**
          * This method is used to draw the toolbar in every loop. It creates all the buttons and sets the corresponding
          * variables
-         */
+         **/
+
         void show() override;
+        void show(const std::shared_ptr<Internal::Camera>&);
 
     private:
+        std::shared_ptr<Internal::Camera> camera = nullptr;
+
         float slider_width = 180.0f;
         float padding_right = 35.0f;
 

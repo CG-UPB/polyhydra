@@ -195,6 +195,16 @@ namespace volumeshOS::Internal
         }
         if (!anything_hovered || !ImGui::IsWindowHovered())
         {
+            auto mesh = renderer->mesh_list->get_focused_mesh();
+            if(mesh != nullptr)
+            {
+                renderer->hover_position = mesh->get_data().position + mesh->get_data().position_offset;
+            }
+            else
+            {
+                renderer->hover_position = {0.0f, 0.0f, 0.0f};
+            }
+
             renderer->passes.selection_hover_pass->hover(nullptr, SELECTION_TYPE_NONE, 0);
             m_hovered_element_type = SELECTION_TYPE_NONE;
             m_hovered_element_ovm_id = -1;
@@ -277,6 +287,11 @@ namespace volumeshOS::Internal
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
             ImGui::Text( "%s", element_name.c_str());
         }
+
+        // render LogWindow
+        auto coords = ImGui::GetContentRegionAvail();
+        //ImGui::GetWindowDrawList()->AddRectFilled()
+
 
         ImGui::End();
         ImGui::PopStyleVar();

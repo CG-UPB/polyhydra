@@ -55,6 +55,11 @@ namespace volumeshOS::Internal
         //glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
         glm::mat3 mvp_ti = glm::mat3(glm::transpose(glm::inverse(view_transform)));
         glm::vec3 light_pos(glm::normalize(mvp_ti * light.light_dir));
+        auto projection = cam->projection;
+//        glm::mat4 projection = glm::perspective(glm::radians(cam->zoom),
+//                                                (cam->get_viewport_size().x / cam->get_viewport_size().y),
+//                                           cam->near,
+//                                           cam->far * 2);
 
 
         // Shader uniforms
@@ -67,7 +72,7 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_int("u_tile_count", ground_options.tiles);
 
         m_ground_shader->set_uniform_mat4f("u_transform", transform);
-        m_ground_shader->set_uniform_mat4f("u_projection", cam->projection);
+        m_ground_shader->set_uniform_mat4f("u_projection", projection);
         m_ground_shader->set_uniform_mat4f("u_view", cam->view);
         m_ground_shader->set_uniform_vec3f("u_light_pos", light_pos);
         m_ground_shader->set_uniform_vec3f("u_cam_pos", cam_pos);

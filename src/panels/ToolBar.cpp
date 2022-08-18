@@ -1,15 +1,20 @@
 
 #include "ToolBar.h"
-#include "../input/Input.h"
-#include "MeshView.h"
 #include "NewFileDialog.h"
 #include "../util/Tooltips.h"
 #include "../util/ImGuiUtil.h"
 #include "volumeshOS.h"
+#include "../rendering/Renderer.h"
 
 
 namespace volumeshOS::Internal
 {
+
+    void ToolBar::show(const std::shared_ptr<Internal::Camera>& cam)
+    {
+        camera = cam;
+        show();
+    }
 
     void ToolBar::show()
     {
@@ -398,7 +403,7 @@ namespace volumeshOS::Internal
                 {
                         "ORBIT", "FLY"
                 };
-        int camera_mode = static_cast<int>(settings.camera_options.mode);
+        int camera_mode = static_cast<int>(camera->get_mode());
         ImGui::Text("Mode");
         ImGui::SetNextItemWidth(slider_width);
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
@@ -410,11 +415,11 @@ namespace volumeshOS::Internal
                 IM_ARRAYSIZE(camera_modes)
         ))
         {
-            settings.camera_options.mode = static_cast<CameraMode>(camera_mode);
+            camera->set_mode(static_cast<CameraMode>(camera_mode));
         }
         shift_right();
 
-        auto camera_position = settings.camera_options.position;
+        auto camera_position = camera->position;
         float position[4];
         position[0] = camera_position.r;
         position[1] = camera_position.g;
@@ -424,17 +429,17 @@ namespace volumeshOS::Internal
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
         if (ImGui::DragFloat3("##CameraPosition", position, 0.1f, -100.0f, 100.0f, "%.1f"))
         {
-            settings.camera_options.position = glm::vec3(position[0], position[1], position[2]);
+            camera->position = glm::vec3(position[0], position[1], position[2]);
         }
         shift_right();
 
-        float fov = settings.camera_options.fov;
+        float fov = camera->zoom;
         ImGui::Text("FOV");
         ImGui::SetNextItemWidth(slider_width);
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
         if (ImGui::DragFloat("##CameraFOV", &fov, 1.0f, 1.0f, 90.0f))
         {
-            settings.camera_options.fov = fov;
+            camera->zoom = fov;
         }
 
     }
