@@ -152,7 +152,7 @@ namespace volumeshOS::Internal
     {
         glEnable(GL_FRAMEBUFFER_SRGB);
         m_composite_shader->bind();
-        m_composite_shader->set_uniform_float("u_gamma", AppState::settings.general_options.gamma);
+        m_composite_shader->set_uniform_float("u_gamma", AppState::settings.general.gamma);
         m_composite_shader->set_uniform_sampler2D("accumTexture", GL_TEXTURE0, get_accum_texture());
         m_composite_shader->set_uniform_sampler2D("revealTexture", GL_TEXTURE1, get_reveal_texture());
         VertexArrayObject::draw_screen_quad();

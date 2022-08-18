@@ -13,6 +13,8 @@ namespace volumeshOS::Internal
 
         clear_position_buffer(renderer);
 
+        renderer.passes.ground_pass->render_pre(renderer);
+
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);

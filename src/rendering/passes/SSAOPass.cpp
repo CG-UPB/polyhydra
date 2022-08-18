@@ -8,8 +8,8 @@ namespace volumeshOS::Internal
     const SSAOOptions SSAOPass::QUALITY_SSAO = {
             .active         = true,
             .num_samples    = 64,
-            .sample_radius  = 0.5,
-            .strength       = 2.5,
+            .sample_radius  = 1.5,
+            .strength       = 1.5,
             .z_bias         = 0.01
     };
 
@@ -17,8 +17,8 @@ namespace volumeshOS::Internal
     const SSAOOptions SSAOPass::BALANCED_SSAO = {
             .active         = true,
             .num_samples    = 32,
-            .sample_radius  = 0.5,
-            .strength       = 2.5,
+            .sample_radius  = 1.5,
+            .strength       = 1.5,
             .z_bias         = 0.015
     };
 
@@ -26,8 +26,8 @@ namespace volumeshOS::Internal
     const SSAOOptions SSAOPass::PERFORMANCE_SSAO = {
             .active         = true,
             .num_samples    = 16,
-            .sample_radius  = 0.5,
-            .strength       = 2.5,
+            .sample_radius  = 1.5,
+            .strength       = 1.5,
             .z_bias         = 0.02
     };
 
@@ -152,7 +152,7 @@ namespace volumeshOS::Internal
                 load_options(SSAOPass::PERFORMANCE_SSAO);
                 break;
             case SSAOMode::CUSTOM:
-                load_options(AppState::settings.ssao_custom_options);
+                load_options(AppState::settings.ssao_custom);
                 break;
             default:
                 return;
@@ -176,6 +176,7 @@ namespace volumeshOS::Internal
             m_ssao_shader->set_uniform_float("u_radius", m_options.sample_radius);
             m_ssao_shader->set_uniform_float("u_strength", m_options.strength);
             m_ssao_shader->set_uniform_float("u_bias", m_options.z_bias);
+            m_ssao_shader->set_uniform_float("u_distance_bias", m_options.distance_bias);
             // ssao related
             m_ssao_shader->set_uniform_vec3f_array("u_sample_kernel", m_sample_kernel);
             m_ssao_shader->set_uniform_sampler2D("u_position", GL_TEXTURE0, pre_pass->get_position_texture());

@@ -173,7 +173,7 @@ namespace volumeshOS::Internal
     void ShadowMapPass::calculate_cascade(const Renderer& renderer, float near, float far, int i)
     {
         auto cam = renderer.camera;
-        auto light = AppState::settings.light_options;
+        auto light = AppState::settings.light;
 
         //const auto proj = cam.projection;
         const auto proj = glm::perspective(

@@ -236,7 +236,7 @@ namespace volumeshOS::Internal
 
         renderer.buffers.target_framebuffer_ms->bind();
         m_composite_shader->bind();
-        m_composite_shader->set_uniform_float("u_gamma", AppState::settings.general_options.gamma);
+        m_composite_shader->set_uniform_float("u_gamma", AppState::settings.general.gamma);
         m_composite_shader->set_uniform_int("u_current_pass", current_pass);
         m_composite_shader->set_uniform_int("u_max_passes", max_passes - 1);
 

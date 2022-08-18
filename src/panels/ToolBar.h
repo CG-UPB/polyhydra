@@ -2,6 +2,8 @@
 
 #include "vospch.h"
 
+#include "volumeshOS.h"
+
 #include "WindowPanel.h"
 #include "../settings/AppState.h"
 #include "../util/Enums.h"
@@ -46,6 +48,10 @@ namespace volumeshOS::Internal
         float m_mesh_scale = 1.0f;
         float m_mesh_rotation[3] = {0.0f, 0.0f, 0.0f};
 
+        ExportOptions m_export_options  = {};
+        int m_export_dimensions[2]      = {m_export_options.width, m_export_options.height};
+
+        void show_screenshot_menu();
 
         void show_rendering_mode_menu();
         void show_selection_menu();

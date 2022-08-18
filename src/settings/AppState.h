@@ -37,8 +37,9 @@ namespace volumeshOS::Internal
         bool active             = true;
         int num_samples         = 64;
         float sample_radius     = 0.5f;
-        float strength          = 1.5f;
+        float strength          = 2.5f;
         float z_bias            = 0.01f;
+        float distance_bias     = 6.0f;
     };
 
     struct GeneralOptions
@@ -55,11 +56,11 @@ namespace volumeshOS::Internal
             TransparencyMode transparency_mode  = TransparencyMode::DEPTH_PEELING;
             SelectionMode selection_mode        = SelectionMode::OFF;
             SSAOMode ssao_mode                  = SSAOMode::QUALITY;
-            GeneralOptions general_options      = {};
-            SSAOOptions ssao_custom_options     = {};
-            GroundOptions ground_options        = {};
-            CameraOptions camera_options        = {};
-            LightOptions light_options          = {};
+            GeneralOptions general              = {};
+            SSAOOptions ssao_custom             = {};
+            GroundOptions ground                = {};
+            CameraOptions camera                = {};
+            LightOptions light                  = {};
             bool shapes_active                  = true;
             bool selection_active               = false;
             bool transparency_active            = false;

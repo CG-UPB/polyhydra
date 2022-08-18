@@ -14,7 +14,7 @@ namespace volumeshOS::Internal
 
     void BackgroundPass::render(const Renderer& renderer)
     {
-        auto& options = AppState::settings.general_options;
+        auto& options = AppState::settings.general;
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);

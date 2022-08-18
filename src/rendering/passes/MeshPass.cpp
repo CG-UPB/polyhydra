@@ -41,7 +41,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->bind();
 
             auto cam = renderer.camera;
-            auto light = AppState::settings.light_options;
+            auto light = AppState::settings.light;
 
             // Transform
             glm::mat4 transform = cam->world * mesh->get_data().get_transform();
@@ -73,7 +73,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
             m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            m_mesh_shader->set_uniform_float("u_gamma", settings.general_options.gamma);
+            m_mesh_shader->set_uniform_float("u_gamma", settings.general.gamma);
             m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
             m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
             m_mesh_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);

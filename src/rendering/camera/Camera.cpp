@@ -53,9 +53,9 @@ namespace volumeshOS::Internal
     void Camera::update()
     {
         // Get data from AppSettings
-        auto mode = AppState::settings.camera_options.mode;
-        auto pos = AppState::settings.camera_options.position;
-        auto fov = AppState::settings.camera_options.fov;
+        auto mode = AppState::settings.camera.mode;
+        auto pos = AppState::settings.camera.position;
+        auto fov = AppState::settings.camera.fov;
 
         position = pos;
         zoom = fov;
@@ -287,9 +287,9 @@ namespace volumeshOS::Internal
 
     void Camera::apply_changes() const
     {
-        AppState::settings.camera_options.mode = m_mode;
-        AppState::settings.camera_options.position = position;
-        AppState::settings.camera_options.fov = zoom;
+        AppState::settings.camera.mode = m_mode;
+        AppState::settings.camera.position = position;
+        AppState::settings.camera.fov = zoom;
     }
 
 }

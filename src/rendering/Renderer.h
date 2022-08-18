@@ -21,6 +21,11 @@
 #include "camera/Camera.h"
 #include "Light.h"
 
+namespace volumeshOS
+{
+    struct ExportOptions;
+}
+
 namespace volumeshOS::Internal
 {
     class SSAOPass;
@@ -28,11 +33,13 @@ namespace volumeshOS::Internal
     class TransparencyPassDP;
     class ShadowMapPass;
 
-    struct ImageExportOptions
+    struct RenderData
     {
-        int width                       = -1;
-        int height                      = -1;
-        bool transparent_background     = true;
+        bool render_bg          = true;
+        bool render_shapes      = true;
+        bool update_input       = true;
+        bool render_ground      = true;
+        bool ground_shadow_only = false;
     };
 
     class Renderer
@@ -45,9 +52,9 @@ namespace volumeshOS::Internal
 
         void resize(int width, int height);
 
-        void render(bool render_bg = true);
+        void render(const RenderData& data = {});
 
-        void export_image(const std::string& path, const ImageExportOptions& options = ImageExportOptions{});
+        void export_image(const std::string& path, const ExportOptions& options);
 
     public:
 
@@ -96,6 +103,7 @@ namespace volumeshOS::Internal
             int width                       = 0;
             int height                      = 0;
             bool is_rendering_background    = false;
+            bool ground_shadow_only         = false;
         } frame;
 
         // input handling

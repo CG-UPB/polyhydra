@@ -15,11 +15,12 @@ namespace volumeshOS::Internal
 
         void render(const Renderer& renderer) override;
 
+        void render_pre(const Renderer& renderer);
+
     private:
 
-        // A simple plane mesh that is always visible but behind all other objects
-        std::unique_ptr<VertexArrayObject> m_vao;
-        // Simple gradient shader
-        std::shared_ptr<Shader> m_ground_shader;
+        std::shared_ptr<VertexArrayObject> m_vao        = nullptr;
+        std::shared_ptr<Shader> m_ground_shader         = nullptr;
+        std::shared_ptr<Shader> m_pre_ground_shader     = nullptr;
     };
 }

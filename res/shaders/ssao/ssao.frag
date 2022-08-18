@@ -8,6 +8,7 @@ uniform float       u_radius;
 uniform float       u_strength;
 uniform float       u_bias;
 uniform int         u_noise_size;
+uniform float       u_distance_bias;
 
 // variables for texture sampling
 uniform vec3        u_sample_kernel[64];
@@ -79,7 +80,7 @@ void main()
 
         // the exponent changes the aggressivenes of the mip-mapping
         // the higher the exponent, the earlier we sample from lower mips, the less cache misses we have
-        float level = floor(pow(1.0 + sample_dist, 6.0));
+        float level = floor(pow(1.0 + sample_dist, u_distance_bias)) - 1.0;
 
         // now get the depth value of our sample
         vec3 sample_xyz = get_position(offset.xy, level);

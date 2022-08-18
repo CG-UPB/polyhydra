@@ -10,22 +10,45 @@ namespace volumeshOS::Internal
 
     GroundPass::GroundPass()
     {
-        auto opt = AppState::settings.ground_options;
+        auto opt = AppState::settings.ground;
         // Create plane mesh
         m_vao = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXZ::vertices((float)opt.size, (float)opt.size, 0.0f),
                                                     CommonMeshes::PlaneXZ::indices());
         m_vao->add_attribute(CommonMeshes::PlaneXZ::normals(), 1, 3);
         m_vao->add_attribute(CommonMeshes::PlaneXZ::uvs(), 2, 2);
         m_ground_shader = Shader::get("ground");
+        m_pre_ground_shader = Shader::get("pre_ground");
     }
 
+    void GroundPass::render_pre(const Renderer& renderer)
+    {
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+
+        m_pre_ground_shader->bind();
+
+        m_pre_ground_shader->set_uniform_mat4f("u_transform", renderer.camera->world);
+        m_pre_ground_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+        m_pre_ground_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+        m_pre_ground_shader->set_uniform_float("u_height", AppState::settings.ground.height);
+        m_pre_ground_shader->set_uniform_bool("u_visible", AppState::settings.ground.visible);
+
+        m_vao->draw();
+
+        m_pre_ground_shader->unbind();
+    }
 
     void GroundPass::render(const Renderer& renderer)
     {
+        bool shadow_only = renderer.frame.ground_shadow_only;
+
         renderer.buffers.target_framebuffer_ms->bind();
 
         auto& settings = AppState::settings;
-        auto ground_options = settings.ground_options;
+        auto ground_options = settings.ground;
+        auto grid = settings.ground.grid;
 
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
@@ -33,13 +56,26 @@ namespace volumeshOS::Internal
         glDepthMask(GL_TRUE);
         glEnable(GL_FRAMEBUFFER_SRGB);
 
-        if(settings.ground_options.grid)
+        if (shadow_only)
+        {
+            glEnable(GL_BLEND);
+            glBlendEquation(GL_FUNC_ADD);
+            if (renderer.frame.is_rendering_background)
+            {
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+            }
+            else
+            {
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            grid = false;
+        }
+        else if (grid)
         {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glBlendEquation(GL_FUNC_ADD);
         }
-
 
         m_ground_shader->bind();
 
@@ -61,7 +97,7 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_bool("u_visible", ground_options.visible);
         m_ground_shader->set_uniform_bool("u_solid", ground_options.solid);
         m_ground_shader->set_uniform_vec3f("u_solid_color", ground_options.solid_color);
-        m_ground_shader->set_uniform_bool("u_grid", ground_options.grid);
+        m_ground_shader->set_uniform_bool("u_grid", grid);
         m_ground_shader->set_uniform_vec3f("u_grid_color", ground_options.grid_color);
         m_ground_shader->set_uniform_float("u_height", ground_options.height);
         m_ground_shader->set_uniform_int("u_tile_count", ground_options.tiles);
@@ -73,7 +109,7 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_ground_shader->set_uniform_vec3f("u_light_color", light.color);
         m_ground_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
-        m_ground_shader->set_uniform_float("u_gamma", settings.general_options.gamma);
+        m_ground_shader->set_uniform_float("u_gamma", settings.general.gamma);
         m_ground_shader->set_uniform_float("u_spec_strength",0.3f);
         m_ground_shader->set_uniform_float("u_spec_exponent",8.0f);
         m_ground_shader->set_uniform_float("u_ambient_strength",0.9f);
@@ -107,7 +143,8 @@ namespace volumeshOS::Internal
 
         // settings
         m_ground_shader->set_uniform_bool("u_draw_shadows", settings.shadows_active);
-        m_ground_shader->set_uniform_bool("u_draw_ao",  false);
+        m_ground_shader->set_uniform_bool("u_draw_ao", settings.ssao_active);
+        m_ground_shader->set_uniform_bool("u_shadow_only",  renderer.frame.ground_shadow_only);
 
         // input textures
         m_ground_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,
