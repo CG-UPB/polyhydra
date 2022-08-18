@@ -9,36 +9,43 @@ namespace volumeshOS::Internal
 {
     struct CameraOptions
     {
-        CameraMode mode = CameraMode::ORBIT;
-        glm::vec3 position = {0.0f, 0.0f, 13.0f};
-        float fov = 45.0f;
+        CameraMode mode         = CameraMode::ORBIT;
+        glm::vec3 position      = {0.0f, 0.0f, 13.0f};
+        float fov               = 45.0f;
     };
 
     struct LightOptions
     {
-        glm::vec3 direction = {0.5f, 1.0f, 1.0f};
-        glm::vec3 color = {1.0f, 1.0f, 1.0f};
+        glm::vec3 direction     = {0.5f, 1.0f, 1.0f};
+        glm::vec3 color         = {1.0f, 1.0f, 1.0f};
     };
 
     struct GroundOptions
     {
-        bool visible    = true;
-        bool solid      = true;
-        glm::vec3 solid_color = {1.0, 1.0, 1.0};
-        bool grid       = true;
-        glm::vec3 grid_color = {0.7, 0.7, 0.7};
-        float height    = -5.0f;
-        int size        = 1000;
-        int tiles       = 200;
+        bool visible            = true;
+        bool solid              = true;
+        bool grid               = true;
+        glm::vec3 solid_color   = {1.0, 1.0, 1.0};
+        glm::vec3 grid_color    = {0.7, 0.7, 0.7};
+        float height            = -5.0f;
+        int size                = 1000;
+        int tiles               = 200;
     };
 
     struct SSAOOptions
     {
-        bool active         = true;
-        int num_samples     = 64;
-        float sample_radius = 0.5f;
-        float strength      = 1.5f;
-        float z_bias        = 0.01f;
+        bool active             = true;
+        int num_samples         = 64;
+        float sample_radius     = 0.5f;
+        float strength          = 2.5f;
+        float z_bias            = 0.01f;
+        float distance_bias     = 6.0f;
+    };
+
+    struct GeneralOptions
+    {
+        glm::vec3 background_color  = {1.0f, 1.0f, 1.0f};
+        float gamma                 = 2.2f;
     };
 
     struct AppState
@@ -49,10 +56,11 @@ namespace volumeshOS::Internal
             TransparencyMode transparency_mode  = TransparencyMode::DEPTH_PEELING;
             SelectionMode selection_mode        = SelectionMode::OFF;
             SSAOMode ssao_mode                  = SSAOMode::QUALITY;
-            SSAOOptions ssao_custom_options     = {};
-            GroundOptions ground_options        = {};
-            CameraOptions camera_options        = {};
-            LightOptions light_options          = {};
+            GeneralOptions general              = {};
+            SSAOOptions ssao_custom             = {};
+            GroundOptions ground                = {};
+            CameraOptions camera                = {};
+            LightOptions light                  = {};
             bool shapes_active                  = true;
             bool selection_active               = false;
             bool transparency_active            = false;
@@ -64,7 +72,6 @@ namespace volumeshOS::Internal
             int num_shadow_cascades             = 8;
             float wireframe_size                = 0.35f;
             float vertex_size                   = 0.4f;
-            float gamma                         = 2.2f;
         } settings;
 
         static void restore_default_settings()

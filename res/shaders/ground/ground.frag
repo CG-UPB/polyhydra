@@ -15,6 +15,7 @@ uniform bool u_grid;
 uniform vec3 u_grid_color;
 uniform float u_height;
 uniform int u_tile_count;
+uniform bool u_shadow_only;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
@@ -142,6 +143,30 @@ void main()
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
     }
 
+    float ao_factor = 1.0;
+    if(u_draw_ao)
+    {
+        ao_factor = texture(u_ssao_texture, uv).r;
+    }
+
+    if (u_shadow_only)
+    {
+        if (shadow == 0.0 && ao_factor == 1.0)
+        {
+            discard;
+        }
+        vec3 out_color = vec3(0.25, 0.25, 0.25);
+        if (shadow != 0.0)
+        {
+            FragColor = vec4(out_color * ao_factor, shadow * 0.25);
+        }
+        else
+        {
+            FragColor = vec4(out_color, 1.0 - ao_factor);
+        }
+        return;
+    }
+
     float alpha = 1.0;
     vec3 color = vec3(0.0, 0.0, 0.0);
 
@@ -176,13 +201,7 @@ void main()
     else if(!u_grid && u_solid)
     {
         color = u_solid_color;
-        //ambient
-        float ao_factor = 1.0;
-        if(u_draw_ao)
-        {
-            ao_factor = texture(u_ssao_texture, uv).r;
-        }
-        vec3 ambient = u_ambient_strength * light_color * ao_factor;
+        vec3 ambient = u_ambient_strength * light_color;
 
         //diffuse
         float diff = max(0.0, dot(l, n));
@@ -197,6 +216,6 @@ void main()
         float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
         color = (1.0 - shadow * 0.5) * color;
     }
-
+    color *= ao_factor;
     FragColor = vec4(pow(color, vec3(1.0 / u_gamma)), alpha);
 }

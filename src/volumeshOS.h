@@ -404,17 +404,29 @@ namespace volumeshOS
     void set_light_direction(const Vec3T& direction);
 
     // Set the viewport background color
-    template<typename Vec4T>
-    void set_background_color(const Vec4T& color);
+    template<typename Vec3T>
+    void set_background_color(const Vec3T& color);
 
 
     /* Miscellaneous */
 
+    struct ExportOptions
+    {
+        int width               = -1;       // viewport width by default
+        int height              = -1;       // viewport height by default
+        bool include_background = true;     // include background in image
+        bool include_shapes     = true;     // include shapes in image
+        bool include_ground     = true;     // include ground in image
+        bool ground_shadow_only = false;    // if ground and shadows are active, export only the area in shadow
+    };
+
     // Export the current viewport as png
-    void export_image();
+    void export_image(const ExportOptions& options = {});
 
     // Export the current viewport as png to a specified file
-    void export_image(const std::string& path);
+    void export_image(const std::string& path, const ExportOptions& options = {});
+
+
 
     // Determines if input events should be registered and handled
     void ignore_inputs(bool ignore);
@@ -427,6 +439,13 @@ namespace volumeshOS
 
     // Log a message
     void log(const std::string& message);
+
+
+    // Returns the current width of the viewport
+    int get_viewport_width();
+
+    // Returns the current height of the viewport
+    int get_viewport_height();
 
 
     struct VShape

@@ -15,6 +15,8 @@
 #include "panels/NewFileDialog.h"
 #include "settings/AppState.h"
 
+#include <ctime>
+
 namespace volumeshOS
 {
     static std::vector<std::function<void()>> commands     = {};
@@ -649,19 +651,47 @@ namespace volumeshOS
         });
     }
 
-    void export_image()
+    template<typename Vec3T>
+    void set_background_color(const Vec3T& color)
     {
-
+        commands.emplace_back([color]{
+            auto col = Internal::to_glm_vec3(color);
+            Internal::AppState::settings.general.background_color = col;
+        });
     }
 
-    void export_image(const std::string& path)
+    void export_image(const ExportOptions& options)
     {
+        commands.emplace_back([options]{
+            auto& renderer = window->panels.mesh_view->renderer;
+            auto now = time(nullptr);
+            char buffer[30];
+            strftime(buffer, 30, "%F%H-%M-%S.png", localtime(&now));
+            renderer->export_image(std::string(buffer), options);
+        });
+    }
 
+    void export_image(const std::string& path, const ExportOptions& options)
+    {
+        commands.emplace_back([path, options]{
+            auto& renderer = window->panels.mesh_view->renderer;
+            renderer->export_image(path, options);
+        });
     }
 
     void log(const std::string& message)
     {
         Internal::Log::info(message);
+    }
+
+    int get_viewport_width()
+    {
+        return window->panels.mesh_view->renderer->frame.width;
+    }
+
+    int get_viewport_height()
+    {
+        return window->panels.mesh_view->renderer->frame.height;
     }
 
     float get_ambient(const VMesh& mesh)

@@ -35,21 +35,7 @@ namespace volumeshOS::Internal
 
 
         ImGui::SameLine(ImGui::GetWindowWidth() - 38.0f - padding_right - 2.0f);
-
-        // Snapshot Button uses the class Filedialog to save a screenshot
-        if (ImGuiUtil::icon_button("camera.png"))
-        {
-            NewFileDialog file_dialog;
-
-            char const* filename;
-
-            filename = file_dialog.save_dialog("Open Snapshot File");
-
-            if (filename != nullptr)
-            {
-                volumeshOS::export_image(filename);
-            }
-        }
+        show_screenshot_menu();
 
         /* ##########  TEST  ############*/
 
@@ -63,8 +49,7 @@ namespace volumeshOS::Internal
         ImGui::Text("Graphics");
         ImGui::PopFont();
 
-        ImGui::DragFloat("Gamma", &AppState::settings.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
-
+        show_general_menu();
         show_ground_menu();
         show_shadow_menu();
         show_ambient_occlusion_menu();
@@ -309,6 +294,45 @@ namespace volumeshOS::Internal
         ImGui::End();
     }
 
+    void ToolBar::show_screenshot_menu()
+    {
+        if (ImGuiUtil::icon_button("camera.png"))
+        {
+            ImGui::OpenPopup("Export Settings Popup");
+        }
+
+        ImGui::SetNextWindowSize({400.0f, 0.0f});
+        if (ImGui::BeginPopup("Export Settings Popup"))
+        {
+            m_export_dimensions[0] = m_export_options.width;
+            m_export_dimensions[1] = m_export_options.height;
+            if (ImGui::InputInt2("Dimensions", m_export_dimensions))
+            {
+                m_export_options.width = m_export_dimensions[0];
+                m_export_options.height = m_export_dimensions[1];
+            }
+            ImGui::Checkbox("Include background", &m_export_options.include_background);
+            ImGui::Checkbox("Include shapes", &m_export_options.include_shapes);
+            ImGui::Checkbox("Include ground", &m_export_options.include_ground);
+            ImGui::Checkbox("Ground shadow only", &m_export_options.ground_shadow_only);
+            if (ImGui::Button("Export"))
+            {
+                NewFileDialog file_dialog;
+                auto fileName = file_dialog.save_dialog("Open Snapshot File");
+                if (fileName != nullptr)
+                {
+                    volumeshOS::export_image(fileName, m_export_options);
+                }
+            }
+            ImGui::EndPopup();
+        }
+        else
+        {
+            m_export_options.width = volumeshOS::get_viewport_width();
+            m_export_options.height = volumeshOS::get_viewport_height();
+        }
+    }
+
     void ToolBar::show_rendering_mode_menu()
     {
         if (!ImGui::CollapsingHeader("Rendering Modes"))
@@ -389,6 +413,38 @@ namespace volumeshOS::Internal
 
     }
 
+    void ToolBar::show_general_menu()
+    {
+        auto& settings = AppState::settings;
+
+        shift_right(38);
+        if (!ImGui::CollapsingHeader("General"))
+        {
+            return;
+        }
+        shift_right();
+
+        ImGui::Text("Gamma");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        ImGui::DragFloat("##Gamma", &settings.general.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
+
+        auto& bg_color = settings.general.background_color;
+        float new_bg_color[3];
+        new_bg_color[0] = bg_color.r;
+        new_bg_color[1] = bg_color.g;
+        new_bg_color[2] = bg_color.b;
+
+        shift_right();
+        ImGui::Text("Background");
+        ImGui::SetNextItemWidth(slider_width);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        if (ImGui::ColorEdit3("##Background", new_bg_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+        {
+            settings.general.background_color = glm::vec3(new_bg_color[0], new_bg_color[1], new_bg_color[2]);
+        }
+    }
+
     void ToolBar::show_camera_menu()
     {
         auto& settings = AppState::settings;
@@ -454,7 +510,7 @@ namespace volumeshOS::Internal
         }
         shift_right();
 
-        auto light_direction = settings.light_options.direction;
+        auto light_direction = settings.light.direction;
         float direction[4];
         direction[0] = light_direction.r;
         direction[1] = light_direction.g;
@@ -464,11 +520,11 @@ namespace volumeshOS::Internal
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
         if (ImGui::DragFloat3("##LightDirection", direction, 0.1f, -1.0f, 1.0f, "%.001f"))
         {
-            settings.light_options.direction = glm::vec3(direction[0], direction[1], direction[2]);
+            settings.light.direction = glm::vec3(direction[0], direction[1], direction[2]);
         }
         shift_right();
 
-        auto light_color = settings.light_options.color;
+        auto light_color = settings.light.color;
         float new_color1[4];
         new_color1[0] = light_color.r;
         new_color1[1] = light_color.g;
@@ -478,7 +534,7 @@ namespace volumeshOS::Internal
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
         if (ImGui::ColorEdit3("Light Color", new_color1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
-            settings.light_options.color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
+            settings.light.color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
         }
     }
 
@@ -486,12 +542,12 @@ namespace volumeshOS::Internal
     void ToolBar::show_ground_menu()
     {
         auto& settings = AppState::settings;
-        bool visible = settings.ground_options.visible;
-        bool solid = AppState::settings.ground_options.solid;
-        glm::vec3 solid_color = AppState::settings.ground_options.solid_color;
-        bool grid = AppState::settings.ground_options.grid;
-        glm::vec3 grid_color = AppState::settings.ground_options.grid_color;
-        float height = AppState::settings.ground_options.height;
+        bool visible = settings.ground.visible;
+        bool solid = AppState::settings.ground.solid;
+        glm::vec3 solid_color = AppState::settings.ground.solid_color;
+        bool grid = AppState::settings.ground.grid;
+        glm::vec3 grid_color = AppState::settings.ground.grid_color;
+        float height = AppState::settings.ground.height;
         float new_color1[4];
         new_color1[0] = solid_color.r;
         new_color1[1] = solid_color.g;
@@ -499,7 +555,7 @@ namespace volumeshOS::Internal
 
         if(ImGui::Checkbox("###Ground", &visible))
         {
-            settings.ground_options.visible = visible;
+            settings.ground.visible = visible;
         }
         ImGui::SameLine();
         if (!ImGui::CollapsingHeader("Ground"))
@@ -511,12 +567,12 @@ namespace volumeshOS::Internal
         if (ImGui::ColorEdit3("Ground Color", new_color1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
             solid_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
-            AppState::settings.ground_options.solid_color = solid_color;
+            AppState::settings.ground.solid_color = solid_color;
         }
         ImGui::SameLine();
         if (ImGui::Checkbox("solid", &solid))
         {
-            AppState::settings.ground_options.solid = solid;
+            AppState::settings.ground.solid = solid;
         }
         shift_right();
 
@@ -527,18 +583,18 @@ namespace volumeshOS::Internal
         if (ImGui::ColorEdit3("Grid Color", new_color2, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
             grid_color = glm::vec3(new_color2[0], new_color2[1], new_color2[2]);
-            AppState::settings.ground_options.grid_color = grid_color;
+            AppState::settings.ground.grid_color = grid_color;
         }
         ImGui::SameLine();
         if (ImGui::Checkbox("grid", &grid))
         {
-            AppState::settings.ground_options.grid = grid;
+            AppState::settings.ground.grid = grid;
         }
 
         shift_right();
         if (ImGui::DragFloat("height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
         {
-            AppState::settings.ground_options.height = height;
+            AppState::settings.ground.height = height;
         }
 
     }
@@ -592,7 +648,7 @@ namespace volumeshOS::Internal
         // custom options when users want to tweak the values themselves
         if (settings.ssao_mode == SSAOMode::CUSTOM)
         {
-            auto& actual_options = settings.ssao_custom_options;
+            auto& actual_options = settings.ssao_custom;
             actual_options.active = true;
             ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
             ImGui::SliderInt("Samples", &actual_options.num_samples, 1, s_max_samples);
@@ -602,6 +658,8 @@ namespace volumeshOS::Internal
             ImGui::SliderFloat("Strength", &actual_options.strength, 0.0, 10.0);
             ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
             ImGui::SliderFloat("Bias", &actual_options.z_bias, 0.0f, 0.1f);
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SliderFloat("Distance Bias", &actual_options.distance_bias, 0.0f, 10.0f);
         }
 
 

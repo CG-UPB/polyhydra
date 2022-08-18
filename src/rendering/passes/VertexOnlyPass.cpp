@@ -64,7 +64,7 @@ namespace volumeshOS::Internal
             m_vertex_only_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
             m_vertex_only_shader->set_uniform_vec4f("u_color", mesh->get_data().color);
             m_vertex_only_shader->set_uniform_float("u_size", size);
-            m_vertex_only_shader->set_uniform_float("u_gamma", AppState::settings.gamma);
+            m_vertex_only_shader->set_uniform_float("u_gamma", AppState::settings.general.gamma);
 
             mesh->get_mvb()->get_vertex_only_vao()->draw_instanced(mesh->get_num_visible_vertices());
 

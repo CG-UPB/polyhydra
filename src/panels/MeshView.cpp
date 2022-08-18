@@ -265,7 +265,7 @@ namespace volumeshOS::Internal
 //                        "%s",
 //                        std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
 //                );
-                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.7f, 0.7f, 0.7f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
                 ImGui::ProgressBar(mvb->get_loading_percentage() / 100.0f, ImVec2(progress_bar_width, progress_bar_height));
                 ImGui::PopStyleColor();
             }

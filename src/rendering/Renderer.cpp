@@ -1,6 +1,7 @@
 
 #include "Renderer.h"
 
+#include "volumeshOS.h"
 #include "input/Input.h"
 #include "../util/StringUtil.h"
 
@@ -68,7 +69,7 @@ namespace volumeshOS::Internal
         return mesh->get_data().visible && mesh->get_vao() != nullptr;
     }
 
-    void Renderer::render(bool render_bg)
+    void Renderer::render(const RenderData& data)
     {
         // reset statistics for the new frame
         AppState::statistics = {};
@@ -76,10 +77,14 @@ namespace volumeshOS::Internal
         auto& settings = AppState::settings;
 
         frame.current = (frame.current + 1) % frame.limit;
-        frame.is_rendering_background = render_bg;
+        frame.is_rendering_background = data.render_bg;
+        frame.ground_shadow_only = data.ground_shadow_only;
 
         // handle input
-        handle_input();
+        if (data.update_input)
+        {
+            handle_input();
+        }
 
         render_list.clear();
         mesh_list->iterate([&](auto id, auto mesh){
@@ -100,12 +105,15 @@ namespace volumeshOS::Internal
 
         if (settings.rendering_mode == RenderingMode::ONLY_VERTICES)
         {
-            if (render_bg)
+            if (data.render_bg)
             {
                 passes.background_pass->render(*this);
             }
             passes.vertex_only_pass->render(*this);
-            passes.ground_pass->render(*this);
+            if (data.render_ground)
+            {
+                passes.ground_pass->render(*this);
+            }
         }
         else
         {
@@ -120,15 +128,17 @@ namespace volumeshOS::Internal
             }
 
 
-            if (render_bg)
+            if (data.render_bg)
             {
                 passes.background_pass->render(*this);
             }
 
+            if (data.render_ground)
+            {
+                passes.ground_pass->render(*this);
+            }
+
             passes.mesh_pass->render(*this);
-
-            passes.ground_pass->render(*this);
-
 
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
@@ -158,7 +168,7 @@ namespace volumeshOS::Internal
         }
 
         // render shapes
-        if (settings.shapes_active)
+        if (settings.shapes_active && data.render_shapes)
         {
             shapes->render(*this);
         }
@@ -336,7 +346,7 @@ namespace volumeshOS::Internal
         camera->update();
     }
 
-    void Renderer::export_image(const std::string& path, const ImageExportOptions& options)
+    void Renderer::export_image(const std::string& path, const ExportOptions& options)
     {
         int prev_width = frame.width;
         int prev_height = frame.height;
@@ -358,7 +368,14 @@ namespace volumeshOS::Internal
         buffers.target_framebuffer = export_framebuffer;
 
         resize(export_width, export_height);
-        render(!options.transparent_background);
+
+        RenderData data;
+        data.render_bg = options.include_background;
+        data.render_shapes = options.include_shapes;
+        data.render_ground = options.include_ground;
+        data.ground_shadow_only = options.ground_shadow_only;
+        data.update_input = false;
+        render(data);
 
         glFlush();
         glFinish();

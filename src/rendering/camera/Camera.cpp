@@ -299,9 +299,9 @@ namespace volumeshOS::Internal
 
     void Camera::apply_changes() const
     {
-        AppState::settings.camera_options.mode = m_mode;
-        AppState::settings.camera_options.position = position;
-        AppState::settings.camera_options.fov = zoom;
+        AppState::settings.camera.mode = m_mode;
+        AppState::settings.camera.position = position;
+        AppState::settings.camera.fov = zoom;
     }
 
     float Camera::smoothstep(float x)

@@ -92,7 +92,7 @@ namespace volumeshOS::Internal
                 // custom options when users want to tweak the values themselves
                 if (settings.ssao_mode == SSAOMode::CUSTOM)
                 {
-                    auto& actual_options = settings.ssao_custom_options;
+                    auto& actual_options = settings.ssao_custom;
                     actual_options.active = true;
                     ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
                     ImGui::SliderInt("Samples", &actual_options.num_samples, 1, s_max_samples);
