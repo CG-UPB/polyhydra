@@ -195,6 +195,16 @@ namespace volumeshOS::Internal
         }
         if (!anything_hovered || !ImGui::IsWindowHovered())
         {
+            auto mesh = renderer->mesh_list->get_focused_mesh();
+            if(mesh != nullptr)
+            {
+                renderer->hover_position = mesh->get_data().position + mesh->get_data().position_offset;
+            }
+            else
+            {
+                renderer->hover_position = {0.0f, 0.0f, 0.0f};
+            }
+
             renderer->passes.selection_hover_pass->hover(nullptr, SELECTION_TYPE_NONE, 0);
             m_hovered_element_type = SELECTION_TYPE_NONE;
             m_hovered_element_ovm_id = -1;
@@ -204,6 +214,7 @@ namespace volumeshOS::Internal
     void MeshView::show()
     {
         render_debug_menu();
+
 
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
@@ -277,6 +288,13 @@ namespace volumeshOS::Internal
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
             ImGui::Text( "%s", element_name.c_str());
         }
+
+        // render LogWindow
+
+        ImVec2 p = ImGui::GetCursorScreenPos();
+        auto c = ImGui::GetContentRegionMax();
+
+        //ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, c.y - 100.0f), ImVec2(p.x + 150, c.y + 100), IM_COL32(90, 90, 90, 170), ImGui::GetStyle().FrameRounding);
 
         ImGui::End();
         ImGui::PopStyleVar();

@@ -37,8 +37,8 @@ namespace volumeshOS::Internal
         m_vertical_speed = 2.0f;
         m_horizontal_speed = 1.0f;
 
-        //set_mode(FLY);
-        set_mode(CameraMode::ORBIT);
+        new_mode = CameraMode::FLY;
+        set_mode(CameraMode::FLY);
     }
 
     void Camera::set_viewport_size(float width, float height)
@@ -52,13 +52,18 @@ namespace volumeshOS::Internal
 
     void Camera::update()
     {
-        // Get data from AppSettings
-        auto mode = AppState::settings.camera.mode;
-        auto pos = AppState::settings.camera.position;
-        auto fov = AppState::settings.camera.fov;
+        if(is_animating)
+        {
+            animation_step();
+        }
 
-        position = pos;
-        zoom = fov;
+        if(new_mode != m_mode)
+        {
+            m_mode = new_mode;
+            switch_mode();
+        }
+        m_mode = new_mode;
+
 
         // Frame Delta
         auto current_frame = (float) ImGui::GetTime();
@@ -77,6 +82,7 @@ namespace volumeshOS::Internal
                 target,
                 m_world_up
         );
+        apply_changes();
     }
 
     void Camera::handle_key_movement(glm::vec3 movement_vector)
@@ -116,7 +122,7 @@ namespace volumeshOS::Internal
         } else if (m_mode == CameraMode::ORBIT)
         {
             auto step =  y_offset * glm::normalize(target - position);
-            if(glm::length(target - (position + step) ) >= 1)
+            if(glm::length(target - (position + step) ) >= 0.1f)
             {
                 position += step;
             }
@@ -167,26 +173,24 @@ namespace volumeshOS::Internal
         }
     }
 
-    void Camera::switch_mode(glm::vec3 new_orbit_target)
+    void Camera::switch_mode()
     {
-        if (m_mode == CameraMode::FLY)
+        if (m_mode == CameraMode::ORBIT)
         {
-            auto extended_target = position + glm::length(glm::vec3(new_orbit_target) - position) *
-                                                  glm::normalize(target - position);
+            auto extended_target = position + glm::length(new_target - position) * (target - position);
             look_at(extended_target);
-            set_mode(CameraMode::ORBIT);
-            animated_look_at(new_orbit_target);
+            animated_look_at(new_target);
         }
-        else if(m_mode == CameraMode::ORBIT)
+        else if(m_mode == CameraMode::FLY)
         {
-            set_mode(CameraMode::FLY);
-            animated_look_at(position + glm::normalize(target - position));
+            //look_at(position + glm::normalize((target - position)));
+            //animated_look_at(position + glm::normalize(new_target - position));
         }
     }
 
     void Camera::set_mode(CameraMode mode)
     {
-       m_mode = mode;
+        new_mode = mode;
     }
 
     CameraMode Camera::get_mode()
@@ -194,55 +198,58 @@ namespace volumeshOS::Internal
         return m_mode;
     }
 
-    void Camera::animated_look_at(glm::vec3 new_target)
+    void Camera::animated_look_at(glm::vec3 tgt)
     {
-        if(!animation)
+        if(!is_animating)
         {
-            animation = true;
-            animation_start_target = target;
-            animation_end_target = new_target;
-            animation_start_position = position;
-            auto pos_dir = glm::normalize(new_target - position);
-            if(m_mode == CameraMode::ORBIT && glm::length(target - position) < glm::length(new_target -position))
+            is_animating = true;
+            animation.time_start = (float)ImGui::GetTime();
+            animation.time_current = animation.time_start;
+            animation.time_end = animation.time_start + animation.duration;
+
+            animation.target_start = position + glm::normalize(target - position) * glm::length(tgt - position);
+            animation.target_end = tgt;
+
+            animation.position_start = position;
+            auto pos_dir = glm::normalize(tgt - position);
+            if(m_mode == CameraMode::ORBIT && glm::length(target - position) < glm::length(tgt -position))
             {
-                animation_end_position = animation_end_target - pos_dir * glm::length(target - position);
+                animation.position_end = animation.target_end - pos_dir * glm::length(target - position);
             }
             else
             {
-                animation_end_position = position;
+                //animation.target_end = position + glm::normalize(tgt - position);
+                animation.position_end = position;
             }
         }
     }
 
     void Camera::animation_step()
     {
-        int steps = 15;
-        if(animation)
+        if(is_animating)
         {
-            glm::vec3 target_step = animation_end_target - animation_start_target ;
-            target_step /= steps;
+            auto factor = ((animation.time_current - animation.time_start) / (animation.time_end - animation.time_start));
+            animation.time_current += delta;
 
-            glm::vec3 position_step = animation_end_position - animation_start_position;
-            position_step /= steps;
+            glm::vec3 target_step = smoothstep(factor) *  (animation.target_end - animation.target_start) ;
+            glm::vec3 position_step = smoothstep(factor) * (animation.position_end - animation.position_start);
 
-            glm::vec3 remain = animation_end_target - target;
-
-            if(glm::length(target_step) >= glm::length(remain))
+            if(animation.time_current > animation.time_end)
             {
-                position = animation_end_position;
-                look_at(animation_end_target);
-                animation = false;
+                position = animation.position_end;
+                look_at(animation.target_end);
+                is_animating = false;
             } else
             {
-                position = position + position_step;
-                look_at(target + target_step);
+                position = animation.position_start + position_step;
+                look_at(animation.target_start + target_step);
             }
         }
     }
 
-    void Camera::look_at(glm::vec3 new_target)
+    void Camera::look_at(glm::vec3 tgt)
     {
-        target = new_target;
+        target = tgt;
         view = glm::lookAt(
                 position,
                 target,
@@ -285,11 +292,21 @@ namespace volumeshOS::Internal
 
     }
 
+    void Camera::set_target(glm::vec3 tgt)
+    {
+        new_target = tgt;
+    }
+
     void Camera::apply_changes() const
     {
         AppState::settings.camera.mode = m_mode;
         AppState::settings.camera.position = position;
         AppState::settings.camera.fov = zoom;
+    }
+
+    float Camera::smoothstep(float x)
+    {
+        return x * x * (3 - 2 * x);
     }
 
 }

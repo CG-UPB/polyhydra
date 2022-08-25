@@ -254,7 +254,7 @@ namespace volumeshOS::Internal
         panels.mesh_layer_view->show();
         panels.mesh_view->show();
         //panels.quality_settings->show();
-        panels.toolbar->show();
+        panels.toolbar->show(panels.mesh_view->renderer->camera);
 
         AppState::callbacks.on_gui_render();
 

@@ -178,6 +178,12 @@ void main()
     float col = min(line, 1.0);
     col = pow(col, 1.0 / 1.2);
 
+    if(dot((u_cam_pos - v_pos), v_normal) <= 0.0 )
+    {
+        shadow = 0.0;
+        ao_factor = 1.0;
+    }
+
     if(u_grid && u_solid)
     {
         color = (1.0 - shadow * 0.5) * u_solid_color;

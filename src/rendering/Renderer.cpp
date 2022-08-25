@@ -285,9 +285,8 @@ namespace volumeshOS::Internal
 
         if (!input.mesh_moving)
         {
-            if (camera->animation)
+            if (camera->is_animating)
             {
-                camera->animation_step();
                 camera->update();
                 return;
             }
@@ -300,7 +299,7 @@ namespace volumeshOS::Internal
                     if (mesh_id >= 0)
                     {
                         auto mesh = mesh_list->get_mesh(mesh_id);
-                        glm::vec3 new_target = {0.0f, 0.0f, 0.0f};
+                        glm::vec3 new_target = mesh->get_data().position;
 
                         auto mode = AppState::settings.selection_mode;
                         if (mode != SelectionMode::OFF)
@@ -310,15 +309,7 @@ namespace volumeshOS::Internal
                             //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
                             new_target = glm::vec3(transform * pos_mesh_space);
                         }
-
-                        if (camera->get_mode() == CameraMode::FLY)
-                        {
-                            camera->switch_mode(new_target);
-                        }
-                        else
-                        {
-                            camera->animated_look_at(new_target);
-                        }
+                        camera->animated_look_at(new_target);
 
                         mesh_list->set_focused_mesh(mesh_id);
                     }
@@ -326,7 +317,7 @@ namespace volumeshOS::Internal
                 camera->handle_mouse_scroll(Input::get_scroll_offset());
                 camera->handle_mouse_movement(input.offset.x, input.offset.y);
                 camera->handle_key_movement(Input::get_wasd_movement_vector());
-                camera->apply_changes();
+
             }
 
             if(ImGui::IsWindowFocused())
@@ -338,7 +329,17 @@ namespace volumeshOS::Internal
                     {
                         new_target = mesh->get_data().position;
                     }
-                    camera->switch_mode(new_target);
+
+                    if(camera->get_mode() == CameraMode::ORBIT)
+                    {
+                        camera->set_mode(CameraMode::FLY);
+                    }
+                    else if(camera->get_mode() == CameraMode::FLY)
+                    {
+                        camera->set_target(new_target);
+                        camera->set_mode(CameraMode::ORBIT);
+                    }
+
                 }
             }
         }
