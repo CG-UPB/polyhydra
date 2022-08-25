@@ -32,45 +32,41 @@ namespace volumeshOS::Internal
         void show(const std::shared_ptr<Internal::Camera>&);
 
     private:
-        std::shared_ptr<Internal::Camera> camera = nullptr;
-
-        float slider_width = 180.0f;
-        float padding_right = 35.0f;
-        uint32_t rect_bg_col = IM_COL32(80, 80, 80, 25);
-
-        int m_current_selection_mode = static_cast<int>(SelectionMode::OFF);
-        int m_manual_selection_type = 0;
-        int m_previous_manual_selection_type = 0;
-        int m_manual_selection_id = -1;
-        int m_previous_manual_selection_id = -1;
-        float m_slider_slicer = 0.0f;
-        bool m_slicer_locked = false;
-        float m_slider_peel = 0;
-        bool m_digging_activated = false;
-        bool m_isolation_started = false;
-        float m_cell_size = 1.0f;
-        int m_active_mesh = 0;
-        float m_mesh_position[3] = {0.0f, 0.0f, 0.0f};
-        float m_mesh_scale = 1.0f;
-        float m_mesh_rotation[3] = {0.0f, 0.0f, 0.0f};
-
-        ExportOptions m_export_options  = {};
-        int m_export_dimensions[2]      = {m_export_options.width, m_export_options.height};
-
         void show_screenshot_menu();
 
-        void show_rendering_mode_menu();
+        static void show_general_menu();
         void show_selection_menu();
         void show_camera_menu();
-        void show_light_menu();
+        static void show_light_menu();
 
-        void show_general_menu();
-        void show_ground_menu();
-        void show_shadow_menu();
-        void show_ambient_occlusion_menu();
-        void show_transparency_menu();
+        static void show_ground_menu();
+        static void show_shadow_menu();
+        static void show_ambient_occlusion_menu();
+        static void show_transparency_menu();
 
-        void show_mesh_list();
         static void shift_right(float x = 30.0f);
+
+    private:
+        std::shared_ptr<Internal::Camera> m_camera  = nullptr;
+
+        float m_slider_width                        = 180.0f;
+        float m_padding_right                       = 35.0f;
+
+        int m_current_selection_mode                = static_cast<int>(SelectionMode::OFF);
+        int m_manual_selection_type                 = 0;
+        int m_manual_selection_id                   = -1;
+        int m_previous_manual_selection_id          = -1;
+        float m_slider_slicer                       = 0.0f;
+        bool m_slicer_locked                        = false;
+        float m_slider_peel                         = 0;
+        bool m_digging_activated                    = false;
+        bool m_isolation_started                    = false;
+        float m_cell_size                           = 1.0f;
+        float m_mesh_position[3]                    = {0.0f, 0.0f, 0.0f};
+        float m_mesh_scale                          = 1.0f;
+        float m_mesh_rotation[3]                    = {0.0f, 0.0f, 0.0f};
+
+        ExportOptions m_export_options              = {};
+        int m_export_dimensions[2]                  = {m_export_options.width, m_export_options.height};
     };
 }
