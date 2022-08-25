@@ -681,7 +681,17 @@ namespace volumeshOS
 
     void log(const std::string& message)
     {
-        Internal::Log::info(message);
+        window->panels.mesh_view->log_window->add_message(message);
+    }
+
+    void clear_logs()
+    {
+        window->panels.mesh_view->log_window->clear_logs();
+    }
+
+    void hide_log_window(bool hide)
+    {
+        window->panels.mesh_view->log_window->hide_log_window(hide);
     }
 
     int get_viewport_width()

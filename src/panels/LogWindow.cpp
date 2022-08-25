@@ -1,5 +1,7 @@
 
 #include "LogWindow.h"
+
+#include <utility>
 #include "../input/Input.h"
 
 namespace volumeshOS::Internal
@@ -22,15 +24,6 @@ namespace volumeshOS::Internal
 
         //ImGui::SetCursorPos(ImVec2(ImGui::GetStyle().FramePadding.x, end.y - max_height));
 
-        static bool once = true;
-        if (once)
-        {
-            for (int i = 0; i < 34; i++)
-            {
-                add_message("Test " + std::to_string(i));
-            }
-            once = false;
-        }
 
         ImGui::SetCursorPos(ImVec2(end.x, end.y - m_height));
 
@@ -38,14 +31,16 @@ namespace volumeshOS::Internal
         {
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 6.0f);
-            ImGui::BeginChild("child", {m_width , m_height + ImGui::GetFrameHeight()}, false);//, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::BeginChild("child", {m_width , m_height + ImGui::GetFrameHeight() }, false);//, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-            ImGui::BeginChildFrame(1, {m_width , m_height}, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
+            ImGui::BeginChildFrame(1, {m_width , m_height}, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
             ImGui::BeginGroup();
+            ImGui::BeginTable("Messages", 3);
             for(const auto& message : messages)
             {
                 show_message(message);
             }
+            ImGui::EndTable();
             ImGui::EndGroup();
 
             if (m_adjust_scrollbar)
@@ -75,25 +70,34 @@ namespace volumeshOS::Internal
                 switch_arrow();
             }
         }
-
-
-//        ImGui::SameLine(0.0f, 0.0f);
-//        if (ImGui::Button("", ImVec2(m_width - ImGui::GetCursorPosX(), 0.0f)))
-//        {
-//            switch_arrow();
-//        }
-
     }
 
-    void LogWindow::add_message(const std::string& msg)
+    void LogWindow::add_message(std::string msg, Type type)
     {
-        messages.push_back(msg);
+        Message message = {};
+        message.msg = std::move(msg);
+        message.type = type;
+        messages.push_back(message);
+
         m_adjust_scrollbar = true;
+
     }
 
-    void LogWindow::show_message(const std::string& message)
+    void LogWindow::show_message(const Message& message)
     {
-        ImGui::Text("%s", message.c_str());
+        // Type | Time | Message
+        // -----+------+---------
+        // Type | Time | Message
+
+        ImGui::PushID(message.msg.c_str());
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() / 2.0f);
+        ImGui::Text("%s", type_to_string[message.type]);
+        ImGui::TableSetColumnIndex(1);
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::Text("%s", message.msg.c_str());
+        ImGui::PopID();
     }
 
     void LogWindow::switch_arrow()
@@ -110,6 +114,30 @@ namespace volumeshOS::Internal
             m_arrow_dir = ImGuiDir_Up;
             m_visible = true;
         }
+    }
+
+    Time LogWindow::get_time()
+    {
+        Time time = {};
+
+        time.hours = 0;
+        time.minutes = 0;
+        time.seconds = 0;
+        return time;
+    }
+
+    void LogWindow::hide_log_window(bool hide)
+    {
+        if((hide && m_visible) || (!hide && !m_visible))
+        {
+            switch_arrow();
+        }
+
+    }
+
+    void LogWindow::clear_logs()
+    {
+        messages.clear();
     }
 
 

@@ -440,6 +440,12 @@ namespace volumeshOS
     // Log a message
     void log(const std::string& message);
 
+    // clear logs
+    void clear_logs();
+
+    // hide log_window
+    void hide_log_window(bool hide);
+
 
     // Returns the current width of the viewport
     int get_viewport_width();
