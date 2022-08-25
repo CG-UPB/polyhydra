@@ -678,15 +678,15 @@ namespace volumeshOS::Internal
         {
             auto& actual_options = settings.ssao_custom;
             actual_options.active = true;
-            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() });
             ImGui::SliderInt("Samples", &actual_options.num_samples, 1, s_max_samples);
-            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() });
             ImGui::SliderFloat("Radius", &actual_options.sample_radius, 0.0f, 3.0f);
-            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY()});
             ImGui::SliderFloat("Strength", &actual_options.strength, 0.0, 10.0);
-            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() });
             ImGui::SliderFloat("Bias", &actual_options.z_bias, 0.0f, 0.1f);
-            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() });
             ImGui::SliderFloat("Distance Bias", &actual_options.distance_bias, 0.0f, 10.0f);
         }
         ImGui::EndGroup();

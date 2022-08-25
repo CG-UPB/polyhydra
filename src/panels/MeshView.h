@@ -5,6 +5,7 @@
 #include "../rendering/gl/PixelBufferObject.h"
 #include "../rendering/gl/PrePassFrameBufferObject.h"
 #include "WindowPanel.h"
+#include "../panels/LogWindow.h"
 #include "../rendering/passes/MeshPass.h"
 #include "../rendering/passes/SSAOPass.h"
 #include "../rendering/passes/BackgroundPass.h"
@@ -30,6 +31,7 @@ namespace volumeshOS::Internal
     public:
 
         std::shared_ptr<Renderer> renderer = nullptr;
+        std::shared_ptr<LogWindow> log_window = nullptr;
 
     private:
 

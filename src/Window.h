@@ -3,7 +3,6 @@
 #include "vospch.h"
 
 #include <GLFW/glfw3.h>
-#include "panels/LogWindow.h"
 #include "panels/MeshLayerView.h"
 #include "panels/MeshView.h"
 #include "panels/QualityPanel.h"
@@ -51,7 +50,6 @@ namespace volumeshOS::Internal
 
         struct
         {
-            std::shared_ptr<LogWindow> log_window           = nullptr;
             std::shared_ptr<MeshLayerView> mesh_layer_view  = nullptr;
             std::shared_ptr<MeshView> mesh_view             = nullptr;
             std::shared_ptr<QualityPanel> quality_settings  = nullptr;

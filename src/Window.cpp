@@ -42,7 +42,6 @@ namespace volumeshOS::Internal
         VertexArrayObject::init();
 
         // create ui panels
-        panels.log_window           = std::make_shared<LogWindow>();
         panels.mesh_layer_view      = std::make_shared<MeshLayerView>();
         panels.mesh_view            = std::make_shared<MeshView>(m_width, m_height);
         panels.quality_settings     = std::make_shared<QualityPanel>();
@@ -54,7 +53,6 @@ namespace volumeshOS::Internal
     void Window::clean_up()
     {
         // clean up ui panels
-        panels.log_window           = nullptr;
         panels.mesh_layer_view      = nullptr;
         panels.mesh_view            = nullptr;
         panels.quality_settings     = nullptr;
@@ -250,7 +248,6 @@ namespace volumeshOS::Internal
     {
         pre_render_step();
 
-        panels.log_window->show();
         panels.mesh_layer_view->show();
         panels.mesh_view->show();
         //panels.quality_settings->show();
