@@ -336,20 +336,14 @@ namespace volumeshOS::Internal
 
     void ToolBar::show_rendering_mode_menu()
     {
-
+        auto x = ImGui::GetCursorScreenPos().x;
         if (!ImGui::CollapsingHeader("Rendering Modes"))
         {
             return;
         }
-
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + 1;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-
-        shift_right();
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        ImGuiUtil::add_background_rect(1, rect_bg_col);
+        ImGui::BeginGroup();
 
         ImGui::SetNextItemWidth(slider_width);
         //ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
@@ -365,10 +359,7 @@ namespace volumeshOS::Internal
         ImGui::Combo("##Manual Mode SelectionMode:", &rendering_mode, element_mode_types,
                      IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
         AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
-
-        ImGuiUtil::add_padding_y(0.5f);
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
+        ImGui::EndGroup();
     }
 
 
@@ -376,19 +367,14 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
 
+        auto x = ImGui::GetCursorScreenPos().x;
         if (!ImGui::CollapsingHeader("Selection"))
         {
             return;
         }
-
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + 1;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-
-        shift_right();
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        ImGuiUtil::add_background_rect(3, rect_bg_col);
+        ImGui::BeginGroup();
 
         const char* selection_modes[] =
                 {
@@ -414,7 +400,7 @@ namespace volumeshOS::Internal
                 {
                         "Face", "Vertex", "Edge", "Cell"
                 };
-        shift_right();
+        //shift_right(ImGui::GetStyle().WindowPadding.x * 0.5f);
         ImGui::Text("Select by ID");
         ImGui::SetNextItemWidth(slider_width);
         ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
@@ -429,10 +415,7 @@ namespace volumeshOS::Internal
             m_previous_manual_selection_id = m_manual_selection_id;
             m_previous_manual_selection_type = m_manual_selection_type;
         }
-
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
-
+        ImGui::EndGroup();
     }
 
     void ToolBar::show_general_menu()
@@ -447,18 +430,12 @@ namespace volumeshOS::Internal
 
         shift_right();
 
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-
-        shift_right(5);
+        ImGuiUtil::add_background_rect(2, rect_bg_col);
+        ImGui::BeginGroup();
 
         ImGui::Text("Gamma");
         ImGui::SetNextItemWidth(slider_width);
-        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right - 38);
         ImGui::DragFloat("##Gamma", &settings.general.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
 
         auto& bg_color = settings.general.background_color;
@@ -467,37 +444,28 @@ namespace volumeshOS::Internal
         new_bg_color[1] = bg_color.g;
         new_bg_color[2] = bg_color.b;
 
-        shift_right(35);
         ImGui::Text("Background");
         ImGui::SetNextItemWidth(slider_width);
-        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+        ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right - 38);
         if (ImGui::ColorEdit3("##Background", new_bg_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
             settings.general.background_color = glm::vec3(new_bg_color[0], new_bg_color[1], new_bg_color[2]);
         }
-
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
+        ImGui::EndGroup();
     }
 
     void ToolBar::show_camera_menu()
     {
         auto& settings = AppState::settings;
 
+        auto x = ImGui::GetCursorScreenPos().x;
         if (!ImGui::CollapsingHeader("Camera"))
         {
             return;
         }
-
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + 1;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-
-        shift_right();
-
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        ImGuiUtil::add_background_rect(3, rect_bg_col);
+        ImGui::BeginGroup();
         const char* camera_modes[] =
                 {
                         "ORBIT", "FLY"
@@ -516,7 +484,6 @@ namespace volumeshOS::Internal
         {
             camera->set_mode(static_cast<CameraMode>(camera_mode));
         }
-        shift_right();
 
         auto camera_position = camera->position;
         float position[4];
@@ -530,7 +497,6 @@ namespace volumeshOS::Internal
         {
             camera->position = glm::vec3(position[0], position[1], position[2]);
         }
-        shift_right();
 
         float fov = camera->zoom;
         ImGui::Text("FOV");
@@ -540,28 +506,21 @@ namespace volumeshOS::Internal
         {
             camera->zoom = fov;
         }
-
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
+        ImGui::EndGroup();
     }
 
     void ToolBar::show_light_menu()
     {
         auto& settings = AppState::settings;
 
+        auto x = ImGui::GetCursorScreenPos().x;
         if (!ImGui::CollapsingHeader("Light"))
         {
             return;
         }
-
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + 1;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-
-        shift_right();
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        ImGuiUtil::add_background_rect(2, rect_bg_col);
+        ImGui::BeginGroup();
 
         auto light_direction = settings.light.direction;
         float direction[4];
@@ -575,7 +534,6 @@ namespace volumeshOS::Internal
         {
             settings.light.direction = glm::vec3(direction[0], direction[1], direction[2]);
         }
-        shift_right();
 
         auto light_color = settings.light.color;
         float new_color1[4];
@@ -589,9 +547,7 @@ namespace volumeshOS::Internal
         {
             settings.light.color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
         }
-
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
+        ImGui::EndGroup();
     }
 
 
@@ -621,13 +577,8 @@ namespace volumeshOS::Internal
 
         shift_right();
 
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-        shift_right(5);
+        ImGuiUtil::add_background_rect(3, rect_bg_col);
+        ImGui::BeginGroup();
 
         if (ImGui::ColorEdit3("Ground Color", new_color1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
         {
@@ -639,7 +590,6 @@ namespace volumeshOS::Internal
         {
             AppState::settings.ground.solid = solid;
         }
-        shift_right(35);
 
         float new_color2[4];
         new_color2[0] = grid_color.r;
@@ -656,13 +606,12 @@ namespace volumeshOS::Internal
             AppState::settings.ground.grid = grid;
         }
 
-        shift_right(35);
         if (ImGui::DragFloat("height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
         {
             AppState::settings.ground.height = height;
         }
 
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
+        ImGui::EndGroup();
 
     }
 
@@ -678,18 +627,18 @@ namespace volumeshOS::Internal
         }
         shift_right();
 
+        ImGuiUtil::add_background_rect(1, rect_bg_col);
+        ImGui::BeginGroup();
+
         ImVec2 p = ImGui::GetCursorScreenPos();
         p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x;
         p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
         ImVec2 c = ImGui::GetContentRegionMax();
         c.x = c.x + ImGui::GetStyle().FramePadding.x;
         c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-        shift_right(5);
 
         ImGui::SliderInt("Cascades", &settings.num_shadow_cascades, 1, 8);
-
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
+        ImGui::EndGroup();
     }
 
 
@@ -709,16 +658,10 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        ImGui::InvisibleButton("###invisible-padding", ImVec2(ImGui::GetCursorPosX() - 1, ImGui::GetStyle().FramePadding.y));
-        ImGui::SameLine();
+        shift_right();
 
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x - 2;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-        shift_right(5);
+        ImGuiUtil::add_background_rect(settings.ssao_mode == SSAOMode::CUSTOM ? 6 : 1, rect_bg_col);
+        ImGui::BeginGroup();
 
         ImVec2& padding = ImGui::GetStyle().FramePadding;
         int selected_preset = static_cast<int>(settings.ssao_mode);
@@ -746,9 +689,7 @@ namespace volumeshOS::Internal
             ImGui::SetCursorPos({ImGui::GetCursorPosX() + padding.x, ImGui::GetCursorPosY() + padding.y});
             ImGui::SliderFloat("Distance Bias", &actual_options.distance_bias, 0.0f, 10.0f);
         }
-
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
+        ImGui::EndGroup();
     }
 
     void ToolBar::show_transparency_menu()
@@ -763,15 +704,10 @@ namespace volumeshOS::Internal
         }
         shift_right();
 
-        ImVec2 p = ImGui::GetCursorScreenPos();
-        p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x;
-        p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
-        ImVec2 c = ImGui::GetContentRegionMax();
-        c.x = c.x + ImGui::GetStyle().FramePadding.x;
-        c.y = c.y - ImGui::GetStyle().WindowPadding.y;
-        shift_right(5);
-
         auto transparency_mode = settings.transparency_mode;
+
+        ImGuiUtil::add_background_rect(transparency_mode == TransparencyMode::DEPTH_PEELING ? 3 : 2, rect_bg_col);
+        ImGui::BeginGroup();
 
         if (ImGui::RadioButton("Depth Peeling", transparency_mode == TransparencyMode::DEPTH_PEELING))
         {
@@ -788,12 +724,10 @@ namespace volumeshOS::Internal
         {
             settings.transparency_mode = TransparencyMode::WEIGHTED_BLENDED;
         }
-
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), rect_bg_col, ImGui::GetStyle().FrameRounding);
-
+        ImGui::EndGroup();
     }
 
-    void ToolBar::shift_right(int x)
+    void ToolBar::shift_right(float x)
     {
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (float)x);
     }

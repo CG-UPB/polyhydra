@@ -36,7 +36,7 @@ namespace volumeshOS::Internal
 
         float slider_width = 180.0f;
         float padding_right = 35.0f;
-        unsigned int rect_bg_col = IM_COL32(80, 80, 80, 25);
+        uint32_t rect_bg_col = IM_COL32(80, 80, 80, 25);
 
         int m_current_selection_mode = static_cast<int>(SelectionMode::OFF);
         int m_manual_selection_type = 0;
@@ -71,6 +71,6 @@ namespace volumeshOS::Internal
         void show_transparency_menu();
 
         void show_mesh_list();
-        static void shift_right(int x = 30);
+        static void shift_right(float x = 30.0f);
     };
 }

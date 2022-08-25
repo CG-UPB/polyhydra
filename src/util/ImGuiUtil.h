@@ -71,5 +71,19 @@ namespace volumeshOS::Internal
         {
             ImGui::PushFont(UIUtil::get_bold_font());
         }
+
+        static void add_background_rect(int num_items, uint32_t color)
+        {
+            ImVec2 p = ImGui::GetCursorScreenPos();
+            p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x;
+            p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
+            ImVec2 c = ImGui::GetContentRegionMax();
+            c.x = c.x + ImGui::GetStyle().FramePadding.x;
+            c.y = c.y - ImGui::GetStyle().WindowPadding.y;
+            auto pos = ImGui::GetCursorPos();
+            ImGui::Dummy({1, (ImGui::GetFrameHeightWithSpacing()) * (float) num_items - ImGui::GetStyle().WindowPadding.y * 0.5f});
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), color, ImGui::GetStyle().FrameRounding);
+            ImGui::SetCursorPos({pos.x + ImGui::GetStyle().WindowPadding.x * 0.5f, pos.y});
+        }
     };
 }
