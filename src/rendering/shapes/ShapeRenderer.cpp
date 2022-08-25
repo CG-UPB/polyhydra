@@ -27,11 +27,10 @@ namespace volumeshOS::Internal
         removed_meshes.clear();
 
         auto& camera = renderer.camera;
-        auto& light = renderer.light;
+        auto& light = AppState::settings.light;
 
         glm::vec3 cam_pos(camera->view * glm::vec4(camera->position, 1.0));
-        glm::mat3 mvp_ti = glm::mat3(glm::transpose(glm::inverse(camera->view)));
-        glm::vec3 light_pos(glm::normalize(mvp_ti * light.light_dir));
+        glm::vec3 light_pos(glm::normalize(light.direction));
 
         glDisable(GL_CULL_FACE);
         glDisable(GL_BLEND);
@@ -74,7 +73,6 @@ namespace volumeshOS::Internal
 
                 // slicing and peeling
                 glm::mat4 transform = camera->world * mesh->get_data().get_transform();
-                glm::mat4 l_transform = light.world * mesh->get_data().get_transform();
                 glm::mat4 view_transform = camera->view * transform;
                 glm::vec3 view_dir = -glm::normalize(camera->get_front());
                 auto slice_direction = mesh->get_slice_dir(transform, view_dir);
@@ -85,6 +83,7 @@ namespace volumeshOS::Internal
                 m_shape_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
                 m_shape_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
                 m_shape_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+                m_shape_shader->set_uniform_float("u_scale_normalization", mesh->get_data().scale_normalization);
             }
             m_shape_shader->set_uniform_mat4f("u_mesh_transform", mesh_transform);
             for (auto& [type, data] : types)
@@ -99,8 +98,6 @@ namespace volumeshOS::Internal
                 draw_calls++;
             }
         }
-
-        //Log::warn("Shape draw calls: " + std::to_string(draw_calls));
 
         m_shape_shader->unbind();
         renderer.buffers.target_framebuffer_ms->unbind();

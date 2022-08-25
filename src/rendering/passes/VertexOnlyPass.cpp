@@ -22,7 +22,6 @@ namespace volumeshOS::Internal
 
         renderer.buffers.target_framebuffer_ms->bind();
         auto cam = renderer.camera;
-        auto light = renderer.light;
 
         for (const auto& mesh: renderer.render_list)
         {

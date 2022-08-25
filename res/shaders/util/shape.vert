@@ -23,6 +23,7 @@ uniform vec3 u_slice_direction;
 uniform float u_slice_depth;
 uniform float u_peel_depth;
 uniform float u_cell_size;
+uniform float u_scale_normalization;
 
 out vec3 v_pos;
 out vec3 v_normal;
@@ -80,6 +81,7 @@ void main()
         position = a_cell_center + (position - a_cell_center) * u_cell_size;
         scale_offset = u_cell_size;
     }
+    scale_offset /= u_scale_normalization;
     mat4 translation = mat4(
         1.0, 0.0, 0.0, 0.0,
         0.0, 1.0, 0.0, 0.0,

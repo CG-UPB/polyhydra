@@ -165,7 +165,6 @@ namespace volumeshOS::Internal
         if (m_options.active)
         {
             auto cam = renderer.camera;
-            auto light = renderer.light;
             auto pre_pass = renderer.passes.pre_pass->get_framebuffer();
             // main ssao pass
             m_ssao_framebuffer->bind();

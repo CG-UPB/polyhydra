@@ -45,7 +45,7 @@ namespace volumeshOS::Internal
 
             // Transform
             glm::mat4 transform = cam->world * mesh->get_data().get_transform();
-            glm::mat4 l_transform = glm::mat4(1.0f) * mesh->get_data().get_transform();
+            glm::mat4 l_transform = mesh->get_data().get_transform();
             glm::mat4 view_transform = cam->view * transform;
 
             // volumeshOS Operations
@@ -53,9 +53,7 @@ namespace volumeshOS::Internal
             auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
             glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
-            //glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
-            glm::mat3 mvp_ti = glm::mat3(glm::transpose(glm::inverse(view_transform)));
-            glm::vec3 light_pos(glm::normalize(mvp_ti * light.direction));
+            glm::vec3 light_pos(glm::normalize(light.direction));
 
 
             // Shader uniforms

@@ -47,15 +47,12 @@ namespace volumeshOS::Internal
             auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
             glm::vec3 cam_pos(renderer.camera->view * glm::vec4(renderer.camera->position, 1.0));
-            glm::vec3 light_pos(renderer.camera->view * glm::vec4(renderer.light.position, 1.0));
 
             // set all of our uniforms
             pre_phong_shader->set_uniform_mat4f("u_transform", transform);
             pre_phong_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
             pre_phong_shader->set_uniform_mat4f("u_view", renderer.camera->view);
-            pre_phong_shader->set_uniform_vec3f("u_light_pos", light_pos);
             pre_phong_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
-            pre_phong_shader->set_uniform_vec3f("u_light_color", renderer.light.color);
             pre_phong_shader->set_uniform_float("u_cell_size", cell_size);
             pre_phong_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
             pre_phong_shader->set_uniform_float("u_peel_depth", peel_depth);

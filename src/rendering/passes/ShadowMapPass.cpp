@@ -55,8 +55,8 @@ namespace volumeshOS::Internal
     void ShadowMapPass::render(const Renderer& renderer)
     {
         auto cam = renderer.camera;
-        auto light = renderer.light;
         auto& settings = AppState::settings;
+        auto light = settings.light;
 
         if (cam->near != m_current_near || cam->far != m_current_far || settings.num_shadow_cascades != m_current_cascade_level)
         {

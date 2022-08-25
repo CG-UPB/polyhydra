@@ -65,7 +65,6 @@ namespace volumeshOS::Internal
         std::shared_ptr<MeshList> mesh_list     = nullptr;
         std::shared_ptr<Camera> camera          = nullptr;
         std::shared_ptr<ShapeRenderer> shapes   = nullptr;
-        Light light;
         std::vector<std::shared_ptr<MeshObject>> render_list;
         std::function<void(int, int)> selection_callback;
         glm::vec3 hover_position = {0.0, 0.0, 0.0};

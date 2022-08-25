@@ -63,7 +63,7 @@ namespace volumeshOS::Internal
         glBlendEquation(GL_FUNC_ADD);
 
         auto cam = renderer.camera;
-        auto light = renderer.light;
+        auto light = AppState::settings.light;
 
 
         for (const auto& mesh: renderer.render_list)
@@ -87,7 +87,7 @@ namespace volumeshOS::Internal
             auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
             glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
-            glm::vec3 light_pos(cam->view * glm::vec4(light.light_dir, 1.0));
+            glm::vec3 light_pos(glm::normalize(light.direction));
 
             bool use_vertex_normals = AppState::settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
