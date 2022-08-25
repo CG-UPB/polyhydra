@@ -215,6 +215,7 @@ namespace volumeshOS::Internal
     {
         render_debug_menu();
 
+
         auto padding = ImGui::GetStyle().WindowPadding;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Mesh");
@@ -289,9 +290,11 @@ namespace volumeshOS::Internal
         }
 
         // render LogWindow
-        auto coords = ImGui::GetContentRegionAvail();
-        //ImGui::GetWindowDrawList()->AddRectFilled()
 
+        ImVec2 p = ImGui::GetCursorScreenPos();
+        auto c = ImGui::GetContentRegionMax();
+
+        //ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, c.y - 100.0f), ImVec2(p.x + 150, c.y + 100), IM_COL32(90, 90, 90, 170), ImGui::GetStyle().FrameRounding);
 
         ImGui::End();
         ImGui::PopStyleVar();

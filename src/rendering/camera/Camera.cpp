@@ -122,7 +122,7 @@ namespace volumeshOS::Internal
         } else if (m_mode == CameraMode::ORBIT)
         {
             auto step =  y_offset * glm::normalize(target - position);
-            if(glm::length(target - (position + step) ) >= 1)
+            if(glm::length(target - (position + step) ) >= 0.1f)
             {
                 position += step;
             }
