@@ -72,5 +72,6 @@ int main()
 
         ImGui::End();
     });
+    volumeshOS::hide_log_window(true);
     volumeshOS::open();
 }

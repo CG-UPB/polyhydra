@@ -13,8 +13,10 @@ namespace volumeshOS::Internal
 
         // calculate max height needed
         float max_items = max_msgs < messages.size() ? (float)max_msgs : (float)messages.size();
-        float max_height = ImGui::GetFrameHeightWithSpacing() * (max_items) +  2 * ImGui::GetStyle().WindowPadding.y;
+        float min_height = ImGui::GetFrameHeight() - ImGui::GetStyle().FramePadding.y;
+        float max_height = min_height * (max_msgs);
 
+        max_height = max_height > min_height ? max_height : min_height;
 
         // position above the arrow_button
         auto end = ImVec2(ImGui::GetStyle().FramePadding.x, max_y - ImGui::GetFrameHeightWithSpacing() - ImGui::GetStyle().WindowPadding.y);
@@ -23,8 +25,6 @@ namespace volumeshOS::Internal
         m_height = end.y - start.y;
 
         //ImGui::SetCursorPos(ImVec2(ImGui::GetStyle().FramePadding.x, end.y - max_height));
-
-
         ImGui::SetCursorPos(ImVec2(end.x, end.y - m_height));
 
         if(m_visible)

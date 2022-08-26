@@ -450,13 +450,21 @@ namespace volumeshOS::Internal
             });
             ImGuiUtil::menu_item("Position", [&]{
                 auto& camera_position = m_camera->position;
+                auto& camera_target = m_camera->target;
+                auto camera_dir = (camera_target - camera_position);
                 float position[4];
                 position[0] = camera_position.r;
                 position[1] = camera_position.g;
                 position[2] = camera_position.b;
                 if (ImGui::DragFloat3("##CameraPosition", position, 0.1f, -100.0f, 100.0f, "%.1f"))
                 {
-                    camera_position = glm::vec3(position[0], position[1], position[2]);
+                    auto pos = glm::vec3(position[0], position[1], position[2]);
+                    if(m_camera->get_mode() == CameraMode::FLY)
+                    {
+                        camera_target = pos + camera_dir;
+                    }
+                    camera_position = pos;
+
                 }
             });
             ImGuiUtil::menu_item("FOV", [&]{
