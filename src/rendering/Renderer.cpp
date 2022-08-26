@@ -46,6 +46,7 @@ namespace volumeshOS::Internal
         camera = std::make_shared<Camera>();
         camera->set_viewport_size((float) width, (float) height);
         shapes = std::make_shared<ShapeRenderer>();
+
     }
 
     void Renderer::resize(int width, int height)
@@ -231,7 +232,7 @@ namespace volumeshOS::Internal
             input.mesh_moving = false;
         }
 
-        if (ImGui::IsWindowHovered())
+        if (ImGui::IsWindowHovered() && !input_blocking)
         {
             if (auto mesh = mesh_list->get_focused_mesh())
             {
@@ -287,7 +288,7 @@ namespace volumeshOS::Internal
     void Renderer::handle_camera_input()
     {
 
-        if (!input.mesh_moving)
+        if (!input.mesh_moving && !input_blocking)
         {
             if (camera->is_animating)
             {

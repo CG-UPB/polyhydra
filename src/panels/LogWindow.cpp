@@ -4,33 +4,75 @@
 #include <utility>
 #include "../input/Input.h"
 #include "../util/ImGuiUtil.h"
+#include "../rendering/Renderer.h"
+
 
 namespace volumeshOS::Internal
 {
     LogWindow::LogWindow() = default;
     float LogWindow::min_height = 24.0f;
 
-    void LogWindow::show(float max_x, float max_y)
+    void LogWindow::show(float max_x, float max_y, const std::shared_ptr<Renderer>& renderer)
     {
-        m_width = ImGui::GetContentRegionAvailWidth() / 3.0f;
-        float max_height = ImGui::GetWindowHeight() / 3.0f - (float)((int)ImGui::GetWindowHeight() % (int)min_height);
-
-        // calculate max height needed
-        //float max_height = min_height * (max_msgs) + ImGui::GetStyle().ScrollbarSize;
-
-        max_height = max_height > min_height ? max_height : min_height;
+        // set height and width to a third of the viewport
+        m_width = ImGui::GetContentRegionAvailWidth() * m_size_factor;
+        m_height = ImGui::GetWindowHeight() / 3.0f - (float)((int)ImGui::GetWindowHeight() % (int)min_height);
 
         // position above the arrow_button
         auto end = ImVec2(ImGui::GetStyle().FramePadding.x, max_y - ImGui::GetFrameHeightWithSpacing() - ImGui::GetStyle().WindowPadding.y);
-        auto start = ImVec2(end.x, end.y - max_height);
+        auto start = ImVec2(end.x, end.y - m_height);
 
-        m_height = end.y - start.y;
-
-        //ImGui::SetCursorPos(ImVec2(ImGui::GetStyle().FramePadding.x, end.y - max_height));
-        ImGui::SetCursorPos(ImVec2(end.x, end.y - m_height));
 
         if(m_visible)
         {
+            // handle window dragging on its own
+            auto screen_pos = ImGui::GetCursorScreenPos();
+            auto mouse_pos = ImGui::GetMousePos();
+            auto right_min = glm::vec2(start.x + m_width, end.y - m_height) + glm::vec2(screen_pos.x,0.0f);
+            auto right_max = glm::vec2(start.x + m_width, end.y + ImGui::GetFrameHeight()) + glm::vec2(screen_pos.x, 0.0f) ;
+            float bias = 5.0f;
+
+            if(mouse_pos.x >= right_min.x  && mouse_pos.x <= right_min.x + bias)
+            {
+                if(mouse_pos.y >= right_min.y && mouse_pos.y <= right_max.y)
+                {
+                    ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+                    ImGui::GetWindowDrawList()->AddLine({right_min.x, right_min.y + ImGui::GetStyle().WindowRounding},{right_max.x, right_max.y - ImGui::GetStyle().WindowRounding} , ImColor(0.1f, 0.1f, 0.1f, 0.3f) , 2.0f);
+                    if(ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        resizing = true;
+                        renderer->input_blocking = true;
+                    }
+                }
+            }
+
+            if(resizing)
+            {
+                if(!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                {
+                    resizing = false;
+                    renderer->input_blocking = false;
+                }
+                else
+                {
+                    ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+                    ImGui::GetWindowDrawList()->AddLine({right_min.x, right_min.y + ImGui::GetStyle().WindowRounding},{right_max.x, right_max.y - ImGui::GetStyle().WindowRounding} , ImColor(0.1f, 0.1f, 0.1f, 0.3f) , 2.0f);
+                    auto new_factor = (mouse_pos.x - ImGui::GetStyle().FramePadding.x - screen_pos.x) /
+                                      ImGui::GetContentRegionMax().x;
+                    if (std::abs(m_size_factor - new_factor) >= 0.001f)
+                    {
+                        m_size_factor = new_factor;
+                        ImGui::SetNextWindowFocus();
+                        if (m_size_factor >= 0.9)
+                            m_size_factor = 0.9;
+                        if (m_size_factor <= 0.1)
+                            m_size_factor = 0.1;
+                    }
+                }
+            }
+
+            ImGui::SetCursorPos(ImVec2(end.x, end.y - m_height));
+
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 6.0f);
             ImGui::BeginChild("child", {m_width , m_height + ImGui::GetFrameHeight() }, false);//, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
@@ -107,7 +149,6 @@ namespace volumeshOS::Internal
         ImGui::Dummy(ImVec2(0.0f, min_height));
         ImGui::SameLine();
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + min_height / 2.0f));
-        //ImGui::SetNextItemWidth(ImGui::CalcTextSize(types[(int)message.type]).x);
         switch (message.type)
         {
             case Info:
