@@ -13,114 +13,6 @@ namespace volumeshOS::Internal
         m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
     }
 
-    void MeshObject::select_element(int id, EntityType type)
-    {
-
-    }
-
-    void MeshObject::deselect_all()
-    {
-        // Delete Face Elements
-        for (int element: m_selected_faces)
-        {
-            m_mvb->set_face_selection(element, false);
-
-        }
-        m_selected_faces.clear();
-
-        // Delete Vertex Elements
-        for (int element: m_selected_vertices)
-        {
-            // Delete Shape Element
-            int shape_key = 1 * key_multiplier + element;
-            int shape_id = m_created_shapes[shape_key];
-
-            //Window::instance().remove_shape(shape_id);
-        }
-        m_selected_vertices.clear();
-        // Delete Edge Elements
-        for (int element: m_selected_edges)
-        {
-            // Delete Shape Element
-            int shape_key = 2 * key_multiplier + element;
-            int shape_id = m_created_shapes[shape_key];
-
-            //Window::instance().remove_shape(shape_id);
-        }
-        m_selected_edges.clear();
-        // Delete Cell Elements
-        for (int element: m_selected_cells)
-        {
-            // Delete Shape Element
-            int shape_key = 3 * key_multiplier + element;
-            int shape_id = m_created_shapes[shape_key];
-
-            //Window::instance().remove_shape(shape_id);
-        }
-        m_selected_cells.clear();
-        m_created_shapes.clear();
-    }
-
-    void MeshObject::deselect_element(int id, EntityType type)
-    {
-        // Element must be selected to be unselectable
-        bool is_selected = is_element_selected(id, type);
-        if (!is_selected)
-            return;
-
-        if (type == EntityType::Face)
-        {
-            m_mvb->set_face_selection(id, false);
-            return;
-        }
-        else if (type == EntityType::Vertex)
-        {
-            auto entry = m_selected_vertices.find(id);
-            m_selected_vertices.erase(entry);
-        }
-        else if (type == EntityType::Edge)
-        {
-            auto entry = m_selected_edges.find(id);
-            m_selected_edges.erase(entry);
-        }
-        else if (type == EntityType::Cell)
-        {
-            auto entry = m_selected_cells.find(id);
-            m_selected_cells.erase(entry);
-        }
-
-        // Delete Shape Element
-        int shape_key = (int)type * key_multiplier + id;
-        int shape_id = m_created_shapes[shape_key];
-
-
-        //Window::instance().remove_shape(shape_id);
-
-        m_created_shapes.erase(m_created_shapes.find(shape_key));
-    }
-
-    bool MeshObject::is_element_selected(int id, EntityType type)
-    {
-
-        if (type == EntityType::Face)
-        {
-            return m_selected_faces.contains(id);
-        }
-        else if (type == EntityType::Vertex)
-        {
-            return m_selected_vertices.contains(id);
-        }
-        else if (type == EntityType::Edge)
-        {
-            return m_selected_edges.contains(id);
-        }
-        else if (type == EntityType::Cell)
-        {
-            return m_selected_cells.contains(id);
-        }
-        return false;
-    }
-
     void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
     {
         // copy given mesh
@@ -281,12 +173,6 @@ namespace volumeshOS::Internal
     int MeshObject::to_halfface_id(int value)
     {
         return m_mvb->to_halfface_id(value);
-    }
-
-
-    glm::vec3& MeshObject::get_mesh_offset()
-    {
-        return m_mesh_offset_from_center;
     }
 
     std::shared_ptr<VertexArrayObject> MeshObject::get_vao() const
