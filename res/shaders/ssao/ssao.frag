@@ -15,25 +15,26 @@ uniform vec3        u_sample_kernel[64];
 uniform int         u_viewport_width;
 uniform int         u_viewport_height;
 uniform mat4        u_projection;
+uniform mat4        u_inv_projection;
 uniform mat4        u_view;
 uniform float       u_far;
 
 // world space position, normal and noise textures
-uniform sampler2D   u_position;
+uniform sampler2D   u_depth;
 uniform sampler2D   u_normal;
 uniform sampler2D   u_noise;
 
 out float           o_occlusion;
 
-// sample position at uv coordinates of a given mip level
-vec3 get_position(vec2 uv, float mip_level)
+vec4 get_position(vec2 uv)
 {
-    return textureLod(u_position, uv, mip_level).xyz;
+    vec4 point = u_inv_projection * vec4(uv.xy * 2.0 - 1.0, texture(u_depth, uv).x * 2.0 - 1.0, 1.0);
+    return point / point.w;
 }
 
 void main()
 {
-    vec3 position = get_position(v_uv, 0.0);
+    vec3 position = get_position(v_uv).xyz;
     // this fragment is not an object, so no need to occlude it to save performance
     if (position.z == -u_far)
     {
@@ -55,6 +56,7 @@ void main()
     mat3 TBN = mat3(tangent, bitangent, normal);
 
     float occlusion = 0.0;
+    float normalization = 0.0;
     for (int i = 0; i < u_samples; i++)
     {
         // transform kernel sample to tangent space
@@ -72,27 +74,18 @@ void main()
             continue;
         }
 
-        // cache optimization:
-        // sample different mip level based on the screen space distance of the two fragments.
-        // this prevents cache misses and also improves sample quality, since the further the sample is from the
-        // fragment, the less we care about the exact sample depth. A coarser approximation is sufficient here.
-        float sample_dist = smoothstep(0.0, 1.0, length(offset.xy - v_uv) + 0.2);
-
-        // the exponent changes the aggressivenes of the mip-mapping
-        // the higher the exponent, the earlier we sample from lower mips, the less cache misses we have
-        float level = floor(pow(1.0 + sample_dist, u_distance_bias)) - 1.0;
-
         // now get the depth value of our sample
-        vec3 sample_xyz = get_position(offset.xy, level);
+        vec3 sample_xyz = get_position(offset.xy).xyz;
         float sample_depth = vec4(u_view * vec4(sample_xyz, 1.0)).z;
 
         // check if the depth we sampled is within the sample radius, and smoothly interpolate
         float range_check = smoothstep(0.0, 1.0, u_radius / abs(frag_pos.z - sample_depth));
         occlusion += (sample_depth >= sample_pos.z + u_bias ? 1.0 : 0.0) * range_check;
+        normalization += 1.0;
     }
 
     // finally, adjust the occlusion factor's strength by potentiation
-    occlusion = 1.0 - (occlusion / u_samples);
+    occlusion = 1.0 - (occlusion / normalization);
     occlusion = pow(occlusion, u_strength);
     o_occlusion = occlusion;
 }

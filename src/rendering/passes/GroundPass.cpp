@@ -54,7 +54,6 @@ namespace volumeshOS::Internal
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
-        glEnable(GL_FRAMEBUFFER_SRGB);
 
         if (shadow_only)
         {
@@ -114,7 +113,6 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_ground_shader->set_uniform_vec3f("u_light_color", light.color);
         m_ground_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
-        m_ground_shader->set_uniform_float("u_gamma", settings.general.gamma);
         m_ground_shader->set_uniform_float("u_spec_strength",0.3f);
         m_ground_shader->set_uniform_float("u_spec_exponent",8.0f);
         m_ground_shader->set_uniform_float("u_ambient_strength",0.9f);
@@ -172,8 +170,6 @@ namespace volumeshOS::Internal
 
         m_ground_shader->unbind();
         renderer.buffers.target_framebuffer_ms->unbind();
-
-        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
 }

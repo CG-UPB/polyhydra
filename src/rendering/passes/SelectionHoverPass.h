@@ -65,7 +65,6 @@ namespace volumeshOS::Internal
         int m_hovered_mesh = -1;
 
         // Element Shaders
-        std::shared_ptr<Shader> m_flat_color_shader;
         std::shared_ptr<Shader> m_quad_circle_shader;
         std::shared_ptr<Shader> m_edge_hover_shader;
         // Hover Color

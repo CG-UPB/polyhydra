@@ -24,8 +24,6 @@ uniform vec3 u_light_color;
 uniform bool u_draw_shadows;
 uniform bool u_draw_ao;
 
-uniform float u_gamma;
-
 uniform float u_spec_strength;
 uniform float u_ambient_strength;
 uniform float u_diffuse_strength;
@@ -218,5 +216,5 @@ void main()
         color = (1.0 - shadow * 0.5) * color;
     }
     color *= ao_factor;
-    FragColor = vec4(pow(color, vec3(1.0 / u_gamma)), alpha);
+    FragColor = vec4(color, alpha);
 }

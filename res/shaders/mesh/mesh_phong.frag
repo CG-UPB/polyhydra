@@ -27,8 +27,6 @@ uniform vec4 u_object_color;
 uniform int u_viewport_width;
 uniform int u_viewport_height;
 
-uniform float u_gamma;
-
 uniform float u_spec_strength;
 uniform float u_ambient_strength;
 uniform float u_diffuse_strength;
@@ -294,5 +292,5 @@ void main()
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
     vec3 result = (ambient + (1.0 - shadow ) * (diffuse + specular)) / norm * used_color;
 
-    FragColor = vec4(pow(result, vec3(1.0 / u_gamma)), v_color.a);
+    FragColor = vec4(result, v_color.a);
 }

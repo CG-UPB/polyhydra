@@ -166,6 +166,7 @@ namespace volumeshOS::Internal
         {
             auto cam = renderer.camera;
             auto pre_pass = renderer.passes.pre_pass->get_framebuffer();
+            auto inv_view_projection = glm::inverse(cam->projection * cam->view);
             // main ssao pass
             m_ssao_framebuffer->bind();
             glClear(GL_COLOR_BUFFER_BIT);
@@ -178,7 +179,7 @@ namespace volumeshOS::Internal
             m_ssao_shader->set_uniform_float("u_distance_bias", m_options.distance_bias);
             // ssao related
             m_ssao_shader->set_uniform_vec3f_array("u_sample_kernel", m_sample_kernel);
-            m_ssao_shader->set_uniform_sampler2D("u_position", GL_TEXTURE0, pre_pass->get_position_texture());
+            m_ssao_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE0, pre_pass->get_depth_texture());
             m_ssao_shader->set_uniform_sampler2D("u_normal", GL_TEXTURE1, pre_pass->get_normal_texture());
             m_ssao_shader->set_uniform_sampler2D("u_noise", GL_TEXTURE2, m_noise_texture);
             m_ssao_shader->set_uniform_int("u_noise_size", s_noise_size);
@@ -186,6 +187,7 @@ namespace volumeshOS::Internal
             m_ssao_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
             m_ssao_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
             m_ssao_shader->set_uniform_mat4f("u_projection", cam->projection);
+            m_ssao_shader->set_uniform_mat4f("u_inv_projection", inv_view_projection);
             m_ssao_shader->set_uniform_mat4f("u_view", cam->view);
             m_ssao_shader->set_uniform_float("u_far", cam->far);
             VertexArrayObject::draw_screen_quad();
@@ -198,10 +200,11 @@ namespace volumeshOS::Internal
             // general
             m_ssao_blur_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
             m_ssao_blur_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
+            m_ssao_shader->set_uniform_mat4f("u_inv_projection", inv_view_projection);
             m_ssao_blur_shader->set_uniform_float("u_far", cam->far);
             // blur related
             m_ssao_blur_shader->set_uniform_sampler2D("u_ssao_input", GL_TEXTURE0, get_ssao_texture());
-            m_ssao_blur_shader->set_uniform_sampler2D("u_position", GL_TEXTURE1, pre_pass->get_position_texture());
+            m_ssao_blur_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE1, pre_pass->get_depth_texture());
             m_ssao_blur_shader->set_uniform_int("u_noise_size", s_noise_size);
             VertexArrayObject::draw_screen_quad();
             m_ssao_blur_shader->unbind();

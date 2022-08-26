@@ -214,9 +214,7 @@ namespace volumeshOS::Internal
             std::string extension = file.path().extension().string();
 
             // we only have a fragment shader for this, we will update that manually later
-            if (name_without_extension == "pre_mesh_phong"
-                || name_without_extension == "transparency_wb"
-                || name_without_extension == "transparency_dp")
+            if (name_without_extension == "transparency_wb" || name_without_extension == "transparency_dp")
             {
                 continue;
             }
@@ -257,11 +255,6 @@ namespace volumeshOS::Internal
         FS_NAMESPACE::path pre_mesh_phong_path = FileManager::get_resource_path() / shader_path / "mesh";
         FS_NAMESPACE::path transparency_path = FileManager::get_resource_path() / shader_path / "transparency";
 
-        s_shaders["pre_mesh_phong"] = std::shared_ptr<Shader>(new Shader(
-                pre_mesh_phong_path / "mesh_phong.vert",
-                pre_mesh_phong_path / "pre_mesh_phong.frag",
-                pre_mesh_phong_path / "mesh_phong.geom"
-        ));
         s_shaders["transparency_wb"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 transparency_path / "transparency_wb.frag",

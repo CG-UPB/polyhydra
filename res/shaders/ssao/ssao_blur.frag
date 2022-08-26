@@ -4,17 +4,24 @@ in vec2 v_uv;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
+uniform mat4 u_inv_projection;
 uniform float u_far;
 
 uniform sampler2D u_ssao_input;
-uniform sampler2D u_position;
+uniform sampler2D u_depth;
 uniform int u_noise_size;
 
 out float o_ao_factor;
 
+vec4 get_position(vec2 uv)
+{
+    vec4 point = u_inv_projection * vec4(uv.xy * 2.0 - 1.0, texture(u_depth, uv).x * 2.0 - 1.0, 1.0);
+    return point / point.w;
+}
+
 void main()
 {
-    vec3 position = textureLod(u_position, v_uv, 0.0).xyz;
+    vec3 position = get_position(v_uv).xyz;
     float depth = position.z;
     // there is no object here, so no need to blur
     if (depth == -u_far)

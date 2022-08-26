@@ -24,24 +24,11 @@ namespace volumeshOS::Internal
             },
             // normal
             FrameBufferAttachment{
-                    .internal_format    = GL_RGBA32F,
+                    .internal_format    = GL_RGBA16F,
                     .format             = GL_RGBA,
                     .type               = GL_FLOAT,
                     .attachment         = GL_COLOR_ATTACHMENT0,
                     .texture_filter     = GL_NEAREST
-            },
-            // position
-            FrameBufferAttachment{
-                    .internal_format    = GL_RGBA32F,
-                    .format             = GL_RGBA,
-                    .type               = GL_FLOAT,
-                    .attachment         = GL_COLOR_ATTACHMENT1,
-                    .texture_filter     = -1,
-                    .texture_wrap       = -1,
-                    .texture_comp_func  = -1,
-                    .texture_comp_mode  = -1,
-                    .border_color       = -1,
-                    .generate_mipmap    = true
             }
         }) {};
 
@@ -53,11 +40,6 @@ namespace volumeshOS::Internal
         [[nodiscard]] inline uint32_t get_normal_texture()
         {
             return get_texture(GL_COLOR_ATTACHMENT0);
-        }
-
-        [[nodiscard]] inline uint32_t get_position_texture()
-        {
-            return get_texture(GL_COLOR_ATTACHMENT1);
         }
     };
 }

@@ -16,6 +16,7 @@
 #include "../rendering/passes/TransparencyPassWB.h"
 #include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
+#include "../rendering/passes/PostProcessingPass.h"
 #include "../rendering/shapes/ShapeRenderer.h"
 #include "../mesh/MeshList.h"
 #include "camera/Camera.h"
@@ -32,6 +33,7 @@ namespace volumeshOS::Internal
     class TransparencyPassWB;
     class TransparencyPassDP;
     class ShadowMapPass;
+    class PostProcessingPass;
 
     struct RenderData
     {
@@ -74,6 +76,7 @@ namespace volumeshOS::Internal
         {
             std::shared_ptr<FrameBufferObject> target_framebuffer_ms    = nullptr;
             std::shared_ptr<FrameBufferObject> target_framebuffer       = nullptr;
+            std::shared_ptr<FrameBufferObject> post_framebuffer         = nullptr;
             std::shared_ptr<FrameBufferObject> selection_frame_buffer   = nullptr;
             std::shared_ptr<PixelBufferObject> pixel_buffer             = nullptr;
         } buffers;
@@ -92,6 +95,7 @@ namespace volumeshOS::Internal
             std::shared_ptr<SelectionPass> selection_pass               = nullptr;
             std::shared_ptr<SelectionHoverPass> selection_hover_pass    = nullptr;
             std::shared_ptr<VertexOnlyPass> vertex_only_pass            = nullptr;
+            std::shared_ptr<PostProcessingPass> post_processing_pass    = nullptr;
         } passes;
 
         // frame attributes

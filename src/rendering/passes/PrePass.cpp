@@ -74,12 +74,6 @@ namespace volumeshOS::Internal
             vao->draw();
         }
         pre_phong_shader->unbind();
-
-        // we generate a mipmap for the position, this is used for ssao
-        // this needs to happen every frame, since the fragment position values always change
-        glBindTexture(GL_TEXTURE_2D, m_pre_pass_framebuffer->get_position_texture());
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
         m_pre_pass_framebuffer->unbind();
     }
 

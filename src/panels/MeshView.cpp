@@ -90,9 +90,7 @@ namespace volumeshOS::Internal
                 m_hovered_element_ovm_id = cell.idx();
 
                 auto pos = mesh->get_ovm()->barycenter(cell);
-                renderer->hover_position[0] = pos[0];
-                renderer->hover_position[1] = pos[1];
-                renderer->hover_position[2] = pos[2];
+                renderer->hover_position = to_glm_vec3(pos);
             }
         }
         else
@@ -111,9 +109,7 @@ namespace volumeshOS::Internal
             {
                 callbacks.on_face_hover(VMesh(mesh->get_id()), face);
                 auto pos = mesh->get_ovm()->barycenter(face);
-                renderer->hover_position[0] = pos[0];
-                renderer->hover_position[1] = pos[1];
-                renderer->hover_position[2] = pos[2];
+                renderer->hover_position = to_glm_vec3(pos);
             }
             callbacks.on_halfface_hover(VMesh(mesh->get_id()), halfface);
             m_hovered_element_type = SELECTION_TYPE_HALFFACE;
@@ -140,9 +136,7 @@ namespace volumeshOS::Internal
                         {
                             handle_vertex_hover(mesh, vertex);
                             auto pos = mesh->get_ovm()->vertex(vertex);
-                            renderer->hover_position[0] = pos[0];
-                            renderer->hover_position[1] = pos[1];
-                            renderer->hover_position[2] = pos[2];
+                            renderer->hover_position = to_glm_vec3(pos);
                         }
                         else
                         {
@@ -158,9 +152,7 @@ namespace volumeshOS::Internal
                         {
                             handle_edge_hover(mesh, edge);
                             auto pos = mesh->get_ovm()->barycenter(edge);
-                            renderer->hover_position[0] = pos[0];
-                            renderer->hover_position[1] = pos[1];
-                            renderer->hover_position[2] = pos[2];
+                            renderer->hover_position = to_glm_vec3(pos);
                         }
                         else
                         {
@@ -367,7 +359,7 @@ namespace volumeshOS::Internal
         switch (m_viewport_texture)
         {
             case FINAL_IMAGE:
-                return renderer->buffers.target_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
+                return renderer->buffers.post_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SELECTION:
                 return renderer->buffers.selection_frame_buffer->get_texture(GL_COLOR_ATTACHMENT0);
             case SSAO_PRE:

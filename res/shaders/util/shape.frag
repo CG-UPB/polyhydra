@@ -8,7 +8,6 @@ flat in int v_visible;
 uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
 uniform vec3 u_light_color;
-uniform float u_gamma;
 
 out vec4 fragment_color;
 
@@ -38,5 +37,5 @@ void main()
     vec3 specular = specularStrength * spec * u_light_color;
 
     vec3 result = (ambient + diffuse + specular) * v_color;
-    fragment_color = vec4(pow(result, vec3(1.0 / u_gamma)), 1.0);
+    fragment_color = vec4(result, 1.0);
 }

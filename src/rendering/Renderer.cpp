@@ -20,6 +20,7 @@ namespace volumeshOS::Internal
 
         buffers.target_framebuffer_ms = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         buffers.target_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
+        buffers.post_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
         buffers.selection_frame_buffer = std::make_shared<FrameBufferObject>(width / 2, height / 2,
                                                                              FrameBufferObject::RGBA_AND_DEPTH);
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
@@ -36,6 +37,7 @@ namespace volumeshOS::Internal
         passes.selection_pass = std::make_shared<SelectionPass>();
         passes.selection_hover_pass = std::make_shared<SelectionHoverPass>();
         passes.vertex_only_pass = std::make_shared<VertexOnlyPass>();
+        passes.post_processing_pass = std::make_shared<PostProcessingPass>();
 
         input.last.x = (float) width / 2.0f;
         input.last.y = (float) height / 2.0f;
@@ -52,6 +54,7 @@ namespace volumeshOS::Internal
         frame.height = height;
         buffers.target_framebuffer_ms->resize(frame.width, frame.height);
         buffers.target_framebuffer->resize(frame.width, frame.height);
+        buffers.post_framebuffer->resize(frame.width, frame.height);
         passes.transparency_pass_wb->resize_buffers(*this, frame.width, frame.height);
         passes.transparency_pass_dp->resize_buffers(frame.width, frame.height);
         passes.pre_pass->resize_buffers(frame.width, frame.height);
@@ -181,8 +184,9 @@ namespace volumeshOS::Internal
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, buffers.target_framebuffer_ms,
-                                buffers.target_framebuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
+
+        passes.post_processing_pass->render(*this);
     }
 
     void Renderer::handle_input()

@@ -18,7 +18,6 @@ namespace volumeshOS::Internal
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
         glDisable(GL_BLEND);
-        glEnable(GL_FRAMEBUFFER_SRGB);
 
         renderer.buffers.target_framebuffer_ms->bind();
         auto cam = renderer.camera;
@@ -63,14 +62,11 @@ namespace volumeshOS::Internal
             m_vertex_only_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
             m_vertex_only_shader->set_uniform_vec4f("u_color", mesh->get_data().color);
             m_vertex_only_shader->set_uniform_float("u_size", size);
-            m_vertex_only_shader->set_uniform_float("u_gamma", AppState::settings.general.gamma);
 
             mesh->get_mvb()->get_vertex_only_vao()->draw_instanced(mesh->get_num_visible_vertices());
 
             m_vertex_only_shader->unbind();
         }
         renderer.buffers.target_framebuffer_ms->unbind();
-
-        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 }

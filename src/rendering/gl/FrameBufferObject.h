@@ -37,7 +37,7 @@ namespace volumeshOS::Internal
          * @param src framebuffer to be copied from
          * @param dest framebuffer to be copied to
          */
-        static void copy(int attachment, int mask, const std::shared_ptr<FrameBufferObject> src, const std::shared_ptr<FrameBufferObject> dest);
+        static void copy(int attachment, int mask, const std::shared_ptr<FrameBufferObject>& src, const std::shared_ptr<FrameBufferObject>& dest);
 
         /**
          * Creates a new FrameBufferObject with a specified width and height, and attachments.
