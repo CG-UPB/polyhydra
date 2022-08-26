@@ -68,6 +68,7 @@ namespace volumeshOS::Internal
         std::vector<std::shared_ptr<MeshObject>> render_list;
         std::function<void(int, int)> selection_callback;
         glm::vec3 hover_position = {0.0, 0.0, 0.0};
+        bool input_blocking                     = false;
 
         // render buffers
         struct
@@ -106,13 +107,14 @@ namespace volumeshOS::Internal
         } frame;
 
         // input handling
+
         struct
         {
             glm::vec2 last                  = {0.0f, 0.0f};
             glm::vec2 pos                   = {0.0f, 0.0f};
             glm::vec2 offset                = {0.0f, 0.0f};
             bool mesh_moving                = false;
-        } input;
+        }input;
 
     private:
 

@@ -294,7 +294,7 @@ namespace volumeshOS::Internal
         // render LogWindow
 
         auto c = ImGui::GetContentRegionMax();
-        log_window->show(c.x, c.y);
+        log_window->show(c.x, c.y, renderer);
 
 
         ImGui::End();
