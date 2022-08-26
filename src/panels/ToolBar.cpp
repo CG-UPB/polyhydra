@@ -165,12 +165,16 @@ namespace volumeshOS::Internal
                 m_slicer_locked = active_mesh.get_slice_lock();
                 ImGui::SetNextItemWidth(m_slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - m_slider_width - m_padding_right);
-                ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f);
+                if (ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f))
+                {
+                    active_mesh.set_slice_factor(m_slider_slicer);
+                }
                 ImGui::Text(" ");
                 ImGui::SameLine(ImGui::GetWindowWidth() - m_slider_width - m_padding_right);
-                ImGui::Checkbox("Lock", &m_slicer_locked);
-                active_mesh.set_slice_factor(m_slider_slicer);
-                active_mesh.set_slice_lock(m_slicer_locked);
+                if (ImGui::Checkbox("Lock", &m_slicer_locked))
+                {
+                    active_mesh.set_slice_lock(m_slicer_locked);
+                }
                 ImGui::Separator();
                 ImGui::Text("Peel");
                 ImGui::SameLine();

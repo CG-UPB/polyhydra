@@ -14,6 +14,7 @@
 #include "mesh/MeshList.h"
 #include "panels/NewFileDialog.h"
 #include "settings/AppState.h"
+#include "mesh/MeshSerializer.h"
 
 #include <ctime>
 
@@ -274,12 +275,20 @@ namespace volumeshOS
 
     void load_configuration(const VMesh& mesh, const std::string& path)
     {
-
+        commands.emplace_back([mesh, path]{
+            assert(mesh.is_valid());
+            auto mesh_object = mesh_list->get_mesh(mesh.get_id());
+            Internal::MeshSerializer::read_from_file(*mesh_object, path);
+        });
     }
 
     void save_configuration(const VMesh& mesh, const std::string& path)
     {
-
+        commands.emplace_back([mesh, path]{
+            assert(mesh.is_valid());
+            auto mesh_object = mesh_list->get_mesh(mesh.get_id());
+            Internal::MeshSerializer::write_to_file(*mesh_object, path);
+        });
     }
 
     template<typename Vec4T>

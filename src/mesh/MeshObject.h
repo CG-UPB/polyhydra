@@ -9,6 +9,7 @@
 
 namespace volumeshOS::Internal
 {
+    class MeshSerializer;
 
     struct MeshData
     {
@@ -58,54 +59,6 @@ namespace volumeshOS::Internal
 
         explicit MeshObject(int id);
 
-        // SelectionMode Functionality
-        std::unordered_set<int>& get_all_selected_faces()
-        {
-            return m_selected_faces;
-        }
-
-        std::unordered_set<int>& get_all_selected_vertices()
-        {
-            return m_selected_vertices;
-        }
-
-        std::unordered_set<int>& get_all_selected_edges()
-        {
-            return m_selected_edges;
-        }
-
-        std::unordered_set<int>& get_all_selected_cells()
-        {
-            return m_selected_cells;
-        }
-
-        /**
-         * Adds a shape on selected element (vertex, edge, face)
-         * @param id ID to access element data
-         * @param type declares type of element
-         */
-        void select_element(int id, EntityType type);
-
-        /**
-         * Removes a shape on selected element (vertex, edge, face)
-         * @param id ID to access element data
-         * @param type declares type of element
-         */
-        void deselect_element(int id, EntityType type);
-
-        /**
-         * Removes all shapes added by selection
-         */
-        void deselect_all();
-
-        /**
-         * Checks if a specific element is selected
-         * @param id ID to access element data
-         * @param type declares type of element
-         * @return
-         */
-        bool is_element_selected(int id, EntityType type);
-
         void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
 
         /**
@@ -149,14 +102,12 @@ namespace volumeshOS::Internal
         int to_halfface_id(int value);
 
 
-        int get_max_peel_depth() const;
+        [[nodiscard]] int get_max_peel_depth() const;
 
         const std::array<int, 2>& selection_offset()
         {
             return m_selection_offset;
         };
-
-        glm::vec3& get_mesh_offset();
 
         [[nodiscard]] std::shared_ptr<VertexArrayObject> get_vao() const;
 
@@ -171,6 +122,11 @@ namespace volumeshOS::Internal
         MeshData& get_data()
         {
             return m_data;
+        }
+
+        void set_data(const MeshData& data)
+        {
+            m_data = data;
         }
 
         [[nodiscard]] std::shared_ptr<MeshVertexBuffer> get_mvb() const;
@@ -215,31 +171,17 @@ namespace volumeshOS::Internal
          */
         [[nodiscard]] int calculate_selection_size() const;
 
-        std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> m_mesh;
+    private:
 
-        const int key_multiplier = 1000000;
+        std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> m_mesh   = nullptr;
+        bool m_just_locked                                  = false;
+        std::array<int, 2> m_selection_offset               = {-1, -1};
+        std::pair<glm::vec3, glm::vec3> m_transformed_bb    = {};
+        glm::vec3 m_slice_dir                               = {0.0f, 0.0f, 0.0f};
+        std::shared_ptr<MeshVertexBuffer> m_mvb             = nullptr;
+        MeshData m_data                                     = {};
+        int m_id                                            = -1;
 
-        bool m_just_locked;
-
-        std::unordered_set<int> m_selected_vertices;
-        std::unordered_set<int> m_selected_edges;
-        std::unordered_set<int> m_selected_faces;
-        std::unordered_set<int> m_selected_cells;
-
-        std::map<int, int> m_created_shapes;
-
-        std::array<int, 2> m_selection_offset;
-
-        std::pair<glm::vec3, glm::vec3> m_transformed_bb;
-
-        glm::vec3 m_mesh_offset_from_center;
-
-        glm::vec3 m_slice_dir;
-
-        std::shared_ptr<MeshVertexBuffer> m_mvb = nullptr;
-
-        MeshData m_data;
-
-        int m_id;
+        friend class MeshSerializer;
     };
 }

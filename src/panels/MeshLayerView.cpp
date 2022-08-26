@@ -117,32 +117,40 @@ namespace volumeshOS::Internal
                 float ambient_value = mesh.get_ambient();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f);
-                mesh.set_ambient(ambient_value);
+                if (ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f))
+                {
+                    mesh.set_ambient(ambient_value);
+                }
 
                 // Diffuse
                 ImGui::Text("Diffuse:");
                 float diffuse_value = mesh.get_diffuse();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f);
-                mesh.set_diffuse(diffuse_value);
+                if (ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f))
+                {
+                    mesh.set_diffuse(diffuse_value);
+                }
 
                 // Specular
                 ImGui::Text("Specular:");
                 float specular_value = mesh.get_specular();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f);
-                mesh.set_specular(specular_value);
+                if (ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f))
+                {
+                    mesh.set_specular(specular_value);
+                }
 
                 // Specular Exponent
                 ImGui::Text("Specular Exponent:");
                 float specular_exp = mesh.get_specular_coefficient();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f);
-                mesh.set_specular_coefficient(specular_exp);
+                if (ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f))
+                {
+                    mesh.set_specular_coefficient(specular_exp);
+                }
                 ImGui::EndPopup();
             }
             ImGui::Separator();

@@ -5,12 +5,14 @@
 
 namespace volumeshOS::Internal
 {
-    class MeshSerializer
+    struct MeshSerializer
     {
-    public:
+        static void write_to_file(MeshObject& mesh, const std::string& file_name);
 
-        std::string serialize(const MeshObject& mesh);
+        static void read_from_file(MeshObject& mesh, const std::string& file_name);
 
-        void deserialize(const MeshObject& mesh, const std::string& data);
+        static std::string serialize(MeshObject& mesh);
+
+        static void deserialize(MeshObject& mesh, const std::string& json_string);
     };
 }

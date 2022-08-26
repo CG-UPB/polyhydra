@@ -338,7 +338,17 @@ namespace volumeshOS::Internal
     void MeshList::select(EntityType type, MeshID m_id, HandleID h_id)
     {
         auto f = [type, h_id](const std::shared_ptr<MeshObject>& mesh) -> void{
-            mesh->select_element(h_id, type);
+            switch (type)
+            {
+                case EntityType::Face:
+                    mesh->get_mvb()->set_face_selection(h_id, true);
+                    break;
+                case EntityType::Cell:
+                    mesh->get_mvb()->set_cell_selection(h_id, true);
+                    break;
+                default:
+                    break;
+            }
         };
         execute_for_mesh(f, m_id);
     }
@@ -347,7 +357,17 @@ namespace volumeshOS::Internal
     {
         auto f = [type, h_id](const std::shared_ptr<MeshObject>& mesh) -> void
         {
-            mesh->deselect_element(h_id, type);
+            switch (type)
+            {
+                case EntityType::Face:
+                    mesh->get_mvb()->set_face_selection(h_id, false);
+                    break;
+                case EntityType::Cell:
+                    mesh->get_mvb()->set_cell_selection(h_id, false);
+                    break;
+                default:
+                    break;
+            }
         };
         execute_for_mesh(f, m_id);
     }
@@ -446,7 +466,12 @@ namespace volumeshOS::Internal
 
     bool MeshList::get_visibility(const MeshID id, OpenVolumeMesh::CellHandle cell)
     {
-        return get_mesh(id)->is_element_selected(cell.idx(), EntityType::Cell);
+        bool is_isolated = (bool) get_mesh(id)->get_mvb()->get_cell_isolate_value(cell.idx());
+        if (is_isolated)
+        {
+            return true;
+        }
+        return not (bool) get_mesh(id)->get_mvb()->get_cell_dig_value(cell.idx());
     }
 
     const std::string& MeshList::get_name(MeshID id)
