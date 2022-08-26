@@ -42,6 +42,7 @@ namespace volumeshOS::Internal
         show_selection_menu();
         show_camera_menu();
         show_light_menu();
+        show_post_processing_menu();
 
         ImGui::Separator();
         ImGuiUtil::push_bold_font();
@@ -359,9 +360,6 @@ namespace volumeshOS::Internal
                              IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
                 AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
             });
-            ImGuiUtil::menu_item("Gamma", [&]{
-                ImGui::DragFloat("##Gamma", &settings.general.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
-            });
             ImGuiUtil::menu_item("Background", [&]{
                 auto& bg_color = settings.general.background_color;
                 float new_bg_color[3];
@@ -514,6 +512,30 @@ namespace volumeshOS::Internal
                 {
                     light_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
                 }
+            });
+            ImGuiUtil::end_menu();
+        }
+    }
+
+    void ToolBar::show_post_processing_menu()
+    {
+        auto& settings = AppState::settings;
+        auto x = ImGui::GetCursorScreenPos().x;
+        if (!ImGui::CollapsingHeader("Post Processing"))
+        {
+            return;
+        }
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        if (ImGuiUtil::begin_menu_with_background("post", 3))
+        {
+            ImGuiUtil::menu_item("Gamma", [&]{
+                ImGui::DragFloat("##Gamma", &settings.post_processing.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
+            });
+            ImGuiUtil::menu_item("Saturation", [&]{
+                ImGui::DragFloat("##Saturation", &settings.post_processing.saturation, 0.01f, 0.0f, 2.0f, "%.2f");
+            });
+            ImGuiUtil::menu_item("Contrast", [&]{
+                ImGui::DragFloat("##Contrast", &settings.post_processing.contrast, 0.01f, 0.0f, 2.0f, "%.2f");
             });
             ImGuiUtil::end_menu();
         }
