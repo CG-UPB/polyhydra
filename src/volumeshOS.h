@@ -437,8 +437,14 @@ namespace volumeshOS
     // Set the color theme of volumeshOS
     void set_theme(Theme theme);
 
-    // Log a message
+    // send log message
     void log(const std::string& message);
+
+    // send warn message
+    void warn(const std::string& message);
+
+    // send error message
+    void error(const std::string& message);
 
     // clear logs
     void clear_logs();

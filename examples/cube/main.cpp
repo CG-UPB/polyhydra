@@ -43,7 +43,7 @@ int main()
         {
             volumeshOS::remove_shapes();
             arrows.clear();
-            volumeshOS::log("Removed Shapes");
+            volumeshOS::warn("Removed Shapes");
         }
         if (ImGui::Button("Set boundary color") && mesh.is_valid())
         {

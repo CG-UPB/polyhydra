@@ -11,13 +11,6 @@ namespace volumeshOS::Internal
 {
 
 
-    struct Time
-    {
-       int hours;
-       int minutes;
-       int seconds;
-    };
-
     enum Type
     {
         Info,
@@ -25,17 +18,17 @@ namespace volumeshOS::Internal
         Error
     };
 
-    static const char* type_to_string[] =
+    constexpr const char* types[] =
     {
-        stringify(Info),
-        stringify(Warning),
-        stringify(Error)
+        "[Info]   ",
+        "[Warning]",
+        "[Error]  "
     };
 
     struct Message
     {
-        Time time;
-        Type type = Info;
+        time_t time;
+        Type type;
         std::string msg;
     };
 
@@ -45,25 +38,25 @@ namespace volumeshOS::Internal
 
             LogWindow();
             void show(float max_x, float max_y);
-            void add_message(std::string msg, Type type = Info);
+            void add_message(std::string msg, Type type);
             void clear_logs();
             void hide_log_window( bool hide);
 
         private:
 
             std::vector<Message> messages;
-            bool m_visible = true;
+            static float min_height;
+            ImGuiDir m_arrow_dir = ImGuiDir_Right;
+            bool m_visible = false;
             bool m_focused = false;
             bool m_adjust_scrollbar = true;
-            float m_width = 300.0f;
+            float m_width = 400.0f;
             float m_height = 100.f;
-            ImGuiDir m_arrow_dir = ImGuiDir_Up;
             int max_msgs = 10;
 
             static void show_message(const Message& msg);
             void switch_arrow();
 
-            Time get_time();
     };
 }
 

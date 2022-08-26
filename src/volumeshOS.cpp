@@ -682,9 +682,25 @@ namespace volumeshOS
     void log(const std::string& message)
     {
         commands.emplace_back([message]{
-            window->panels.mesh_view->log_window->add_message(message);
+            window->panels.mesh_view->log_window->add_message(message, Internal::Info);
+            volumeshOS::Internal::Log::info(message);
         });
+    }
 
+    void warn(const std::string& message)
+    {
+        commands.emplace_back([message]{
+            window->panels.mesh_view->log_window->add_message(message, Internal::Warning);
+            volumeshOS::Internal::Log::warn(message);
+        });
+    }
+
+    void error(const std::string& message)
+    {
+        commands.emplace_back([message]{
+            window->panels.mesh_view->log_window->add_message(message, Internal::Error);
+            volumeshOS::Internal::Log::error(message);
+        });
     }
 
     void clear_logs()
