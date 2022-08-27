@@ -19,7 +19,9 @@ namespace volumeshOS::Internal
         renderer.buffers.post_framebuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_post_processing_shader->bind();
-        m_post_processing_shader->set_uniform_float("u_gamma", AppState::settings.general.gamma);
+        m_post_processing_shader->set_uniform_float("u_saturation", AppState::settings.post_processing.saturation);
+        m_post_processing_shader->set_uniform_float("u_contrast", AppState::settings.post_processing.contrast);
+        m_post_processing_shader->set_uniform_float("u_gamma", AppState::settings.post_processing.gamma);
         m_post_processing_shader->set_uniform_sampler2D("u_image", GL_TEXTURE0, image_texture);
         VertexArrayObject::draw_screen_quad();
         m_post_processing_shader->unbind();

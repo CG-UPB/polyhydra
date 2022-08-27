@@ -44,34 +44,41 @@ namespace volumeshOS::Internal
 
     struct GeneralOptions
     {
-        glm::vec3 background_color  = {1.0f, 1.0f, 1.0f};
-        float gamma                 = 2.2f;
+        glm::vec3 background_color = {1.0f, 1.0f, 1.0f};
+    };
+
+    struct PostProcessingOptions
+    {
+        float gamma         = 2.2f;
+        float saturation    = 1.2f;
+        float contrast      = 1.15f;
     };
 
     struct AppState
     {
         static struct AppSettings
         {
-            RenderingMode rendering_mode        = RenderingMode::PHONG_FACE_NORMALS;
-            TransparencyMode transparency_mode  = TransparencyMode::DEPTH_PEELING;
-            SelectionMode selection_mode        = SelectionMode::OFF;
-            SSAOMode ssao_mode                  = SSAOMode::QUALITY;
-            GeneralOptions general              = {};
-            SSAOOptions ssao_custom             = {};
-            GroundOptions ground                = {};
-            CameraOptions camera                = {};
-            LightOptions light                  = {};
-            bool shapes_active                  = true;
-            bool selection_active               = false;
-            bool transparency_active            = false;
-            bool ssao_active                    = true;
-            bool shadows_active                 = false;
-            bool isolation_active               = false;
-            bool digging_active                 = false;
-            int num_depth_peeling_passes        = 15;
-            int num_shadow_cascades             = 8;
-            float wireframe_size                = 0.35f;
-            float vertex_size                   = 0.4f;
+            RenderingMode rendering_mode            = RenderingMode::PHONG_FACE_NORMALS;
+            TransparencyMode transparency_mode      = TransparencyMode::DEPTH_PEELING;
+            SelectionMode selection_mode            = SelectionMode::OFF;
+            SSAOMode ssao_mode                      = SSAOMode::QUALITY;
+            GeneralOptions general                  = {};
+            SSAOOptions ssao_custom                 = {};
+            GroundOptions ground                    = {};
+            CameraOptions camera                    = {};
+            LightOptions light                      = {};
+            PostProcessingOptions post_processing   = {};
+            bool shapes_active                      = true;
+            bool selection_active                   = false;
+            bool transparency_active                = false;
+            bool ssao_active                        = true;
+            bool shadows_active                     = false;
+            bool isolation_active                   = false;
+            bool digging_active                     = false;
+            int num_depth_peeling_passes            = 15;
+            int num_shadow_cascades                 = 8;
+            float wireframe_size                    = 0.35f;
+            float vertex_size                       = 0.4f;
         } settings;
 
         static void restore_default_settings()
