@@ -15,6 +15,9 @@ namespace volumeshOS::Internal
             return;
         }
 
+        ImGui::SetScrollX(1);
+
+
         ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
         // create a line for every loaded mesh
@@ -24,7 +27,7 @@ namespace volumeshOS::Internal
         {
             int id = mesh.get_id();
             ImGui::PushID(id);
-            if(ImGui::RadioButton(mesh.get_name().c_str(), &active_mesh_id, id))
+            if(ImGui::RadioButton("", &active_mesh_id, id))
             {
                 volumeshOS::set_focused_mesh(VMesh(active_mesh_id));
             }
@@ -36,7 +39,18 @@ namespace volumeshOS::Internal
             Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active now. The filter functions of "
                                         "the Toolbar will change only the active mesh");
 
-            ImGui::SameLine(ImGui::GetWindowWidth() - 135.0f);
+            ImGui::SameLine();
+
+            auto pre_cursor = ImGui::GetCursorPos();
+
+            // render the actual mesh settings
+            render_mesh_setting(mesh);
+
+            auto post_cursor = ImGui::GetCursorPos();
+
+            ImGui::SetCursorPos(pre_cursor);
+            ImGui::Dummy(ImVec2(0.0f, ImGui::GetFontSize()));
+            ImGui::SameLine(ImGui::GetWindowWidth() - 125.0f);
 
             bool visible = mesh.get_visibility();
             if(ImGui::Checkbox("##Visible", &visible))
@@ -153,10 +167,192 @@ namespace volumeshOS::Internal
                 }
                 ImGui::EndPopup();
             }
-            ImGui::Separator();
             ImGui::PopID();
+
+            ImGui::SetCursorPos(post_cursor);
+
         }
         ImGui::PopStyleColor();
         ImGui::End();
+    }
+
+    void MeshLayerView::render_mesh_setting(const VMesh& mesh)
+    {
+        // If there is at least one mesh, the Active Mesh Settings (Slicing, Peeling, etc.) are available
+        if (mesh.is_valid())
+        {
+            auto cursor_pos = ImGui::GetCursorPos();
+
+            if (ImGui::CollapsingHeader(mesh.get_name().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
+            {
+
+                ImGui::SetCursorPos({cursor_pos.x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorPos().y});
+                if (ImGuiUtil::begin_menu_with_background("mesh", 9))
+                {
+                    // Mesh transformations, such as position and scale
+                    auto pos = mesh.get_position<glm::vec3>();
+                    auto scl = mesh.get_scale();
+                    auto rot = mesh.get_rotation<glm::vec3>();
+                    m_mesh_position[0] = pos[0];
+                    m_mesh_position[1] = pos[1];
+                    m_mesh_position[2] = pos[2];
+                    m_mesh_scale = scl;
+                    m_mesh_rotation[0] = glm::degrees(rot[0]);
+                    m_mesh_rotation[1] = glm::degrees(rot[1]);
+                    m_mesh_rotation[2] = glm::degrees(rot[2]);
+
+                    ImGuiUtil::menu_item("Position", [&]
+                    {
+                        if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -100.0f, 100.0f, "%.1f"))
+                        {
+                            mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
+                        }
+                        ImGui::SameLine();
+                        if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
+                        {
+                            mesh.set_position(0.0f, 0.0f, 0.0f);
+                        }
+
+                    });
+
+                    ImGuiUtil::menu_item("Scale", [&]
+                    {
+                        if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f"))
+                        {
+                            mesh.set_scale(m_mesh_scale);
+                        }
+                        ImGui::SameLine();
+                        if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
+                        {
+                            mesh.set_scale(1.0f);
+                        }
+                    });
+
+                    ImGuiUtil::menu_item("Rotation", [&]
+                    {
+                        if (ImGui::DragFloat3("##Rotation", m_mesh_rotation, 1.0f, -180.0f, 180.0f, "%.1f"))
+                        {
+                            auto x = (m_mesh_rotation[0] + 180.0f) - glm::degrees(rot[0]) + 180.0f;
+                            auto y = (m_mesh_rotation[1] + 180.0f) - glm::degrees(rot[1]) + 180.0f;
+                            auto z = (m_mesh_rotation[2] + 180.0f) - glm::degrees(rot[2]) + 180.0f;
+                            auto epsilon = 0.01;
+
+                            if (x >= epsilon || y >= epsilon || z >= epsilon)
+                            {
+                                mesh.set_rotation(glm::radians(x), glm::radians(y), glm::radians(z));
+                            }
+                        }
+                        ImGui::SameLine();
+                        if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
+                        {
+                            mesh.reset_rotation();
+                        }
+
+                    });
+
+                    ImGuiUtil::menu_item("Slicer", [&]
+                    {
+                        m_slider_slicer = mesh.get_slice_factor();
+                        m_slicer_locked = mesh.get_slice_lock();
+                        if (ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f))
+                        {
+                            mesh.set_slice_factor(m_slider_slicer);
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Checkbox("Lock", &m_slicer_locked))
+                        {
+                            mesh.set_slice_lock(m_slicer_locked);
+                        }
+                    });
+
+                    ImGuiUtil::menu_item("Peel", [&]
+                    {
+
+                        m_slider_peel = mesh.get_peel_level();
+                        float peel_max = (float) mesh.get_max_peel_depth() + 1.0f;
+
+                        // make it easier to get the slider onto an Integer
+                        // thats helpful for peeling with transparent transition
+                        float tolerance = 0.05;
+                        if ((int) (m_slider_peel + tolerance) != (int) (m_slider_peel - tolerance))
+                        {
+                            m_slider_peel = (float) (int) (m_slider_peel + tolerance);
+                        }
+                        if (ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max))
+                        {
+                            mesh.set_peel_level(m_slider_peel);
+                        }
+                    });
+
+                    ImGuiUtil::menu_item("Cell Size", [&]
+                    {
+                        m_cell_size = mesh.get_cell_size();
+                        if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f))
+                        {
+                            mesh.set_cell_size(m_cell_size);
+                        }
+                    });
+
+                    ImGuiUtil::menu_item("Roundings", [&]
+                    {
+                        float actual_rounding_size = mesh.get_cell_rounding();
+                        if (ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f",
+                                               ImGuiSliderFlags_Logarithmic))
+                        {
+                            mesh.set_cell_rounding(actual_rounding_size);
+                            mesh.activate_rounding((actual_rounding_size != 0.0f));
+                        }
+                    });
+
+                    ImGuiUtil::menu_item("Digging", [&]
+                    {
+                        if (ImGui::Button("Reset"))
+                        {
+                            mesh.reset_visibility();
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button(m_digging_activated ? "Deactivate" : "Activate"))
+                        {
+                            if (!m_digging_activated)
+                            {
+                                m_digging_activated = true;
+                                AppState::settings.selection_active = true;
+                                AppState::settings.selection_mode = SelectionMode::CELL;
+                            }
+                            else
+                            {
+                                m_digging_activated = false;
+                            }
+                            AppState::settings.digging_active = m_digging_activated;
+                        }
+
+                    });
+
+                    ImGuiUtil::menu_item("Isolation", [&]
+                    {
+                        if (ImGui::Button(m_isolation_started ? "Deactivate" : "Activate"))
+                        {
+                            if (!m_isolation_started)
+                            {
+                                m_isolation_started = true;
+                                AppState::settings.selection_active = true;
+                                AppState::settings.selection_mode = SelectionMode::CELL;
+                            }
+                            else
+                            {
+                                m_isolation_started = false;
+                                mesh.reset_visibility();
+                            }
+                            AppState::settings.isolation_active = m_isolation_started;
+                        }
+                    });
+
+                    ImGuiUtil::end_menu();
+                }
+            }
+            ImGui::Separator();
+        }
+
+
     }
 } // namespace volumeshOS

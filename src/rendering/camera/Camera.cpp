@@ -34,8 +34,8 @@ namespace volumeshOS::Internal
                 m_world_up
         );
         m_sensitivity = 1.0f;
-        m_vertical_speed = 2.0f;
-        m_horizontal_speed = 1.0f;
+        m_vertical_speed = 8.0f;
+        m_horizontal_speed = 8.0f;
 
         new_mode = CameraMode::FLY;
         set_mode(CameraMode::FLY);
@@ -70,6 +70,7 @@ namespace volumeshOS::Internal
         delta = current_frame - last_frame;
         last_frame = current_frame;
 
+
         projection = glm::perspective(
                 glm::radians(zoom),
                 m_screen_width / m_screen_height,
@@ -87,7 +88,7 @@ namespace volumeshOS::Internal
 
     void Camera::handle_key_movement(glm::vec3 movement_vector)
     {
-        movement_vector *= delta * 10;
+        movement_vector *= delta;
         if (m_mode == CameraMode::FLY)
         {
             // Add the movement vector to the position
@@ -136,17 +137,17 @@ namespace volumeshOS::Internal
 
     void Camera::handle_mouse_movement(float x_offset, float y_offset)
     {
-        x_offset *= m_horizontal_speed;
-        y_offset *= m_vertical_speed;
+        x_offset *= m_horizontal_speed * delta * 10.0f;
+        y_offset *= m_vertical_speed * delta * 10.0f;
 
         glm::vec4 pos(position.x, position.y, position.z, 1.0f);
         glm::vec4 tgt(target.x, target.y, target.z, 1.0f);
 
-        auto delta_angle_x = (float) (2 * M_PI / m_screen_width);
-        auto delta_angle_y = (float) (M_PI / m_screen_height);
+        auto delta_angle_x = (float) (2 * M_PI / (m_screen_width));
+        auto delta_angle_y = (float) (M_PI / (m_screen_height));
 
-        float angle_x = std::min((float)M_PI / 10.0f, -x_offset * delta_angle_x);
-        float angle_y = std::min((float)M_PI / 10.0f, y_offset * delta_angle_y);
+        float angle_x = -x_offset * delta_angle_x;
+        float angle_y = y_offset * delta_angle_y;
 
         // when front and up are simalar
         float cos_angle = dot(get_front(), m_world_up);

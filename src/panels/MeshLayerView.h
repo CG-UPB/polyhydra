@@ -23,5 +23,18 @@ namespace volumeshOS::Internal
          * the color of the mesh and a combo sets the rendering mode.
          */
         void show() override;
+
+    private:
+        void render_mesh_setting(const VMesh& mesh);
+
+        float m_slider_slicer                       = 0.0f;
+        bool m_slicer_locked                        = false;
+        float m_slider_peel                         = 0;
+        bool m_digging_activated                    = false;
+        bool m_isolation_started                    = false;
+        float m_cell_size                           = 1.0f;
+        float m_mesh_position[3]                    = {0.0f, 0.0f, 0.0f};
+        float m_mesh_scale                          = 1.0f;
+        float m_mesh_rotation[3]                    = {0.0f, 0.0f, 0.0f};
     };
 }

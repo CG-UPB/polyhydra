@@ -56,15 +56,7 @@ namespace volumeshOS::Internal
         int m_manual_selection_type                 = 0;
         int m_manual_selection_id                   = -1;
         int m_previous_manual_selection_id          = -1;
-        float m_slider_slicer                       = 0.0f;
-        bool m_slicer_locked                        = false;
-        float m_slider_peel                         = 0;
-        bool m_digging_activated                    = false;
-        bool m_isolation_started                    = false;
-        float m_cell_size                           = 1.0f;
-        float m_mesh_position[3]                    = {0.0f, 0.0f, 0.0f};
-        float m_mesh_scale                          = 1.0f;
-        float m_mesh_rotation[3]                    = {0.0f, 0.0f, 0.0f};
+
 
         ExportOptions m_export_options              = {};
         int m_export_dimensions[2]                  = {m_export_options.width, m_export_options.height};

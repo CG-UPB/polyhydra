@@ -91,8 +91,8 @@ namespace volumeshOS::Internal
         Internal::CameraMode m_mode = CameraMode::FLY;
         Internal::CameraMode new_mode = CameraMode::FLY;
 
-        float m_vertical_speed = 3.0f;
-        float m_horizontal_speed = 3.0f;
+        float m_vertical_speed = 0.5f;
+        float m_horizontal_speed = 0.5f;
         float m_sensitivity = 0.2f;
 
         // Axis
