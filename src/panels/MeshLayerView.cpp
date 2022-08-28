@@ -15,8 +15,6 @@ namespace volumeshOS::Internal
             return;
         }
 
-        ImGui::SetScrollX(1);
-
 
         ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
