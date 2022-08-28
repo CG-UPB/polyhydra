@@ -92,7 +92,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     proj_coords = proj_coords * 0.5 + 0.5;
 
     float closest_depth = texture(u_shadow_texture, vec4(proj_coords.xy, float(cascade_idx), proj_coords.z));
-    float current_depth = proj_coords.z;
+    float current_depth = proj_coords.z - bias;
     if (current_depth > 1.0)
     {
         return 0.0;
@@ -101,7 +101,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     for(int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        shadow += 0.2 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx), proj_coords.z)));
+        shadow += 0.2 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx), proj_coords.z - bias)));
     }
     return shadow;
 }
@@ -259,10 +259,12 @@ void main()
         }
 
         // calculate bias (depending on cascade level)
-        float light_angle = dot(normalize(v_normal), -l);
+        float light_angle = clamp(dot(normalize(v_normal), -l), 0.0, 1.0);
         //shadow = max(light_angle, 0.0);
         float bias = max(u_bias_max * (1.0 - light_angle) * 10.0, u_bias_min * 10.0);
-        //float bias = max(u_bias_max*tan(acos(light_angle)), u_bias_min);
+
+//        bias = 0.005 * tan(light_angle);
+//        bias = clamp(bias, 0, 0.01);
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
     }
 

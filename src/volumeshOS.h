@@ -243,6 +243,9 @@ namespace volumeshOS
     // Set the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
     void set_peel_level(const VMesh& mesh, float level);
 
+    // Toggle reverse peeling for given mesh
+    void set_reverse_peeling(const VMesh& mesh, bool reverse);
+
     // Set the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
     void set_cell_rounding(const VMesh& mesh, float rounding);
 
@@ -303,6 +306,9 @@ namespace volumeshOS
 
     // Returns the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
     [[nodiscard]] float get_peel_level(const VMesh& mesh);
+
+    // Returns if reverse peeling is active for given mesh
+    [[nodiscard]] bool get_reverse_peeling(const VMesh& mesh);
 
     // Returns the number of cell depth layers of the mesh
     [[nodiscard]] int get_max_peel_depth(const VMesh& mesh);
@@ -859,6 +865,12 @@ namespace volumeshOS
             volumeshOS::set_peel_level(*this, level);
         }
 
+        // Set the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
+        inline void set_reverse_peeling(bool reverse) const
+        {
+            volumeshOS::set_reverse_peeling(*this, reverse);
+        }
+
         // Set the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
         inline void set_cell_rounding(float rounding) const
         {
@@ -974,6 +986,12 @@ namespace volumeshOS
         [[nodiscard]] inline float get_peel_level() const
         {
             return volumeshOS::get_peel_level(*this);
+        }
+
+        // Returns if reverse peeling is active
+        [[nodiscard]] inline bool get_reverse_peeling() const
+        {
+            return volumeshOS::get_reverse_peeling(*this);
         }
 
         // Returns the number of cell depth layers of the mesh

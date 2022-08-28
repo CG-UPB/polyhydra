@@ -210,6 +210,14 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
+    void MeshList::set_reverse_peeling(const MeshID id, const bool reverse)
+    {
+        auto f = [reverse](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().reverse_peeling = reverse;
+        };
+        execute_for_mesh(f, id);
+    }
+
     void MeshList::set_cell_rounding(MeshID id, float rounding)
     {
         auto f = [rounding](const std::shared_ptr<MeshObject>& mesh) -> void{
@@ -443,6 +451,11 @@ namespace volumeshOS::Internal
     float MeshList::get_peel_level(const MeshID id)
     {
         return get_mesh(id)->get_data().peel_level;
+    }
+
+    float MeshList::get_reverse_peeling(const MeshID id)
+    {
+        return get_mesh(id)->get_data().reverse_peeling;
     }
 
     int MeshList::get_max_peel_depth(const MeshID id)

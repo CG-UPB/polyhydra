@@ -43,6 +43,7 @@ namespace volumeshOS::Internal
 
         out["peel_level"] = data.peel_level;
         out["max_peel_depth"] = data.max_peel_depth;
+        out["reverse_peeling"] = data.reverse_peeling;
         out["slice_level"] = data.slice_level;
         out["slice_direction"] = {
                 {"x", mesh.m_slice_dir.x},
@@ -117,6 +118,7 @@ namespace volumeshOS::Internal
 
         data.peel_level = in["peel_level"];
         data.max_peel_depth = in["max_peel_depth"];
+        data.reverse_peeling = in["reverse_peeling"];
         data.slice_level = in["slice_level"];
         mesh.m_slice_dir = {
                 in["slice_direction"]["x"],

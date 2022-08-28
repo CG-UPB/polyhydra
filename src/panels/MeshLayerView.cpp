@@ -318,17 +318,17 @@ namespace volumeshOS::Internal
 
                         ImGui::SameLine();
 
-                        auto reverse_peeling = AppState::settings.reverse_peeling;
+                        auto reverse_peeling = mesh.get_reverse_peeling();
                         auto arrow_dir = reverse_peeling ? ImGuiDir_Right : ImGuiDir_Left;
                         if (ImGui::ArrowButton("", arrow_dir))
                         {
                             if (reverse_peeling)
                             {
-                                AppState::settings.reverse_peeling = false;
+                                mesh.set_reverse_peeling(false);
                             }
                             else
                             {
-                                AppState::settings.reverse_peeling = true;
+                                mesh.set_reverse_peeling(true);
                             }
                         }
 

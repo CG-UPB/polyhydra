@@ -78,6 +78,7 @@ namespace volumeshOS::Internal
         glClear(GL_DEPTH_BUFFER_BIT);
         glCullFace(GL_FRONT);  // peter panning
 
+
         for (const auto& mesh: renderer.render_list)
         {
             // Transform
@@ -102,7 +103,7 @@ namespace volumeshOS::Internal
             m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
             m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
             m_shadow_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
-            m_shadow_shader->set_uniform_bool("u_reverse_peeling", AppState::settings.reverse_peeling);
+            m_shadow_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
             m_shadow_shader->set_uniform_float("u_slice_depth", slice_depth);
             m_shadow_shader->set_uniform_vec3f("u_min", min);
             m_shadow_shader->set_uniform_vec3f("u_max", max);

@@ -531,6 +531,13 @@ namespace volumeshOS
         });
     }
 
+    void set_reverse_peeling(const VMesh& mesh, const bool reverse)
+    {
+        commands.emplace_back([mesh, reverse]{
+            mesh_list->set_reverse_peeling(mesh.get_id(), reverse);
+        });
+    }
+
     void set_cell_rounding(const VMesh& mesh, float rounding)
     {
         commands.emplace_back([mesh, rounding]{
@@ -796,6 +803,11 @@ namespace volumeshOS
     {
         assert(mesh.is_valid());
         return mesh_list->get_peel_level(mesh.get_id());
+    }
+
+    bool get_reverse_peeling(const VMesh& mesh)
+    {
+        return mesh_list->get_reverse_peeling(mesh.get_id());
     }
 
     int get_max_peel_depth(const VMesh& mesh)

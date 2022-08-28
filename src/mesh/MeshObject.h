@@ -35,6 +35,7 @@ namespace volumeshOS::Internal
         // Toolbox Variables
         float peel_level            = 0.0f;
         float max_peel_depth        = 0.0f;
+        bool reverse_peeling        = false;
         float slice_level           = 0.0f;
         float cell_size             = 1.0f;
         bool slice_locked           = false;

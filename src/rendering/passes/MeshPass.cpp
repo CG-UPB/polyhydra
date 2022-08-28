@@ -66,7 +66,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
             m_mesh_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
             m_mesh_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
-            m_mesh_shader->set_uniform_bool("u_reverse_peeling", settings.reverse_peeling);
+            m_mesh_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
             m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
             m_mesh_shader->set_uniform_vec3f("u_min", mesh->get_world_bb(view_transform).first);
             m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
@@ -87,17 +87,8 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
 
-
-
-//            if(ImGui::Begin("Shadow"))
-//            {
-//                ImGui::DragFloat("bias_min", &m_bias_min, 0.001f, 0.0f, 0.1f);
-//                ImGui::DragFloat("bias_max", &m_bias_max, 0.001f, 0.0f, 0.1f);
-//                ImGui::DragFloat("bias_modifier", &m_bias_modifier, 0.01f, 0.0f, 0.5f);
-//            }
-//            ImGui::End();
-            m_bias_min = 0.0005f;
-            m_bias_max = 0.004f;
+//            m_bias_min = 0.005f;
+//            m_bias_max = 0.04f;
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
             m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);
             m_mesh_shader->set_uniform_float("u_bias_modifier", m_bias_modifier);

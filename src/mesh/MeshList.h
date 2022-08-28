@@ -114,6 +114,9 @@ namespace volumeshOS::Internal
         // Set the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
         void set_peel_level(MeshID id, float level);
 
+        // Toggle reverse peeling
+        void set_reverse_peeling(MeshID id, bool reverse);
+
         // Set the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
         void set_cell_rounding(MeshID id, float rounding);
 
@@ -170,6 +173,9 @@ namespace volumeshOS::Internal
 
         // Returns the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
         float get_peel_level(MeshID id);
+
+        // Returns if reverse peeling is active
+        float get_reverse_peeling(MeshID id);
 
         // Returns the number of cell depth layers of the mesh
         int get_max_peel_depth(MeshID id);
