@@ -13,7 +13,7 @@ namespace volumeshOS::Internal
         PrePassFrameBufferObject(int width, int height): FrameBufferObject(width, height, {
             // depth
             FrameBufferAttachment{
-                    .internal_format    = GL_DEPTH_COMPONENT,
+                    .internal_format    = GL_DEPTH_COMPONENT32F,
                     .format             = GL_DEPTH_COMPONENT,
                     .type               = GL_FLOAT,
                     .attachment         = GL_DEPTH_ATTACHMENT,
@@ -24,7 +24,7 @@ namespace volumeshOS::Internal
             },
             // normal
             FrameBufferAttachment{
-                    .internal_format    = GL_RGBA16F,
+                    .internal_format    = GL_RGBA32F,
                     .format             = GL_RGBA,
                     .type               = GL_FLOAT,
                     .attachment         = GL_COLOR_ATTACHMENT0,

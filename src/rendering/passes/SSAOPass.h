@@ -17,7 +17,6 @@ namespace volumeshOS::Internal
         ~SSAOPass();
 
         void load_options(const SSAOOptions& options);
-        [[nodiscard]] const SSAOOptions& get_options() const;
 
         void load_options_from_settings();
 
@@ -69,17 +68,11 @@ namespace volumeshOS::Internal
         static const int s_max_samples = 64;
         static const int s_noise_size = 4;
 
-        float m_dot;
-
         // options
         SSAOOptions m_options;
-        int m_selected_preset = 1;
-
-        // we keep a reference to access the pre-pass framebuffer
-        Renderer* m_renderer;
 
         // rendering
-        std::vector<glm::vec3> m_sample_kernel;
+        std::vector<glm::vec4> m_sample_kernel;
         std::shared_ptr<FrameBufferObject> m_ssao_framebuffer;
         std::shared_ptr<FrameBufferObject> m_blur_framebuffer;
         std::shared_ptr<Shader> m_ssao_shader;

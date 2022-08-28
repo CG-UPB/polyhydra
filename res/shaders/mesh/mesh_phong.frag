@@ -46,21 +46,39 @@ uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_transparent_shadow_texture;
 uniform sampler2D u_color_filter_texture;
-uniform sampler2DArray u_shadow_texture;
+uniform sampler2DArrayShadow u_shadow_texture;
 
 out vec4 FragColor;
 
-vec2 poisson_disk[4] = vec2[](
-    vec2(-0.94201624, -0.39906216),
-    vec2(0.94558609, -0.76890725),
-    vec2(-0.094184101, -0.92938870),
-    vec2(0.34495938, 0.29387760)
+vec2 poisson_disk[16] = vec2[](
+    vec2( -0.94201624, -0.39906216 ),
+    vec2( 0.94558609, -0.76890725 ),
+    vec2( -0.094184101, -0.92938870 ),
+    vec2( 0.34495938, 0.29387760 ),
+    vec2( -0.91588581, 0.45771432 ),
+    vec2( -0.81544232, -0.87912464 ),
+    vec2( -0.38277543, 0.27676845 ),
+    vec2( 0.97484398, 0.75648379 ),
+    vec2( 0.44323325, -0.97511554 ),
+    vec2( 0.53742981, -0.47373420 ),
+    vec2( -0.26496911, -0.41893023 ),
+    vec2( 0.79197514, 0.19090188 ),
+    vec2( -0.24188840, 0.99706507 ),
+    vec2( -0.81409955, 0.91437590 ),
+    vec2( 0.19984126, 0.78641367 ),
+    vec2( 0.14383161, -0.14100790 )
 );
 
 float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 line_dir)
 {
     vec2 af = frag_pos - line_start;
     return sqrt(dot(af, af) - dot(line_dir, af));
+}
+
+float random(vec3 seed, int i){
+    vec4 seed4 = vec4(seed,i);
+    float dot_product = dot(seed4, vec4(12.9898,78.233,45.164,94.673));
+    return fract(sin(dot_product) * 43758.5453);
 }
 
 float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
@@ -73,37 +91,18 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     // range [0, 1]
     proj_coords = proj_coords * 0.5 + 0.5;
 
-    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
+    float closest_depth = texture(u_shadow_texture, vec4(proj_coords.xy, float(cascade_idx), proj_coords.z));
     float current_depth = proj_coords.z;
-    // shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
-
-    // sample surrounding values and use average value for smoother shadows
-//    vec2 texel_size = 1.0 / textureSize(u_shadow_texture, 0);
-//    for(int x = -1; x <= 1; ++x)
-//    {
-//        for(int y = -1; y <= 1; ++y)
-//        {
-//            float pcf_depth = texture(u_shadow_texture, proj_coords.xy + vec2(x, y) * texel_size).r;
-//            shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
-//        }
-//    }
-//    shadow /= 9.0;
-
+    if (current_depth > 1.0)
+    {
+        return 0.0;
+    }
 
     for(int i = 0; i < 4; i++)
     {
-        if(texture(u_shadow_texture, vec3(proj_coords.xy + poisson_disk[i] / 1000.0, float(cascade_idx))).r < current_depth - bias)
-        {
-            shadow += 0.25;
-        }
+        int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
+        shadow += 0.2 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx), proj_coords.z)));
     }
-
-
-    if(proj_coords.z > 1.0)
-    {
-        shadow = 0.0;
-    }
-
     return shadow;
 }
 
@@ -260,12 +259,11 @@ void main()
         }
 
         // calculate bias (depending on cascade level)
-        float bias = max(u_bias_max * (1.0f - dot(n, l)), u_bias_min);
-        //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
-
-        //cascade_idx = 0;
+        float light_angle = dot(normalize(v_normal), -l);
+        //shadow = max(light_angle, 0.0);
+        float bias = max(u_bias_max * (1.0 - light_angle) * 10.0, u_bias_min * 10.0);
+        //float bias = max(u_bias_max*tan(acos(light_angle)), u_bias_min);
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
-
     }
 
     // Phong Shading
@@ -276,6 +274,7 @@ void main()
     if(u_draw_ao)
     {
         ao_factor = texture(u_ssao_texture, uv).r;
+        //ao_factor = max(ao_factor, 0.3);
     }
     vec3 ambient = u_ambient_strength * light_color * ao_factor;
 

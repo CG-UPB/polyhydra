@@ -141,7 +141,7 @@ void main()
     }
 
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(view_transform))) * normal;
+    v_Normal = mat3(transpose(inverse(u_transform))) * normal;
 
     // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
     mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;

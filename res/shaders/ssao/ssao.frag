@@ -11,7 +11,7 @@ uniform int         u_noise_size;
 uniform float       u_distance_bias;
 
 // variables for texture sampling
-uniform vec3        u_sample_kernel[64];
+uniform vec4        u_sample_kernel[64];
 uniform int         u_viewport_width;
 uniform int         u_viewport_height;
 uniform mat4        u_projection;
@@ -49,6 +49,7 @@ void main()
     vec2 noise_scale = vec2(float(u_viewport_width), float(u_viewport_height)) / u_noise_size;
     vec3 random_vec = texture(u_noise, v_uv * noise_scale).xyz;
     vec3 normal = texture(u_normal, v_uv).xyz;
+    vec3 frag_pos_biased = frag_pos + normal * 0.01;
 
     // create orthogonal basis to transform samples into tangent space of the fragment
     vec3 tangent = normalize(random_vec - normal * dot(random_vec, normal));
@@ -56,12 +57,12 @@ void main()
     mat3 TBN = mat3(tangent, bitangent, normal);
 
     float occlusion = 0.0;
-    float normalization = 0.0;
     for (int i = 0; i < u_samples; i++)
     {
         // transform kernel sample to tangent space
-        vec3 sample_pos = TBN * u_sample_kernel[i];
-        sample_pos = (frag_pos + normal * 0.01) + sample_pos * u_radius;
+        vec3 sample_pos = TBN * u_sample_kernel[i].xyz;
+        float sample_weight = u_sample_kernel[i].w;
+        sample_pos = frag_pos_biased + sample_pos * u_radius;
 
         // transform sample to screen space, so we can look up the depth of our sample in the texture
         vec4 offset = u_projection * vec4(sample_pos, 1.0);
@@ -79,13 +80,12 @@ void main()
         float sample_depth = vec4(u_view * vec4(sample_xyz, 1.0)).z;
 
         // check if the depth we sampled is within the sample radius, and smoothly interpolate
-        float range_check = smoothstep(0.0, 1.0, u_radius / abs(frag_pos.z - sample_depth));
-        occlusion += (sample_depth >= sample_pos.z + u_bias ? 1.0 : 0.0) * range_check;
-        normalization += 1.0;
+        float range_check = smoothstep(0.0, 1.0, u_radius / abs(frag_pos_biased.z - sample_depth));
+        occlusion += (sample_depth >= sample_pos.z + u_bias ? sample_weight : 0.0) * range_check;
     }
 
     // finally, adjust the occlusion factor's strength by potentiation
-    occlusion = 1.0 - (occlusion / normalization);
+    occlusion = 1.0 - (occlusion / u_samples);
     occlusion = pow(occlusion, u_strength);
     o_occlusion = occlusion;
 }

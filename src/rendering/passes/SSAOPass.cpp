@@ -86,6 +86,7 @@ namespace volumeshOS::Internal
     void SSAOPass::generate_sample_kernel()
     {
         m_sample_kernel.clear();
+        glm::vec3 normal = {0.0, 0.0, 1.0};
         while (m_sample_kernel.size() < SSAOPass::s_max_samples)
         {
             // generate random point within range (x: [-1, 1], y: [-1, 1], z: [0, 1])
@@ -102,13 +103,14 @@ namespace volumeshOS::Internal
             }
             // normalize point, now it lies on a unit sphere
             sample = glm::normalize(sample);
+            float weight = 0.8f * glm::sqrt(sample.z) + 0.2f;
             // assign random distance from sphere center
             sample *= get_random_float(0.0, 1.0);
             // more samples distributed at the center of the sphere
             float scale = (float) m_sample_kernel.size() / (float) SSAOPass::s_max_samples;
             scale = lerp(0.1, 1.0, std::pow(scale, 2.0f));
             sample *= scale;
-            m_sample_kernel.push_back(sample);
+            m_sample_kernel.emplace_back(sample, weight);
         }
     }
 
@@ -176,9 +178,8 @@ namespace volumeshOS::Internal
             m_ssao_shader->set_uniform_float("u_radius", m_options.sample_radius);
             m_ssao_shader->set_uniform_float("u_strength", m_options.strength);
             m_ssao_shader->set_uniform_float("u_bias", m_options.z_bias);
-            m_ssao_shader->set_uniform_float("u_distance_bias", m_options.distance_bias);
             // ssao related
-            m_ssao_shader->set_uniform_vec3f_array("u_sample_kernel", m_sample_kernel);
+            m_ssao_shader->set_uniform_vec4f_array("u_sample_kernel", m_sample_kernel);
             m_ssao_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE0, pre_pass->get_depth_texture());
             m_ssao_shader->set_uniform_sampler2D("u_normal", GL_TEXTURE1, pre_pass->get_normal_texture());
             m_ssao_shader->set_uniform_sampler2D("u_noise", GL_TEXTURE2, m_noise_texture);
@@ -189,6 +190,7 @@ namespace volumeshOS::Internal
             m_ssao_shader->set_uniform_mat4f("u_projection", cam->projection);
             m_ssao_shader->set_uniform_mat4f("u_inv_projection", inv_view_projection);
             m_ssao_shader->set_uniform_mat4f("u_view", cam->view);
+            m_ssao_shader->set_uniform_float("u_near", cam->near);
             m_ssao_shader->set_uniform_float("u_far", cam->far);
             VertexArrayObject::draw_screen_quad();
             m_ssao_shader->unbind();
@@ -201,7 +203,9 @@ namespace volumeshOS::Internal
             m_ssao_blur_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
             m_ssao_blur_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
             m_ssao_shader->set_uniform_mat4f("u_inv_projection", inv_view_projection);
+            m_ssao_blur_shader->set_uniform_float("u_near", cam->near);
             m_ssao_blur_shader->set_uniform_float("u_far", cam->far);
+            m_ssao_blur_shader->set_uniform_float("u_sharpness", m_options.blur_sharpness);
             // blur related
             m_ssao_blur_shader->set_uniform_sampler2D("u_ssao_input", GL_TEXTURE0, get_ssao_texture());
             m_ssao_blur_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE1, pre_pass->get_depth_texture());
@@ -229,11 +233,6 @@ namespace volumeshOS::Internal
     void SSAOPass::load_options(const SSAOOptions& options)
     {
         m_options = options;
-    }
-
-    const SSAOOptions& SSAOPass::get_options() const
-    {
-        return m_options;
     }
 
     uint32_t SSAOPass::get_ssao_texture() const

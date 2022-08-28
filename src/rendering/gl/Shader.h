@@ -147,6 +147,14 @@ namespace volumeshOS::Internal
         void set_uniform_vec3f_array(const std::string& name, const std::vector<glm::vec3>& values);
 
         /**
+         * Sets a uniform vec4 array for this shader.
+         *
+         * @param name name of the uniform
+         * @param values value the uniform is set to
+         */
+        void set_uniform_vec4f_array(const std::string& name, const std::vector<glm::vec4>& values);
+
+        /**
          * Sets a uniform vec4 for this shader.
          *
          * @param name name of the uniform

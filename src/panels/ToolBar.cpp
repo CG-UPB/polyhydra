@@ -428,8 +428,8 @@ namespace volumeshOS::Internal
                 ImGuiUtil::menu_item("Bias", [&]{
                     ImGui::SliderFloat("##Bias", &options.z_bias, 0.0f, 0.1f);
                 });
-                ImGuiUtil::menu_item("Distance Bias", [&]{
-                    ImGui::SliderFloat("##Distance Bias", &options.distance_bias, 0.0f, 10.0f);
+                ImGuiUtil::menu_item("Blur Sharpness", [&]{
+                    ImGui::SliderFloat("##Blur Sharpness", &options.blur_sharpness, 0.0f, 100.0f, "%.1f", ImGuiSliderFlags_Logarithmic);
                 });
             }
             ImGuiUtil::end_menu();

@@ -36,10 +36,10 @@ namespace volumeshOS::Internal
     {
         bool active             = true;
         int num_samples         = 64;
-        float sample_radius     = 0.5f;
-        float strength          = 2.5f;
+        float sample_radius     = 1.5f;
+        float strength          = 1.5f;
         float z_bias            = 0.01f;
-        float distance_bias     = 6.0f;
+        float blur_sharpness    = 1.0f;
     };
 
     struct GeneralOptions

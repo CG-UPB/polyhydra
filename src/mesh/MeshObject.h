@@ -29,7 +29,7 @@ namespace volumeshOS::Internal
         glm::vec4 selection_color   = {1.0f, 1.0f, 1.0f, 0.0f};
         float ambient_strength      = 1.0f;
         float diffuse_strength      = 1.0f;
-        float specular_strength     = 0.3f;
+        float specular_strength     = 0.15f;
         float specular_exponent     = 8.0f;
 
         // Toolbox Variables
