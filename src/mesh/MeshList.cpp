@@ -255,6 +255,7 @@ namespace volumeshOS::Internal
     {
         auto f = [](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->get_mvb()->reset_digging();
+            mesh->get_mvb()->reset_isolation();
         };
         execute_for_mesh(f, id);
     }

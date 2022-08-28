@@ -34,7 +34,7 @@ namespace volumeshOS::Internal
 
         // Toolbox Variables
         float peel_level            = 0.0f;
-        int max_peel_depth          = 0;
+        float max_peel_depth        = 0.0f;
         float slice_level           = 0.0f;
         float cell_size             = 1.0f;
         bool slice_locked           = false;
@@ -102,7 +102,7 @@ namespace volumeshOS::Internal
         int to_halfface_id(int value);
 
 
-        [[nodiscard]] int get_max_peel_depth() const;
+        [[nodiscard]] float get_max_peel_depth() const;
 
         const std::array<int, 2>& selection_offset()
         {

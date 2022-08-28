@@ -17,6 +17,8 @@ uniform float u_average_cell_size;
 uniform float u_size;
 
 uniform int u_peel_depth;
+uniform float u_max_peel_depth;
+uniform bool u_reverse_peeling;
 uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;
@@ -50,8 +52,14 @@ void main()
     vec3 dir = slice_dir;
     vec3 center = vec3(view_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(dir), normalize(center - slice_point));
+    float peel_depth = a_peel_depth;
 
-    if (a_peel_depth < u_peel_depth || angle > 0)
+    if(u_reverse_peeling)
+    {
+        peel_depth = u_max_peel_depth - peel_depth;
+    }
+
+    if (peel_depth < u_peel_depth || angle > 0)
     {
         v_visible = 0;
     }

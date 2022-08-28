@@ -53,11 +53,6 @@ namespace volumeshOS::Internal
         show_ambient_occlusion_menu();
         show_transparency_menu();
 
-        ImGui::Separator();
-        ImGuiUtil::push_bold_font();
-        ImGui::Text("Mesh List");
-        ImGui::PopFont();
-
         ImGui::End();
     }
 

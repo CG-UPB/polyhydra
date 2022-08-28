@@ -65,6 +65,8 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
             m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
             m_mesh_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+            m_mesh_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
+            m_mesh_shader->set_uniform_bool("u_reverse_peeling", settings.reverse_peeling);
             m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
             m_mesh_shader->set_uniform_vec3f("u_min", mesh->get_world_bb(view_transform).first);
             m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);

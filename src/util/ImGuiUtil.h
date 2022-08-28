@@ -82,18 +82,18 @@ namespace volumeshOS::Internal
             c.y = c.y - ImGui::GetStyle().WindowPadding.y;
             auto pos = ImGui::GetCursorPos();
             ImGui::Dummy({1, (ImGui::GetFrameHeight() + ImGui::GetStyle().CellPadding.y * 2) * (float) num_items});
-            float b = 2.0f;
-            auto border = IM_COL32(200, 200, 200, 255);
-            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5 + b), border, ImGui::GetStyle().FrameRounding);
+            float border = 2.0f;
+            auto border_color = IM_COL32(200, 200, 200, 255);
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5 + border), border_color, ImGui::GetStyle().FrameRounding);
             ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), color, ImGui::GetStyle().FrameRounding);
             ImGui::SetCursorPos({pos.x + ImGui::GetStyle().WindowPadding.x * 0.5f, pos.y});
         }
 
-        static bool begin_menu_with_background(const std::string& name, int item_count)
+        static bool begin_menu_with_background(const std::string& name, int item_count, ImGuiTableFlags flags = ImGuiTableFlags_SizingStretchSame)
         {
             ImGuiUtil::add_background_rect(item_count);
             ImGui::BeginGroup();
-            return ImGui::BeginTable(name.c_str(), 2);
+            return ImGui::BeginTable(name.c_str(), 2, flags);
         }
 
         static bool begin_menu(const std::string& name)
@@ -116,7 +116,7 @@ namespace volumeshOS::Internal
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("%s", name.c_str());
             ImGui::TableSetColumnIndex(1);
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            //ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
             item();
             ImGui::PopID();
         }

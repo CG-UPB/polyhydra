@@ -303,7 +303,7 @@ namespace volumeshOS::Internal
         return m_slice_dir;
     }
 
-    int MeshObject::get_max_peel_depth() const
+    float MeshObject::get_max_peel_depth() const
     {
         return m_data.max_peel_depth;
     }

@@ -9,7 +9,7 @@ namespace volumeshOS::Internal
 {
     void MeshLayerView::show()
     {
-        if(!ImGui::Begin("Meshes"))
+A        if (!ImGui::Begin("Meshes"))
         {
             ImGui::End();
             return;
@@ -21,13 +21,13 @@ namespace volumeshOS::Internal
         // create a line for every loaded mesh
         auto active_mesh = volumeshOS::get_focused_mesh();
         int active_mesh_id = active_mesh.get_id();
-        for(const auto& mesh : volumeshOS::get_meshes())
+        for (const auto& mesh: volumeshOS::get_meshes())
         {
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().FramePadding.x);
 
             int id = mesh.get_id();
             ImGui::PushID(id);
-            if(ImGui::RadioButton("", &active_mesh_id, id))
+            if (ImGui::RadioButton("", &active_mesh_id, id))
             {
                 volumeshOS::set_focused_mesh(VMesh(active_mesh_id));
             }
@@ -53,7 +53,7 @@ namespace volumeshOS::Internal
             ImGui::SameLine(ImGui::GetContentRegionMax().x - 103.0f);
 
             bool visible = mesh.get_visibility();
-            if(ImGui::Checkbox("##Visible", &visible))
+            if (ImGui::Checkbox("##Visible", &visible))
             {
                 mesh.set_visibility(visible);
             }
@@ -67,12 +67,30 @@ namespace volumeshOS::Internal
             new_color[1] = color.g;
             new_color[2] = color.b;
             new_color[3] = color.a;
-            ImGui::ColorEdit4("Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel); ImGui::SameLine();
+            ImGui::ColorEdit4("Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SameLine();
             mesh.set_color(glm::vec4{new_color[0], new_color[1], new_color[2], new_color[3]});
             Tooltips::ToolTipByHovering("Sets the color of the mesh");
 
             // Advanced Settings
-            if (ImGuiUtil::icon_button("settings.png"))
+
+            auto& icon_ref = *UIUtil::get_icon("settings.png");
+            float aspect_ratio = (float) icon_ref.get_width() / (float) icon_ref.get_height();
+            float width = (ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y ) * aspect_ratio;
+            float height = ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y ;
+            ImVec4 text_color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+
+            auto cursor = ImGui::GetCursorPos();
+            ImGui::SetCursorPos(ImVec2(cursor.x , cursor.y ));
+            if (ImGui::ImageButton(
+                    reinterpret_cast<ImTextureID>(icon_ref.get_id()),
+                    {width, height},
+                    {0.0f, 0.0f},
+                    {1.0f, 1.0f},
+                    0,
+                    {0.0f, 0.0f, 0.0f, 0.0f},
+                    text_color
+            ))
             {
                 ImGui::OpenPopup("Advanced Settings Popup");
             }
@@ -87,10 +105,11 @@ namespace volumeshOS::Internal
 
                 ImGuiUtil::icon("save.png", ImGui::GetFontSize(), true);
                 ImGui::SameLine();
-                if (ImGui::Button("Save")) {
+                if (ImGui::Button("Save"))
+                {
                     NewFileDialog file_dialog;
 
-                    char const *filename;
+                    char const* filename;
 
                     filename = file_dialog.save_mesh_settings("Save Mesh Settings File");
 
@@ -101,10 +120,11 @@ namespace volumeshOS::Internal
                 }
                 ImGui::SameLine();
                 // Load Mesh Settings to File
-                if (ImGui::Button("Load")) {
+                if (ImGui::Button("Load"))
+                {
                     NewFileDialog file_dialog;
 
-                    char const *filename;
+                    char const* filename;
 
                     filename = file_dialog.load_mesh_settings("Save Mesh Settings File");
                     if (filename != nullptr)
@@ -187,8 +207,13 @@ namespace volumeshOS::Internal
             {
 
                 ImGui::SetCursorPos({cursor_pos.x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorPos().y});
-                if (ImGuiUtil::begin_menu_with_background("mesh", 9))
+                if (ImGuiUtil::begin_menu_with_background("mesh", 9, ImGuiTableFlags_SizingStretchSame))
                 {
+                    ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_None, 0.3f);
+                    ImGui::TableSetupColumn("Two", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+                    //ImGui::TableHeadersRow();
+
+
                     // Mesh transformations, such as position and scale
                     auto pos = mesh.get_position<glm::vec3>();
                     auto scl = mesh.get_scale();
@@ -201,19 +226,26 @@ namespace volumeshOS::Internal
                     m_mesh_rotation[1] = glm::degrees(rot[1]);
                     m_mesh_rotation[2] = glm::degrees(rot[2]);
 
+
                     ImGuiUtil::menu_item("Position", [&]
                     {
                         if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -100.0f, 100.0f, "%.1f"))
                         {
                             mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
                         }
+
+//                        auto& icon_ref = *UIUtil::get_icon("reset.png");
+//                        float aspect_ratio = (float) icon_ref.get_width() / (float) icon_ref.get_height();
+//                        float width = ImGui::GetFontSize() * aspect_ratio;
+//
+//                        ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - width - 2 * ImGui::GetStyle().FramePadding.x);
                         ImGui::SameLine();
                         if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                         {
                             mesh.set_position(0.0f, 0.0f, 0.0f);
                         }
-
                     });
+
 
                     ImGuiUtil::menu_item("Scale", [&]
                     {
@@ -282,6 +314,23 @@ namespace volumeshOS::Internal
                         {
                             mesh.set_peel_level(m_slider_peel);
                         }
+
+                        ImGui::SameLine();
+
+                        auto reverse_peeling = AppState::settings.reverse_peeling;
+                        auto arrow_dir = reverse_peeling ? ImGuiDir_Right : ImGuiDir_Left;
+                        if (ImGui::ArrowButton("", arrow_dir))
+                        {
+                            if (reverse_peeling)
+                            {
+                                AppState::settings.reverse_peeling = false;
+                            }
+                            else
+                            {
+                                AppState::settings.reverse_peeling = true;
+                            }
+                        }
+
                     });
 
                     ImGuiUtil::menu_item("Cell Size", [&]
@@ -296,7 +345,7 @@ namespace volumeshOS::Internal
                     ImGuiUtil::menu_item("Roundings", [&]
                     {
                         float actual_rounding_size = mesh.get_cell_rounding();
-                        if (ImGui::SliderFloat("Size", &actual_rounding_size, 0.0f, 1.0f, "%.3f",
+                        if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f",
                                                ImGuiSliderFlags_Logarithmic))
                         {
                             mesh.set_cell_rounding(actual_rounding_size);
@@ -306,12 +355,9 @@ namespace volumeshOS::Internal
 
                     ImGuiUtil::menu_item("Digging", [&]
                     {
-                        if (ImGui::Button("Reset"))
-                        {
-                            mesh.reset_visibility();
-                        }
-                        ImGui::SameLine();
-                        if (ImGui::Button(m_digging_activated ? "Deactivate" : "Activate"))
+                        auto size = ImVec2(ImGui::CalcTextSize("Deactivate").x + 2 * ImGui::GetStyle().FramePadding.x,
+                                           0.0f);
+                        if (ImGui::Button(m_digging_activated ? "Deactivate" : "Activate", size))
                         {
                             if (!m_digging_activated)
                             {
@@ -325,12 +371,19 @@ namespace volumeshOS::Internal
                             }
                             AppState::settings.digging_active = m_digging_activated;
                         }
+                        ImGui::SameLine();
+                        if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
+                        {
+                            mesh.reset_visibility();
+                        }
 
                     });
 
                     ImGuiUtil::menu_item("Isolation", [&]
                     {
-                        if (ImGui::Button(m_isolation_started ? "Deactivate" : "Activate"))
+                        auto size = ImVec2(ImGui::CalcTextSize("Deactivate").x + 2 * ImGui::GetStyle().FramePadding.x,
+                                           0.0f);
+                        if (ImGui::Button(m_isolation_started ? "Deactivate" : "Activate", size))
                         {
                             if (!m_isolation_started)
                             {

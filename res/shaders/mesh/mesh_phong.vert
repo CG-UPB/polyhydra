@@ -44,6 +44,8 @@ uniform float u_cell_size;
 uniform vec4 u_selection_color;
 uniform float u_average_cell_size;
 uniform float u_peel_depth;
+uniform float u_max_peel_depth;
+uniform bool u_reverse_peeling;
 uniform float u_slice_depth;
 uniform vec3 u_min;
 uniform vec3 u_max;
@@ -81,10 +83,16 @@ void main()
     vec3 slice_point = max_slice + u_slice_depth * (min_slice - max_slice);
     vec3 center = vec3(view_transform * vec4(a_center, 1.0));
     float angle = dot(normalize(slice_dir), normalize(center - slice_point));
+    float peel_depth = a_peel_depth;
+
+    if(u_reverse_peeling)
+    {
+        peel_depth = u_max_peel_depth - peel_depth;
+    }
 
     // criteria for beeing invisible:
     // peeled, sliced, isolated or digged
-    if (a_peel_depth + 1.0 <= u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
+    if (peel_depth + 1.0 <= u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
     {
         v_Pos = vec3(0.0, 0.0, 0.0);
         v_Normal = vec3(0.0, 0.0, 0.0);
@@ -155,10 +163,10 @@ void main()
 
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
 
-    float peel_alpha = (u_peel_depth - a_peel_depth);
+    float peel_alpha = (u_peel_depth - peel_depth);
     if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
     {
-        alpha = (1.0 - (u_peel_depth - a_peel_depth)) * alpha;
+        alpha = (1.0 - (u_peel_depth - peel_depth)) * alpha;
     }
 
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
