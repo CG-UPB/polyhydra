@@ -88,7 +88,7 @@ namespace volumeshOS::Internal
 
     void Camera::handle_key_movement(glm::vec3 movement_vector)
     {
-        movement_vector *= delta;
+        movement_vector *= delta * 10.0f;
         if (m_mode == CameraMode::FLY)
         {
             // Add the movement vector to the position

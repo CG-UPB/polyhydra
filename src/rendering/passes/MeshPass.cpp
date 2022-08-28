@@ -54,9 +54,10 @@ namespace volumeshOS::Internal
             glm::vec3 cam_pos(cam->position);
             glm::vec3 light_pos(glm::normalize(light.direction));
 
+            static glm::mat4 tf = mesh->get_data().get_transform();
 
             // Shader uniforms
-            m_mesh_shader->set_uniform_mat4f("u_transform", transform);
+            m_mesh_shader->set_uniform_mat4f("u_transform", tf);
             m_mesh_shader->set_uniform_mat4f("u_projection", cam->projection);
             m_mesh_shader->set_uniform_mat4f("u_view", cam->view);
             m_mesh_shader->set_uniform_vec3f("u_light_pos", light_pos);
