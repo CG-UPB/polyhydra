@@ -25,6 +25,8 @@ namespace volumeshOS::Internal
         int active_mesh_id = active_mesh.get_id();
         for(const auto& mesh : volumeshOS::get_meshes())
         {
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().FramePadding.x);
+
             int id = mesh.get_id();
             ImGui::PushID(id);
             if(ImGui::RadioButton("", &active_mesh_id, id))
@@ -50,7 +52,7 @@ namespace volumeshOS::Internal
 
             ImGui::SetCursorPos(pre_cursor);
             ImGui::Dummy(ImVec2(0.0f, ImGui::GetFontSize()));
-            ImGui::SameLine(ImGui::GetWindowWidth() - 125.0f);
+            ImGui::SameLine(ImGui::GetContentRegionMax().x - 103.0f);
 
             bool visible = mesh.get_visibility();
             if(ImGui::Checkbox("##Visible", &visible))
