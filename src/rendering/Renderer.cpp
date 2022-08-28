@@ -365,12 +365,15 @@ namespace volumeshOS::Internal
 
         auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
         auto export_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
+        auto export_post_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
 
         auto prev_target_framebuffer_ms = buffers.target_framebuffer_ms;
         auto prev_target_framebuffer = buffers.target_framebuffer;
+        auto prev_post_framebuffer = buffers.post_framebuffer;
 
         buffers.target_framebuffer_ms = export_framebuffer_ms;
         buffers.target_framebuffer = export_framebuffer;
+        buffers.post_framebuffer = export_post_framebuffer;
 
         resize(export_width, export_height);
 
@@ -385,8 +388,7 @@ namespace volumeshOS::Internal
         glFlush();
         glFinish();
 
-        export_framebuffer_ms->unbind();
-        export_framebuffer->bind();
+        export_post_framebuffer->bind();
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -423,13 +425,14 @@ namespace volumeshOS::Internal
             stbi_write_png(path.c_str(), sWidth, sHeight, 4, buffer.data(), 4 * sWidth);
         }
 
-        export_framebuffer->unbind();
+        export_post_framebuffer->unbind();
 
         // restore the old width and height
         frame.width = prev_width;
         frame.height = prev_height;
         buffers.target_framebuffer_ms = prev_target_framebuffer_ms;
         buffers.target_framebuffer = prev_target_framebuffer;
+        buffers.post_framebuffer = prev_post_framebuffer;
         resize(frame.width, frame.height);
     }
 }
