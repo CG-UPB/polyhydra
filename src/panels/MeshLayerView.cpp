@@ -9,7 +9,7 @@ namespace volumeshOS::Internal
 {
     void MeshLayerView::show()
     {
-A        if (!ImGui::Begin("Meshes"))
+        if (!ImGui::Begin("Meshes"))
         {
             ImGui::End();
             return;
