@@ -54,10 +54,9 @@ namespace volumeshOS::Internal
             glm::vec3 cam_pos(cam->position);
             glm::vec3 light_pos(glm::normalize(light.direction));
 
-            static glm::mat4 tf = mesh->get_data().get_transform();
 
             // Shader uniforms
-            m_mesh_shader->set_uniform_mat4f("u_transform", tf);
+            m_mesh_shader->set_uniform_mat4f("u_transform", transform);
             m_mesh_shader->set_uniform_mat4f("u_projection", cam->projection);
             m_mesh_shader->set_uniform_mat4f("u_view", cam->view);
             m_mesh_shader->set_uniform_vec3f("u_light_pos", light_pos);
@@ -97,7 +96,8 @@ namespace volumeshOS::Internal
 //                ImGui::DragFloat("bias_modifier", &m_bias_modifier, 0.01f, 0.0f, 0.5f);
 //            }
 //            ImGui::End();
-
+            m_bias_min = 0.0005f;
+            m_bias_max = 0.004f;
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
             m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);
             m_mesh_shader->set_uniform_float("u_bias_modifier", m_bias_modifier);

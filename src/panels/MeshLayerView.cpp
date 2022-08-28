@@ -305,7 +305,7 @@ namespace volumeshOS::Internal
 
                         // make it easier to get the slider onto an Integer
                         // thats helpful for peeling with transparent transition
-                        float tolerance = 0.05;
+                        static float tolerance = 0.05;
 
                         if (ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max))
                         {
