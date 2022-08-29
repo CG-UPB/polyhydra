@@ -30,6 +30,9 @@ namespace volumeshOS::Internal
         float height            = -5.0f;
         int size                = 1000;
         int tiles               = 200;
+        bool use_pbr            = false;
+        float metallic          = 0.1f;
+        float roughness         = 0.65f;
     };
 
     struct SSAOOptions
@@ -50,8 +53,8 @@ namespace volumeshOS::Internal
     struct PostProcessingOptions
     {
         float gamma         = 2.2f;
-        float saturation    = 1.2f;
-        float contrast      = 1.15f;
+        float saturation    = 1.0f;
+        float contrast      = 1.0f;
     };
 
     struct AppState

@@ -464,6 +464,45 @@ namespace volumeshOS
         });
     }
 
+    void set_use_pbr(const VMesh& mesh, bool use_pbr)
+    {
+        commands.emplace_back([mesh, use_pbr]{
+            mesh_list->get_mesh(mesh.get_id())->get_data().use_pbr = use_pbr;
+        });
+    }
+
+    void set_metallic(const VMesh& mesh, float metallic)
+    {
+        commands.emplace_back([mesh, metallic]{
+            mesh_list->get_mesh(mesh.get_id())->get_data().metallic = metallic;
+        });
+    }
+
+    void set_roughness(const VMesh& mesh, float roughness)
+    {
+        commands.emplace_back([mesh, roughness]{
+            mesh_list->get_mesh(mesh.get_id())->get_data().roughness = roughness;
+        });
+    }
+
+    bool get_use_pbr(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_mesh(mesh.get_id())->get_data().use_pbr;
+    }
+
+    float get_metallic(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_mesh(mesh.get_id())->get_data().metallic;
+    }
+
+    float get_roughness(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_mesh(mesh.get_id())->get_data().roughness;
+    }
+
     void set_position(const VMesh& mesh, float x, float y, float z)
     {
         commands.emplace_back([mesh, x, y, z]{

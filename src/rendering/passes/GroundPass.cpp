@@ -113,10 +113,17 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
         m_ground_shader->set_uniform_vec3f("u_light_color", light.color);
         m_ground_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
+
         m_ground_shader->set_uniform_float("u_spec_strength",0.3f);
         m_ground_shader->set_uniform_float("u_spec_exponent",8.0f);
         m_ground_shader->set_uniform_float("u_ambient_strength",0.9f);
         m_ground_shader->set_uniform_float("u_diffuse_strength", 1.0f);
+
+        m_ground_shader->set_uniform_bool("u_use_pbr", ground_options.use_pbr);
+        m_ground_shader->set_uniform_float("u_metallic", ground_options.metallic);
+        m_ground_shader->set_uniform_float("u_roughness", ground_options.roughness);
+        m_ground_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
+        m_ground_shader->set_uniform_vec3f("u_background_color", settings.general.background_color);
 
         m_ground_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
         m_ground_shader->set_uniform_int("u_viewport_height", renderer.frame.height);

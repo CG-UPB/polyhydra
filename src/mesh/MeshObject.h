@@ -27,10 +27,17 @@ namespace volumeshOS::Internal
         // Rendering Variables
         glm::vec4 color             = {1.0f, 1.0f, 1.0f, 1.0f};
         glm::vec4 selection_color   = {1.0f, 1.0f, 1.0f, 0.0f};
+
+        // phong lighting
         float ambient_strength      = 1.0f;
         float diffuse_strength      = 1.0f;
         float specular_strength     = 0.15f;
         float specular_exponent     = 8.0f;
+
+        // pbr lighting
+        bool use_pbr                = false;
+        float metallic              = 0.15;
+        float roughness             = 0.65;
 
         // Toolbox Variables
         float peel_level            = 0.0f;

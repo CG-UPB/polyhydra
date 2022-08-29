@@ -316,7 +316,7 @@ namespace volumeshOS::Internal
             return;
         }
         shift_right(30 - ImGui::GetStyle().FramePadding.x);
-        if (ImGuiUtil::begin_menu_with_background("ground", 3))
+        if (ImGuiUtil::begin_menu_with_background("ground", AppState::settings.ground.use_pbr ? 6 : 4))
         {
             ImGuiUtil::menu_item("Ground Color", [&]{
                 auto& solid_color = AppState::settings.ground.solid_color;
@@ -359,6 +359,33 @@ namespace volumeshOS::Internal
                     AppState::settings.ground.height = height;
                 }
             });
+            ImGuiUtil::menu_item("Use PBR", [&]{
+                constexpr const char* lighting_options[] = {
+                        "Phong",
+                        "PBR"
+                };
+                int lighting_model = static_cast<int>(AppState::settings.ground.use_pbr);
+                ImGui::Combo("##Manual Mode SelectionMode:", &lighting_model, lighting_options,
+                             IM_ARRAYSIZE(lighting_options), IM_ARRAYSIZE(lighting_options));
+                AppState::settings.ground.use_pbr = static_cast<bool>(lighting_model);
+            });
+            if (AppState::settings.ground.use_pbr)
+            {
+                ImGuiUtil::menu_item("Metallic", [&]{
+                    float metallic = AppState::settings.ground.metallic;
+                    if (ImGui::SliderFloat("##Metallic", &metallic, 0.04f, 1.0f))
+                    {
+                        AppState::settings.ground.metallic = metallic;
+                    }
+                });
+                ImGuiUtil::menu_item("Roughness", [&]{
+                    float roughness = AppState::settings.ground.roughness;
+                    if (ImGui::SliderFloat("##Roughness", &roughness, 0.0f, 1.0f))
+                    {
+                        AppState::settings.ground.roughness = roughness;
+                    }
+                });
+            }
             ImGuiUtil::end_menu();
         }
     }

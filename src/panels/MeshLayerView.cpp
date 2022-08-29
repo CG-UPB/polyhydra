@@ -139,51 +139,86 @@ namespace volumeshOS::Internal
                 ImGuiUtil::push_bold_font();
                 ImGui::Text("Material");
                 ImGui::PopFont();
-                ImGuiUtil::add_padding_y(0.5f);
-
-                // Phong Settings
 
                 float slider_width = 200.0f;
                 float padding_right = 20.0f;
 
-                // Ambient
-                ImGui::Text("Ambient:");
-                float ambient_value = mesh.get_ambient();
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                if (ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f))
-                {
-                    mesh.set_ambient(ambient_value);
-                }
 
-                // Diffuse
-                ImGui::Text("Diffuse:");
-                float diffuse_value = mesh.get_diffuse();
-                ImGui::SetNextItemWidth(slider_width);
-                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                if (ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f))
-                {
-                    mesh.set_diffuse(diffuse_value);
-                }
+                constexpr const char* lighting_options[] = {
+                        "Phong",
+                        "PBR"
+                };
+                int lighting_model = static_cast<int>(mesh.get_use_pbr());
+                ImGui::Combo("##Manual Mode SelectionMode:", &lighting_model, lighting_options,
+                             IM_ARRAYSIZE(lighting_options), IM_ARRAYSIZE(lighting_options));
+                bool use_pbr = static_cast<bool>(lighting_model);
+                mesh.set_use_pbr(use_pbr);
 
-                // Specular
-                ImGui::Text("Specular:");
-                float specular_value = mesh.get_specular();
-                ImGui::SetNextItemWidth(slider_width);
-                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                if (ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f))
-                {
-                    mesh.set_specular(specular_value);
-                }
+                ImGuiUtil::add_padding_y(0.5f);
 
-                // Specular Exponent
-                ImGui::Text("Specular Exponent:");
-                float specular_exp = mesh.get_specular_coefficient();
-                ImGui::SetNextItemWidth(slider_width);
-                ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
-                if (ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f))
+                if (use_pbr)
                 {
-                    mesh.set_specular_coefficient(specular_exp);
+                    ImGui::Text("Metallic:");
+                    float metallic_value = mesh.get_metallic();
+                    ImGui::SetNextItemWidth(slider_width);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                    if (ImGui::SliderFloat("##Metallic", &metallic_value, 0.04f, 1.0f))
+                    {
+                        mesh.set_metallic(metallic_value);
+                    }
+
+                    ImGui::Text("Roughness:");
+                    float roughness_value = mesh.get_roughness();
+                    ImGui::SetNextItemWidth(slider_width);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                    if (ImGui::SliderFloat("##Roughness", &roughness_value, 0.04f, 1.0f))
+                    {
+                        mesh.set_roughness(roughness_value);
+                    }
+                }
+                else
+                {
+                    // Ambient
+                    ImGui::Text("Ambient:");
+                    float ambient_value = mesh.get_ambient();
+                    ImGui::SetNextItemWidth(slider_width);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                    if (ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f))
+                    {
+                        mesh.set_ambient(ambient_value);
+                    }
+
+                    // Diffuse
+                    ImGui::Text("Diffuse:");
+                    float diffuse_value = mesh.get_diffuse();
+                    ImGui::SetNextItemWidth(slider_width);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                    if (ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f))
+                    {
+                        mesh.set_diffuse(diffuse_value);
+                    }
+
+                    // Specular
+                    ImGui::Text("Specular:");
+                    float specular_value = mesh.get_specular();
+                    ImGui::SetNextItemWidth(slider_width);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                    if (ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f))
+                    {
+                        mesh.set_specular(specular_value);
+                    }
+
+                    // Specular Exponent
+                    ImGui::Text("Specular Exponent:");
+                    float specular_exp = mesh.get_specular_coefficient();
+                    ImGui::SetNextItemWidth(slider_width);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
+                    if (ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f))
+                    {
+                        mesh.set_specular_coefficient(specular_exp);
+                    }
                 }
                 ImGui::EndPopup();
             }
@@ -201,6 +236,7 @@ namespace volumeshOS::Internal
         // If there is at least one mesh, the Active Mesh Settings (Slicing, Peeling, etc.) are available
         if (mesh.is_valid())
         {
+
             auto cursor_pos = ImGui::GetCursorPos();
 
             if (ImGui::CollapsingHeader(mesh.get_name().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))

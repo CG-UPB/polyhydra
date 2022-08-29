@@ -74,10 +74,19 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
             m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+
             m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
             m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
             m_mesh_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
             m_mesh_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
+
+            m_mesh_shader->set_uniform_bool("u_use_pbr", mesh->get_data().use_pbr);
+            m_mesh_shader->set_uniform_float("u_metallic", mesh->get_data().metallic);
+            m_mesh_shader->set_uniform_float("u_roughness", mesh->get_data().roughness);
+            m_mesh_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
+            m_mesh_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
+            m_mesh_shader->set_uniform_vec3f("u_background_color", settings.general.background_color);
+
             m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);

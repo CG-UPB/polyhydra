@@ -214,6 +214,18 @@ namespace volumeshOS
     // Set parameters for the phong lighting model of a mesh
     void set_phong(const VMesh& mesh, float ambient, float diffuse, float specular, float coefficient);
 
+    void set_use_pbr(const VMesh& mesh, bool use_pbr);
+
+    void set_metallic(const VMesh& mesh, float metallic);
+
+    void set_roughness(const VMesh& mesh, float roughness);
+
+    bool get_use_pbr(const VMesh& mesh);
+
+    float get_metallic(const VMesh& mesh);
+
+    float get_roughness(const VMesh& mesh);
+
     // Set the position of a mesh
     void set_position(const VMesh& mesh, float x, float y, float z);
 
@@ -810,6 +822,21 @@ namespace volumeshOS
             volumeshOS::set_phong(*this, ambient, diffuse, specular, coefficient);
         }
 
+        inline void set_use_pbr(bool use_pbr) const
+        {
+            volumeshOS::set_use_pbr(*this, use_pbr);
+        }
+
+        inline void set_metallic(float metallic) const
+        {
+            volumeshOS::set_metallic(*this, metallic);
+        }
+
+        inline void set_roughness(float roughness) const
+        {
+            volumeshOS::set_roughness(*this, roughness);
+        }
+
         // Set the position of a mesh
         inline void set_position(float x, float y, float z) const
         {
@@ -948,6 +975,21 @@ namespace volumeshOS
         [[nodiscard]] inline float get_specular_coefficient() const
         {
             return volumeshOS::get_specular_coefficient(*this);
+        }
+
+        [[nodiscard]] inline float get_use_pbr() const
+        {
+            return volumeshOS::get_use_pbr(*this);
+        }
+
+        [[nodiscard]] inline float get_metallic() const
+        {
+            return volumeshOS::get_metallic(*this);
+        }
+
+        [[nodiscard]] inline float get_roughness() const
+        {
+            return volumeshOS::get_roughness(*this);
         }
 
         // Returns the position of a mesh
