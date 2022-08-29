@@ -458,6 +458,7 @@ void main()
     {
         result *= 1.0 - shadow * 0.5;
     }
+    result *= ao_factor;
 
     FragColor = vec4(result, alpha);
 }
