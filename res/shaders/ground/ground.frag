@@ -454,6 +454,10 @@ void main()
         vec3 light = normalize(u_light_pos - v_pos);
         result = calculate_pbr_lighting(color, n, light, v, ao_factor, shadow);
     }
+    else
+    {
+        result *= 1.0 - shadow * 0.5;
+    }
 
     FragColor = vec4(result, alpha);
 }
