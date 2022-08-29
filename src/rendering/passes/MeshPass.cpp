@@ -24,6 +24,8 @@ namespace volumeshOS::Internal
                 glFrontFace(GL_CCW);
                 glCullFace(GL_BACK);
             }
+//            glEnable(GL_POLYGON_OFFSET_FILL);
+//            glPolygonOffset(0.001, -1.0);
 
             glDisable(GL_BLEND);
 //        glEnable(GL_BLEND);
@@ -87,8 +89,12 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
 
-//            m_bias_min = 0.005f;
-//            m_bias_max = 0.04f;
+//            m_bias_min = 0.00000001f;
+//            m_bias_max = 0.000003f;
+
+            m_bias_min = 0.0000001f;
+            m_bias_max = 0.0002f;
+
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
             m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);
             m_mesh_shader->set_uniform_float("u_bias_modifier", m_bias_modifier);

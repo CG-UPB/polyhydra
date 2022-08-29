@@ -261,10 +261,10 @@ void main()
         // calculate bias (depending on cascade level)
         float light_angle = clamp(dot(normalize(v_normal), -l), 0.0, 1.0);
         //shadow = max(light_angle, 0.0);
-        float bias = max(u_bias_max * (1.0 - light_angle) * 10.0, u_bias_min * 10.0);
+        float bias = max(u_bias_max * (1.0 - tan(light_angle) ), u_bias_min );
 
-//        bias = 0.005 * tan(light_angle);
-//        bias = clamp(bias, 0, 0.01);
+//        bias = u_bias_max * tan(light_angle);
+//        bias = clamp(bias, 0, 0.0001);
         shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
     }
 

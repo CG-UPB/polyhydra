@@ -76,7 +76,7 @@ namespace volumeshOS::Internal
         glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
         glViewport(0, 0, m_width, m_height);
         glClear(GL_DEPTH_BUFFER_BIT);
-        glCullFace(GL_FRONT);  // peter panning
+        //glCullFace(GL_FRONT);  // peter panning
 
 
         for (const auto& mesh: renderer.render_list)
