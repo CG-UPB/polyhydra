@@ -121,7 +121,7 @@ namespace volumeshOS::Internal
                     AppState::settings.ground.use_pbr = use_pbr;
                     for (const auto mesh : volumeshOS::get_meshes())
                     {
-                        mesh.use_pbr(use_pbr);
+                        mesh.set_lighting_mode(static_cast<LightingMode>(use_pbr));
                     }
                     AppState::settings.use_global_pbr = use_pbr;
                 }

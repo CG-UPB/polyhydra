@@ -57,10 +57,10 @@ namespace volumeshOS
 
     // Set Background color
     template<typename Vec3T>
-    void set_background_color(const Vec3T& color);
+    void set_sky_color(const Vec3T& color);
 
     template<typename Vec3T>
-    Vec3T& get_background_color();
+    Vec3T& get_sky_color();
 
 
     /* SELECTION */

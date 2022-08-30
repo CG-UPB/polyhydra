@@ -104,7 +104,7 @@ namespace volumeshOS
             }
         });
         focus_camera_on_mesh(VMesh(id));
-        vmesh.use_pbr(Internal::AppState::settings.use_global_pbr);
+        vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
         return vmesh;
     }
 
@@ -126,7 +126,7 @@ namespace volumeshOS
             }
         });
         focus_camera_on_mesh(VMesh(id));
-        vmesh.use_pbr(Internal::AppState::settings.use_global_pbr);
+        vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
         return vmesh;
     }
 
@@ -148,7 +148,7 @@ namespace volumeshOS
             }
         });
         focus_camera_on_mesh(VMesh(id));
-        vmesh.use_pbr(Internal::AppState::settings.use_global_pbr);
+        vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
         return vmesh;
     }
 
@@ -720,14 +720,14 @@ namespace volumeshOS
 
     void set_lighting_mode(const VMesh& mesh, LightingMode mode)
     {
-//        commands.emplace_back([mesh, mode]{
-//            Internal::AppState::settings;
-//        });
+        commands.emplace_back([mesh, mode]{
+            mesh_list->get_mesh(mesh.get_id())->get_data().use_pbr = mode == LightingMode::PBR;
+        });
     }
 
     LightingMode get_lighting_mode(const VMesh& mesh)
     {
-        return LightingMode::PBR;
+        return mesh_list->get_mesh(mesh.get_id())->get_data().use_pbr ? LightingMode::PBR : LightingMode::PHONG;
     }
 
 

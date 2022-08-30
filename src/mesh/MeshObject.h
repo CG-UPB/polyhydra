@@ -35,7 +35,7 @@ namespace volumeshOS::Internal
         float specular_exponent     = 8.0f;
 
         // pbr lighting
-        bool use_pbr                = false;
+        bool use_pbr                = true;
         float metallic              = 0.15;
         float roughness             = 0.65;
 

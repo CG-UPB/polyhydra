@@ -37,7 +37,7 @@ namespace volumeshOS::Internal
         float height            = -5.0f;
         int size                = 1000;
         int tiles               = 200;
-        bool use_pbr            = false;
+        bool use_pbr            = true;
         float metallic          = 0.1f;
         float roughness         = 0.65f;
     };
@@ -85,7 +85,7 @@ namespace volumeshOS::Internal
             int num_shadow_cascades                 = 8;
             float wireframe_size                    = 0.35f;
             float vertex_size                       = 0.4f;
-            bool use_global_pbr                     = false;
+            bool use_global_pbr                     = true;
         } settings;
 
         static void restore_default_settings()
