@@ -51,9 +51,10 @@ namespace volumeshOS::Internal
         [[nodiscard]] glm::vec3 get_right() const;
 
         void set_position(glm::vec3 position);
-        void set_view_direction(glm::vec3 direction);
+        glm::vec3 get_position() const;
         void set_target(glm::vec3 target);
-        void set_mode(Internal::CameraMode mode);
+        glm::vec3 get_target() const;
+        void set_mode(CameraMode mode);
         CameraMode get_mode();
 
         // Matrices
@@ -88,8 +89,8 @@ namespace volumeshOS::Internal
 
     private:
 
-        Internal::CameraMode m_mode = CameraMode::FLY;
-        Internal::CameraMode new_mode = CameraMode::FLY;
+        CameraMode m_mode = CameraMode::FLY;
+        CameraMode new_mode = CameraMode::FLY;
 
         float m_vertical_speed = 0.5f;
         float m_horizontal_speed = 0.5f;

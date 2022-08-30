@@ -45,6 +45,8 @@ namespace volumeshOS::Internal
 
         /* SelectionMode */
 
+        void reset_selection(MeshID m_id);
+
         // set EntityType with its handle selected for a specific mesh
         void select(EntityType type, MeshID m_id, HandleID h_id);
 

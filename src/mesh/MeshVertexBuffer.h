@@ -233,6 +233,8 @@ namespace volumeshOS::Internal
 
         float get_cell_isolate_value(int cell_id);
 
+        void reset_selection();
+
         void reset_isolation();
 
         void reset_digging();

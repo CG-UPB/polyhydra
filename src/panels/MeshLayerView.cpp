@@ -33,7 +33,7 @@ namespace volumeshOS::Internal
             }
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
-                volumeshOS::focus_camera(VMesh(active_mesh_id));
+                volumeshOS::focus_camera_on_mesh(VMesh(active_mesh_id));
             }
 
             Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active now. The filter functions of "
@@ -150,15 +150,15 @@ namespace volumeshOS::Internal
                         "Phong",
                         "PBR"
                 };
-                int lighting_model = static_cast<int>(mesh.get_use_pbr());
+                int lighting_model = static_cast<int>(mesh.get_lighting_mode());
                 ImGui::Combo("##Manual Mode SelectionMode:", &lighting_model, lighting_options,
                              IM_ARRAYSIZE(lighting_options), IM_ARRAYSIZE(lighting_options));
-                bool use_pbr = static_cast<bool>(lighting_model);
-                mesh.set_use_pbr(use_pbr);
+                LightingMode mode = static_cast<LightingMode>(lighting_model);
+                mesh.set_lighting_mode(mode);
 
                 ImGuiUtil::add_padding_y(0.5f);
 
-                if (use_pbr)
+                if (mode == LightingMode::PBR)
                 {
                     ImGui::Text("Metallic:");
                     float metallic_value = mesh.get_metallic();
@@ -386,7 +386,7 @@ namespace volumeshOS::Internal
                                                ImGuiSliderFlags_Logarithmic))
                         {
                             mesh.set_cell_rounding(actual_rounding_size);
-                            mesh.activate_rounding((actual_rounding_size != 0.0f));
+                            mesh.use_rounding((actual_rounding_size != 0.0f));
                         }
                     });
 

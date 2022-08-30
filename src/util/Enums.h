@@ -1,6 +1,6 @@
 #pragma once
 
-namespace volumeshOS::Internal
+namespace volumeshOS
 {
     enum class CameraMode
     {
@@ -39,6 +39,12 @@ namespace volumeshOS::Internal
         FACE,
         CELL,
         ALL
+    };
+
+    enum class LightingMode
+    {
+        PHONG,
+        PBR
     };
 
 }

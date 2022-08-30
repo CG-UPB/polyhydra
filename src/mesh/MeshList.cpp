@@ -344,6 +344,14 @@ namespace volumeshOS::Internal
     }
     */
 
+    void MeshList::reset_selection(MeshID m_id)
+    {
+        auto f = [](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_mvb()->reset_selection();
+        };
+        execute_for_mesh(f, m_id);
+    }
+
     void MeshList::select(EntityType type, MeshID m_id, HandleID h_id)
     {
         auto f = [type, h_id](const std::shared_ptr<MeshObject>& mesh) -> void{

@@ -115,7 +115,7 @@ namespace volumeshOS::Internal
                                 "Flat",
                                 "Phong"
                         };
-                ImGui::Combo("##Manual Mode SelectionMode:", &rendering_mode, element_mode_types,
+                ImGui::Combo("##Manual Mode RenderingMode:", &rendering_mode, element_mode_types,
                              IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
                 AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
             });
