@@ -159,6 +159,7 @@ namespace volumeshOS
             }
         });
         focus_camera(VMesh(id));
+        set_use_pbr(vmesh, Internal::AppState::settings.use_global_pbr);
         return vmesh;
     }
 
@@ -180,6 +181,7 @@ namespace volumeshOS
             }
         });
         focus_camera(VMesh(id));
+        set_use_pbr(vmesh, Internal::AppState::settings.use_global_pbr);
         return vmesh;
     }
 
@@ -201,6 +203,7 @@ namespace volumeshOS
             }
         });
         focus_camera(VMesh(id));
+        set_use_pbr(vmesh, Internal::AppState::settings.use_global_pbr);
         return vmesh;
     }
 
@@ -711,7 +714,7 @@ namespace volumeshOS
     {
         commands.emplace_back([color]{
             auto col = Internal::to_glm_vec3(color);
-            Internal::AppState::settings.general.background_color = col;
+            Internal::AppState::settings.sky.sky_color = col;
         });
     }
 
@@ -1112,6 +1115,21 @@ namespace volumeshOS
         commands.emplace_back([shape, base_width]{
             auto* arrow = shapes->get_shape_and_update_buffers<Internal::ArrowShape>(shape.get_id());
             arrow->base_width_percentage = base_width;
+        });
+    }
+
+    void set_theme(Theme theme)
+    {
+        commands.emplace_back([theme]{
+            switch (theme)
+            {
+                case Theme::Light:
+                    window->load_light_mode();
+                    break;
+                case Theme::Dark:
+                    window->load_dark_mode();
+                    break;
+            }
         });
     }
 

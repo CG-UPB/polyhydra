@@ -17,7 +17,14 @@ namespace volumeshOS::Internal
     struct LightOptions
     {
         glm::vec3 direction     = {0.5f, 1.0f, 1.0f};
-        glm::vec3 color         = {1.0f, 1.0f, 1.0f};
+        glm::vec3 color         = {0.94f, 0.86f, 0.75f};
+    };
+
+    struct SkyOptions
+    {
+        glm::vec3 sky_color     = {0.24f, 0.6f, 0.77f};
+        float fog_density       = 0.04f;
+        glm::vec3 fog_color     = {0.5f, 0.6f, 0.7f};
     };
 
     struct GroundOptions
@@ -26,7 +33,7 @@ namespace volumeshOS::Internal
         bool solid              = true;
         bool grid               = true;
         glm::vec3 solid_color   = {1.0, 1.0, 1.0};
-        glm::vec3 grid_color    = {0.7, 0.7, 0.7};
+        glm::vec3 grid_color    = {0.67, 0.67, 0.67};
         float height            = -5.0f;
         int size                = 1000;
         int tiles               = 200;
@@ -45,13 +52,9 @@ namespace volumeshOS::Internal
         float blur_sharpness    = 1.0f;
     };
 
-    struct GeneralOptions
-    {
-        glm::vec3 background_color = {1.0f, 1.0f, 1.0f};
-    };
-
     struct PostProcessingOptions
     {
+        bool active         = true;
         float gamma         = 2.2f;
         float saturation    = 1.0f;
         float contrast      = 1.0f;
@@ -65,11 +68,11 @@ namespace volumeshOS::Internal
             TransparencyMode transparency_mode      = TransparencyMode::DEPTH_PEELING;
             SelectionMode selection_mode            = SelectionMode::OFF;
             SSAOMode ssao_mode                      = SSAOMode::QUALITY;
-            GeneralOptions general                  = {};
             SSAOOptions ssao_custom                 = {};
             GroundOptions ground                    = {};
             CameraOptions camera                    = {};
             LightOptions light                      = {};
+            SkyOptions sky                          = {};
             PostProcessingOptions post_processing   = {};
             bool shapes_active                      = true;
             bool selection_active                   = false;
@@ -82,6 +85,7 @@ namespace volumeshOS::Internal
             int num_shadow_cascades                 = 8;
             float wireframe_size                    = 0.35f;
             float vertex_size                       = 0.4f;
+            bool use_global_pbr                     = false;
         } settings;
 
         static void restore_default_settings()

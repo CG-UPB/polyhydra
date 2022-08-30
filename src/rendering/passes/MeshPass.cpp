@@ -85,7 +85,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_roughness", mesh->get_data().roughness);
             m_mesh_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
             m_mesh_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
-            m_mesh_shader->set_uniform_vec3f("u_background_color", settings.general.background_color);
+            m_mesh_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
 
             m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);

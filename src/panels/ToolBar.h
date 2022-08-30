@@ -39,6 +39,7 @@ namespace volumeshOS::Internal
         void show_camera_menu();
         static void show_light_menu();
         void show_post_processing_menu();
+        static void show_sky_menu();
 
         static void show_ground_menu();
         static void show_shadow_menu();

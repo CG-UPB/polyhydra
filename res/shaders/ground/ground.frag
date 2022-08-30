@@ -44,6 +44,9 @@ uniform mat4 u_view;
 uniform int u_viewport_width;
 uniform int u_viewport_height;
 
+uniform float u_near;
+uniform float u_far;
+
 uniform float u_bias_min;
 uniform float u_bias_max;
 uniform float u_bias_modifier;
@@ -336,6 +339,12 @@ vec3 calculate_pbr_lighting(vec3 albedo, vec3 n, vec3 l, vec3 v, float ao, float
     return result;
 }
 
+float linearize_depth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // back to NDC
+    return (2.0 * u_near * u_far) / (u_far + u_near - z * (u_far - u_near));
+}
+
 void main()
 {
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
@@ -458,6 +467,7 @@ void main()
     {
         result *= 1.0 - shadow * 0.5;
     }
+    result = mix(result, u_light_color, linearize_depth(gl_FragCoord.z) / u_far - 0.5);
     result *= ao_factor;
 
     FragColor = vec4(result, alpha);

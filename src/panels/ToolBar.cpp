@@ -40,18 +40,19 @@ namespace volumeshOS::Internal
         show_general_menu();
         show_selection_menu();
         show_camera_menu();
+        show_sky_menu();
         show_light_menu();
-        show_post_processing_menu();
+        show_ground_menu();
 
         ImGui::Separator();
         ImGuiUtil::push_bold_font();
         ImGui::Text("Graphics");
         ImGui::PopFont();
 
-        show_ground_menu();
         show_shadow_menu();
         show_ambient_occlusion_menu();
         show_transparency_menu();
+        show_post_processing_menu();
 
         ImGui::End();
     }
@@ -104,8 +105,27 @@ namespace volumeshOS::Internal
             return;
         }
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
-        if (ImGuiUtil::begin_menu_with_background("rendering modes", 3))
+        if (ImGuiUtil::begin_menu_with_background("rendering modes", 2))
         {
+            ImGuiUtil::menu_item("Lighting Model", [&]{
+                int lighting_model = static_cast<int>(AppState::settings.use_global_pbr);
+                constexpr const char* lighting_model_options[] =
+                        {
+                                "Phong",
+                                "PBR"
+                        };
+                if (ImGui::Combo("##Lighting Model", &lighting_model, lighting_model_options,
+                                 IM_ARRAYSIZE(lighting_model_options), IM_ARRAYSIZE(lighting_model_options)))
+                {
+                    bool use_pbr = static_cast<bool>(lighting_model);
+                    AppState::settings.ground.use_pbr = use_pbr;
+                    for (const auto mesh : volumeshOS::get_meshes())
+                    {
+                        mesh.set_use_pbr(use_pbr);
+                    }
+                    AppState::settings.use_global_pbr = use_pbr;
+                }
+            });
             ImGuiUtil::menu_item("Mode", [&]{
                 int rendering_mode = static_cast<int>(AppState::settings.rendering_mode);
                 constexpr const char* element_mode_types[] =
@@ -115,20 +135,9 @@ namespace volumeshOS::Internal
                                 "Flat",
                                 "Phong"
                         };
-                ImGui::Combo("##Manual Mode SelectionMode:", &rendering_mode, element_mode_types,
+                ImGui::Combo("##Manual Mode SelectionMode", &rendering_mode, element_mode_types,
                              IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
                 AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
-            });
-            ImGuiUtil::menu_item("Background", [&]{
-                auto& bg_color = settings.general.background_color;
-                float new_bg_color[3];
-                new_bg_color[0] = bg_color.r;
-                new_bg_color[1] = bg_color.g;
-                new_bg_color[2] = bg_color.b;
-                if (ImGui::ColorEdit3("##Background", new_bg_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
-                {
-                    bg_color = glm::vec3(new_bg_color[0], new_bg_color[1], new_bg_color[2]);
-                }
             });
             ImGuiUtil::end_menu();
         }
@@ -279,12 +288,14 @@ namespace volumeshOS::Internal
     void ToolBar::show_post_processing_menu()
     {
         auto& settings = AppState::settings;
-        auto x = ImGui::GetCursorScreenPos().x;
+        shift_right(-ImGui::GetStyle().FramePadding.x);
+        ImGui::Checkbox("###Post Processing", &settings.post_processing.active);
+        ImGui::SameLine();
         if (!ImGui::CollapsingHeader("Post Processing"))
         {
             return;
         }
-        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        shift_right(30 - ImGui::GetStyle().FramePadding.x);
         if (ImGuiUtil::begin_menu_with_background("post", 3))
         {
             ImGuiUtil::menu_item("Gamma", [&]{
@@ -300,22 +311,56 @@ namespace volumeshOS::Internal
         }
     }
 
+    void ToolBar::show_sky_menu()
+    {
+        auto& settings = AppState::settings;
+        auto x = ImGui::GetCursorScreenPos().x;
+        if (!ImGui::CollapsingHeader("Sky"))
+        {
+            return;
+        }
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        if (ImGuiUtil::begin_menu_with_background("sky", 3))
+        {
+            ImGuiUtil::menu_item("Sky Color", [&]{
+                auto& bg_color = settings.sky.sky_color;
+                float new_bg_color[3];
+                new_bg_color[0] = bg_color.r;
+                new_bg_color[1] = bg_color.g;
+                new_bg_color[2] = bg_color.b;
+                if (ImGui::ColorEdit3("##Sky Color", new_bg_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                {
+                    bg_color = glm::vec3(new_bg_color[0], new_bg_color[1], new_bg_color[2]);
+                }
+            });
+            ImGuiUtil::menu_item("Fog Density", [&]{
+                ImGui::SliderFloat("##Fog Density", &AppState::settings.sky.fog_density, 0.0f, 2.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            });
+            ImGuiUtil::menu_item("Fog Color", [&]{
+                auto& color = AppState::settings.sky.fog_color;
+                float new_color[3];
+                new_color[0] = color.r;
+                new_color[1] = color.g;
+                new_color[2] = color.b;
+                if (ImGui::ColorEdit3("##Fog Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                {
+                    color = glm::vec3(new_color[0], new_color[1], new_color[2]);
+                }
+            });
+            ImGuiUtil::end_menu();
+        }
+    }
+
 
     void ToolBar::show_ground_menu()
     {
         auto& settings = AppState::settings;
-        bool visible = settings.ground.visible;
-        shift_right(-ImGui::GetStyle().FramePadding.x);
-        if(ImGui::Checkbox("###Ground", &visible))
-        {
-            settings.ground.visible = visible;
-        }
-        ImGui::SameLine();
+        auto x = ImGui::GetCursorScreenPos().x;
         if (!ImGui::CollapsingHeader("Ground"))
         {
             return;
         }
-        shift_right(30 - ImGui::GetStyle().FramePadding.x);
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("ground", AppState::settings.ground.use_pbr ? 6 : 4))
         {
             ImGuiUtil::menu_item("Ground Color", [&]{

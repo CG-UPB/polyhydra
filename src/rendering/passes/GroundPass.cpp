@@ -123,11 +123,13 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_float("u_metallic", ground_options.metallic);
         m_ground_shader->set_uniform_float("u_roughness", ground_options.roughness);
         m_ground_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
-        m_ground_shader->set_uniform_vec3f("u_background_color", settings.general.background_color);
+        m_ground_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
 
         m_ground_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
         m_ground_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
+        m_ground_shader->set_uniform_float("u_near", cam->near);
+        m_ground_shader->set_uniform_float("u_far", cam->far);
 
         float bias_min = 0.000005;
         float bias_max = 0.004;

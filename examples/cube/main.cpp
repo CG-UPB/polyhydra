@@ -6,6 +6,7 @@ int main()
     volumeshOS::VMesh mesh;
     std::vector<volumeshOS::VArrow> arrows;
     float len = 0.25f;
+    volumeshOS::set_theme(volumeshOS::Theme::Dark);
     volumeshOS::on_gui_render([&mesh, &arrows, &len](){
         ImGui::Begin("MyPanel");
         if (ImGui::Button("Load Mesh"))

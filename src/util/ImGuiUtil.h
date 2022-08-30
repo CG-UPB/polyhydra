@@ -72,7 +72,7 @@ namespace volumeshOS::Internal
             ImGui::PushFont(UIUtil::get_bold_font());
         }
 
-        static void add_background_rect(int num_items, uint32_t color = IM_COL32(240, 240, 240, 255))
+        static void add_background_rect(int num_items, uint32_t color = ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_Tab)))
         {
             ImVec2 p = ImGui::GetCursorScreenPos();
             p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x;
@@ -83,7 +83,7 @@ namespace volumeshOS::Internal
             auto pos = ImGui::GetCursorPos();
             ImGui::Dummy({1, (ImGui::GetFrameHeight() + ImGui::GetStyle().CellPadding.y * 2) * (float) num_items});
             float border = 2.0f;
-            auto border_color = IM_COL32(200, 200, 200, 255);
+            auto border_color = ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_Border));
             ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5 + border), border_color, ImGui::GetStyle().FrameRounding);
             ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), color, ImGui::GetStyle().FrameRounding);
             ImGui::SetCursorPos({pos.x + ImGui::GetStyle().WindowPadding.x * 0.5f, pos.y});
