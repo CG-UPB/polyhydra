@@ -76,7 +76,7 @@ namespace volumeshOS::Internal
         {
             ImVec2 p = ImGui::GetCursorScreenPos();
             p.x = p.x -  ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().FramePadding.x;
-            p.y = p.y - 2 *  ImGui::GetStyle().FramePadding.y - 1;
+            p.y = p.y + ImGui::GetStyle().ItemSpacing.y + 1.0f;
             ImVec2 c = ImGui::GetContentRegionMax();
             c.x = c.x + ImGui::GetStyle().FramePadding.x;
             c.y = c.y - ImGui::GetStyle().WindowPadding.y;
@@ -84,9 +84,9 @@ namespace volumeshOS::Internal
             ImGui::Dummy({1, (ImGui::GetFrameHeight() + ImGui::GetStyle().CellPadding.y * 2) * (float) num_items});
             float border = 2.0f;
             auto border_color = ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_Border));
-            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5 + border), border_color, ImGui::GetStyle().FrameRounding);
-            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y - 5), color, ImGui::GetStyle().FrameRounding);
-            ImGui::SetCursorPos({pos.x + ImGui::GetStyle().WindowPadding.x * 0.5f, pos.y});
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y + ImGui::GetStyle().WindowPadding.y - 5 + border), border_color, ImGui::GetStyle().FrameRounding);
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y), ImVec2(c.x, ImGui::GetCursorScreenPos().y + ImGui::GetStyle().WindowPadding.y - 5), color, ImGui::GetStyle().FrameRounding);
+            ImGui::SetCursorPos({pos.x + ImGui::GetStyle().WindowPadding.x * 0.5f, pos.y + ImGui::GetStyle().WindowPadding.y * 0.5f});
         }
 
         static bool begin_menu_with_background(const std::string& name, int item_count, ImGuiTableFlags flags = ImGuiTableFlags_SizingStretchSame)
@@ -106,6 +106,20 @@ namespace volumeshOS::Internal
         {
             ImGui::EndTable();
             ImGui::EndGroup();
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y * 0.5f);
+        }
+
+        template<typename VoidFunc>
+        static void menu_item_filled(const std::string& name, const VoidFunc& item)
+        {
+            ImGui::PushID(name.c_str());
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%s", name.c_str());
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            item();
+            ImGui::PopID();
         }
 
         template<typename VoidFunc>
@@ -116,7 +130,6 @@ namespace volumeshOS::Internal
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("%s", name.c_str());
             ImGui::TableSetColumnIndex(1);
-            //ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
             item();
             ImGui::PopID();
         }

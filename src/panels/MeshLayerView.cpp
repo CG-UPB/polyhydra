@@ -318,7 +318,7 @@ namespace volumeshOS::Internal
 
                     });
 
-                    ImGuiUtil::menu_item("Slicer", [&]
+                    ImGuiUtil::menu_item_filled("Slicer", [&]
                     {
                         m_slider_slicer = mesh.get_slice_factor();
                         m_slicer_locked = mesh.get_slice_lock();
@@ -333,7 +333,7 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Peel", [&]
+                    ImGuiUtil::menu_item_filled("Peel", [&]
                     {
 
                         m_slider_peel = mesh.get_peel_level();
@@ -370,7 +370,7 @@ namespace volumeshOS::Internal
 
                     });
 
-                    ImGuiUtil::menu_item("Cell Size", [&]
+                    ImGuiUtil::menu_item_filled("Cell Size", [&]
                     {
                         m_cell_size = mesh.get_cell_size();
                         if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f))
@@ -379,7 +379,7 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Roundings", [&]
+                    ImGuiUtil::menu_item_filled("Roundings", [&]
                     {
                         float actual_rounding_size = mesh.get_cell_rounding();
                         if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f",
@@ -416,7 +416,7 @@ namespace volumeshOS::Internal
 
                     });
 
-                    ImGuiUtil::menu_item("Isolation", [&]
+                    ImGuiUtil::menu_item_filled("Isolation", [&]
                     {
                         auto size = ImVec2(ImGui::CalcTextSize("Deactivate").x + 2 * ImGui::GetStyle().FramePadding.x,
                                            0.0f);

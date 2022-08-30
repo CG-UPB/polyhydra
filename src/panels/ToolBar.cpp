@@ -33,8 +33,10 @@ namespace volumeshOS::Internal
         ImGui::PopFont();
 
 
-        ImGui::SameLine(ImGui::GetWindowWidth() - 38.0f - m_padding_right - 2.0f);
+        ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetStyle().WindowPadding.x * 0.5f + 2.0f);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetStyle().WindowPadding.y * 0.5f);
         show_screenshot_menu();
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y * 0.5f);
 
 
         show_general_menu();
@@ -45,9 +47,11 @@ namespace volumeshOS::Internal
         show_ground_menu();
 
         ImGui::Separator();
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y);
         ImGuiUtil::push_bold_font();
         ImGui::Text("Graphics");
         ImGui::PopFont();
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y);
 
         show_shadow_menu();
         show_ambient_occlusion_menu();
@@ -107,7 +111,8 @@ namespace volumeshOS::Internal
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("rendering modes", 2))
         {
-            ImGuiUtil::menu_item("Lighting Model", [&]{
+            ImGuiUtil::menu_item_filled("Lighting Model", [&]
+            {
                 int lighting_model = static_cast<int>(AppState::settings.use_global_pbr);
                 constexpr const char* lighting_model_options[] =
                         {
@@ -119,14 +124,15 @@ namespace volumeshOS::Internal
                 {
                     bool use_pbr = static_cast<bool>(lighting_model);
                     AppState::settings.ground.use_pbr = use_pbr;
-                    for (const auto mesh : volumeshOS::get_meshes())
+                    for (const auto mesh: volumeshOS::get_meshes())
                     {
                         mesh.set_lighting_mode(static_cast<LightingMode>(use_pbr));
                     }
                     AppState::settings.use_global_pbr = use_pbr;
                 }
             });
-            ImGuiUtil::menu_item("Mode", [&]{
+            ImGuiUtil::menu_item_filled("Mode", [&]
+            {
                 int rendering_mode = static_cast<int>(AppState::settings.rendering_mode);
                 constexpr const char* element_mode_types[] =
                         {
@@ -156,7 +162,8 @@ namespace volumeshOS::Internal
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("selection", 3))
         {
-            ImGuiUtil::menu_item("Mode", [&]{
+            ImGuiUtil::menu_item_filled("Mode", [&]
+            {
                 constexpr const char* selection_modes[] =
                         {
                                 "Off", "Vertices", "Edges", "Halffaces", "Cells", "All"
@@ -171,7 +178,8 @@ namespace volumeshOS::Internal
                 AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
                 AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
             });
-            ImGuiUtil::menu_item("Select by ID", [&]{
+            ImGuiUtil::menu_item_filled("Select by ID", [&]
+            {
                 constexpr const char* element_selection_types[] =
                         {
                                 "Face", "Vertex", "Edge", "Cell"
@@ -179,7 +187,8 @@ namespace volumeshOS::Internal
                 ImGui::Combo("##SelectionType", &m_manual_selection_type, element_selection_types,
                              IM_ARRAYSIZE(element_selection_types), IM_ARRAYSIZE(element_selection_types));
             });
-            ImGuiUtil::menu_item("", [&]{
+            ImGuiUtil::menu_item_filled("", [&]
+            {
                 ImGui::InputInt("##ManualSelectionID", &m_manual_selection_id);
                 if (m_manual_selection_id != m_previous_manual_selection_id && m_manual_selection_id >= 0)
                 {
@@ -201,13 +210,14 @@ namespace volumeshOS::Internal
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("camera", 3))
         {
-            ImGuiUtil::menu_item("Mode", [&]{
+            ImGuiUtil::menu_item_filled("Mode", [&]
+            {
                 constexpr const char* camera_modes[] =
                         {
                                 "ORBIT", "FLY"
                         };
                 int camera_mode = static_cast<int>(m_camera->get_mode());
-                if(ImGui::Combo(
+                if (ImGui::Combo(
                         "##CameraMode",
                         &camera_mode,
                         camera_modes,
@@ -218,7 +228,8 @@ namespace volumeshOS::Internal
                     m_camera->set_mode(static_cast<CameraMode>(camera_mode));
                 }
             });
-            ImGuiUtil::menu_item("Position", [&]{
+            ImGuiUtil::menu_item_filled("Position", [&]
+            {
                 auto& camera_position = m_camera->position;
                 auto& camera_target = m_camera->target;
                 auto camera_dir = (camera_target - camera_position);
@@ -229,7 +240,7 @@ namespace volumeshOS::Internal
                 if (ImGui::DragFloat3("##CameraPosition", position, 0.1f, -100.0f, 100.0f, "%.1f"))
                 {
                     auto pos = glm::vec3(position[0], position[1], position[2]);
-                    if(m_camera->get_mode() == CameraMode::FLY)
+                    if (m_camera->get_mode() == CameraMode::FLY)
                     {
                         camera_target = pos + camera_dir;
                     }
@@ -237,7 +248,8 @@ namespace volumeshOS::Internal
 
                 }
             });
-            ImGuiUtil::menu_item("FOV", [&]{
+            ImGuiUtil::menu_item_filled("FOV", [&]
+            {
                 float fov = m_camera->zoom;
                 if (ImGui::DragFloat("##CameraFOV", &fov, 1.0f, 1.0f, 90.0f))
                 {
@@ -259,7 +271,8 @@ namespace volumeshOS::Internal
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("light", 2))
         {
-            ImGuiUtil::menu_item("Direction", [&]{
+            ImGuiUtil::menu_item_filled("Direction", [&]
+            {
                 auto& light_direction = settings.light.direction;
                 float direction[4];
                 direction[0] = light_direction.r;
@@ -270,13 +283,15 @@ namespace volumeshOS::Internal
                     light_direction = glm::vec3(direction[0], direction[1], direction[2]);
                 }
             });
-            ImGuiUtil::menu_item("Color", [&]{
+            ImGuiUtil::menu_item_filled("Color", [&]
+            {
                 auto& light_color = settings.light.color;
                 float new_color1[4];
                 new_color1[0] = light_color.r;
                 new_color1[1] = light_color.g;
                 new_color1[2] = light_color.b;
-                if (ImGui::ColorEdit3("Light Color", new_color1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                if (ImGui::ColorEdit3("Light Color", new_color1,
+                                      ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
                 {
                     light_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
                 }
@@ -295,16 +310,19 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(30 - ImGui::GetStyle().FramePadding.x);
+        shift_right(46 - ImGui::GetStyle().FramePadding.x);
         if (ImGuiUtil::begin_menu_with_background("post", 3))
         {
-            ImGuiUtil::menu_item("Gamma", [&]{
+            ImGuiUtil::menu_item_filled("Gamma", [&]
+            {
                 ImGui::DragFloat("##Gamma", &settings.post_processing.gamma, 0.1f, 1.0f, 4.0f, "%.1f");
             });
-            ImGuiUtil::menu_item("Saturation", [&]{
+            ImGuiUtil::menu_item_filled("Saturation", [&]
+            {
                 ImGui::DragFloat("##Saturation", &settings.post_processing.saturation, 0.01f, 0.0f, 2.0f, "%.2f");
             });
-            ImGuiUtil::menu_item("Contrast", [&]{
+            ImGuiUtil::menu_item_filled("Contrast", [&]
+            {
                 ImGui::DragFloat("##Contrast", &settings.post_processing.contrast, 0.01f, 0.0f, 2.0f, "%.2f");
             });
             ImGuiUtil::end_menu();
@@ -322,27 +340,33 @@ namespace volumeshOS::Internal
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("sky", 3))
         {
-            ImGuiUtil::menu_item("Sky Color", [&]{
+            ImGuiUtil::menu_item_filled("Sky Color", [&]
+            {
                 auto& bg_color = settings.sky.sky_color;
                 float new_bg_color[3];
                 new_bg_color[0] = bg_color.r;
                 new_bg_color[1] = bg_color.g;
                 new_bg_color[2] = bg_color.b;
-                if (ImGui::ColorEdit3("##Sky Color", new_bg_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                if (ImGui::ColorEdit3("##Sky Color", new_bg_color,
+                                      ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
                 {
                     bg_color = glm::vec3(new_bg_color[0], new_bg_color[1], new_bg_color[2]);
                 }
             });
-            ImGuiUtil::menu_item("Fog Density", [&]{
-                ImGui::SliderFloat("##Fog Density", &AppState::settings.sky.fog_density, 0.0f, 2.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            ImGuiUtil::menu_item_filled("Fog Density", [&]
+            {
+                ImGui::SliderFloat("##Fog Density", &AppState::settings.sky.fog_density, 0.0f, 2.0f, "%.2f",
+                                   ImGuiSliderFlags_Logarithmic);
             });
-            ImGuiUtil::menu_item("Fog Color", [&]{
+            ImGuiUtil::menu_item_filled("Fog Color", [&]
+            {
                 auto& color = AppState::settings.sky.fog_color;
                 float new_color[3];
                 new_color[0] = color.r;
                 new_color[1] = color.g;
                 new_color[2] = color.b;
-                if (ImGui::ColorEdit3("##Fog Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                if (ImGui::ColorEdit3("##Fog Color", new_color,
+                                      ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
                 {
                     color = glm::vec3(new_color[0], new_color[1], new_color[2]);
                 }
@@ -363,13 +387,15 @@ namespace volumeshOS::Internal
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("ground", AppState::settings.ground.use_pbr ? 6 : 4))
         {
-            ImGuiUtil::menu_item("Ground Color", [&]{
+            ImGuiUtil::menu_item_filled("Ground Color", [&]
+            {
                 auto& solid_color = AppState::settings.ground.solid_color;
                 float new_color[3];
                 new_color[0] = solid_color.r;
                 new_color[1] = solid_color.g;
                 new_color[2] = solid_color.b;
-                if (ImGui::ColorEdit3("##Ground Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                if (ImGui::ColorEdit3("##Ground Color", new_color,
+                                      ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
                 {
                     solid_color = glm::vec3(new_color[0], new_color[1], new_color[2]);
                 }
@@ -380,13 +406,15 @@ namespace volumeshOS::Internal
                     AppState::settings.ground.solid = solid;
                 }
             });
-            ImGuiUtil::menu_item("Grid Color", [&]{
+            ImGuiUtil::menu_item_filled("Grid Color", [&]
+            {
                 auto& grid_color = AppState::settings.ground.grid_color;
                 float new_color[3];
                 new_color[0] = grid_color.r;
                 new_color[1] = grid_color.g;
                 new_color[2] = grid_color.b;
-                if (ImGui::ColorEdit3("##Grid Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                if (ImGui::ColorEdit3("##Grid Color", new_color,
+                                      ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
                 {
                     grid_color = glm::vec3(new_color[0], new_color[1], new_color[2]);
                 }
@@ -397,14 +425,16 @@ namespace volumeshOS::Internal
                     AppState::settings.ground.grid = grid;
                 }
             });
-            ImGuiUtil::menu_item("Height", [&]{
+            ImGuiUtil::menu_item_filled("Height", [&]
+            {
                 float height = AppState::settings.ground.height;
                 if (ImGui::DragFloat("##height", &height, 0.1f, -100.0f, 100.0f, "%.1f"))
                 {
                     AppState::settings.ground.height = height;
                 }
             });
-            ImGuiUtil::menu_item("Use PBR", [&]{
+            ImGuiUtil::menu_item_filled("Use PBR", [&]
+            {
                 constexpr const char* lighting_options[] = {
                         "Phong",
                         "PBR"
@@ -416,14 +446,16 @@ namespace volumeshOS::Internal
             });
             if (AppState::settings.ground.use_pbr)
             {
-                ImGuiUtil::menu_item("Metallic", [&]{
+                ImGuiUtil::menu_item_filled("Metallic", [&]
+                {
                     float metallic = AppState::settings.ground.metallic;
                     if (ImGui::SliderFloat("##Metallic", &metallic, 0.04f, 1.0f))
                     {
                         AppState::settings.ground.metallic = metallic;
                     }
                 });
-                ImGuiUtil::menu_item("Roughness", [&]{
+                ImGuiUtil::menu_item_filled("Roughness", [&]
+                {
                     float roughness = AppState::settings.ground.roughness;
                     if (ImGui::SliderFloat("##Roughness", &roughness, 0.0f, 1.0f))
                     {
@@ -445,10 +477,11 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(30 - ImGui::GetStyle().FramePadding.x);
+        shift_right(46 - ImGui::GetStyle().FramePadding.x);
         if (ImGuiUtil::begin_menu_with_background("shadows", 1))
         {
-            ImGuiUtil::menu_item("Cascades", [&]{
+            ImGuiUtil::menu_item_filled("Cascades", [&]
+            {
                 ImGui::SliderInt("##Cascades", &settings.num_shadow_cascades, 1, 8);
             });
             ImGuiUtil::end_menu();
@@ -466,10 +499,11 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(30 - ImGui::GetStyle().FramePadding.x);
+        shift_right(46 - ImGui::GetStyle().FramePadding.x);
         if (ImGuiUtil::begin_menu_with_background("ssao", settings.ssao_mode == SSAOMode::CUSTOM ? 6 : 1))
         {
-            ImGuiUtil::menu_item("Preset", [&]{
+            ImGuiUtil::menu_item_filled("Preset", [&]
+            {
                 constexpr const char* dropdown_presets[5] = {
                         "Off", "Quality", "Balanced", "Performance", "Custom"
                 };
@@ -487,21 +521,27 @@ namespace volumeshOS::Internal
             {
                 auto& options = settings.ssao_custom;
                 options.active = true;
-                ImGuiUtil::menu_item("Samples", [&]{
+                ImGuiUtil::menu_item_filled("Samples", [&]
+                {
                     static const int s_max_samples = 64;
                     ImGui::SliderInt("##Samples", &options.num_samples, 1, s_max_samples);
                 });
-                ImGuiUtil::menu_item("Radius", [&]{
+                ImGuiUtil::menu_item_filled("Radius", [&]
+                {
                     ImGui::SliderFloat("##Radius", &options.sample_radius, 0.0f, 3.0f);
                 });
-                ImGuiUtil::menu_item("Strength", [&]{
+                ImGuiUtil::menu_item_filled("Strength", [&]
+                {
                     ImGui::SliderFloat("##Strength", &options.strength, 0.0, 10.0);
                 });
-                ImGuiUtil::menu_item("Bias", [&]{
+                ImGuiUtil::menu_item_filled("Bias", [&]
+                {
                     ImGui::SliderFloat("##Bias", &options.z_bias, 0.0f, 0.1f);
                 });
-                ImGuiUtil::menu_item("Blur Sharpness", [&]{
-                    ImGui::SliderFloat("##Blur Sharpness", &options.blur_sharpness, 0.0f, 100.0f, "%.1f", ImGuiSliderFlags_Logarithmic);
+                ImGuiUtil::menu_item_filled("Blur Sharpness", [&]
+                {
+                    ImGui::SliderFloat("##Blur Sharpness", &options.blur_sharpness, 0.0f, 100.0f, "%.1f",
+                                       ImGuiSliderFlags_Logarithmic);
                 });
             }
             ImGuiUtil::end_menu();
@@ -518,12 +558,13 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(30 - ImGui::GetStyle().FramePadding.x);
+        shift_right(46 - ImGui::GetStyle().FramePadding.x);
         auto transparency_mode = settings.transparency_mode;
         if (ImGuiUtil::begin_menu_with_background("transparency",
                                                   transparency_mode == TransparencyMode::DEPTH_PEELING ? 3 : 2))
         {
-            ImGuiUtil::menu_item("Depth Peeling", [&]{
+            ImGuiUtil::menu_item_filled("Depth Peeling", [&]
+            {
                 if (ImGui::RadioButton("##Depth Peeling", transparency_mode == TransparencyMode::DEPTH_PEELING))
                 {
                     settings.transparency_mode = TransparencyMode::DEPTH_PEELING;
@@ -531,11 +572,13 @@ namespace volumeshOS::Internal
             });
             if (transparency_mode == TransparencyMode::DEPTH_PEELING)
             {
-                ImGuiUtil::menu_item("Passes", [&]{
+                ImGuiUtil::menu_item_filled("Passes", [&]
+                {
                     ImGui::SliderInt("##Passes", &settings.num_depth_peeling_passes, 0, 50);
                 });
             }
-            ImGuiUtil::menu_item("Weighted Blended", [&]{
+            ImGuiUtil::menu_item_filled("Weighted Blended", [&]
+            {
                 if (ImGui::RadioButton("##Weighted Blended", transparency_mode == TransparencyMode::WEIGHTED_BLENDED))
                 {
                     settings.transparency_mode = TransparencyMode::WEIGHTED_BLENDED;
