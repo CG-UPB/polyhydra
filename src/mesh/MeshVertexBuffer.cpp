@@ -1122,6 +1122,13 @@ namespace volumeshOS::Internal
         update_attribute(VAO::CYLINDER, Attribute::IS_ISOLATED, value);
     }
 
+    void MeshVertexBuffer::reset_selection()
+    {
+        float value = 0.0f;
+        update_attribute(VAO::MESH_FACE, Attribute::SELECTION, value);
+        update_attribute(VAO::MESH_ROUNDED, Attribute::SELECTION, value);
+    }
+
     float MeshVertexBuffer::get_average_cell_size() const
     {
         return m_average_cell_size;

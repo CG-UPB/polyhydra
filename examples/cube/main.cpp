@@ -3,15 +3,17 @@
 
 int main()
 {
-    volumeshOS::VMesh mesh;
-    std::vector<volumeshOS::VArrow> arrows;
+    using namespace volumeshOS;
+
+    VMesh mesh;
+    std::vector<VArrow> arrows;
     float len = 0.25f;
-    volumeshOS::set_theme(volumeshOS::Theme::Dark);
-    volumeshOS::on_gui_render([&mesh, &arrows, &len](){
+    set_theme(volumeshOS::Theme::Dark);
+    on_gui_render([&mesh, &arrows, &len](){
         ImGui::Begin("MyPanel");
         if (ImGui::Button("Load Mesh"))
         {
-            mesh = volumeshOS::load_from_dialog("Select OVM file");
+            mesh = load_from_dialog("Select OVM file");
         }
         if (ImGui::Button("Add Arrows") && mesh.is_valid())
         {
@@ -23,7 +25,7 @@ int main()
                     auto face = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(hf_it);
                     if (ovm.is_boundary(face))
                     {
-                        auto arrow = mesh.add_shape<volumeshOS::VArrow>(c_it);
+                        auto arrow = mesh.add_shape<VArrow>(c_it);
                         auto center = ovm.barycenter(face);
                         auto normal = -ovm.normal(hf_it);
                         auto n = glm::vec3{normal[0], normal[1], normal[2]};
@@ -38,13 +40,13 @@ int main()
                     }
                 }
             }
-            volumeshOS::log("Added Arrows");
+            log("Added Arrows");
         }
         if (ImGui::Button("Remove shapes"))
         {
-            volumeshOS::remove_shapes();
+            remove_shapes();
             arrows.clear();
-            volumeshOS::warn("Removed Shapes");
+            warn("Removed Shapes");
         }
         if (ImGui::Button("Set boundary color") && mesh.is_valid())
         {
@@ -73,6 +75,14 @@ int main()
 
         ImGui::End();
     });
-    volumeshOS::hide_log_window(true);
-    volumeshOS::open();
+
+    on_cell_select([&](const VMesh vmesh, OpenVolumeMesh::CellHandle ch){
+        log("Cell " + std::to_string(ch.uidx()) + " was selected");
+        return;
+    });
+
+    use_log_window(true);
+    //set_selection_mode(SelectionMode::ALL);
+
+    open();
 }

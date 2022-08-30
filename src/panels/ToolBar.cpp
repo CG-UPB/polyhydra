@@ -121,7 +121,7 @@ namespace volumeshOS::Internal
                     AppState::settings.ground.use_pbr = use_pbr;
                     for (const auto mesh : volumeshOS::get_meshes())
                     {
-                        mesh.set_use_pbr(use_pbr);
+                        mesh.use_pbr(use_pbr);
                     }
                     AppState::settings.use_global_pbr = use_pbr;
                 }
@@ -135,7 +135,7 @@ namespace volumeshOS::Internal
                                 "Flat",
                                 "Phong"
                         };
-                ImGui::Combo("##Manual Mode SelectionMode", &rendering_mode, element_mode_types,
+                ImGui::Combo("##Manual Mode RenderingMode:", &rendering_mode, element_mode_types,
                              IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
                 AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
             });

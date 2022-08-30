@@ -293,14 +293,19 @@ namespace volumeshOS::Internal
         position = pos;
     }
 
-    void Camera::set_view_direction(const glm::vec3 direction)
+    glm::vec3 Camera::get_position() const
     {
-
+        return position;
     }
 
-    void Camera::set_target(glm::vec3 tgt)
+    void Camera::set_target(const glm::vec3 tgt)
     {
-        new_target = tgt;
+        target = tgt;
+    }
+
+    glm::vec3 Camera::get_target() const
+    {
+        return target;
     }
 
     void Camera::apply_changes() const

@@ -28,7 +28,7 @@ namespace volumeshOS
     static int current_mesh_id                             = 0;
     static int current_shape_id                            = 0;
 
-    void initialize()
+    void init()
     {
         window = std::make_unique<Internal::Window>(1280, 720, "volumeshOS");
         window->initialize();
@@ -68,7 +68,7 @@ namespace volumeshOS
     void open()
     {
         // initialize references and data
-        initialize();
+        init();
 
         // render loop
         while (!window->should_close())
@@ -80,7 +80,7 @@ namespace volumeshOS
         // clean up resources
         clean_up();
     }
-    
+
     void close()
     {
         window->close();
@@ -90,6 +90,132 @@ namespace volumeshOS
     void on_gui_render(const std::function<void()>& callback)
     {
         Internal::AppState::callbacks.on_gui_render = callback;
+    }
+
+    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance, const char* name)
+    {
+        int id = next_mesh_id();
+        VMesh vmesh(id);
+        commands.emplace_back([id, instance, name]{
+            mesh_list->add_mesh(id, instance);
+            if (name != nullptr)
+            {
+                mesh_list->set_name(id, name);
+            }
+        });
+        focus_camera_on_mesh(VMesh(id));
+        vmesh.use_pbr(Internal::AppState::settings.use_global_pbr);
+        return vmesh;
+    }
+
+    VMesh load(const std::string& path, const char* name)
+    {
+        int id = next_mesh_id();
+        VMesh vmesh(id);
+        commands.emplace_back([id, path, name]{
+            mesh_list->add_mesh(id, path);
+            if (name != nullptr)
+            {
+                mesh_list->set_name(id, name);
+            }
+            else
+            {
+                FS_NAMESPACE::path file_path(path);
+                auto file_name = file_path.stem().filename().string();
+                mesh_list->set_name(id, file_name);
+            }
+        });
+        focus_camera_on_mesh(VMesh(id));
+        vmesh.use_pbr(Internal::AppState::settings.use_global_pbr);
+        return vmesh;
+    }
+
+    VMesh load(const char* path, const char* name)
+    {
+        int id = next_mesh_id();
+        VMesh vmesh(id);
+        commands.emplace_back([id, path, name]{
+            mesh_list->add_mesh(id, path);
+            if (name != nullptr)
+            {
+                mesh_list->set_name(id, name);
+            }
+            else
+            {
+                FS_NAMESPACE::path file_path(path);
+                auto file_name = file_path.stem().filename().string();
+                mesh_list->set_name(id, file_name);
+            }
+        });
+        focus_camera_on_mesh(VMesh(id));
+        vmesh.use_pbr(Internal::AppState::settings.use_global_pbr);
+        return vmesh;
+    }
+
+    VMesh load_from_dialog(const std::string& title, const char* name)
+    {
+        if (auto file = volumeshOS::file_dialog(title))
+        {
+            return volumeshOS::load(file, name);
+        }
+        return VMesh(-1);
+    }
+
+    void set_focused_mesh(VMesh mesh)
+    {
+        commands.emplace_back([mesh](){
+            mesh_list->set_focused_mesh(mesh.get_id());
+        });
+    }
+
+    VMesh get_focused_mesh()
+    {
+        if(auto m = mesh_list->get_focused_mesh())
+        {
+            return VMesh(m->get_id());
+        }
+        else
+        {
+            return VMesh(-1);
+        }
+    }
+
+    void set_name(const VMesh& mesh, const std::string& name)
+    {
+        commands.emplace_back([mesh, name]{
+            mesh_list->set_name(mesh.get_id(), name);
+        });
+    }
+
+    [[nodiscard]] const std::string& get_name(const VMesh& mesh)
+    {
+        return mesh_list->get_name(mesh.get_id());
+    }
+
+    void set_rendering_mode(RenderingMode mode)
+    {
+        Internal::AppState::settings.rendering_mode = mode;
+    }
+
+    RenderingMode get_rendering_mode()
+    {
+        return Internal::AppState::settings.rendering_mode;
+    }
+
+    template<typename Vec3T>
+    void set_sky_color(const Vec3T& color)
+    {
+        commands.emplace_back([color]{
+            auto col = Internal::to_glm_vec3(color);
+            Internal::AppState::settings.sky.sky_color = col;
+        });
+    }
+
+    template<typename Vec3T>
+    Vec3T get_sky_color()
+    {
+        return Internal::AppState::settings.sky.sky_color;
+
     }
 
     void on_cell_hover(const std::function<void(const VMesh, OpenVolumeMesh::CellHandle)>& callback)
@@ -147,73 +273,234 @@ namespace volumeshOS
         Internal::AppState::callbacks.on_position_select = callback;
     }
 
-    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance, const char* name)
+    void set_camera_mode(CameraMode mode)
     {
-        int id = next_mesh_id();
-        VMesh vmesh(id);
-        commands.emplace_back([id, instance, name]{
-            mesh_list->add_mesh(id, instance);
-            if (name != nullptr)
-            {
-                mesh_list->set_name(id, name);
-            }
+        commands.emplace_back([mode]{
+            camera->set_mode(mode);
         });
-        focus_camera(VMesh(id));
-        set_use_pbr(vmesh, Internal::AppState::settings.use_global_pbr);
-        return vmesh;
     }
 
-    VMesh load(const std::string& path, const char* name)
+    CameraMode get_camera_mode()
     {
-        int id = next_mesh_id();
-        VMesh vmesh(id);
-        commands.emplace_back([id, path, name]{
-            mesh_list->add_mesh(id, path);
-            if (name != nullptr)
-            {
-                mesh_list->set_name(id, name);
-            }
-            else
-            {
-                FS_NAMESPACE::path file_path(path);
-                auto file_name = file_path.stem().filename().string();
-                mesh_list->set_name(id, file_name);
-            }
-        });
-        focus_camera(VMesh(id));
-        set_use_pbr(vmesh, Internal::AppState::settings.use_global_pbr);
-        return vmesh;
+        return camera->get_mode();
     }
 
-    VMesh load(const char* path, const char* name)
+    void set_camera_position(float x, float y, float z)
     {
-        int id = next_mesh_id();
-        VMesh vmesh(id);
-        commands.emplace_back([id, path, name]{
-            mesh_list->add_mesh(id, path);
-            if (name != nullptr)
-            {
-                mesh_list->set_name(id, name);
-            }
-            else
-            {
-                FS_NAMESPACE::path file_path(path);
-                auto file_name = file_path.stem().filename().string();
-                mesh_list->set_name(id, file_name);
-            }
+        commands.emplace_back([x, y, z]{
+            camera->set_position(glm::vec3(x, y, z));
         });
-        focus_camera(VMesh(id));
-        set_use_pbr(vmesh, Internal::AppState::settings.use_global_pbr);
-        return vmesh;
     }
 
-    VMesh load_from_dialog(const std::string& title, const char* name)
+    template<typename Vec3T>
+    void set_camera_position(const Vec3T& position)
     {
-        if (auto file = volumeshOS::file_dialog(title))
-        {
-            return volumeshOS::load(file, name);
-        }
-        return VMesh(-1);
+        commands.emplace_back([position]{
+            auto pos = Internal::to_glm_vec3(position);
+            camera->set_position(pos);
+        });
+    }
+
+    template<typename Vec3T>
+    const Vec3T& get_camera_position()
+    {
+        return camera->get_position();
+    }
+
+    void set_camera_target(float x, float y, float z)
+    {
+        commands.emplace_back([x, y, z]{
+            camera->set_target(glm::vec3(x, y, z));
+        });
+    }
+
+    template<typename Vec3T>
+    void set_camera_target(const Vec3T& position)
+    {
+        commands.emplace_back([position]{
+            auto pos = Internal::to_glm_vec3(position);
+            camera->set_target(pos);
+        });
+    }
+
+    template<typename Vec3T>
+    const Vec3T& get_camera_target()
+    {
+        return camera->get_target();
+    }
+
+    void focus_camera_on_mesh(const VMesh& mesh)
+    {
+        commands.emplace_back([mesh]{
+            if(auto mesh_obj = mesh_list->get_mesh(mesh.get_id()))
+            {
+                auto pos = mesh_obj->get_data().position;
+                camera->animated_look_at(pos);
+            }
+        });
+    }
+
+    void set_camera_fov(float fov)
+    {
+        assert( fov >= 1.0 && fov <= 90.0);
+        commands.emplace_back([fov]{
+            camera->zoom = fov;
+        });
+    }
+
+    float get_camera_fov()
+    {
+        return camera->zoom;
+    }
+
+    void set_light_direction(float x, float y, float z)
+    {
+        commands.emplace_back([x, y, z]{
+            auto dir = glm::vec3(x,y,z);
+            Internal::AppState::settings.light.direction = dir;
+        });
+    }
+
+    // Set the direction of the light in the scene
+    template<typename Vec3T>
+    void set_light_direction(const Vec3T& direction)
+    {
+        commands.emplace_back([direction]{
+            auto dir = Internal::to_glm_vec3(direction);
+            Internal::AppState::settings.light.direction = glm::normalize(dir);
+        });
+    }
+
+    template<typename Vec3T>
+    Vec3T& get_light_direction()
+    {
+        return Internal::AppState::settings.light.direction;
+    }
+
+    void set_gamma(float gamma)
+    {
+        commands.emplace_back([gamma]{
+            Internal::AppState::settings.post_processing.gamma = gamma;
+        });
+    }
+
+    float get_gamma()
+    {
+        return Internal::AppState::settings.post_processing.gamma;
+    }
+
+    void set_saturation(float saturation)
+    {
+        commands.emplace_back([saturation]{
+            Internal::AppState::settings.post_processing.saturation = saturation;
+        });
+    }
+
+    float get_saturation()
+    {
+        return Internal::AppState::settings.post_processing.saturation;
+    }
+
+    void set_contrast(float contrast)
+    {
+        commands.emplace_back([contrast]{
+            Internal::AppState::settings.post_processing.contrast = contrast;
+        });
+    }
+
+    float get_contrast()
+    {
+        return Internal::AppState::settings.post_processing.contrast;
+    }
+
+    void use_ground(bool ground)
+    {
+        commands.emplace_back([ground]{
+            Internal::AppState::settings.ground.solid = ground;
+        });
+    }
+
+    bool is_using_ground()
+    {
+        return Internal::AppState::settings.ground.solid;
+    }
+
+    void use_grid(bool grid)
+    {
+        commands.emplace_back([grid]{
+            Internal::AppState::settings.ground.grid = grid;
+        });
+    }
+
+    bool is_using_grid()
+    {
+        return Internal::AppState::settings.ground.grid;
+    }
+
+    template<typename Vec3T>
+    void set_ground_color(const Vec3T& color)
+    {
+        commands.emplace_back([color]{
+            auto col = Internal::to_glm_vec3(color);
+            Internal::AppState::settings.ground.solid_color = col;
+        });
+    }
+
+    template<typename Vec3T>
+    Vec3T& get_ground_color()
+    {
+        return Internal::AppState::settings.ground.solid_color;
+    }
+
+    template<typename Vec3T>
+    void set_grid_color(const Vec3T& color)
+    {
+        commands.emplace_back([color]{
+            auto col = Internal::to_glm_vec3(color);
+            Internal::AppState::settings.ground.grid_color = col;
+        });
+    }
+
+    template<typename Vec3T>
+    Vec3T& get_grid_color()
+    {
+        return Internal::AppState::settings.ground.grid_color;
+    }
+
+    void set_ground_height(float height)
+    {
+        commands.emplace_back([height]{
+            Internal::AppState::settings.ground.height = height;
+        });
+    }
+
+    float get_gound_height()
+    {
+        return Internal::AppState::settings.ground.height;
+    }
+
+    void use_shadows(bool shadows)
+    {
+        commands.emplace_back([shadows]{
+            Internal::AppState::settings.shadows_active = shadows;
+        });
+    }
+
+    bool is_using_shadows()
+    {
+        return Internal::AppState::settings.shadows_active;
+    }
+
+    void use_ambient_occlusion( bool ssao)
+    {
+        commands.emplace_back([ssao]{
+            Internal::AppState::settings.shadows_active = ssao;
+        });
+    }
+
+    bool is_using_ambient_occlusion()
+    {
+        return Internal::AppState::settings.shadows_active;
     }
 
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
@@ -258,11 +545,6 @@ namespace volumeshOS
             meshes.push_back(VMesh(id));
         });
         return meshes;
-    }
-
-    VMesh get_focused_mesh()
-    {
-        return VMesh(mesh_list->get_focused_mesh_id());
     }
 
     bool is_valid(const VMesh& mesh)
@@ -339,28 +621,25 @@ namespace volumeshOS
         });
     }
 
+
     template<typename Vec4T>
-    void set_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge, const Vec4T& color)
+    Vec4T get_color(const VMesh& mesh)
     {
-//        commands.emplace_back([mesh, edge, color]{
-//            mesh_list->set_color(mesh.get_id(), edge, color);
-//        });
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id()));
     }
 
     template<typename Vec4T>
-    void set_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex, const Vec4T& color)
+    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
     {
-//        commands.emplace_back([mesh, vertex, color]{
-//            mesh_list->set_color(mesh.get_id(), vertex, color);
-//        });
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), cell));
     }
 
-    void set_name(const VMesh& mesh, const std::string& name)
+    template<typename Vec4T>
+    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface)
     {
-        commands.emplace_back([mesh, name]{
-            mesh_list->set_name(mesh.get_id(), name);
-        });
+        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), halfface));
     }
+
 
     void select(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
     {
@@ -432,11 +711,37 @@ namespace volumeshOS
         });
     }
 
+    void reset_selection(const VMesh& mesh)
+    {
+        commands.emplace_back([mesh]{
+            mesh_list->reset_selection(mesh.get_id());
+        });
+    }
+
+    void set_lighting_mode(const VMesh& mesh, LightingMode mode)
+    {
+//        commands.emplace_back([mesh, mode]{
+//            Internal::AppState::settings;
+//        });
+    }
+
+    LightingMode get_lighting_mode(const VMesh& mesh)
+    {
+        return LightingMode::PBR;
+    }
+
+
     void set_ambient(const VMesh& mesh, float ambient)
     {
         commands.emplace_back([mesh, ambient]{
             mesh_list->set_ambient(mesh.get_id(), ambient);
         });
+    }
+
+    float get_ambient(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_ambient(mesh.get_id());
     }
 
     void set_diffuse(const VMesh& mesh, float diffuse)
@@ -446,11 +751,23 @@ namespace volumeshOS
         });
     }
 
+    float get_diffuse(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_diffuse(mesh.get_id());
+    }
+
     void set_specular(const VMesh& mesh, float specular)
     {
         commands.emplace_back([mesh, specular]{
             mesh_list->set_specular(mesh.get_id(), specular);
         });
+    }
+
+    float get_specular(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_specular(mesh.get_id());
     }
 
     void set_specular_coefficient(const VMesh& mesh, float coefficient)
@@ -460,18 +777,10 @@ namespace volumeshOS
         });
     }
 
-    void set_phong(const VMesh& mesh, float ambient, float diffuse, float specular, float coefficient)
+    float get_specular_coefficient(const VMesh& mesh)
     {
-        commands.emplace_back([mesh, ambient, diffuse, specular, coefficient]{
-            mesh_list->set_phong(mesh.get_id(), ambient, diffuse, specular, coefficient);
-        });
-    }
-
-    void set_use_pbr(const VMesh& mesh, bool use_pbr)
-    {
-        commands.emplace_back([mesh, use_pbr]{
-            mesh_list->get_mesh(mesh.get_id())->get_data().use_pbr = use_pbr;
-        });
+        assert(mesh.is_valid());
+        return mesh_list->get_specular_coefficient(mesh.get_id());
     }
 
     void set_metallic(const VMesh& mesh, float metallic)
@@ -481,23 +790,17 @@ namespace volumeshOS
         });
     }
 
+    float get_metallic(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_mesh(mesh.get_id())->get_data().metallic;
+    }
+
     void set_roughness(const VMesh& mesh, float roughness)
     {
         commands.emplace_back([mesh, roughness]{
             mesh_list->get_mesh(mesh.get_id())->get_data().roughness = roughness;
         });
-    }
-
-    bool get_use_pbr(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_mesh(mesh.get_id())->get_data().use_pbr;
-    }
-
-    float get_metallic(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_mesh(mesh.get_id())->get_data().metallic;
     }
 
     float get_roughness(const VMesh& mesh)
@@ -522,11 +825,24 @@ namespace volumeshOS
         });
     }
 
+    template<typename Vec3T>
+    Vec3T get_position(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_position(mesh.get_id()));
+    }
+
     void set_scale(const VMesh& mesh, float scale)
     {
         commands.emplace_back([mesh, scale]{
             mesh_list->set_scale(mesh.get_id(), scale);
         });
+    }
+
+    float get_scale(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_scale(mesh.get_id());
     }
 
     void set_rotation(const VMesh& mesh, float x, float y, float z)
@@ -545,6 +861,13 @@ namespace volumeshOS
         });
     }
 
+    template<typename Vec3T>
+    Vec3T get_rotation(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_rotation(mesh.get_id()));
+    }
+
     void reset_rotation(const VMesh& mesh)
     {
         commands.emplace_back([mesh]{
@@ -559,11 +882,23 @@ namespace volumeshOS
         });
     }
 
-    void set_slice_lock(const VMesh& mesh, const bool locked)
+    float get_slice_factor(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_slice_factor(mesh.get_id());
+    }
+
+    void set_slice_locked(const VMesh& mesh, bool locked)
     {
         commands.emplace_back([mesh, locked]{
             mesh_list->set_slice_lock(mesh.get_id(), locked);
         });
+    }
+
+    bool get_slice_locked(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_slice_lock(mesh.get_id());
     }
 
     void set_peel_level(const VMesh& mesh, const float level)
@@ -573,11 +908,29 @@ namespace volumeshOS
         });
     }
 
-    void set_reverse_peeling(const VMesh& mesh, const bool reverse)
+    float get_peel_level(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_peel_level(mesh.get_id());
+    }
+
+    void use_reverse_peeling(const VMesh& mesh, bool reverse)
     {
         commands.emplace_back([mesh, reverse]{
             mesh_list->set_reverse_peeling(mesh.get_id(), reverse);
         });
+    }
+
+    bool is_using_reverse_peeling(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_reverse_peeling(mesh.get_id());
+    }
+
+    int get_max_peel_depth(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_max_peel_depth(mesh.get_id());
     }
 
     void set_cell_rounding(const VMesh& mesh, float rounding)
@@ -587,18 +940,23 @@ namespace volumeshOS
         });
     }
 
-    void activate_rounding(const VMesh& mesh, float rounding)
+    float get_cell_rounding(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_cell_rounding(mesh.get_id());
+    }
+
+    void use_rounding(const VMesh& mesh, bool rounding)
     {
         commands.emplace_back([mesh, rounding]{
             mesh_list->activate_rounding(mesh.get_id(), rounding);
         });
     }
 
-    void activate_rounding(const VMesh& mesh, bool rounding)
+    bool is_using_rounding(const VMesh& mesh)
     {
-        commands.emplace_back([mesh, rounding]{
-            mesh_list->activate_rounding(mesh.get_id(), rounding);
-        });
+        assert(mesh.is_valid());
+        return mesh_list->get_mesh(mesh.get_id())->get_data().rounding_active;
     }
 
     void set_cell_size(const VMesh& mesh, const float size)
@@ -608,6 +966,12 @@ namespace volumeshOS
         });
     }
 
+    float get_cell_size(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_cell_size(mesh.get_id());
+    }
+
     void set_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, bool visible)
     {
         commands.emplace_back([mesh, cell, visible](){
@@ -615,18 +979,10 @@ namespace volumeshOS
         });
     }
 
-    void set_focused_mesh(VMesh mesh)
+    bool get_visibility(const VMesh& mesh)
     {
-        commands.emplace_back([mesh](){
-            mesh_list->set_focused_mesh(mesh.get_id());
-        });
-    }
-
-    void get_focused_mesh(const VMesh& mesh)
-    {
-        commands.emplace_back([mesh](){
-            mesh_list->set_focused_mesh(mesh.get_id());
-        });
+        assert(mesh.is_valid());
+        return mesh_list->get_visibility(mesh.get_id());
     }
 
     void set_visibility(const VMesh& mesh, const bool visible)
@@ -634,6 +990,12 @@ namespace volumeshOS
         commands.emplace_back([mesh, visible]{
             mesh_list->set_visibility(mesh.get_id(), visible);
         });
+    }
+
+    bool get_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_visibility(mesh.get_id(), cell);
     }
 
     void reset_visibility(const VMesh& mesh)
@@ -658,64 +1020,10 @@ namespace volumeshOS
         });
     }
 
-
-    void set_camera_position(float x, float y, float z)
+    const char* file_dialog(const std::string& title)
     {
-        commands.emplace_back([x, y, z]{
-            camera->set_position(glm::vec3(x, y, z));
-        });
-    }
-
-    template<typename Vec3T>
-    void set_camera_position(const Vec3T& position)
-    {
-        commands.emplace_back([position]{
-            auto pos = Internal::to_glm_vec3(position);
-            camera->set_position(pos);
-        });
-    }
-
-    void set_camera_view_direction(float x, float y, float z)
-    {
-        commands.emplace_back([x, y, z]{
-            camera->set_view_direction(glm::vec3(x, y, z));
-        });
-    }
-
-    template<typename Vec3T>
-    void set_camera_view_direction(const Vec3T& direction)
-    {
-        commands.emplace_back([direction]{
-            auto dir = Internal::to_glm_vec3(direction);
-            camera->set_view_direction(dir);
-        });
-    }
-
-    void set_camera_mode(Internal::CameraMode mode)
-    {
-        commands.emplace_back([mode]{
-            camera->set_mode(mode);
-        });
-    }
-
-    void focus_camera(const VMesh& mesh)
-    {
-        commands.emplace_back([mesh]{
-            if(auto mesh_obj = mesh_list->get_mesh(mesh.get_id()))
-            {
-                auto pos = mesh_obj->get_data().position;
-                camera->animated_look_at(pos);
-            }
-        });
-    }
-
-    template<typename Vec3T>
-    void set_background_color(const Vec3T& color)
-    {
-        commands.emplace_back([color]{
-            auto col = Internal::to_glm_vec3(color);
-            Internal::AppState::settings.sky.sky_color = col;
-        });
+        Internal::NewFileDialog dialog;
+        return dialog.open_dialog(title.c_str());
     }
 
     void export_image(const ExportOptions& options)
@@ -735,6 +1043,16 @@ namespace volumeshOS
             auto& renderer = window->panels.mesh_view->renderer;
             renderer->export_image(path, options);
         });
+    }
+
+    int get_viewport_width()
+    {
+        return window->panels.mesh_view->renderer->frame.width;
+    }
+
+    int get_viewport_height()
+    {
+        return window->panels.mesh_view->renderer->frame.height;
     }
 
     void log(const std::string& message)
@@ -768,161 +1086,13 @@ namespace volumeshOS
         });
     }
 
-    void hide_log_window(bool hide)
+    void use_log_window(bool hide)
     {
         commands.emplace_back([hide]{
             window->panels.mesh_view->log_window->hide_log_window(hide);
         });
     }
 
-    int get_viewport_width()
-    {
-        return window->panels.mesh_view->renderer->frame.width;
-    }
-
-    int get_viewport_height()
-    {
-        return window->panels.mesh_view->renderer->frame.height;
-    }
-
-    float get_ambient(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_ambient(mesh.get_id());
-    }
-
-    float get_diffuse(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_diffuse(mesh.get_id());
-    }
-
-    float get_specular(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_specular(mesh.get_id());
-    }
-
-    float get_specular_coefficient(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_specular_coefficient(mesh.get_id());
-    }
-
-    template<typename Vec3T>
-    Vec3T get_position(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_position(mesh.get_id()));
-    }
-
-    float get_scale(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_scale(mesh.get_id());
-    }
-
-    template<typename Vec3T>
-    Vec3T get_rotation(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_rotation(mesh.get_id()));
-    }
-
-    float get_slice_factor(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_slice_factor(mesh.get_id());
-    }
-
-    bool get_slice_lock(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_slice_lock(mesh.get_id());
-    }
-
-    float get_peel_level(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_peel_level(mesh.get_id());
-    }
-
-    bool get_reverse_peeling(const VMesh& mesh)
-    {
-        return mesh_list->get_reverse_peeling(mesh.get_id());
-    }
-
-    int get_max_peel_depth(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_max_peel_depth(mesh.get_id());
-    }
-
-    float get_cell_rounding(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_cell_rounding(mesh.get_id());
-    }
-
-    float get_cell_size(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_cell_size(mesh.get_id());
-    }
-
-    bool get_visibility(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_visibility(mesh.get_id());
-    }
-
-    bool get_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_visibility(mesh.get_id(), cell);
-    }
-
-    const char* file_dialog(const std::string& title)
-    {
-        Internal::NewFileDialog dialog;
-        return dialog.open_dialog(title.c_str());
-    }
-
-    template<typename Vec4T>
-    Vec4T get_color(const VMesh& mesh)
-    {
-        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id()));
-    }
-
-    template<typename Vec4T>
-    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
-    {
-        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), cell));
-    }
-
-    template<typename Vec4T>
-    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface)
-    {
-        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), halfface));
-    }
-
-    template<typename Vec4T>
-    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::EdgeHandle edge)
-    {
-        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), edge));
-    }
-
-    template<typename Vec4T>
-    Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::VertexHandle vertex)
-    {
-        return Internal::glm_vec4_to<Vec4T>(mesh_list->get_color(mesh.get_id(), vertex));
-    }
-
-
-    [[nodiscard]] const std::string& get_name(const VMesh& mesh)
-    {
-        return mesh_list->get_name(mesh.get_id());
-    }
 
     template<typename Type>
     [[nodiscard]] std::unique_ptr<Internal::BaseShape> get_concrete_shape(int id)
@@ -1163,18 +1333,6 @@ namespace volumeshOS
     template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const std::array<double, 4>&);
     template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const std::array<float, 4>&);
 
-    template void set_color<glm::vec4>(const VMesh&, OpenVolumeMesh::EdgeHandle, const glm::vec4&);
-    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::EdgeHandle, const OpenVolumeMesh::Vec4d&);
-    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::EdgeHandle, const OpenVolumeMesh::Vec4f&);
-    template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle, const std::array<double, 4>&);
-    template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle, const std::array<float, 4>&);
-
-    template void set_color<glm::vec4>(const VMesh&, OpenVolumeMesh::VertexHandle, const glm::vec4&);
-    template void set_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::VertexHandle, const OpenVolumeMesh::Vec4d&);
-    template void set_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::VertexHandle, const OpenVolumeMesh::Vec4f&);
-    template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle, const std::array<double, 4>&);
-    template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle, const std::array<float, 4>&);
-
 
     template glm::vec4 get_color<glm::vec4>(const VMesh&);
     template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&);
@@ -1193,19 +1351,6 @@ namespace volumeshOS
     template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
     template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
     template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
-
-    template glm::vec4 get_color<glm::vec4>(const VMesh&, OpenVolumeMesh::EdgeHandle);
-    template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::EdgeHandle);
-    template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::EdgeHandle);
-    template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle);
-    template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::EdgeHandle);
-
-    template glm::vec4 get_color<glm::vec4>(const VMesh&, OpenVolumeMesh::VertexHandle);
-    template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&, OpenVolumeMesh::VertexHandle);
-    template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::VertexHandle);
-    template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle);
-    template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::VertexHandle);
-
 
     template void set_position<glm::vec3>(const VMesh&, const glm::vec3&);
     template void set_position<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
@@ -1238,11 +1383,11 @@ namespace volumeshOS
     template void set_camera_position<std::array<double, 3>>(const std::array<double, 3>&);
     template void set_camera_position<std::array<float, 3>>(const std::array<float, 3>&);
 
-    template void set_camera_view_direction<glm::vec3>(const glm::vec3&);
-    template void set_camera_view_direction<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
-    template void set_camera_view_direction<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
-    template void set_camera_view_direction<std::array<double, 3>>(const std::array<double, 3>&);
-    template void set_camera_view_direction<std::array<float, 3>>(const std::array<float, 3>&);
+//    template void set_camera_view_direction<glm::vec3>(const glm::vec3&);
+//    template void set_camera_view_direction<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
+//    template void set_camera_view_direction<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
+//    template void set_camera_view_direction<std::array<double, 3>>(const std::array<double, 3>&);
+//    template void set_camera_view_direction<std::array<float, 3>>(const std::array<float, 3>&);
 
 
     template VBox add_shape<VBox>();
