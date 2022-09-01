@@ -20,7 +20,7 @@ namespace volumeshOS::Internal
         void calculate_cascades(const Renderer& renderer);
         [[nodiscard]] uint32_t get_depth_texture() const;
 
-        [[nodiscard]] uint32_t get_debug_texture(int cascade_level);
+        [[nodiscard]] uint32_t get_debug_texture(const Renderer& renderer, int cascade_level);
 
         static const int max_cascades = 8;
         int cascade_idx = 0;

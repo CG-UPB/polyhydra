@@ -165,7 +165,7 @@ namespace volumeshOS::Internal
         style.WindowRounding = 6.0f;
         style.PopupRounding = 6.0f;
         style.WindowPadding = {20.0f, 20.0f};
-        style.FramePadding = {10.0f, 8.0f};
+        style.FramePadding = {10.0f, 7.0f};
         style.ItemSpacing = {14.0f, 0.0f};
         style.ItemInnerSpacing = {2.0f, 0.0f};
         style.TabRounding = 4.0f;
@@ -354,12 +354,12 @@ namespace volumeshOS::Internal
         colors[ImGuiCol_PopupBg]                = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
         colors[ImGuiCol_Border]                 = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
         colors[ImGuiCol_BorderShadow]           = ImVec4(0.22f, 0.22f, 0.22f, 0.00f);
-        colors[ImGuiCol_FrameBg]                = ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
-        colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
-        colors[ImGuiCol_FrameBgActive]          = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
-        colors[ImGuiCol_TitleBg]                = ImVec4(0.23f, 0.26f, 0.29f, 1.00f);
-        colors[ImGuiCol_TitleBgActive]          = ImVec4(0.25f, 0.27f, 0.30f, 1.00f);
-        colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.23f, 0.25f, 0.29f, 1.00f);
+        colors[ImGuiCol_FrameBg]                = ImVec4(0.12f, 0.13f, 0.14f, 1.00f);
+        colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.15f, 0.15f, 0.17f, 1.00f);
+        colors[ImGuiCol_FrameBgActive]          = ImVec4(0.17f, 0.17f, 0.19f, 1.00f);
+        colors[ImGuiCol_TitleBg]                = ImVec4(0.21f, 0.24f, 0.28f, 1.00f);
+        colors[ImGuiCol_TitleBgActive]          = ImVec4(0.23f, 0.26f, 0.30f, 1.00f);
+        colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.21f, 0.24f, 0.28f, 1.00f);
         colors[ImGuiCol_MenuBarBg]              = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
         colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.21f, 0.21f, 0.21f, 0.39f);
         colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);

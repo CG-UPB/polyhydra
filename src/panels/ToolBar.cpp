@@ -355,7 +355,7 @@ namespace volumeshOS::Internal
             });
             ImGuiUtil::menu_item_filled("Fog Density", [&]
             {
-                ImGui::SliderFloat("##Fog Density", &AppState::settings.sky.fog_density, 0.0f, 2.0f, "%.2f",
+                ImGui::SliderFloat("##Fog Density", &AppState::settings.sky.fog_density, 0.0f, 1.0f, "%.2f",
                                    ImGuiSliderFlags_Logarithmic);
             });
             ImGuiUtil::menu_item_filled("Fog Color", [&]

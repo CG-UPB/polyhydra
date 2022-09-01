@@ -372,7 +372,7 @@ namespace volumeshOS::Internal
             case TRANSPARENCY_REVEAL:
                 return renderer->passes.transparency_pass_wb->get_reveal_texture();
             case SHADOW_MAP:
-                return renderer->passes.shadow_pass->get_debug_texture(m_shadow_map_cascade_level_debug);
+                return renderer->passes.shadow_pass->get_debug_texture(*renderer, m_shadow_map_cascade_level_debug);
         }
         return -1;
     }

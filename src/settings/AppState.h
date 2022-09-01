@@ -23,7 +23,7 @@ namespace volumeshOS::Internal
     struct SkyOptions
     {
         glm::vec3 sky_color     = {0.24f, 0.6f, 0.77f};
-        float fog_density       = 0.04f;
+        float fog_density       = 0.02f;
         glm::vec3 fog_color     = {0.5f, 0.6f, 0.7f};
     };
 
@@ -78,7 +78,7 @@ namespace volumeshOS::Internal
             bool selection_active                   = false;
             bool transparency_active                = false;
             bool ssao_active                        = true;
-            bool shadows_active                     = false;
+            bool shadows_active                     = true;
             bool isolation_active                   = false;
             bool digging_active                     = false;
             int num_depth_peeling_passes            = 15;

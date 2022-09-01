@@ -25,8 +25,8 @@ namespace volumeshOS::Internal
         FS_NAMESPACE::path font_path = FileManager::get_resource_path() / "fonts";
         FS_NAMESPACE::path regular_path = font_path / "Roboto-Regular.ttf";
         FS_NAMESPACE::path bold_path = font_path / "Roboto-Bold.ttf";
-        s_regular = ImGui::GetIO().Fonts->AddFontFromFileTTF(regular_path.string().c_str(), 18.0f);
-        s_bold = ImGui::GetIO().Fonts->AddFontFromFileTTF(bold_path.string().c_str(), 18.0f);
+        s_regular = ImGui::GetIO().Fonts->AddFontFromFileTTF(regular_path.string().c_str(), 17.0f);
+        s_bold = ImGui::GetIO().Fonts->AddFontFromFileTTF(bold_path.string().c_str(), 17.0f);
         ImGui::GetIO().FontDefault = s_regular;
     }
 

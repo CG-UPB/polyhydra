@@ -1115,12 +1115,14 @@ namespace volumeshOS
         template<typename ShapeType>
         [[nodiscard]] inline ShapeType add_shape() const
         {
+            static_assert(std::is_base_of_v<VShape, ShapeType>);
             return volumeshOS::add_shape<ShapeType>(*this);
         }
 
         template<typename ShapeType>
         [[nodiscard]] inline ShapeType add_shape(OpenVolumeMesh::CellHandle cell) const
         {
+            static_assert(std::is_base_of_v<VShape, ShapeType>);
             return volumeshOS::add_shape<ShapeType>(*this, cell);
         }
 

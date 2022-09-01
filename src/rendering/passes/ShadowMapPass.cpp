@@ -262,14 +262,22 @@ namespace volumeshOS::Internal
         return m_depth_texture;
     }
 
-    uint32_t ShadowMapPass::get_debug_texture(int cascade_level)
+    uint32_t ShadowMapPass::get_debug_texture(const Renderer& renderer, int cascade_level)
     {
         m_debug_shader->bind();
         m_debug_framebuffer->bind();
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_debug_shader->set_uniform_sampler2DArray("u_depth_texture", GL_TEXTURE0, m_depth_texture);
+        m_debug_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE0, m_depth_texture);
+        m_debug_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE1, renderer.passes.pre_pass->get_framebuffer()->get_depth_texture());
         m_debug_shader->set_uniform_int("u_cascade_level", cascade_level);
+        for (int i = 0; i < max_cascades; i++)
+        {
+            m_debug_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) + "]",
+                                             cascade_projections[i]);
+            m_debug_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", cascade_views[i]);
+        }
+        m_debug_shader->set_uniform_mat4f("u_inv_projection", glm::inverse(renderer.camera->projection));
         VertexArrayObject::draw_screen_quad();
         m_debug_framebuffer->unbind();
         m_debug_shader->unbind();

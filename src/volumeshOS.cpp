@@ -1149,6 +1149,7 @@ namespace volumeshOS
     template<typename ShapeType>
     [[nodiscard]] ShapeType add_shape()
     {
+        static_assert(std::is_base_of_v<VShape, ShapeType>);
         auto id = next_shape_id();
         commands.emplace_back([id]{
             auto shape = get_concrete_shape<ShapeType>(id);
@@ -1160,6 +1161,7 @@ namespace volumeshOS
     template<typename ShapeType>
     [[nodiscard]] ShapeType add_shape(const VMesh& mesh)
     {
+        static_assert(std::is_base_of_v<VShape, ShapeType>);
         auto id = next_shape_id();
         commands.emplace_back([id, mesh]{
             auto shape = get_concrete_shape<ShapeType>(id);

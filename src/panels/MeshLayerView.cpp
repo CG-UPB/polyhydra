@@ -318,7 +318,7 @@ namespace volumeshOS::Internal
 
                     });
 
-                    ImGuiUtil::menu_item_filled("Slicer", [&]
+                    ImGuiUtil::menu_item("Slicer", [&]
                     {
                         m_slider_slicer = mesh.get_slice_factor();
                         m_slicer_locked = mesh.get_slice_lock();
@@ -333,7 +333,7 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item_filled("Peel", [&]
+                    ImGuiUtil::menu_item("Peel", [&]
                     {
 
                         m_slider_peel = mesh.get_peel_level();

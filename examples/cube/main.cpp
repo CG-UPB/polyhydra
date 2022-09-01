@@ -5,16 +5,16 @@ int main()
 {
     using namespace volumeshOS;
 
-    VMesh mesh;
     std::vector<VArrow> arrows;
     float len = 0.25f;
     set_theme(volumeshOS::Theme::Dark);
-    on_gui_render([&mesh, &arrows, &len](){
+    on_gui_render([&arrows, &len](){
         ImGui::Begin("MyPanel");
         if (ImGui::Button("Load Mesh"))
         {
-            mesh = load_from_dialog("Select OVM file");
+            load_from_dialog("Select OVM file");
         }
+        auto mesh = volumeshOS::get_focused_mesh();
         if (ImGui::Button("Add Arrows") && mesh.is_valid())
         {
             auto& ovm = *mesh.get_ovm();
