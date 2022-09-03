@@ -101,7 +101,7 @@ namespace volumeshOS::Internal
         glm::vec3 m_camera_right = {0,0,0};
         glm::vec3 m_camera_up = {0,0,0};
         glm::vec3 m_camera_front= {0,0,0};
-        glm::vec3 new_target = {0,0,0};
+        glm::vec3 old_target = {0, 0, 0};
 
         float m_screen_width = 0;
         float m_screen_height = 0;

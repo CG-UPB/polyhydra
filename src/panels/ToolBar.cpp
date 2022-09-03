@@ -225,13 +225,27 @@ namespace volumeshOS::Internal
                         IM_ARRAYSIZE(camera_modes)
                 ))
                 {
-                    m_camera->set_mode(static_cast<CameraMode>(camera_mode));
+                    glm::vec3 new_target = m_camera->target;
+                    if (auto mesh = volumeshOS::get_focused_mesh().is_valid())
+                    {
+                        new_target = volumeshOS::get_focused_mesh().get_position<glm::vec3>();
+                    }
+
+                    if(m_camera->get_mode() == CameraMode::ORBIT)
+                    {
+                        m_camera->set_mode(CameraMode::FLY);
+                    }
+                    else if(m_camera->get_mode() == CameraMode::FLY)
+                    {
+                        m_camera->animated_look_at(new_target);
+                        m_camera->set_mode(CameraMode::ORBIT);
+                    }
                 }
             });
             ImGuiUtil::menu_item_filled("Position", [&]
             {
-                auto& camera_position = m_camera->position;
-                auto& camera_target = m_camera->target;
+                auto camera_position = m_camera->position;
+                auto camera_target = m_camera->target;
                 auto camera_dir = (camera_target - camera_position);
                 float position[4];
                 position[0] = camera_position.r;
@@ -243,8 +257,10 @@ namespace volumeshOS::Internal
                     if (m_camera->get_mode() == CameraMode::FLY)
                     {
                         camera_target = pos + camera_dir;
+                        m_camera->look_at(camera_target);
                     }
                     camera_position = pos;
+                    m_camera->set_position(camera_position);
 
                 }
             });

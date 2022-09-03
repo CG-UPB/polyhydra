@@ -254,10 +254,14 @@ namespace volumeshOS::Internal
     {
         pre_render_step();
 
+        ImGui::BeginDisabled(volumeshOS::is_input_blocked());
+
         panels.mesh_layer_view->show();
         panels.mesh_view->show();
         //panels.quality_settings->show();
         panels.toolbar->show(panels.mesh_view->renderer->camera);
+
+        ImGui::EndDisabled();
 
         AppState::callbacks.on_gui_render();
 

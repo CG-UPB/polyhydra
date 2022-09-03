@@ -302,15 +302,15 @@ namespace volumeshOS
     }
 
     template<typename Vec3T>
-    const Vec3T& get_camera_position()
+    Vec3T get_camera_position()
     {
-        return camera->get_position();
+        return Internal::glm_vec3_to<Vec3T>(camera->get_position());
     }
 
     void set_camera_target(float x, float y, float z)
     {
         commands.emplace_back([x, y, z]{
-            camera->set_target(glm::vec3(x, y, z));
+            camera->look_at(glm::vec3(x, y, z));
         });
     }
 
@@ -324,9 +324,9 @@ namespace volumeshOS
     }
 
     template<typename Vec3T>
-    const Vec3T& get_camera_target()
+    Vec3T get_camera_target()
     {
-        return camera->get_target();
+        return Internal::glm_vec3_to<Vec3T>(camera->get_target());
     }
 
     void focus_camera_on_mesh(const VMesh& mesh)
@@ -1020,6 +1020,16 @@ namespace volumeshOS
         });
     }
 
+    void block_inputs( bool block)
+    {
+        Internal::AppState::settings.block_input = block;
+    }
+
+    bool is_input_blocked()
+    {
+        return Internal::AppState::settings.block_input;
+    }
+
     const char* file_dialog(const std::string& title)
     {
         Internal::NewFileDialog dialog;
@@ -1086,10 +1096,10 @@ namespace volumeshOS
         });
     }
 
-    void use_log_window(bool hide)
+    void use_log_window(bool use)
     {
-        commands.emplace_back([hide]{
-            window->panels.mesh_view->log_window->hide_log_window(hide);
+        commands.emplace_back([use]{
+            window->panels.mesh_view->log_window->hide_log_window(!use);
         });
     }
 
@@ -1385,11 +1395,23 @@ namespace volumeshOS
     template void set_camera_position<std::array<double, 3>>(const std::array<double, 3>&);
     template void set_camera_position<std::array<float, 3>>(const std::array<float, 3>&);
 
-//    template void set_camera_view_direction<glm::vec3>(const glm::vec3&);
-//    template void set_camera_view_direction<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
-//    template void set_camera_view_direction<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
-//    template void set_camera_view_direction<std::array<double, 3>>(const std::array<double, 3>&);
-//    template void set_camera_view_direction<std::array<float, 3>>(const std::array<float, 3>&);
+    template glm::vec3 get_camera_position<glm::vec3>();
+    template OpenVolumeMesh::Vec3d get_camera_position<OpenVolumeMesh::Vec3d>();
+    template OpenVolumeMesh::Vec3f get_camera_position<OpenVolumeMesh::Vec3f>();
+    template std::array<double, 3> get_camera_position<std::array<double, 3>>();
+    template std::array<float, 3> get_camera_position<std::array<float, 3>>();
+
+    template void set_camera_target<glm::vec3>(const glm::vec3&);
+    template void set_camera_target<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
+    template void set_camera_target<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
+    template void set_camera_target<std::array<double, 3>>(const std::array<double, 3>&);
+    template void set_camera_target<std::array<float, 3>>(const std::array<float, 3>&);
+
+    template glm::vec3 get_camera_target<glm::vec3>();
+    template OpenVolumeMesh::Vec3d get_camera_target<OpenVolumeMesh::Vec3d>();
+    template OpenVolumeMesh::Vec3f get_camera_target<OpenVolumeMesh::Vec3f>();
+    template std::array<double, 3> get_camera_target<std::array<double, 3>>();
+    template std::array<float, 3> get_camera_target<std::array<float, 3>>();
 
 
     template VBox add_shape<VBox>();

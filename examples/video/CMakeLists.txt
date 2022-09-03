@@ -4,7 +4,7 @@ get_filename_component(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 set(PROJECT_NAME "volumeshOS_${MODULE_NAME}")
 project(${PROJECT_NAME})
 
-add_executable(${PROJECT_NAME} ExampleClass.cpp main.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} volumeshOS_core)
 

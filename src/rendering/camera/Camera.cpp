@@ -70,7 +70,6 @@ namespace volumeshOS::Internal
         delta = current_frame - last_frame;
         last_frame = current_frame;
 
-
         projection = glm::perspective(
                 glm::radians(zoom),
                 m_screen_width / m_screen_height,
@@ -183,14 +182,14 @@ namespace volumeshOS::Internal
     {
         if (m_mode == CameraMode::ORBIT)
         {
-            auto extended_target = position + glm::length(new_target - position) * (target - position);
+            auto extended_target = position + glm::length(target - position) * glm::normalize(old_target - position);
             look_at(extended_target);
-            animated_look_at(new_target);
+            animated_look_at(target);
         }
         else if(m_mode == CameraMode::FLY)
         {
             //look_at(position + glm::normalize((target - position)));
-            //animated_look_at(position + glm::normalize(new_target - position));
+            //animated_look_at(position + glm::normalize(old_target - position));
         }
     }
 
@@ -255,12 +254,8 @@ namespace volumeshOS::Internal
 
     void Camera::look_at(glm::vec3 tgt)
     {
+        old_target = target;
         target = tgt;
-        view = glm::lookAt(
-                position,
-                target,
-                m_camera_up
-        );
     }
 
     glm::vec2 Camera::get_viewport_size() const
@@ -300,6 +295,7 @@ namespace volumeshOS::Internal
 
     void Camera::set_target(const glm::vec3 tgt)
     {
+        old_target = target;
         target = tgt;
     }
 

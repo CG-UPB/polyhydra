@@ -118,7 +118,7 @@ namespace volumeshOS
     void set_camera_position(const Vec3T& position);
 
     template<typename Vec3T>
-    Vec3T& get_camera_position();
+    Vec3T get_camera_position();
 
     // Set the view direction of the camera
     void set_camera_target(float x, float y, float z);
@@ -128,7 +128,7 @@ namespace volumeshOS
     void set_camera_target(const Vec3T& direction);
 
     template<typename Vec3T>
-    Vec3T& get_camera_target();
+    Vec3T get_camera_target();
 
     // Shortcut for set_camera_target(mesh.get_position)
     void focus_camera_on_mesh(const VMesh& mesh);
@@ -148,7 +148,7 @@ namespace volumeshOS
     void set_light_direction(const Vec3T& direction);
 
     template<typename Vec3T>
-    Vec3T& get_light_direction();
+    Vec3T get_light_direction();
 
 
     /* POST PROCESSING */
@@ -186,14 +186,14 @@ namespace volumeshOS
     void set_ground_color(const Vec3T& color);
 
     template<typename Vec3T>
-    Vec3T& get_ground_color();
+    Vec3T get_ground_color();
 
     // Set Grid color
     template<typename Vec3T>
     void set_grid_color(const Vec3T& color);
 
     template<typename Vec3T>
-    Vec3T& get_grid_color();
+    Vec3T get_grid_color();
 
     // Set Ground Height
     void set_ground_height(float height);
@@ -511,7 +511,9 @@ namespace volumeshOS
     /* WINDOW */
 
     // Determines if input events should be registered and handled
-    //void ignore_inputs(bool ignore);
+    void block_inputs(bool block);
+
+    bool is_input_blocked();
 
     // Open a file dialog with a given title. Returns either nullptr if no file is selected, or the file path
     const char* file_dialog(const std::string& title);

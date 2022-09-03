@@ -219,8 +219,16 @@ namespace volumeshOS::Internal
             }
         }
 
-        handle_camera_input();
-        handle_mesh_input();
+        if(!AppState::settings.block_input)
+        {
+            handle_camera_input();
+            handle_mesh_input();
+        }
+        else
+        {
+            camera->update();
+        }
+
 
         input.last.x = input.pos.x;
         input.last.y = input.pos.y;
@@ -312,7 +320,7 @@ namespace volumeshOS::Internal
                         {
                             auto transform = camera->world * mesh->get_data().get_transform();
                             auto pos_mesh_space = glm::vec4(hover_position, 1.0f);
-                            //new_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
+                            //old_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
                             new_target = glm::vec3(transform * pos_mesh_space);
                         }
                         camera->animated_look_at(new_target);
@@ -333,7 +341,7 @@ namespace volumeshOS::Internal
                     glm::vec3 new_target = camera->target;
                     if (auto mesh = mesh_list->get_focused_mesh())
                     {
-                        new_target = mesh->get_data().position;
+                        new_target = volumeshOS::get_focused_mesh().get_position<glm::vec3>();
                     }
 
                     if(camera->get_mode() == CameraMode::ORBIT)
@@ -342,7 +350,7 @@ namespace volumeshOS::Internal
                     }
                     else if(camera->get_mode() == CameraMode::FLY)
                     {
-                        camera->set_target(new_target);
+                        camera->animated_look_at(new_target);
                         camera->set_mode(CameraMode::ORBIT);
                     }
 
