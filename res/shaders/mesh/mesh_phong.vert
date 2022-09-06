@@ -104,7 +104,7 @@ void main()
     
     // Roundings
     vec3 position = a_pos;
-    float alpha = u_object_color.a;
+    float alpha = u_object_color.a * a_color.a;
     if (u_rounding)
     {
         float type = a_vertex_type_rounded;

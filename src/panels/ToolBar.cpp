@@ -109,7 +109,8 @@ namespace volumeshOS::Internal
             return;
         }
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
-        if (ImGuiUtil::begin_menu_with_background("rendering modes", 2))
+        bool wireframe_or_vertices = settings.rendering_mode == RenderingMode::ONLY_VERTICES || settings.rendering_mode == RenderingMode::WIREFRAME;
+        if (ImGuiUtil::begin_menu_with_background("rendering modes", wireframe_or_vertices? 3 : 2))
         {
             ImGuiUtil::menu_item_filled("Lighting Model", [&]
             {
@@ -145,6 +146,21 @@ namespace volumeshOS::Internal
                              IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
                 AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
             });
+            if(settings.rendering_mode == RenderingMode::ONLY_VERTICES)
+            {
+                ImGuiUtil::menu_item_filled("Vertex Size", [&]
+                {
+                    ImGui::DragFloat("##Vertex Size", &settings.vertex_size, 0.01f, 0.0f, 5.0f, "%.01f");
+                });
+            }
+            else if(settings.rendering_mode == RenderingMode::WIREFRAME)
+            {
+                ImGuiUtil::menu_item_filled("Wireframe Size", [&]
+                {
+                    ImGui::DragFloat("##Wireframe Size", &settings.wireframe_size, 0.01f, 0.0f, 5.0f, "%.01f");
+
+                });
+            }
             ImGuiUtil::end_menu();
         }
     }

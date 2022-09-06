@@ -34,8 +34,8 @@ namespace volumeshOS::Internal
                 m_world_up
         );
         m_sensitivity = 1.0f;
-        m_vertical_speed = 8.0f;
-        m_horizontal_speed = 8.0f;
+        m_vertical_speed = 1.5f;
+        m_horizontal_speed = 1.5f;
 
         new_mode = CameraMode::FLY;
         set_mode(CameraMode::FLY);
@@ -92,8 +92,8 @@ namespace volumeshOS::Internal
         {
             // Add the movement vector to the position
             glm::vec3 mov_vector = movement_vector.x * glm::normalize(get_right()) +
-                                   movement_vector.y * glm::normalize(m_world_up) +
-                                   movement_vector.z * glm::normalize(target - position);
+                                   movement_vector.y * glm::normalize(get_world_up()) +
+                                   movement_vector.z * glm::normalize(glm::cross(get_world_up(), get_right()));
 
             glm::vec3 view_dir = glm::normalize(target - position);
             position += mov_vector;
@@ -136,8 +136,8 @@ namespace volumeshOS::Internal
 
     void Camera::handle_mouse_movement(float x_offset, float y_offset)
     {
-        x_offset *= m_horizontal_speed * delta * 10.0f;
-        y_offset *= m_vertical_speed * delta * 10.0f;
+        x_offset *= m_horizontal_speed ;
+        y_offset *= m_vertical_speed ;
 
         glm::vec4 pos(position.x, position.y, position.z, 1.0f);
         glm::vec4 tgt(target.x, target.y, target.z, 1.0f);
@@ -153,7 +153,6 @@ namespace volumeshOS::Internal
         if (cos_angle * glm::sign(angle_y) > 0.99f)
         {
             angle_y = 0.0f;
-            return;
         }
 
         if (m_mode == CameraMode::FLY)

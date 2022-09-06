@@ -78,10 +78,16 @@ int main()
 
     on_cell_select([&](const VMesh vmesh, OpenVolumeMesh::CellHandle ch){
         log("Cell " + std::to_string(ch.uidx()) + " was selected");
+        auto col = get_color<glm::vec4>(vmesh, ch);
+        auto& ovm = *vmesh.get_ovm();
+        for (auto hf_it : ovm.cell_halffaces(ch))
+        {
+            vmesh.set_color(ch, glm::vec4(col.r, col.g, col.b, 0.2f));
+        }
         return;
     });
 
-    use_log_window(true);
+    use_log_window(false);
     //set_selection_mode(SelectionMode::ALL);
 
     open();
