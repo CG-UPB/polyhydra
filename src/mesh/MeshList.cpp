@@ -169,9 +169,11 @@ namespace volumeshOS::Internal
     void MeshList::set_rotation(MeshID id, float x, float y, float z)
     {
         auto f = [this, &x, &y, &z, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
-            get_mesh(id)->rotate(x, glm::vec3(1.0f, 0.0f, 0.0f));
-            get_mesh(id)->rotate(y, glm::vec3(0.0f, 0.0f, -1.0f));
-            get_mesh(id)->rotate(z, glm::vec3(0.0f, 1.0f, 0.0f));
+
+            auto m = get_mesh(id);
+            m->rotate(x, glm::vec3(1.0f, 0.0f, 0.0f));
+            m->rotate(y, glm::vec3(0.0f, 0.0f, -1.0f));
+            m->rotate(z, glm::vec3(0.0f, 1.0f, 0.0f));
         };
         execute_for_mesh(f, id);
     }
@@ -443,6 +445,7 @@ namespace volumeshOS::Internal
             roll = atan2(-r[1][2], r[1][1]);
         }
 
+        auto m = get_mesh(id);
         return glm::vec3{yaw, pitch, roll};
     }
 

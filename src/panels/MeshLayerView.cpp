@@ -50,7 +50,8 @@ namespace volumeshOS::Internal
 
             ImGui::SetCursorPos(pre_cursor);
             ImGui::Dummy(ImVec2(0.0f, ImGui::GetFontSize()));
-            ImGui::SameLine(ImGui::GetContentRegionMax().x - 103.0f);
+            auto size = 3.0f * ImGui::GetFrameHeight() + 2.0f * ImGui::GetStyle().FramePadding.x - 1.0f;
+            ImGui::SameLine(ImGui::GetContentRegionMax().x - size);
 
             bool visible = mesh.get_visibility();
             if (ImGui::Checkbox("##Visible", &visible))
@@ -241,11 +242,16 @@ namespace volumeshOS::Internal
 
             if (ImGui::CollapsingHeader(mesh.get_name().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
             {
+                auto& icon_ref = *UIUtil::get_icon("reset.png");
+                float aspect_ratio = (float) icon_ref.get_width() / (float) icon_ref.get_height();
+                float width = ImGui::GetFontSize() * aspect_ratio + 2 * ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().WindowPadding.x;
+                //width = ImGui::GetContentRegionAvailWidth() - width - 2 * ImGui::GetStyle().FramePadding.x;
+
 
                 ImGui::SetCursorPos({cursor_pos.x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorPos().y});
-                if (ImGuiUtil::begin_menu_with_background("mesh", 9, ImGuiTableFlags_SizingStretchSame))
+                if (ImGuiUtil::begin_menu_with_background("mesh", 9, ImGuiTableFlags_SizingFixedFit))
                 {
-                    ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_None, 0.3f);
+                    ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_WidthStretch, 0.3f);
                     ImGui::TableSetupColumn("Two", ImGuiTableColumnFlags_WidthStretch, 0.7f);
                     //ImGui::TableHeadersRow();
 
@@ -263,18 +269,12 @@ namespace volumeshOS::Internal
                     m_mesh_rotation[2] = glm::degrees(rot[2]);
 
 
-                    ImGuiUtil::menu_item("Position", [&]
+                    ImGuiUtil::menu_item("Position", width, [&]
                     {
                         if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -100.0f, 100.0f, "%.1f"))
                         {
                             mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
                         }
-
-//                        auto& icon_ref = *UIUtil::get_icon("reset.png");
-//                        float aspect_ratio = (float) icon_ref.get_width() / (float) icon_ref.get_height();
-//                        float width = ImGui::GetFontSize() * aspect_ratio;
-//
-//                        ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - width - 2 * ImGui::GetStyle().FramePadding.x);
                         ImGui::SameLine();
                         if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                         {
@@ -283,7 +283,7 @@ namespace volumeshOS::Internal
                     });
 
 
-                    ImGuiUtil::menu_item("Scale", [&]
+                    ImGuiUtil::menu_item("Scale", width, [&]
                     {
                         if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f"))
                         {
@@ -296,7 +296,9 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Rotation", [&]
+                    //TODO Fix Object Rotation
+                    ImGui::BeginDisabled(true);
+                    ImGuiUtil::menu_item("Rotation", width, [&]
                     {
                         if (ImGui::DragFloat3("##Rotation", m_mesh_rotation, 1.0f, -180.0f, 180.0f, "%.1f"))
                         {
@@ -317,8 +319,10 @@ namespace volumeshOS::Internal
                         }
 
                     });
+                    ImGui::EndDisabled();
 
-                    ImGuiUtil::menu_item("Slicer", [&]
+
+                    ImGuiUtil::menu_item("Slicer", width, [&]
                     {
                         m_slider_slicer = mesh.get_slice_factor();
                         m_slicer_locked = mesh.get_slice_lock();
@@ -333,7 +337,7 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Peel", [&]
+                    ImGuiUtil::menu_item("Peel", width, [&]
                     {
 
                         m_slider_peel = mesh.get_peel_level();
@@ -390,7 +394,7 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Digging", [&]
+                    ImGuiUtil::menu_item("Digging", width, [&]
                     {
                         auto size = ImVec2(ImGui::CalcTextSize("Deactivate").x + 2 * ImGui::GetStyle().FramePadding.x,
                                            0.0f);

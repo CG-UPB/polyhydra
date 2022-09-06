@@ -123,13 +123,14 @@ namespace volumeshOS::Internal
         }
 
         template<typename VoidFunc>
-        static void menu_item(const std::string& name, const VoidFunc& item)
+        static void menu_item(const std::string& name,float width, const VoidFunc& item)
         {
             ImGui::PushID(name.c_str());
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("%s", name.c_str());
             ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - width);
             item();
             ImGui::PopID();
         }
