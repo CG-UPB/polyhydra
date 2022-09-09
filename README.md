@@ -1,4 +1,4 @@
-# volumeshOS
+# **volumeshOS**
 
 VolumeshOS is a lightweight framework to observe 3-dimensional meshes ...
 
@@ -16,7 +16,7 @@ OpenVolumeMesh : https://www.graphics.rwth-aachen.de/software/openvolumemesh/
 - [License](#license)
 
 
-## How to Install
+## **How to Install**
 
 ### Dependencies
 Before getting started some libraries are required to use volumeshOS:
@@ -38,7 +38,7 @@ add_executable(target files..)
 target_link_libraries(target volumeshOS_core)
 ```
 
-## Features
+## **Features**
 VolumeshOS includes a variety of features. Most of them support the exploration of the inside of a mesh or regulate the visual impression. 
 
 ### Rendering Modes
@@ -80,7 +80,8 @@ VolumeshOS provides two ways to portray transparency. [Depth peeling](https://ci
 
 ### Other
 
-### Camera 
+#### Camera 
+The camera has two different modes: Orbit and Fly. In Orbit mode the camera circles around its target. In Fly mode you can fly through the scene using Hotkeys.
 
 #### Selection
 When active, a certain mode can be chosen, so either vertices, edges, faces, cells or everything is selectable. This is used for digging and isolate cells and enables focusing a specific cell by double clicking on it.
@@ -91,7 +92,7 @@ There is also a ground plane where shadows can be projected on. The User has the
 #### Shapes
 A load of shapes (box, cylinder, sphere, cone, arrow) can be set into the scene. 
 
-## How to Use
+## **How to Use**
 Getting an overview of the features is recommended to get an idea what kind of options can be set.
 So in addition to some maniging function, every parameter adjustable in the gui can be set or get.
 
@@ -110,9 +111,7 @@ int main()
 ```
 
 
+## **Credits**
 
 
-## Credits
-
-
-## License
+## **License**
