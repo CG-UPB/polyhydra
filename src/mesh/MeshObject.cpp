@@ -13,11 +13,10 @@ namespace volumeshOS::Internal
         m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
     }
 
-    void MeshObject::set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
+    void MeshObject::set_mesh(const std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>& mesh)
     {
         // copy given mesh
-        m_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
-        m_mesh->assign(mesh);
+        m_mesh = mesh;
         MeshProperties::setup_mesh_properties(*m_mesh);
 
         // calculates the depth of vertices and cells (saved in peel_property for cells)

@@ -8,6 +8,11 @@
 
 #include "vospch.h"
 
+#include <OpenVolumeMesh/Mesh/TetrahedralMeshTopologyKernel.hh>
+#include <OpenVolumeMesh/Mesh/HexahedralMeshTopologyKernel.hh>
+
+#include <ctime>
+
 #include "volumeshOS.h"
 
 #include "Window.h"
@@ -15,8 +20,6 @@
 #include "panels/NewFileDialog.h"
 #include "settings/AppState.h"
 #include "mesh/MeshSerializer.h"
-
-#include <ctime>
 
 namespace volumeshOS
 {
@@ -99,7 +102,9 @@ namespace volumeshOS
         int id = next_mesh_id();
         VMesh vmesh(id);
         commands.emplace_back([id, instance, name]{
-            mesh_list->add_mesh(id, instance);
+            auto mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
+            mesh->assign(instance);
+            mesh_list->add_mesh(id, mesh);
             if (name != nullptr)
             {
                 mesh_list->set_name(id, name);
@@ -508,7 +513,9 @@ namespace volumeshOS
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
     {
         commands.emplace_back([mesh, instance]{
-            mesh_list->set_mesh(mesh.get_id(), instance);
+            auto ovm = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
+            ovm->assign(instance);
+            mesh_list->set_mesh(mesh.get_id(), ovm);
         });
     }
 
@@ -1316,6 +1323,10 @@ namespace volumeshOS
             }
         });
     }
+
+    template VMesh load<OpenVolumeMesh::TopologyKernel>(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TopologyKernel>*, const char*);
+    template VMesh load<OpenVolumeMesh::TetrahedralMeshTopologyKernel>(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TetrahedralMeshTopologyKernel>*, const char*);
+    template VMesh load<OpenVolumeMesh::HexahedralMeshTopologyKernel>(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::HexahedralMeshTopologyKernel>*, const char*);
 
     template void set_color<glm::vec4>(const glm::vec4&);
     template void set_color<OpenVolumeMesh::Vec4d>(const OpenVolumeMesh::Vec4d&);

@@ -67,7 +67,7 @@ namespace volumeshOS::Internal
 
         explicit MeshObject(int id);
 
-        void set_mesh(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> *mesh);
+        void set_mesh(const std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>& mesh);
 
         /**
          * Calculate the amount of needed selection ids

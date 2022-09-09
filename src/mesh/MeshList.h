@@ -2,7 +2,7 @@
 
 #include "vospch.h"
 #include "MeshObject.h"
-
+#include "../util/Types.h"
 
 namespace volumeshOS::Internal
 {
@@ -14,13 +14,13 @@ namespace volumeshOS::Internal
         /* Mesh Management */
 
         // add mesh by OVM-Mesh
-        void add_mesh(MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
+        void add_mesh(MeshID id, const std::shared_ptr<OVMesh>& mesh);
 
         // add mesh by path to OVM-FIle
         void add_mesh(MeshID id, const std::string& path);
 
         // sets OVM-Mesh to existing ID
-        void set_mesh(MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh);
+        void set_mesh(MeshID id, const std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>& ovm_mesh);
 
         // sets OVM-Mesh by path to existing ID
         void set_mesh(MeshID id, const std::string& path);
