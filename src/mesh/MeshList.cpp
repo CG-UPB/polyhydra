@@ -9,7 +9,7 @@ namespace volumeshOS::Internal
         m_focused_mesh = -1;
     }
 
-    void MeshList::add_mesh(MeshID mesh_id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* mesh)
+    void MeshList::add_mesh(MeshID mesh_id, const std::shared_ptr<OVMesh>& mesh)
     {
 
         auto new_mesh = std::make_shared<MeshObject>(mesh_id);
@@ -30,13 +30,13 @@ namespace volumeshOS::Internal
 
     void MeshList::add_mesh(MeshID mesh_id, const std::string& path)
     {
-        OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> ovm_mesh;
+        auto ovm_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(path, ovm_mesh);
-        add_mesh(mesh_id, &ovm_mesh);
+        file_manager.readFile(path, *ovm_mesh);
+        add_mesh(mesh_id, ovm_mesh);
     }
 
-    void MeshList::set_mesh(const MeshID id, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* ovm_mesh)
+    void MeshList::set_mesh(const MeshID id, const std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>& ovm_mesh)
     {
         auto f = [&ovm_mesh](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->set_mesh(ovm_mesh);
@@ -48,10 +48,10 @@ namespace volumeshOS::Internal
     void MeshList::set_mesh(const MeshID id, const std::string& path)
     {
         auto f = [&path](const std::shared_ptr<MeshObject>& mesh) -> void{
-            OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d> ovm_mesh;
+            auto ovm_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
             OpenVolumeMesh::IO::FileManager file_manager;
-            file_manager.readFile(path, ovm_mesh);
-            mesh->set_mesh(&ovm_mesh);
+            file_manager.readFile(path, *ovm_mesh);
+            mesh->set_mesh(ovm_mesh);
         };
 
         execute_for_mesh(f, id);
@@ -359,6 +359,9 @@ namespace volumeshOS::Internal
         auto f = [type, h_id](const std::shared_ptr<MeshObject>& mesh) -> void{
             switch (type)
             {
+                case EntityType::Halfface:
+                    mesh->get_mvb()->set_halfface_selection(h_id, true);
+                    break;
                 case EntityType::Face:
                     mesh->get_mvb()->set_face_selection(h_id, true);
                     break;
@@ -378,6 +381,9 @@ namespace volumeshOS::Internal
         {
             switch (type)
             {
+                case EntityType::Halfface:
+                    mesh->get_mvb()->set_halfface_selection(h_id, false);
+                    break;
                 case EntityType::Face:
                     mesh->get_mvb()->set_face_selection(h_id, false);
                     break;

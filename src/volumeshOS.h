@@ -26,7 +26,8 @@ namespace volumeshOS
     void on_gui_render(const std::function<void()>& callback);
 
     // Add mesh from ovm instance, return new wrapper
-    [[nodiscard]] VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance, const char* name = nullptr);
+    template<typename KernelType>
+    [[nodiscard]] VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, KernelType>* instance, const char* name = nullptr);
 
     // Add mesh from file path, return new wrapper
     [[nodiscard]] VMesh load(const std::string& path, const char* name = nullptr);
