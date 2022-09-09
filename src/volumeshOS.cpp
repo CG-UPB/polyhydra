@@ -92,8 +92,10 @@ namespace volumeshOS
         Internal::AppState::callbacks.on_gui_render = callback;
     }
 
-    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance, const char* name)
+    template<typename KernelType>
+    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, KernelType>* instance, const char* name)
     {
+        static_assert(std::is_base_of_v<OpenVolumeMesh::TopologyKernel, KernelType>);
         int id = next_mesh_id();
         VMesh vmesh(id);
         commands.emplace_back([id, instance, name]{
