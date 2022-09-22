@@ -39,6 +39,8 @@ uniform float u_roughness;
 uniform float u_gamma;
 uniform vec3 u_background_color;
 
+uniform float u_shadow_strength;
+
 uniform int u_cascade_level;
 uniform float u_cascade_ends[MAX_CASCADE_LEVEL];
 uniform mat4 u_view;
@@ -397,7 +399,7 @@ void main()
         //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
 
         //cascade_idx = 0;
-        shadow = shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
+        shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
     }
 
     float ao_factor = 1.0;

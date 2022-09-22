@@ -218,6 +218,12 @@ namespace volumeshOS
     bool is_using_ambient_occlusion();
 
 
+    /* POST PROCESSING */
+    void use_transparency( bool transparency);
+
+    bool is_using_transparency();
+
+
     /* MESH */
 
 

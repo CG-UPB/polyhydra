@@ -121,6 +121,8 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_float("u_ambient_strength",0.9f);
         m_ground_shader->set_uniform_float("u_diffuse_strength", 1.0f);
 
+        m_ground_shader->set_uniform_float("u_shadow_strength", settings.shadow_strength);
+
         m_ground_shader->set_uniform_bool("u_use_pbr", ground_options.use_pbr);
         m_ground_shader->set_uniform_float("u_metallic", ground_options.metallic);
         m_ground_shader->set_uniform_float("u_roughness", ground_options.roughness);

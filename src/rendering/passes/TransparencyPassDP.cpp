@@ -1,4 +1,3 @@
-
 #include "TransparencyPassDP.h"
 #include "../meshes/CommonMeshes.h"
 #include "../../settings/AppState.h"
@@ -71,6 +70,7 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         int num_passes = settings.num_depth_peeling_passes;
+
         for (int i = 0; i < num_passes; i++)
         {
             if (i % 2 == 0)
@@ -81,29 +81,36 @@ namespace volumeshOS::Internal
             {
                 m_transparent_framebuffer1->bind();
             }
-            glClearDepth(0.0f);
+            if(i == 0)
+            {
+                m_transparent_framebuffer0->bind();
+                glClearDepth(1.0f);
+                glClear(GL_DEPTH_BUFFER_BIT);
+                m_transparent_framebuffer0->unbind();
+                m_transparent_framebuffer1->bind();
+                glClearDepth(1.0f);
+                glClear(GL_DEPTH_BUFFER_BIT);
+                m_transparent_framebuffer1->unbind();
+
+            }
+
+            glClearDepth(1.0f);
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT);
+
 
 
             for (const auto& mesh: renderer.render_list)
             {
-                if (i % 2 == 0)
+                if (i % 2 == 0 )
                 {
                     m_transparent_framebuffer0->bind();
                     m_transparency_shader->bind();
-                    if (i == 0)
-                    {
-                        uint32_t depth_texture = renderer.buffers.target_framebuffer->get_texture(
-                                GL_DEPTH_ATTACHMENT);
-                        m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
-                    }
-                    else
-                    {
-                        uint32_t depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
-                        m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
-                    }
-                    render_mesh(renderer, mesh);
+
+                    uint32_t depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
+                    m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+
+                    render_mesh(renderer, mesh, i);
                     m_transparency_shader->unbind();
                     m_transparent_framebuffer0->unbind();
                 }
@@ -113,11 +120,13 @@ namespace volumeshOS::Internal
                     m_transparency_shader->bind();
                     uint32_t depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
                     m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
-                    render_mesh(renderer, mesh);
+                    render_mesh(renderer, mesh, i);
                     m_transparency_shader->unbind();
                     m_transparent_framebuffer1->unbind();
                 }
             }
+
+
 
             if (i % 2 == 0)
             {
@@ -131,7 +140,7 @@ namespace volumeshOS::Internal
         }
     }
 
-    void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh)
+    void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer)
     {
         auto cam = renderer.camera;
         auto light = AppState::settings.light;
@@ -139,7 +148,7 @@ namespace volumeshOS::Internal
 
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
-        glDepthFunc(GL_GREATER);
+        glDepthFunc(GL_LEQUAL);
         glDisable(GL_BLEND);
 
         glm::mat4 transform = cam->world * mesh->get_data().get_transform();
@@ -197,6 +206,13 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
         m_transparency_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
         m_transparency_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
+        m_transparency_shader->set_uniform_int("u_current_layer", layer);
+
+        uint32_t depth_texture = renderer.buffers.target_framebuffer->get_texture(
+                GL_DEPTH_ATTACHMENT);
+        m_transparency_shader->set_uniform_sampler2D("max_depth_texture", GL_TEXTURE0, depth_texture);
+
+
 
         auto vao = mesh->get_vao();
         if (mesh->get_data().rounding_active)
@@ -209,6 +225,8 @@ namespace volumeshOS::Internal
 
     void TransparencyPassDP::render_composition(const Renderer& renderer, int current_pass, int max_passes)
     {
+
+
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
@@ -222,6 +240,8 @@ namespace volumeshOS::Internal
         {
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         }
+
+        glBlendFuncSeparate(GL_DST_ALPHA, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 
         uint32_t new_layer;
 
@@ -247,7 +267,7 @@ namespace volumeshOS::Internal
 
 
         glDisable(GL_BLEND);
-        glClearDepth(1.0f);
+//        glClearDepth(1.0f);
         glEnable(GL_CULL_FACE);
     }
 

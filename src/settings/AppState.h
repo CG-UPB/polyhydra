@@ -79,6 +79,7 @@ namespace volumeshOS::Internal
             bool transparency_active                = false;
             bool ssao_active                        = true;
             bool shadows_active                     = true;
+            float shadow_strength                   = 0.8;
             bool isolation_active                   = false;
             bool digging_active                     = false;
             int num_depth_peeling_passes            = 15;

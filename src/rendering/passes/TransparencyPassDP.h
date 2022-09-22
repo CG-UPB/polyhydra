@@ -13,8 +13,9 @@ namespace volumeshOS::Internal
         explicit TransparencyPassDP(int width, int height);
 
         void render(const Renderer& renderer) override;
-        void render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh);
+        void render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer);
         void render_composition(const Renderer& renderer, int current_passes, int max_passes);
+
         void resize_buffers(int width, int height);
 
         GLuint m_texture;

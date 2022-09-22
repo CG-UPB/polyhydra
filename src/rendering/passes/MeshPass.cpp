@@ -87,6 +87,8 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
             m_mesh_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
 
+            m_mesh_shader->set_uniform_float("u_shadow_strength", settings.shadow_strength);
+
             m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);

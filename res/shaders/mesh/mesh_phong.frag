@@ -43,6 +43,8 @@ uniform float u_gamma;
 uniform vec3 u_ground_color;
 uniform vec3 u_background_color;
 
+uniform float u_shadow_strength;
+
 uniform float peel_depth;
 uniform int u_cascade_level;
 uniform float u_cascade_ends[MAX_CASCADE_LEVEL];
@@ -218,7 +220,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     for(int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        shadow += 0.2 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx), proj_coords.z - bias)));
+        shadow += 0.25 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx), proj_coords.z - bias)));
     }
     return shadow;
 }
@@ -515,7 +517,8 @@ void main()
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
-    if (v_visible == 0 || v_color.a < 1.0 - 0.01)
+    float alpha = v_color.a;
+    if (v_visible == 0 || alpha < 1.0 - 0.001)
     {
         discard;
     }
@@ -532,10 +535,19 @@ void main()
     if (u_draw_shadows)
     {
         shadow = get_shadow(n, l);
+        shadow = shadow * u_shadow_strength;
     }
 
     // Phong Shading
-    vec3 used_color = mix(u_object_color.rgb, v_color.rgb, v_color.a);
+    vec4 used_color = vec4(1.0f);
+    if(v_color.r >= 0.0 && v_color.g >= 0.0 && v_color.b >= 0.0)
+    {
+        used_color = v_color;
+    }
+    else
+    {
+        used_color = u_object_color;
+    }
 
     //ambient
     float ao_factor = 1.0;
@@ -549,11 +561,11 @@ void main()
     {
         vec3 v = normalize(u_cam_pos - v_pos);
         vec3 light = normalize(u_light_pos - v_pos);
-        result = calculate_pbr_lighting(used_color, n, light, v, ao_factor, shadow);
+        result = calculate_pbr_lighting(used_color.rgb, n, light, v, ao_factor, shadow);
     }
     else
     {
-        result = calculate_phong_lighting(used_color, n, l, ao_factor, shadow);
+        result = calculate_phong_lighting(used_color.rgb, n, l, ao_factor, shadow);
     }
-    FragColor = vec4(result, v_color.a);
+    FragColor = vec4(result, used_color.a);
 }

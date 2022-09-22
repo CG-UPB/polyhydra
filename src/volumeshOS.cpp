@@ -225,6 +225,16 @@ namespace volumeshOS
 
     }
 
+    void set_selection_mode(SelectionMode mode)
+    {
+        Internal::AppState::settings.selection_mode = mode;
+    }
+
+    SelectionMode get_selection_mode()
+    {
+        return Internal::AppState::settings.selection_mode;
+    }
+
     void on_cell_hover(const std::function<void(const VMesh, OpenVolumeMesh::CellHandle)>& callback)
     {
         Internal::AppState::callbacks.on_cell_hover = callback;
@@ -508,6 +518,18 @@ namespace volumeshOS
     bool is_using_ambient_occlusion()
     {
         return Internal::AppState::settings.shadows_active;
+    }
+
+    void use_transparency( bool transparency)
+    {
+        commands.emplace_back([transparency]{
+            Internal::AppState::settings.transparency_active = transparency;
+        });
+    }
+
+    bool is_using_transparency()
+    {
+        return Internal::AppState::settings.transparency_active;
     }
 
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)

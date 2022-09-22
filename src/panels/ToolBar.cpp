@@ -184,14 +184,15 @@ namespace volumeshOS::Internal
                         {
                                 "Off", "Vertices", "Edges", "Halffaces", "Cells", "All"
                         };
+                auto mode = static_cast<int>(AppState::settings.selection_mode);
                 ImGui::Combo(
                         "##SelectionMode",
-                        &m_current_selection_mode,
+                        &mode,
                         selection_modes,
                         IM_ARRAYSIZE(selection_modes),
                         IM_ARRAYSIZE(selection_modes)
                 );
-                AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
+                //AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
                 AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
             });
             ImGuiUtil::menu_item_filled("Select by ID", [&]
@@ -516,6 +517,16 @@ namespace volumeshOS::Internal
             {
                 ImGui::SliderInt("##Cascades", &settings.num_shadow_cascades, 1, 8);
             });
+
+            ImGuiUtil::menu_item_filled("Strength", [&]
+            {
+                float shadow_strength = settings.shadow_strength;
+                if(ImGui::SliderFloat("##Strength", &shadow_strength, 0.0f, 1.0f))
+                {
+                    settings.shadow_strength = shadow_strength;
+                };
+            });
+
             ImGuiUtil::end_menu();
         }
     }

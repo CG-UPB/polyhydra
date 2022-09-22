@@ -5,6 +5,7 @@ layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_is_digged;
+layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
 layout (location = 7) in float a_is_triangle;
 layout (location = 8) in float a_vertex_type_rounded;
@@ -76,7 +77,7 @@ void main()
 
     // Roundings
     vec3 position = a_pos;
-    float alpha = u_object_color.a;
+    float alpha = u_object_color.a * a_color.a;
     if (u_rounding)
     {
         float type = a_vertex_type_rounded;

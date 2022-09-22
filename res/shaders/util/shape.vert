@@ -81,7 +81,7 @@ void main()
         position = a_cell_center + (position - a_cell_center) * u_cell_size;
         scale_offset = u_cell_size;
     }
-    scale_offset /= u_scale_normalization;
+    //scale_offset /= u_scale_normalization;
     mat4 translation = mat4(
         1.0, 0.0, 0.0, 0.0,
         0.0, 1.0, 0.0, 0.0,
@@ -89,9 +89,9 @@ void main()
         position.x, position.y, position.z, 1.0
     );
     mat4 scale = mat4(
-        a_scale.x * scale_offset, 0.0, 0.0, 0.0,
+        a_scale.x * scale_offset / u_scale_normalization, 0.0, 0.0, 0.0,
         0.0, a_scale.y * scale_offset, 0.0, 0.0,
-        0.0, 0.0, a_scale.z * scale_offset, 0.0,
+        0.0, 0.0, a_scale.z * scale_offset / u_scale_normalization, 0.0,
         0.0, 0.0, 0.0, 1.0
     );
     mat4 rotation = look_at(a_rotation.xyz, vec3(cos(a_rotation.w), 0.0, sin(a_rotation.w)));
