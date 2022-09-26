@@ -228,6 +228,25 @@ namespace volumeshOS::Internal
         }
     }
 
+    void Camera::animated_look_at(glm::vec3 tgt, glm::vec3 pos)
+    {
+        if(!is_animating)
+        {
+            is_animating = true;
+            animation.time_start = (float)ImGui::GetTime();
+            animation.time_current = animation.time_start;
+            animation.time_end = animation.time_start + animation.duration;
+
+            animation.target_start = position + glm::normalize(target - position) * glm::length(tgt - position);
+            animation.target_end = tgt;
+
+            animation.position_start = position;
+            auto pos_dir = glm::normalize(tgt - position);
+            animation.position_end = pos;
+
+        }
+    }
+
     void Camera::animation_step()
     {
         if(is_animating)

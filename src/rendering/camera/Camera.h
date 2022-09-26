@@ -42,6 +42,7 @@ namespace volumeshOS::Internal
         void apply_changes() const;
 
         void animated_look_at(glm::vec3 new_target);
+        void animated_look_at(glm::vec3 new_target, glm::vec3 new_position);
         void animation_step();
         void look_at(glm::vec3 new_target);
 
