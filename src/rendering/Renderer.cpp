@@ -107,6 +107,8 @@ namespace volumeshOS::Internal
         // Render Meshes
         passes.pre_pass->render(*this);
 
+        handle_zoom();
+
         if (settings.rendering_mode == RenderingMode::ONLY_VERTICES)
         {
             if (data.render_bg)
@@ -142,10 +144,15 @@ namespace volumeshOS::Internal
                 passes.ground_pass->render(*this);
             }
 
+
             passes.mesh_pass->render(*this);
+
 
             FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
+
+
+
 
             // Render transparent objects
             if (settings.transparency_active)
@@ -306,28 +313,6 @@ namespace volumeshOS::Internal
             }
             if (ImGui::IsWindowHovered())
             {
-                if (Input::mouse_double_clicked())
-                {
-                    auto mesh_id = passes.selection_hover_pass->get_hovered_mesh_object();
-
-                    if (mesh_id >= 0)
-                    {
-                        auto mesh = mesh_list->get_mesh(mesh_id);
-                        glm::vec3 new_target = mesh->get_data().position;
-
-                        auto mode = AppState::settings.selection_mode;
-                        if (mode != SelectionMode::OFF)
-                        {
-                            auto transform = camera->world * mesh->get_data().get_transform();
-                            auto pos_mesh_space = glm::vec4(hover_position, 1.0f);
-                            //old_target = mesh->get_data().position_offset + glm::vec3(transform * pos_mesh_space);
-                            new_target = glm::vec3(transform * pos_mesh_space);
-                        }
-                        camera->animated_look_at(new_target);
-
-                        mesh_list->set_focused_mesh(mesh_id);
-                    }
-                }
                 camera->handle_mouse_scroll(Input::get_scroll_offset());
                 camera->handle_mouse_movement(input.offset.x, input.offset.y);
                 camera->handle_key_movement(Input::get_wasd_movement_vector());
@@ -443,5 +428,55 @@ namespace volumeshOS::Internal
         buffers.target_framebuffer = prev_target_framebuffer;
         buffers.post_framebuffer = prev_post_framebuffer;
         resize(frame.width, frame.height);
+    }
+
+    void Renderer::handle_zoom()
+    {
+        if (Input::mouse_double_clicked())
+        {
+            // now render our mesh scene to the framebuffer texture
+            passes.pre_pass->get_framebuffer()->bind();
+
+            // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+            // viewport[3] equals viewport height
+            GLint viewport[4];
+            glGetIntegerv(GL_VIEWPORT, viewport);
+
+            ImVec2 mouse_pos_in_window = {
+                    ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
+                    ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()
+            };
+            int x = (int) mouse_pos_in_window.x;
+            int y = (int) (viewport[3] - (int) mouse_pos_in_window.y);
+
+            GLfloat depth = 0.0;
+
+            glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+            if(depth >= 0.99999)
+                return;
+
+            // get NDCs
+            glm::vec4 pos;
+            pos.x = 2.0f * ((float)x / (float) viewport[2]) - 1.0f;
+            pos.y = 2.0f * ((float)y / (float)viewport[3]) - 1.0f;
+            pos.z = 2.0f * depth - 1.0f;
+            pos.w = 1.0;
+
+            // unproject from clip space to world space
+            pos = glm::inverse(camera->projection ) * pos;
+            pos /= pos.w;
+            pos = glm::inverse(camera->view) * pos;
+
+            glm::vec3 new_cam_pos = camera->position + 0.5f * (glm::vec3(pos) - camera->position);
+
+            if(camera->get_mode() != CameraMode::ORBIT)
+                camera->set_mode(CameraMode::ORBIT);
+            camera->animated_look_at(glm::vec3(pos), new_cam_pos);
+
+
+
+            passes.pre_pass->get_framebuffer()->unbind();
+
+        }
     }
 }

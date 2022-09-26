@@ -108,6 +108,7 @@ namespace volumeshOS::Internal
     void Camera::handle_mouse_scroll(glm::vec2 scroll)
     {
         auto y_offset = scroll.y;
+
         if (m_mode == CameraMode::FLY)
         {
             zoom -= m_zoom_strength * y_offset;
@@ -121,16 +122,24 @@ namespace volumeshOS::Internal
             }
         } else if (m_mode == CameraMode::ORBIT)
         {
-            auto step =  y_offset * glm::normalize(target - position);
-            auto len = glm::length(target - position );
-            if(len >= 0.1f && len >= glm::length(step) || glm::dot((target - position ), step) <= 0)
+            auto len = glm::length(target - position);
+
+            // adjust speed in Orbit Mode: the lower the distance from camera position to target
+            auto dist_factor = std::clamp(len, min_distance, 1.0f);
+
+            auto step =  y_offset * pow(dist_factor, 2.5f) * glm::normalize(target - position);
+
+            auto new_pos = position + step;
+
+            if(glm::length(target - new_pos ) <= min_distance || (glm::dot((target - position), step) >= 0 && glm::length(position - target) <= glm::length(position - new_pos)))
             {
-                position += step;
+                // keep minimal distance to target
+                position =  target + min_distance * glm::normalize(position - target);
             }
-//            else
-//            {
-//                position = target - 0.1f * glm::normalize(position - target);
-//            }
+            else
+            {
+                position = new_pos;
+            }
         }
     }
 
@@ -223,6 +232,31 @@ namespace volumeshOS::Internal
             else
             {
                 //animation.target_end = position + glm::normalize(tgt - position);
+                animation.position_end = position;
+            }
+        }
+    }
+
+    void Camera::animated_look_at(glm::vec3 tgt, glm::vec3 pos)
+    {
+        if(!is_animating)
+        {
+            is_animating = true;
+            animation.time_start = (float)ImGui::GetTime();
+            animation.time_current = animation.time_start;
+            animation.time_end = animation.time_start + animation.duration;
+
+            animation.target_start = position + glm::normalize(target - position) * glm::length(tgt - position);
+            animation.target_end = tgt;
+
+            animation.position_start = position;
+            auto pos_dir = glm::normalize(tgt - position);
+            if(glm::length(pos - position) >= min_distance)
+            {
+                animation.position_end = pos;
+            }
+            else
+            {
                 animation.position_end = position;
             }
         }

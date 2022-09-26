@@ -42,6 +42,7 @@ namespace volumeshOS::Internal
         void apply_changes() const;
 
         void animated_look_at(glm::vec3 new_target);
+        void animated_look_at(glm::vec3 new_target, glm::vec3 new_position);
         void animation_step();
         void look_at(glm::vec3 new_target);
 
@@ -83,6 +84,8 @@ namespace volumeshOS::Internal
         float last_frame = 0.0f;
 
         float zoom = 45.0f;
+
+        float min_distance = 0.1f;
 
         bool is_animating = false;
         bool blocking = false;

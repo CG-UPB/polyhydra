@@ -122,6 +122,7 @@ namespace volumeshOS::Internal
 
     private:
 
+        void handle_zoom();
         void handle_input();
         void handle_camera_input();
         void handle_mesh_input();
