@@ -468,13 +468,12 @@ namespace volumeshOS::Internal
             pos = glm::inverse(camera->view) * pos;
 
             glm::vec3 new_cam_pos = camera->position + 0.5f * (glm::vec3(pos) - camera->position);
-            if(glm::length(new_cam_pos - camera->position) >= 0.1f)
-            {
-                if(camera->get_mode() != CameraMode::ORBIT)
-                    camera->set_mode(CameraMode::ORBIT);
-                camera->animated_look_at(glm::vec3(pos), new_cam_pos);
 
-            }
+            if(camera->get_mode() != CameraMode::ORBIT)
+                camera->set_mode(CameraMode::ORBIT);
+            camera->animated_look_at(glm::vec3(pos), new_cam_pos);
+
+
 
             passes.pre_pass->get_framebuffer()->unbind();
 

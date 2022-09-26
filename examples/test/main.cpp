@@ -82,7 +82,7 @@ int main()
         auto& ovm = *vmesh.get_ovm();
         for (auto hf_it : ovm.cell_halffaces(ch))
         {
-            vmesh.set_color(ch, glm::vec4(col.r, col.g, col.b, 0.2f));
+            vmesh.set_color(ch, glm::vec4(col.r, col.g, col.b, 1.0f));
         }
         return;
     });

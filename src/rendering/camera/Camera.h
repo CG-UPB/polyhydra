@@ -85,6 +85,8 @@ namespace volumeshOS::Internal
 
         float zoom = 45.0f;
 
+        float min_distance = 0.1f;
+
         bool is_animating = false;
         bool blocking = false;
 
