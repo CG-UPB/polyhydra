@@ -87,9 +87,8 @@ int main()
         return;
     });
 
-    use_log_window(true);
+    use_log_window(false);
     //set_selection_mode(SelectionMode::ALL);
-    load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
 
     open();
 }
