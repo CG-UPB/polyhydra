@@ -34,8 +34,8 @@ namespace volumeshOS::Internal
                 m_world_up
         );
         m_sensitivity = 1.0f;
-        m_vertical_speed = 1.5f;
-        m_horizontal_speed = 1.5f;
+        m_vertical_speed = 0.75f;
+        m_horizontal_speed = 0.75f;
 
         new_mode = CameraMode::FLY;
         set_mode(CameraMode::FLY);
@@ -125,9 +125,9 @@ namespace volumeshOS::Internal
             auto len = glm::length(target - position);
 
             // adjust speed in Orbit Mode: the lower the distance from camera position to target
-            auto dist_factor = std::clamp(len, min_distance, 1.0f);
+            auto dist_factor = 0.1f * std::clamp(len, min_distance, 10.0f);
 
-            auto step =  y_offset * pow(dist_factor, 2.5f) * glm::normalize(target - position);
+            auto step =  y_offset * dist_factor * glm::normalize(target - position);
 
             auto new_pos = position + step;
 
@@ -251,7 +251,7 @@ namespace volumeshOS::Internal
 
             animation.position_start = position;
             auto pos_dir = glm::normalize(tgt - position);
-            if(glm::length(pos - position) >= min_distance)
+            if(glm::length(tgt - pos) >= min_distance)
             {
                 animation.position_end = pos;
             }

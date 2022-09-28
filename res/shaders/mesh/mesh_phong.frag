@@ -518,7 +518,7 @@ void main()
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
     float alpha = v_color.a;
-    if (v_visible == 0 || alpha < 1.0 - 0.001)
+    if (v_visible == 0 || alpha < 1.0 - 0.00001)
     {
         discard;
     }

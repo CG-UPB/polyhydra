@@ -294,9 +294,15 @@ vec3 calculate_pbr_lighting(vec3 albedo, vec3 n, vec3 l, vec3 v, float ao, float
 
 void main()
 {
-    vec3 used_color = vec3(0.0);
-
-
+    vec4 used_color = vec4(1.0f);
+    if(v_color.r >= 0.0 && v_color.g >= 0.0 && v_color.b >= 0.0)
+    {
+        used_color = v_color;
+    }
+    else
+    {
+        used_color = u_object_color;
+    }
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
 
@@ -313,11 +319,11 @@ void main()
     {
         vec3 v = normalize(u_cam_pos - v_pos);
         vec3 light = normalize(u_light_pos - v_pos);
-        result = calculate_pbr_lighting(used_color, n, light, v, 1.0f, 0.0f);
+        result = calculate_pbr_lighting(used_color.rgb, n, light, v, 1.0f, 0.0f);
     }
     else
     {
-        result = calculate_phong_lighting(used_color, n, l, 1.0f, 0.0f);
+        result = calculate_phong_lighting(used_color.rgb, n, l, 1.0f, 0.0f);
     }
     used_color.rgb = result;
 
