@@ -100,7 +100,7 @@ int main()
     //set_selection_mode(SelectionMode::ALL);
 
     // Transparency Test
-    /auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
+    //auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
     //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     use_transparency(true);
     //set_cell_rounding(mesh, 0.0f);
