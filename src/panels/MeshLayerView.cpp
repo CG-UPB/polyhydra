@@ -386,8 +386,7 @@ namespace volumeshOS::Internal
                     ImGuiUtil::menu_item_filled("Roundings", [&]
                     {
                         float actual_rounding_size = mesh.get_cell_rounding();
-                        if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f",
-                                               ImGuiSliderFlags_Logarithmic))
+                        if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f"))
                         {
                             mesh.set_cell_rounding(actual_rounding_size);
                         }
