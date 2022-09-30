@@ -426,11 +426,11 @@ namespace volumeshOS::Internal
             const glm::vec4& col,
             const glm::vec3& face_center,
             const glm::vec3& to_vertex,
-            float dihedral_angle)
+            float dihedral_angle,
+            float min_edge_length)
     {
         auto& cell_center = m_cell_centers[data.cell_id];
         auto peel_depth = m_peel_depths[data.cell_id];
-        auto min_edge_length = m_min_edge_lengths[data.cell_id];
         uint32_t index = data.vertex_types.size();
         VecUtil::push_vec3(data.vertex_positions, pos);
         VecUtil::push_vec3(data.vertex_halfface_normals, hf_norm);
@@ -466,12 +466,13 @@ namespace volumeshOS::Internal
         face_centers.clear();
         static std::unordered_map<int, glm::vec3> face_normals;
         face_normals.clear();
+        static std::unordered_map<int, float> from_vertex_min_edge_lengths;
+        from_vertex_min_edge_lengths.clear();
         static std::unordered_map<int, std::vector<RoundedVertexData>> cell_vertices;
         cell_vertices.clear();
         // start with the halffaces, because with them, we can navigate inside the current cell without other cells
         // if we would instead take the halfedges of a vertex for example, they would include other cells,
         // which we don't want
-        //mesh->set_color()
         for (auto chf_it: mesh->cell_halffaces(cell))
         {
             face_normals[chf_it.idx()] = halfface_normal_to_vec3(chf_it.idx());
@@ -512,6 +513,8 @@ namespace volumeshOS::Internal
                 });
                 auto current_halfedge = hfhe_it;
                 auto current_halfface = chf_it;
+                auto current_halfedge_length = mesh->length(hfhe_it);
+                auto min_halfedge_len = current_halfedge_length;
                 do
                 {
                     // with this, we can get the next halfface within the cell, like this
@@ -534,22 +537,25 @@ namespace volumeshOS::Internal
                         auto [he0, he1] = mesh->edge_halfedges(chfe_it);
                         auto from0 = mesh->from_vertex_handle(he0);
                         auto from1 = mesh->from_vertex_handle(he1);
+                        auto found = false;
                         if (from0 == from_vertex && current_halfedge != he0)
                         {
                             // we have found our halfedge
                             current_halfedge = he0;
-                            cell_vertices[from_vertex.idx()].push_back({
-                                   from_vertex.idx(),
-                                   mesh->to_vertex_handle(current_halfedge).idx(),
-                                   current_halfedge.idx(),
-                                   current_halfface.idx()
-                            });
-                            break;
-                        }
-                        if (from1 == from_vertex && current_halfedge != he1)
+                            found = true;
+                        } else if (from1 == from_vertex && current_halfedge != he1)
                         {
-                            // we have found our halfedge
                             current_halfedge = he1;
+                            found = true;
+                        }
+                        // we have found our halfedge
+                        if (found)
+                        {
+                            current_halfedge_length = mesh->length(current_halfedge);
+                            if (current_halfedge_length < min_halfedge_len)
+                            {
+                                min_halfedge_len = current_halfedge_length;
+                            }
                             cell_vertices[from_vertex.idx()].push_back({
                                    from_vertex.idx(),
                                    mesh->to_vertex_handle(current_halfedge).idx(),
@@ -560,6 +566,7 @@ namespace volumeshOS::Internal
                         }
                     }
                 } while (current_halfface != chf_it);
+                from_vertex_min_edge_lengths[from_vertex.idx()] = (float) min_halfedge_len;
             }
         }
 
@@ -654,7 +661,8 @@ namespace volumeshOS::Internal
                         color,
                         edge_face_center_average,
                         to_vertex_pos,
-                        dihedral_angle
+                        dihedral_angle,
+                        from_vertex_min_edge_lengths[data.from_vertex_id]
                 );
                 total_cell_vertex_count++;
 
@@ -664,7 +672,7 @@ namespace volumeshOS::Internal
 
                 // face vertex
                 glm::vec3 face_center = face_centers[data.halfface_id];
-                halfface_vertices[data.halfface_id].push_back({
+                halfface_vertices[data.halfface_id].push_back(VertexAttribData{
                   VertexType::FACE,
                   corner_pos,
                   -face_normal,
@@ -674,7 +682,7 @@ namespace volumeshOS::Internal
                   zero,
                   0.0f,
                   is_boundary,
-                  {
+                  RoundedFaceVertexData{
                           0,
                           vertex_id,
                           data.to_vertex_id,
@@ -697,7 +705,8 @@ namespace volumeshOS::Internal
                     color,
                     corner_face_center_average,
                     zero,
-                    corner_dihedral_angle_average
+                    corner_dihedral_angle_average,
+                    from_vertex_min_edge_lengths[vertex_id]
             );
             total_cell_vertex_count++;
         }
@@ -720,9 +729,10 @@ namespace volumeshOS::Internal
                         attrib_data.col,
                         attrib_data.face_center,
                         attrib_data.to_vertex,
-                        attrib_data.dihedral_angle
+                        attrib_data.dihedral_angle,
+                        from_vertex_min_edge_lengths[attrib_data.data.corner_vertex_id]
                 );
-                halfface_vertices_indices[halfface_id].push_back({
+                halfface_vertices_indices[halfface_id].push_back(RoundedFaceVertexData{
                      face_vertex_index,
                      attrib_data.data.corner_vertex_id,
                      attrib_data.data.to_vertex_id,
@@ -745,6 +755,7 @@ namespace volumeshOS::Internal
                     color,
                     zero,
                     zero,
+                    0.0f,
                     0.0f
             );
             num_halfface_vertices++;

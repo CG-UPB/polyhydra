@@ -277,7 +277,8 @@ namespace volumeshOS::Internal
                 const glm::vec4& col,
                 const glm::vec3& face_center,
                 const glm::vec3& to_vertex,
-                float dihedral_angle
+                float dihedral_angle,
+                float min_edge_length
         );
 
         void add_cell_triangle_indices(RoundedCellData& data, uint32_t i0, uint32_t i1, uint32_t i2) const;
