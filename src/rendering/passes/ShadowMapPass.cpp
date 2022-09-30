@@ -34,7 +34,7 @@ namespace volumeshOS::Internal
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 //        constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
 //        glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
@@ -76,7 +76,7 @@ namespace volumeshOS::Internal
         glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
         glViewport(0, 0, m_width, m_height);
         glClear(GL_DEPTH_BUFFER_BIT);
-        //glCullFace(GL_FRONT);  // peter panning
+        glCullFace(GL_BACK);  // peter panning
 
 
         for (const auto& mesh: renderer.render_list)

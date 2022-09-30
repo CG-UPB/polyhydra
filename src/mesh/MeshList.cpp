@@ -228,13 +228,6 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
-    void MeshList::activate_rounding(MeshID id, bool rounding)
-    {
-        auto f = [rounding](const std::shared_ptr<MeshObject>& mesh) -> void{
-            mesh->get_data().rounding_active = rounding;
-        };
-        execute_for_mesh(f, id);
-    }
 
     void MeshList::set_cell_size(const MeshID id, const float size)
     {

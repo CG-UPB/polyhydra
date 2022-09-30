@@ -76,13 +76,13 @@ void main()
 
 
     set_light_space_pos(0);
-    vertex(screen_pos0, viewspace_pos0.xyz, v_Normal[0], v_UV[0]);
+    vertex(screen_pos0, pos0.xyz, v_Normal[0], v_UV[0]);
 
     set_light_space_pos(1);
-    vertex(screen_pos1, viewspace_pos1.xyz, v_Normal[1], v_UV[1]);
+    vertex(screen_pos1, pos1.xyz, v_Normal[1], v_UV[1]);
 
     set_light_space_pos(2);
-    vertex(screen_pos2, viewspace_pos2.xyz, v_Normal[2], v_UV[2]);
+    vertex(screen_pos2, pos2.xyz, v_Normal[2], v_UV[2]);
 
     EndPrimitive();
 }

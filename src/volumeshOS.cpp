@@ -977,19 +977,6 @@ namespace volumeshOS
         return mesh_list->get_cell_rounding(mesh.get_id());
     }
 
-    void use_rounding(const VMesh& mesh, bool rounding)
-    {
-        commands.emplace_back([mesh, rounding]{
-            mesh_list->activate_rounding(mesh.get_id(), rounding);
-        });
-    }
-
-    bool is_using_rounding(const VMesh& mesh)
-    {
-        assert(mesh.is_valid());
-        return mesh_list->get_mesh(mesh.get_id())->get_data().rounding_active;
-    }
-
     void set_cell_size(const VMesh& mesh, const float size)
     {
         commands.emplace_back([mesh, size]{

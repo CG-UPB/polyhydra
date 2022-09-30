@@ -39,7 +39,7 @@ int main()
                         auto cylinder = mesh.add_shape<VCylinder>(c_it);
                         cylinder.set_position(pos);
                         cylinder.set_scale(r, glm::length(glm::vec3(dir[0], dir[1], dir[2])), r);
-                        cylinder.set_direction(dir);
+                        cylinder.set_direction(glm::vec3(1.0f, 0.0f, 0.0f));
                         cylinders.push_back(cylinder);
                     }
                 }
@@ -100,11 +100,13 @@ int main()
     //set_selection_mode(SelectionMode::ALL);
 
     // Transparency Test
-    auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
-    mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+    /auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
+    //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     use_transparency(true);
+    //set_cell_rounding(mesh, 0.0f);
+    use_ambient_occlusion(false);
     set_camera_mode(volumeshOS::CameraMode::ORBIT);
-    set_selection_mode(volumeshOS::SelectionMode::ALL);
+    //set_selection_mode(volumeshOS::SelectionMode::ALL);
 
     open();
 }

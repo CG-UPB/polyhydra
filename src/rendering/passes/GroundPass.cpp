@@ -86,10 +86,10 @@ namespace volumeshOS::Internal
         glm::mat4 l_transform = cam->world;
         glm::mat4 view_transform = cam->view * transform;
 
-        glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
+        glm::vec3 cam_pos(glm::vec4(cam->position, 1.0));
         //glm::vec3 light_pos(data.camera.view * glm::vec4(data.light.light_dir, 1.0));
         glm::mat3 mvp_ti = glm::mat3(glm::transpose(glm::inverse(view_transform)));
-        glm::vec3 light_pos(glm::normalize(mvp_ti * light.direction));
+        glm::vec3 light_pos(light.direction);
         auto projection = cam->projection;
 //        glm::mat4 projection = glm::perspective(glm::radians(cam->zoom),
 //                                                (cam->get_viewport_size().x / cam->get_viewport_size().y),
@@ -155,6 +155,7 @@ namespace volumeshOS::Internal
         }
 
         m_ground_shader->set_uniform_mat4f("u_light_transform", l_transform);
+        m_ground_shader->set_uniform_float("u_light_size", settings.light.size);
 
 
         // settings

@@ -18,6 +18,7 @@ namespace volumeshOS::Internal
     {
         glm::vec3 direction     = {0.5f, 1.0f, 1.0f};
         glm::vec3 color         = {0.94f, 0.86f, 0.75f};
+        float size              = 1.0f;
     };
 
     struct SkyOptions

@@ -390,7 +390,6 @@ namespace volumeshOS::Internal
                                                ImGuiSliderFlags_Logarithmic))
                         {
                             mesh.set_cell_rounding(actual_rounding_size);
-                            mesh.use_rounding((actual_rounding_size != 0.0f));
                         }
                     });
 

@@ -127,15 +127,15 @@ void main()
 
     set_light_space_pos(0);
     v_tri_dist = vec3(0.0, dist0, 0.0);
-    vertex(screen_pos0, viewspace_pos0.xyz, v_Normal[0], v_Color[0], v_Visible[0]);
+    vertex(screen_pos0, pos0.xyz, v_Normal[0], v_Color[0], v_Visible[0]);
 
     set_light_space_pos(1);
     v_tri_dist = vec3(0.0, 0.0, dist1);
-    vertex(screen_pos1, viewspace_pos1.xyz, v_Normal[1], v_Color[1], v_Visible[1]);
+    vertex(screen_pos1, pos1.xyz, v_Normal[1], v_Color[1], v_Visible[1]);
 
     set_light_space_pos(2);
     v_tri_dist = vec3(dist2, 0.0, 0.0);
-    vertex(screen_pos2, viewspace_pos2.xyz, v_Normal[2], v_Color[2], v_Visible[2]);
+    vertex(screen_pos2, pos2.xyz, v_Normal[2], v_Color[2], v_Visible[2]);
 
     EndPrimitive();
 }

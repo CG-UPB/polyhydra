@@ -61,6 +61,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_mat4f("u_transform", transform);
             m_mesh_shader->set_uniform_mat4f("u_projection", cam->projection);
             m_mesh_shader->set_uniform_mat4f("u_view", cam->view);
+            m_mesh_shader->set_uniform_vec3f("u_view_dir", glm::normalize(cam->target - cam->position));
             m_mesh_shader->set_uniform_vec3f("u_light_pos", light_pos);
             m_mesh_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
             m_mesh_shader->set_uniform_vec3f("u_light_color", light.color);
@@ -103,8 +104,8 @@ namespace volumeshOS::Internal
 //            m_bias_min = 0.00000001f;
 //            m_bias_max = 0.000003f;
 
-            m_bias_min = 0.0000001f;
-            m_bias_max = 0.0002f;
+            m_bias_min = 0.0001f;
+            m_bias_max = 0.01f;
 
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
             m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);
@@ -121,6 +122,8 @@ namespace volumeshOS::Internal
                 m_mesh_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
             }
             m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
+            m_mesh_shader->set_uniform_float("u_light_size", settings.light.size);
+
 
 
             // settings

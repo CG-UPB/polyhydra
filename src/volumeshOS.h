@@ -417,11 +417,6 @@ namespace volumeshOS
 
     float get_cell_rounding(const VMesh& mesh);
 
-    // Activate roundings
-    void use_rounding(const VMesh& mesh, bool rounding);
-
-    bool is_using_rounding(const VMesh& mesh);
-
     // Set the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
     void set_cell_size(const VMesh& mesh, float size);
 
@@ -1030,10 +1025,6 @@ namespace volumeshOS
             return volumeshOS::get_max_peel_depth(*this);
         }
 
-        inline void use_rounding(bool rounding) const
-        {
-            return volumeshOS::use_rounding(*this, rounding);
-        }
 
         // Set the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
         inline void set_cell_rounding(float rounding) const

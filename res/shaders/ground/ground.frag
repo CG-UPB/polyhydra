@@ -22,6 +22,7 @@ uniform bool u_wireframe;
 uniform bool u_vertices;
 
 uniform vec3 u_light_pos;
+uniform float u_light_size = 1.0;
 uniform vec3 u_cam_pos;
 uniform vec3 u_light_color;
 
@@ -94,6 +95,72 @@ float random(vec3 seed, int i){
     return fract(sin(dot_product) * 43758.5453);
 }
 
+float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int cascade_idx)
+{
+    int blockers = 0;
+    float avg_blocker_distance = 0.0;
+    float search_width = light_size * (shadow_coords.z - bias) / u_cam_pos.z;
+
+    float samples = 8;
+    for(int i = 0; i < samples; i++)
+    {
+        int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
+        float z = texture(u_shadow_texture, vec4(shadow_coords.xy + search_width * (poisson_disk[i]), float(cascade_idx), (shadow_coords.z - bias)));
+        if( z < ((shadow_coords.z)))
+        {
+            blockers++;
+            avg_blocker_distance += z;
+        }
+    }
+
+    if(blockers > 0)
+    {
+        return avg_blocker_distance / blockers;
+    }
+    else
+    {
+        return -1.0;
+    }
+
+}
+
+float percentage_closer_filtering(vec3 shadow_coords, float radius, float bias, int cascade_idx)
+{
+    float sum = 0;
+    int samples = 8;
+    for(int i = 0; i < samples; i++)
+    {
+        int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
+        float z = texture(u_shadow_texture, vec4(shadow_coords.xy + radius * (poisson_disk[i]), float(cascade_idx), (shadow_coords.z - bias)));
+        if(z < (shadow_coords.z))
+        {
+            sum += 1.0;
+        }
+    }
+    return sum / samples;
+}
+
+float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cascade_idx)
+{
+    vec3 shadow_coords = pos_ls.rgb / pos_ls.w;
+    shadow_coords = shadow_coords * 0.5 + 0.5;
+
+    light_size/= 10.0;
+
+    //Step 1: Blocker search
+    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
+    if(blocker_distance == -1)
+        return 0.0;
+
+    //Step 2: Penumbra estimation
+    float penumbra_width = (shadow_coords.z - blocker_distance) / blocker_distance;
+
+    //Step 3: Filtering
+    float radius = penumbra_width * light_size ;
+
+    return percentage_closer_filtering(shadow_coords, radius, bias, cascade_idx);
+}
+
 float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
 {
     float shadow = 0.0;
@@ -104,8 +171,9 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     // range [0, 1]
     proj_coords = proj_coords * 0.5 + 0.5;
 
-    float closest_depth = texture(u_shadow_texture, vec4(proj_coords.xy, float(cascade_idx), proj_coords.z));
     float current_depth = proj_coords.z;
+    float closest_depth = texture(u_shadow_texture, vec4(proj_coords.xy, float(cascade_idx), current_depth));
+
     if (current_depth > 1.0)
     {
         return 0.0;
@@ -114,7 +182,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     for(int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        shadow += 0.2 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx), proj_coords.z)));
+        shadow += 0.25 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 700.0), float(cascade_idx), current_depth )));
     }
     return shadow;
 }
@@ -399,7 +467,8 @@ void main()
         //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
 
         //cascade_idx = 0;
-        shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
+        //shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
+        shadow = pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
     }
 
     float ao_factor = 1.0;
@@ -466,7 +535,7 @@ void main()
     if (u_use_pbr)
     {
         vec3 v = normalize(u_cam_pos - v_pos);
-        vec3 light = normalize(u_light_pos - v_pos);
+        vec3 light = normalize(u_light_pos);
         result = calculate_pbr_lighting(color, n, light, v, ao_factor, shadow);
     }
     else

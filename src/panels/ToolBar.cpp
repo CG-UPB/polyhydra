@@ -329,6 +329,15 @@ namespace volumeshOS::Internal
                     light_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
                 }
             });
+            ImGuiUtil::menu_item_filled("Size", [&]
+            {
+                float size = settings.light.size;
+                if (ImGui::DragFloat("##LightSize", &size, 0.1f, 0.0f, 10.0f))
+                {
+                    settings.light.size = size;
+                }
+            });
+
             ImGuiUtil::end_menu();
         }
     }
@@ -504,7 +513,13 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         shift_right(-ImGui::GetStyle().FramePadding.x);
-        ImGui::Checkbox("###Shadows", &settings.shadows_active);
+
+        auto shadows_active = settings.shadows_active;
+        if(ImGui::Checkbox("###Shadows", &shadows_active))
+        {
+            settings.shadows_active = shadows_active;
+        }
+
         ImGui::SameLine();
         if (!ImGui::CollapsingHeader("Shadows"))
         {
@@ -536,7 +551,13 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         shift_right(-ImGui::GetStyle().FramePadding.x);
-        ImGui::Checkbox("###Ambient Occlusion", &settings.ssao_active);
+
+        auto ssao_active = settings.ssao_active;
+        if(ImGui::Checkbox("###SSAO", &ssao_active))
+        {
+            settings.ssao_active = ssao_active;
+        }
+
         ImGui::SameLine();
         if (!ImGui::CollapsingHeader("Ambient Occlusion"))
         {
@@ -595,7 +616,11 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         shift_right(-ImGui::GetStyle().FramePadding.x);
-        ImGui::Checkbox("###Transparency", &settings.transparency_active);
+        auto transparency_active = settings.transparency_active;
+        if(ImGui::Checkbox("###Transparency", &transparency_active))
+        {
+            settings.transparency_active = transparency_active;
+        }
         ImGui::SameLine();
         if (!ImGui::CollapsingHeader("Transparency"))
         {

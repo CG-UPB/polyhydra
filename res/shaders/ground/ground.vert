@@ -38,7 +38,7 @@ void main()
     vec3 pos = a_pos + vec3(0.0, u_height, 0.0);
 
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(view_transform))) * a_normal;
+    v_Normal = mat3(transpose(inverse(u_transform))) * a_normal;
     v_UV = a_uv;
 
     // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)

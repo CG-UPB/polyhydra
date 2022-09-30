@@ -432,51 +432,54 @@ namespace volumeshOS::Internal
 
     void Renderer::handle_zoom()
     {
-        if (Input::mouse_double_clicked())
+        if(ImGui::IsWindowHovered())
         {
-            // now render our mesh scene to the framebuffer texture
-            passes.pre_pass->get_framebuffer()->bind();
+            if (Input::mouse_double_clicked())
+            {
+                // now render our mesh scene to the framebuffer texture
+                //passes.pre_pass->get_framebuffer()->bind();
+                buffers.target_framebuffer->bind();
 
-            // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-            // viewport[3] equals viewport height
-            GLint viewport[4];
-            glGetIntegerv(GL_VIEWPORT, viewport);
+                // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+                // viewport[3] equals viewport height
+                GLint viewport[4];
+                glGetIntegerv(GL_VIEWPORT, viewport);
 
-            ImVec2 mouse_pos_in_window = {
-                    ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
-                    ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()
-            };
-            int x = (int) mouse_pos_in_window.x;
-            int y = (int) (viewport[3] - (int) mouse_pos_in_window.y);
+                ImVec2 mouse_pos_in_window = {
+                        ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
+                        ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()
+                };
+                int x = (int) mouse_pos_in_window.x;
+                int y = (int) (viewport[3] - (int) mouse_pos_in_window.y);
 
-            GLfloat depth = 0.0;
+                GLfloat depth = 0.0;
 
-            glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
-            if(depth >= 0.99999)
-                return;
+                glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+                if (depth >= 0.99999)
+                    return;
 
-            // get NDCs
-            glm::vec4 pos;
-            pos.x = 2.0f * ((float)x / (float) viewport[2]) - 1.0f;
-            pos.y = 2.0f * ((float)y / (float)viewport[3]) - 1.0f;
-            pos.z = 2.0f * depth - 1.0f;
-            pos.w = 1.0;
+                // get NDCs
+                glm::vec4 pos;
+                pos.x = 2.0f * ((float) x / (float) viewport[2]) - 1.0f;
+                pos.y = 2.0f * ((float) y / (float) viewport[3]) - 1.0f;
+                pos.z = 2.0f * depth - 1.0f;
+                pos.w = 1.0;
 
-            // unproject from clip space to world space
-            pos = glm::inverse(camera->projection ) * pos;
-            pos /= pos.w;
-            pos = glm::inverse(camera->view) * pos;
+                // unproject from clip space to world space
+                pos = glm::inverse(camera->projection) * pos;
+                pos /= pos.w;
+                pos = glm::inverse(camera->view) * pos;
 
-            glm::vec3 new_cam_pos = camera->position + 0.5f * (glm::vec3(pos) - camera->position);
+                glm::vec3 new_cam_pos = camera->position + 0.5f * (glm::vec3(pos) - camera->position);
 
-            if(camera->get_mode() != CameraMode::ORBIT)
-                camera->set_mode(CameraMode::ORBIT);
-            camera->animated_look_at(glm::vec3(pos), new_cam_pos);
+                if (camera->get_mode() != CameraMode::ORBIT)
+                    camera->set_mode(CameraMode::ORBIT);
+                camera->animated_look_at(glm::vec3(pos), new_cam_pos);
 
 
+                passes.pre_pass->get_framebuffer()->unbind();
 
-            passes.pre_pass->get_framebuffer()->unbind();
-
+            }
         }
     }
 }

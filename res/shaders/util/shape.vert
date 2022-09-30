@@ -43,6 +43,19 @@ mat4 get_rotation_matrix(vec3 axis, float angle)
 
 mat4 look_at(vec3 direction, vec3 up)
 {
+    if(dot(direction, up) == 1.0)
+    {
+        float tmp = direction.x;
+        if(direction.y >= tmp)
+            tmp = direction.x;
+        if(direction.z >= tmp)
+            tmp = direction.z;
+
+        direction.x += 0.000001 * tmp;
+        direction.y += 0.000001 * tmp;
+        direction.z += 0.000001 * tmp;
+    }
+
     vec3 y_axis = normalize(direction);
     vec3 x_axis = normalize(cross(up, y_axis));
     vec3 z_axis = cross(y_axis, x_axis);
