@@ -60,7 +60,7 @@ uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_transparent_shadow_texture;
 uniform sampler2D u_color_filter_texture;
-uniform sampler2DArrayShadow u_shadow_texture;
+uniform sampler2DArray u_shadow_texture;
 
 out vec4 FragColor;
 
@@ -99,17 +99,28 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 {
     int blockers = 0;
     float avg_blocker_distance = 0.0;
-    float search_width = light_size * (shadow_coords.z - bias) / u_cam_pos.z;
+    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
 
-    float samples = 8;
-    for(int i = 0; i < samples; i++)
+
+    float search_width = light_size * (shadow_coords.z - 0.05) / shadow_coords.z;
+//    if(search_width < 0)
+//    {
+//        return 0;
+//    }
+
+    int range = int(search_width);
+    int samples = 3;
+    for(int x = -samples; x <= samples; ++x)
     {
-        int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        float z = texture(u_shadow_texture, vec4(shadow_coords.xy + search_width * (poisson_disk[i]), float(cascade_idx), (shadow_coords.z - bias)));
-        if( z < ((shadow_coords.z)))
+        for (int y = -samples; y <= samples; ++y)
         {
-            blockers++;
-            avg_blocker_distance += z;
+            vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
+            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x, y) + shift * texelSize, float(cascade_idx))).r;
+            if(z < (shadow_coords.z ))
+            {
+                blockers++;
+                avg_blocker_distance += z;
+            }
         }
     }
 
@@ -127,17 +138,28 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 float percentage_closer_filtering(vec3 shadow_coords, float radius, float bias, int cascade_idx)
 {
     float sum = 0;
-    int samples = 8;
-    for(int i = 0; i < samples; i++)
+    int count = 0;
+
+    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
+    int range = int(radius * 10.0);
+    range = range > 40 ? 40 : range;
+    range = range <  1 ?  2 : range;
+
+    for(int x = - range; x <= range; ++x)
     {
-        int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        float z = texture(u_shadow_texture, vec4(shadow_coords.xy + radius * (poisson_disk[i]), float(cascade_idx), (shadow_coords.z - bias)));
-        if(z < (shadow_coords.z))
+        count++;
+        for (int y = -range; y <= range; ++y)
         {
-            sum += 1.0;
+            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x , y) * texelSize, float(cascade_idx))).r;
+            if(z < (shadow_coords.z - bias))
+            {
+                sum += 1.0;
+            }
         }
     }
-    return sum / samples;
+    count = count > 0 ? count : 1;
+
+    return sum / (count * count);
 }
 
 float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cascade_idx)
@@ -145,7 +167,10 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
     vec3 shadow_coords = pos_ls.rgb / pos_ls.w;
     shadow_coords = shadow_coords * 0.5 + 0.5;
 
-    light_size/= 10.0;
+    if(shadow_coords.z > 1.0)
+    {
+        return 0.0;
+    }
 
     //Step 1: Blocker search
     float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
@@ -153,10 +178,12 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
         return 0.0;
 
     //Step 2: Penumbra estimation
-    float penumbra_width = (shadow_coords.z - blocker_distance) / blocker_distance;
+    float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
+    if(penumbra_width == 0)
+        return 1.0;
 
     //Step 3: Filtering
-    float radius = penumbra_width * light_size ;
+    float radius = penumbra_width;
 
     return percentage_closer_filtering(shadow_coords, radius, bias, cascade_idx);
 }
@@ -172,7 +199,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     proj_coords = proj_coords * 0.5 + 0.5;
 
     float current_depth = proj_coords.z;
-    float closest_depth = texture(u_shadow_texture, vec4(proj_coords.xy, float(cascade_idx), current_depth));
+    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
 
     if (current_depth > 1.0)
     {
@@ -182,7 +209,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     for(int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        shadow += 0.25 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 700.0), float(cascade_idx), current_depth )));
+        //shadow += 0.25 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 700.0), float(cascade_idx), current_depth ))).r;
     }
     return shadow;
 }
@@ -468,7 +495,7 @@ void main()
 
         //cascade_idx = 0;
         //shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
-        shadow = pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
+        shadow = u_shadow_strength * pcss_shadow_calculation(v_pos_ls[cascade_idx], 10.0 * u_light_size, bias, cascade_idx);
     }
 
     float ao_factor = 1.0;

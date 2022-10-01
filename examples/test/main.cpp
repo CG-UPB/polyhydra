@@ -102,9 +102,11 @@ int main()
     // Transparency Test
     //auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
     //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
     use_transparency(true);
     //set_cell_rounding(mesh, 0.0f);
     use_ambient_occlusion(false);
+    use_shadows(true);
     set_camera_mode(volumeshOS::CameraMode::ORBIT);
     //set_selection_mode(volumeshOS::SelectionMode::ALL);
 

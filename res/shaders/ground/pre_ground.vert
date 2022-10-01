@@ -20,7 +20,7 @@ void main()
     vec3 pos = a_pos + vec3(0.0, u_height, 0.0);
 
     v_pos = vec3(u_transform * vec4(pos, 1.0));
-    v_normal = mat3(transpose(inverse(u_transform))) * a_normal;
+    v_normal = mat3(transpose(inverse(view_transform))) * a_normal;
 
     gl_Position = u_projection * u_view * vec4(v_pos, 1.0);
 }

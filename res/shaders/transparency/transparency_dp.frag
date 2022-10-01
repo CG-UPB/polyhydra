@@ -300,10 +300,10 @@ void main()
     }
 
     vec3 n = normalize(v_normal);
-    if(dot(n, normalize(u_cam_pos - v_pos)) < 0)
-    {
-        n = -n;
-    }
+//    if(dot(n, normalize(u_cam_pos - v_pos)) < 0)
+//    {
+//        n = -n;
+//    }
 
     vec3 l = normalize(u_light_pos);
 

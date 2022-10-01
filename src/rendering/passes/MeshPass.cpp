@@ -104,8 +104,8 @@ namespace volumeshOS::Internal
 //            m_bias_min = 0.00000001f;
 //            m_bias_max = 0.000003f;
 
-            m_bias_min = 0.0001f;
-            m_bias_max = 0.01f;
+            m_bias_min = 0.000001f;
+            m_bias_max = 0.0001f;
 
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
             m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);

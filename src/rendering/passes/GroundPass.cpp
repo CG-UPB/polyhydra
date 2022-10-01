@@ -135,8 +135,8 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_float("u_near", cam->near);
         m_ground_shader->set_uniform_float("u_far", cam->far);
 
-        float bias_min = 0.000005;
-        float bias_max = 0.004;
+        float bias_min = 0.00001;
+        float bias_max = 0.0005;
         float bias_modifier = 0.1;
 
         m_ground_shader->set_uniform_float("u_bias_min", bias_min);

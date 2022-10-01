@@ -332,7 +332,7 @@ namespace volumeshOS::Internal
             ImGuiUtil::menu_item_filled("Size", [&]
             {
                 float size = settings.light.size;
-                if (ImGui::DragFloat("##LightSize", &size, 0.1f, 0.0f, 10.0f))
+                if (ImGui::DragFloat("##LightSize", &size, 0.1f, 0.0f, 100.0f))
                 {
                     settings.light.size = size;
                 }

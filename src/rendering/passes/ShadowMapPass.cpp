@@ -33,11 +33,11 @@ namespace volumeshOS::Internal
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+//        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+//        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
-//        constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
-//        glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
+        constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
+        glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_framebuffer);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_texture, 0);
@@ -213,13 +213,13 @@ namespace volumeshOS::Internal
 
         if(light.direction == glm::vec3(0.0f, 1.0f, 0.0f))
         {
-            light.direction = glm::vec3(-0.01f, 1.0f, 0.01f);
+            light.direction = glm::vec3(-0.001f, 1.0f, 0.01f);
         }
         auto light_dir = glm::normalize(light.direction);
 
         //light.position = center + light_dir;
         light_positions[i] = center + light_dir;
-        cascade_views[i] = glm::lookAt(center + light_dir, center, glm::vec3(0.1f, 1.0f, 0.0f));
+        cascade_views[i] = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
         float min_x = std::numeric_limits<float>::max();
         float max_x = std::numeric_limits<float>::min();
@@ -239,7 +239,7 @@ namespace volumeshOS::Internal
             max_z = std::max(max_z, transformed_corner.z);
         }
 
-        const float z_mult = 10.0;
+        const float z_mult = 20.0;
         if (min_z < 0)
         {
             min_z *= z_mult;
