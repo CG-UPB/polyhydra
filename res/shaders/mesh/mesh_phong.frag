@@ -56,6 +56,8 @@ uniform float u_bias_min;
 uniform float u_bias_max;
 uniform float u_bias_modifier;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
@@ -629,6 +631,12 @@ void main()
 //    {
 //        n = -n;
 //    }
+
+    // For Bézier meshes, always use a normal directed towards the camera.
+    if(u_is_bezier_mesh && dot(n, normalize(u_cam_pos -  v_pos)) < 0)
+    {
+        n = -n;
+    }
 
     vec3 l = normalize(u_light_pos);
 

@@ -243,8 +243,11 @@ namespace volumeshOS::Internal
         int cell_vertex_offset = m_vertex_offset_face;
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
+        std::vector<int> hf_ids; // Stores halfface ids for Bézeir meshes.
         for (auto chf_it: mesh->cell_halffaces(cell))
         {
+            hf_ids.push_back(chf_it.idx());
+
             static HalffaceData halfface_data;
             halfface_data.clear();
             int halfface_id = chf_it.idx();
@@ -353,9 +356,12 @@ namespace volumeshOS::Internal
 
         // now that we collected the data we need, we can update or buffer arrays
         int cell_vertex_count = 0;
+        int i = 0;
         for (const HalffaceData& halfface: halffaces)
         {
             float is_triangle = (halfface.vertices.size() > 3) ? 0.0f : 1.0f;
+
+            bool is_bezier_mesh = *mesh->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER).begin();
 
             // fill up vertex data
             for (const VertexData& vertex: halfface.vertices)
@@ -368,12 +374,15 @@ namespace volumeshOS::Internal
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(0.0f);
-                get_attrib_array(VAO::MESH_FACE, Attribute::IS_TRIANGLE).push_back(is_triangle);
+                // Use IS_TRIANGLE as the halfface id for Bézier meshes
+                // because the maximum number of vertex attributes are already declared in mesh_phong.vert
+                get_attrib_array(VAO::MESH_FACE, Attribute::IS_TRIANGLE).push_back( is_bezier_mesh ? hf_ids[i] : is_triangle);
                 get_attrib_array(VAO::MESH_FACE, Attribute::SELECTION).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::HOVERED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::MIN_EDGE_LEN).push_back(min_edge_length);
                 cell_vertex_count++;
             }
+            i++;
 
             // add all indices of the halfface
             VecUtil::push_buffer(halfface.indices, m_indices_face);

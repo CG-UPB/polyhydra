@@ -1,4 +1,5 @@
 #include "MeshPass.h"
+#include "mesh/MeshProperties.h"
 #include "rendering/Renderer.h"
 
 namespace volumeshOS::Internal
@@ -14,7 +15,9 @@ namespace volumeshOS::Internal
             float wireframe_size = settings.wireframe_size;
             bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
-            if (draw_wireframe)
+            bool is_bezier_mesh = mesh->is_bezier_mesh();
+            // Currently, cells sometimes appear hollow if CULL_FACE is not disabled
+            if (draw_wireframe || is_bezier_mesh)
             {
                 glDisable(GL_CULL_FACE);
             }
@@ -90,7 +93,8 @@ namespace volumeshOS::Internal
 
             m_mesh_shader->set_uniform_float("u_shadow_strength", settings.shadow_strength);
 
-            m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+            // Do not use rounding on Bézier meshes.
+            m_mesh_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);
             m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
@@ -141,6 +145,17 @@ namespace volumeshOS::Internal
 
             m_mesh_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
 
+            // Use Bezier Mesh Properties to set uniforms
+            m_mesh_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+            if(is_bezier_mesh) 
+            {
+                mesh->get_mtb()->bind();
+                m_mesh_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+                
+                // GL_TEXTURE12 is used for control points storage
+                m_mesh_shader->set_uniform_int("u_control_points_tb", 12);
+                m_mesh_shader->set_uniform_int("u_bezier_tessellation_level", 20); //settings.bezier_meshes.tessellation_level);
+            }
 
             // wireframe mode should always be non-rounded
             if (draw_wireframe)
@@ -150,7 +165,7 @@ namespace volumeshOS::Internal
             else
             {
                 auto vao = mesh->get_vao();
-                if (mesh->get_data().rounding_active)
+                if (mesh->get_data().rounding_active && !is_bezier_mesh)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }

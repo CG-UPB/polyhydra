@@ -28,6 +28,7 @@ out mat4 v_LightSpacePos1;
 out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
+flat out int v_ovm_halfface_id;
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
@@ -56,6 +57,9 @@ uniform float u_rounding_size;
 uniform bool u_use_vertex_normals;
 uniform int u_cascade_level;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
+
 
 const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
 const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
@@ -72,6 +76,16 @@ float get_shrink_factor(float angle, float dist) {
 
 void main()
 {
+    // Use a_is_triangle as the ovm halfface id for bézier meshes.
+    if(u_is_bezier_mesh)
+    {
+        v_ovm_halfface_id = int(a_is_triangle+0.5);
+    }
+    else
+    {
+        v_ovm_halfface_id = -1;
+    }
+
     // Visibility
     v_Visible = 1;
 
