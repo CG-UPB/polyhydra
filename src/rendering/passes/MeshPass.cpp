@@ -145,7 +145,7 @@ namespace volumeshOS::Internal
             // wireframe mode should always be non-rounded
             if (draw_wireframe)
             {
-                mesh->get_mvb()->get_vao_by_face()->draw();
+                mesh->get_mvb()->get_vao_by_face()->draw_patches();
             }
             else
             {
@@ -154,7 +154,7 @@ namespace volumeshOS::Internal
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
-                vao->draw();
+                vao->draw_patches();
             }
 
             m_mesh_shader->unbind();

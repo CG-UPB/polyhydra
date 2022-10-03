@@ -173,8 +173,10 @@ namespace volumeshOS::Internal
          * @param vertexPath vertex resource path
          * @param fragmentPath fragment resource path
          * @param geometryPath geometry resource path (may be empty)
+         * @param tessellationControlPath tessellation control shader path (may be empty)
+         * @param tessellationEvaluationPath tessellation evaluation shader path (may be empty)
          */
-        Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath);
+        Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath, const FS_NAMESPACE::path & tessellationControlPath, const FS_NAMESPACE::path& tessellationEvaluationPath);
 
         // opengl program id
         uint32_t m_shaderID;

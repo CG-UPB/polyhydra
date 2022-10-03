@@ -6,7 +6,7 @@ namespace volumeshOS::Internal
 {
     std::unordered_map<std::string, std::shared_ptr<Shader>> Shader::s_shaders;
 
-    Shader::Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath)
+    Shader::Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath, const FS_NAMESPACE::path & tessellationControlPath, const FS_NAMESPACE::path& tessellationEvaluationPath)
     {
         // update vertex and fragment shader contents
         std::string vertexSource = FileManager::load_as_string(vertexPath, true);
@@ -62,6 +62,45 @@ namespace volumeshOS::Internal
             glAttachShader(m_shaderID, geometryID);
         }
 
+        // setup tessellation control and evaluation shader, if they exists
+        unsigned int tessellationControlID = -1;
+        unsigned int tessellationEvaluationID = -1;
+        if (!tessellationControlPath.empty() && !tessellationEvaluationPath.empty())
+        {
+            // Load and Compile Tessellation Control Shader
+            std::string tessellationControlSource = FileManager::load_as_string(tessellationControlPath, true);
+
+            tessellationControlID = glCreateShader(GL_TESS_CONTROL_SHADER);
+
+            const GLchar* tcsBuf = tessellationControlSource.c_str();
+            glShaderSource(tessellationControlID, 1, &tcsBuf, nullptr);
+            glCompileShader(tessellationControlID);
+            glGetShaderiv(tessellationControlID, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(tessellationControlID, 512, nullptr, infoLog);
+                std::cout << "Error while compiling " << tessellationControlPath << " -> " << infoLog << std::endl;
+            }
+
+            // Load and Compile Tessellation Evaluation Shader
+            std::string tessellationEvaluationSource = FileManager::load_as_string(tessellationEvaluationPath, true);
+
+            tessellationEvaluationID = glCreateShader(GL_TESS_EVALUATION_SHADER);
+
+            const GLchar* tesBuf = tessellationEvaluationSource.c_str();
+            glShaderSource(tessellationEvaluationID, 1, &tesBuf, nullptr);
+            glCompileShader(tessellationEvaluationID);
+            glGetShaderiv(tessellationEvaluationID, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(tessellationEvaluationID, 512, nullptr, infoLog);
+                std::cout << "Error while compiling " << tessellationEvaluationPath << " -> " << infoLog << std::endl;
+            }
+
+            glAttachShader(m_shaderID, tessellationControlID);
+            glAttachShader(m_shaderID, tessellationEvaluationID);
+        }
+
         // link shaders to our program
         glAttachShader(m_shaderID, vertexID);
         glAttachShader(m_shaderID, fragmentID);
@@ -82,6 +121,14 @@ namespace volumeshOS::Internal
         if (geometryID > 0)
         {
             glDeleteShader(geometryID);
+        }
+        if (tessellationControlID > 0) 
+        {
+            glDeleteShader(tessellationControlID);
+        }
+        if (tessellationEvaluationID > 0) 
+        {
+            glDeleteShader(tessellationEvaluationID);
         }
     }
 
@@ -203,6 +250,8 @@ namespace volumeshOS::Internal
         struct ShaderSourcePath
         {
             FS_NAMESPACE::path vertex;
+            FS_NAMESPACE::path tessellation_control;
+            FS_NAMESPACE::path tessellation_evaluation;
             FS_NAMESPACE::path geometry;
             FS_NAMESPACE::path fragment;
         };
@@ -241,6 +290,10 @@ namespace volumeshOS::Internal
             FS_NAMESPACE::path* source;
             if (extension == ".vert")
             { source = &shader_source_path.vertex; }
+            else if (extension == ".tesc")
+            { source = &shader_source_path.tessellation_control; }
+            else if (extension == ".tese")
+            { source = &shader_source_path.tessellation_evaluation; }
             else if (extension == ".geom")
             { source = &shader_source_path.geometry; }
             else if (extension == ".frag")
@@ -257,7 +310,10 @@ namespace volumeshOS::Internal
             s_shaders[shader_source_path.first] = std::shared_ptr<Shader>(new Shader(
                     shader_source_path.second.vertex,
                     shader_source_path.second.fragment,
-                    shader_source_path.second.geometry
+                    shader_source_path.second.geometry,
+                    shader_source_path.second.tessellation_control,
+                    shader_source_path.second.tessellation_evaluation
+            
             ));
         }
 
@@ -268,12 +324,16 @@ namespace volumeshOS::Internal
         s_shaders["transparency_wb"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 transparency_path / "transparency_wb.frag",
-                pre_mesh_phong_path / "mesh_phong.geom"
+                pre_mesh_phong_path / "mesh_phong.geom",
+                pre_mesh_phong_path / "mesh_phong.tesc",
+                pre_mesh_phong_path / "mesh_phong.tese" 
         ));
         s_shaders["transparency_dp"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 transparency_path / "transparency_dp.frag",
-                pre_mesh_phong_path / "mesh_phong.geom"
+                pre_mesh_phong_path / "mesh_phong.geom",
+                pre_mesh_phong_path / "mesh_phong.tesc",
+                pre_mesh_phong_path / "mesh_phong.tese" 
         ));
     }
 

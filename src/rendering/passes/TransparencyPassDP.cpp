@@ -218,7 +218,7 @@ namespace volumeshOS::Internal
         {
             vao = mesh->get_mvb()->get_vao_rounded();
         }
-        vao->draw();
+        vao->draw_patches();
 
     }
 
