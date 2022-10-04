@@ -205,7 +205,7 @@ void main()
     {
         float hover_strength = 0.5;
         vec3 hover_color = vec3(0.9, 0.1, 0.1);
-        v_Color = vec4(mix(v_Color.rgb, hover_color, 0.3), 1.0) + vec4(hover_color * hover_strength, 0.0);
+        v_Color = vec4(mix(u_object_color.rgb, hover_color, 0.3), 1.0) + vec4(hover_color * hover_strength, 0.0);
         v_Color.a = alpha;
     }
 }

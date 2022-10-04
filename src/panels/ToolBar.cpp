@@ -188,12 +188,12 @@ namespace volumeshOS::Internal
                 auto mode = static_cast<int>(AppState::settings.selection_mode);
                 ImGui::Combo(
                         "##SelectionMode",
-                        &mode,
+                        &m_current_selection_mode,
                         selection_modes,
                         IM_ARRAYSIZE(selection_modes),
                         IM_ARRAYSIZE(selection_modes)
                 );
-                //AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
+                AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
                 AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
             });
             ImGuiUtil::menu_item_filled("Select by ID", [&]
