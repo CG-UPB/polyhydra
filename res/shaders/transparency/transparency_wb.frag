@@ -39,6 +39,8 @@ uniform float u_gamma;
 uniform vec3 u_ground_color;
 uniform vec3 u_background_color;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
 
 float near = 0.1f;
 float far = 100.0f;
@@ -304,6 +306,12 @@ void main()
         used_color = u_object_color;
     }
     vec3 n = normalize(v_normal);
+    // For Bézier meshes, always use a normal directed towards the camera.
+    if(u_is_bezier_mesh && dot(n, normalize(u_cam_pos -  v_pos)) < 0)
+    {
+        n = -n;
+    }
+
     vec3 l = normalize(u_light_pos);
 
     if(v_color.a >= 1.0 - 0.01|| v_visible == 0)
