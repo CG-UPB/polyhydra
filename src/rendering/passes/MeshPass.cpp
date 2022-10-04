@@ -154,7 +154,7 @@ namespace volumeshOS::Internal
                 
                 // GL_TEXTURE12 is used for control points storage
                 m_mesh_shader->set_uniform_int("u_control_points_tb", 12);
-                m_mesh_shader->set_uniform_int("u_bezier_tessellation_level", 20); //settings.bezier_meshes.tessellation_level);
+                m_mesh_shader->set_uniform_int("u_bezier_tessellation_level", settings.bezier_meshes.tessellation_level);
             }
 
             // wireframe mode should always be non-rounded
