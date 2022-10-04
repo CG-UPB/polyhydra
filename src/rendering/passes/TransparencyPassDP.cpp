@@ -1,6 +1,7 @@
 #include "TransparencyPassDP.h"
 #include "../meshes/CommonMeshes.h"
 #include "../../settings/AppState.h"
+#include "mesh/MeshProperties.h"
 
 namespace volumeshOS::Internal
 {
@@ -168,11 +169,21 @@ namespace volumeshOS::Internal
         glm::vec3 view_dir = -glm::normalize(cam->get_front());
         auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
-        glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
+        // Use cam positin to the same position as in the mesh pass
+        // glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
+        glm::vec3 cam_pos(cam->position);
         glm::vec3 light_pos(glm::normalize(light.direction));
 
         bool use_vertex_normals = AppState::settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
-
+        
+        bool is_bezier_mesh = mesh->is_bezier_mesh();
+        // Currently, cells sometimes appear hollow if CULL_FACE is not 
+        // disabled for Bézier meshes
+        if (is_bezier_mesh)
+        {
+            glDisable(GL_CULL_FACE);
+        }
+        
         // set all of our uniforms
         m_transparency_shader->set_uniform_mat4f("u_transform", transform);
         m_transparency_shader->set_uniform_mat4f("u_projection", cam->projection);
@@ -197,7 +208,8 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_float("u_ordering_strength", m_ordering_strength);
         m_transparency_shader->set_uniform_float("u_t_min", m_min);
         m_transparency_shader->set_uniform_float("u_t_max", m_max);
-        m_transparency_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+        // Do not use rounding on Bézier meshes.
+        m_transparency_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
         m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
         m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
         m_transparency_shader->set_uniform_int("u_viewport_width", renderer.buffers.target_framebuffer->get_width());
@@ -212,9 +224,21 @@ namespace volumeshOS::Internal
         uint32_t depth_texture = renderer.buffers.target_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
         m_transparency_shader->set_uniform_sampler2D("max_depth_texture", GL_TEXTURE1, depth_texture);
 
+        m_transparency_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+        if(is_bezier_mesh) 
+        {
+            mesh->get_mtb()->bind();
+            // Use Bezier Mesh Property to set uniform.
+            m_transparency_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+            
+            // GL_TEXTURE12 is used for control points storage.
+            m_transparency_shader->set_uniform_int("u_control_points_tb", 12);
+            // Use tessellation level value from toolbar.
+            m_transparency_shader->set_uniform_int("u_bezier_tessellation_level", AppState::settings.bezier_meshes.tessellation_level);
+        }
 
         auto vao = mesh->get_vao();
-        if (mesh->get_data().rounding_active)
+        if (mesh->get_data().rounding_active && !is_bezier_mesh)
         {
             vao = mesh->get_mvb()->get_vao_rounded();
         }
