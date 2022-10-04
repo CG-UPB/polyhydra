@@ -6,10 +6,12 @@ layout(vertices = 3) out;
 in vec4 v_Pos[];
 flat in int v_visible[];
 flat in int v_ovm_halfface_id[];
+flat in vec3 v_center[];
 
 out vec4 tc_Pos[];
 flat out int tc_visible[];
 flat out int tc_ovm_halfface_id[];
+flat out vec3 tc_center[];
 
 uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
@@ -22,6 +24,7 @@ void main()
     tc_Pos[ID]             =             v_Pos[ID];
     tc_visible[ID]         =         v_visible[ID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[ID];
+    tc_center[ID]          =          v_center[ID];
 
     if (ID == 0) 
     {

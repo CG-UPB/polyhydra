@@ -18,6 +18,7 @@ out vec4 v_Pos;
 out vec3 v_normal;
 flat out int v_visible;
 flat out int v_ovm_halfface_id;
+flat out vec3 v_center;
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
@@ -56,6 +57,8 @@ float get_shrink_factor(float angle, float dist) {
 
 void main()
 {
+    v_center = a_center;
+    
     // Use a_is_triangle as the ovm halfface id for bézier meshes.
     if(u_is_bezier_mesh)
     {

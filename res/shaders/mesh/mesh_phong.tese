@@ -11,6 +11,7 @@ in float tc_clipspace_z[];
 flat in int tc_Visible[];
 flat in int tc_isTriangle[];
 flat in int tc_ovm_halfface_id[];
+flat in vec3 tc_center[];
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -24,6 +25,7 @@ flat out int v_tesInnerTri;
 
 // necessary for calculating bezier mesh face normals
 uniform mat4 u_transform;
+uniform float u_cell_size;
 // uniform mat4 u_view;
 // uniform vec3 u_cam_pos;
 
@@ -120,7 +122,12 @@ void main()
         v_Pos  = control_points[CP_2D_INDEX_TO_1D(0, 0, 1)]*x;
         v_Pos += control_points[CP_2D_INDEX_TO_1D(1, 0, 1)]*y;
         v_Pos += control_points[CP_2D_INDEX_TO_1D(0, 1, 1)]*z; 
+        
+        // Perform Cell sizing.
+        v_Pos = tc_center[0] + (v_Pos - tc_center[0]) * u_cell_size;
+        
         v_Pos = vec3(u_transform * vec4(v_Pos, 1.0));
+
 
         // Do not render inner tessellated triangled in wireframe mode.
         // For a inner triangle no barycentric coordinate is 0.

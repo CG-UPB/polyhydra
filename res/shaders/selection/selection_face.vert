@@ -27,9 +27,12 @@ uniform bool u_is_bezier_mesh;
 out vec4 v_Pos;
 flat out int v_visible;
 flat out int v_ovm_halfface_id;
+flat out vec3 v_center;
 
 void main()
 {
+    v_center = a_center;
+    
     // Use a_is_triangle as the ovm halfface id for bézier meshes.
     if(u_is_bezier_mesh)
     {

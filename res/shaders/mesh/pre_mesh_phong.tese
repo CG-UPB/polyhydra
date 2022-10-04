@@ -6,6 +6,7 @@ in vec4 tc_Pos[];
 in vec3 tc_normal[];
 flat in int tc_visible[];
 flat in int tc_ovm_halfface_id[];
+flat in vec3 tc_center[];
 
 out vec3 v_normal;
 flat out int v_visible;
@@ -15,6 +16,7 @@ out vec3 v_pos;
 uniform mat4 u_transform;
 uniform mat4 u_view;
 uniform mat4 u_projection;
+uniform float u_cell_size;
 // uniform vec3 u_cam_pos;
 
 // uniform bool u_draw_wireframe;
@@ -110,6 +112,10 @@ void main()
         v_pos       = control_points[CP_2D_INDEX_TO_1D(0, 0, 1)]*x;
         v_pos      += control_points[CP_2D_INDEX_TO_1D(1, 0, 1)]*y;
         v_pos      += control_points[CP_2D_INDEX_TO_1D(0, 1, 1)]*z; 
+        
+        // Perform Cell sizing.
+        v_pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
+
         v_pos = (u_view * u_transform * vec4(v_pos, 1.0)).xyz;
         gl_Position = u_projection * vec4(v_pos, 1.0);
     }

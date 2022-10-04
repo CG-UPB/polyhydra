@@ -5,6 +5,7 @@ layout(triangles, equal_spacing, ccw) in;
 in vec4 tc_Pos[];
 flat in int tc_visible[];
 flat in int tc_ovm_halfface_id[];
+flat in vec3 tc_center[];
 
 flat out int te_visible;
 
@@ -12,6 +13,7 @@ flat out int te_visible;
 uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
 uniform mat4 u_view;
+uniform float u_cell_size;
 
 uniform bool u_draw_wireframe;
 
@@ -90,6 +92,10 @@ void main()
 
         // execute the de casteljau algorithm
         de_casteljau_2(control_points, m, x, y, z, m);
+        
+        // Perform Cell sizing.
+        control_points[0] = tc_center[0] + (control_points[0] - tc_center[0]) * u_cell_size;
+        
         gl_Position = u_projection * u_view * u_mesh_transform * vec4(control_points[0], 1.0);
     }
     else

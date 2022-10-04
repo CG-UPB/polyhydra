@@ -11,6 +11,7 @@ in float v_clipspace_z[];
 flat in int v_Visible[];
 flat in int v_isTriangle[];
 flat in int v_ovm_halfface_id[];
+flat in vec3 v_center[];
 
 out vec3 tc_Pos[];
 out vec3 tc_Normal[];
@@ -21,6 +22,7 @@ out float tc_clipspace_z[];
 flat out int tc_Visible[];
 flat out int tc_isTriangle[];
 flat out int tc_ovm_halfface_id[];
+flat out vec3 tc_center[];
 
 uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
@@ -46,6 +48,7 @@ void main()
     tc_Visible[ID]         =         v_Visible[sourceID];
     tc_isTriangle[ID]      =      v_isTriangle[sourceID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[sourceID];
+    tc_center[ID]          =          v_center[sourceID];
 
     if (ID == 0) 
     {
