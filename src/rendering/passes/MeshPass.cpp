@@ -16,7 +16,8 @@ namespace volumeshOS::Internal
             bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
             bool is_bezier_mesh = mesh->is_bezier_mesh();
-            // Currently, cells sometimes appear hollow if CULL_FACE is not disabled
+            // Currently, cells sometimes appear hollow if CULL_FACE is not 
+            // disabled for Bézier meshes
             if (draw_wireframe || is_bezier_mesh)
             {
                 glDisable(GL_CULL_FACE);
