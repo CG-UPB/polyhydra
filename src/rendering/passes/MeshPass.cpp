@@ -145,15 +145,16 @@ namespace volumeshOS::Internal
 
             m_mesh_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
 
-            // Use Bezier Mesh Properties to set uniforms
             m_mesh_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
             if(is_bezier_mesh) 
             {
                 mesh->get_mtb()->bind();
+                // Use Bezier Mesh Property to set uniform.
                 m_mesh_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
                 
-                // GL_TEXTURE12 is used for control points storage
+                // GL_TEXTURE12 is used for control points storage.
                 m_mesh_shader->set_uniform_int("u_control_points_tb", 12);
+                // Use tessellation level value from toolbar.
                 m_mesh_shader->set_uniform_int("u_bezier_tessellation_level", settings.bezier_meshes.tessellation_level);
             }
 

@@ -4,6 +4,7 @@
 #include "../meshes/CommonMeshes.h"
 #include "../Renderer.h"
 #include "../gl/Shader.h"
+#include "mesh/MeshProperties.h"
 
 namespace volumeshOS::Internal
 {
@@ -75,11 +76,21 @@ namespace volumeshOS::Internal
         m_num_vertices = mesh->get_num_visible_vertices();
         m_cylinder_vao = mesh->get_cylinder_vao();
         m_num_edges = mesh->get_num_visible_edges();
-
+        
+        bool is_bezier_mesh = mesh->is_bezier_mesh();
+        
         // GL Setup
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
-        glCullFace(GL_BACK);
+        // Disable CULL_FACE for Bézier meshes
+        if (is_bezier_mesh)
+        {
+            glDisable(GL_CULL_FACE);
+        }
+        else
+        {
+            glEnable(GL_CULL_FACE);
+            glFrontFace(GL_CCW);
+            glCullFace(GL_BACK);
+        }
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
@@ -134,12 +145,24 @@ namespace volumeshOS::Internal
         m_selection_shader->set_uniform_vec3f("u_max", max);
         m_selection_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
         m_selection_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-
-        mesh->get_vao()->draw();
+        
+        m_selection_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+        if(is_bezier_mesh)
+        {
+            mesh->get_mtb()->bind();
+            // Use Bezier Mesh Property to set uniform.
+            m_selection_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+            
+            // GL_TEXTURE12 is used for control points storage.
+            m_selection_shader->set_uniform_int("u_control_points_tb", 12);
+            // Use tessellation level value from toolbar.
+            m_selection_shader->set_uniform_int("u_bezier_tessellation_level", AppState::settings.bezier_meshes.tessellation_level);
+        }
+        mesh->get_vao()->draw_patches();
 
         m_selection_shader->unbind();
 
-        if(selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::EDGE)
+        if((selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::EDGE) && !is_bezier_mesh)
         {
             // Draw cylinders for each Edge
             glDisable(GL_CULL_FACE);
@@ -169,7 +192,7 @@ namespace volumeshOS::Internal
 
         glDepthMask(GL_TRUE);
 
-        if (selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::VERTEX)
+        if((selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::VERTEX) && !is_bezier_mesh)
         {
 
             // Draw spheres for each Vertex
