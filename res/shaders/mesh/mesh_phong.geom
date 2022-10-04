@@ -25,6 +25,7 @@ in mat4 v_LightSpacePos0[3];
 in mat4 v_LightSpacePos1[3];
 flat in int v_Visible[3];
 flat in int v_isTriangle[3];
+flat in int v_tesInnerTri[3];
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
@@ -36,6 +37,7 @@ out vec4 v_color;
 out vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 flat out int v_visible;
 out float v_clipspace_z;
+flat out int v_tes_inner_tri;
 
 out vec3 v_tri_dist;
 flat out int v_is_triangle;
@@ -60,7 +62,7 @@ float dist_to_edge(vec3 e0, vec3 e1, vec3 p)
     return length(cross(p - e0, p - e1)) / length(e1 - e0);
 }
 
-void vertex(vec4 screen_pos, vec3 pos, vec3 normal, vec4 color, int visible)
+void vertex(vec4 screen_pos, vec3 pos, vec3 normal, vec4 color, int visible, int tes_inner_tri)
 {
     gl_Position = screen_pos;
     v_pos = pos;
@@ -68,6 +70,7 @@ void vertex(vec4 screen_pos, vec3 pos, vec3 normal, vec4 color, int visible)
     v_color = color;
     v_visible = visible;
     v_clipspace_z = screen_pos.z;
+    v_tes_inner_tri = tes_inner_tri;
     EmitVertex();
 }
 
@@ -127,15 +130,15 @@ void main()
 
     set_light_space_pos(0);
     v_tri_dist = vec3(0.0, dist0, 0.0);
-    vertex(screen_pos0, pos0.xyz, v_Normal[0], v_Color[0], v_Visible[0]);
+    vertex(screen_pos0, pos0.xyz, v_Normal[0], v_Color[0], v_Visible[0], v_tesInnerTri[0]);
 
     set_light_space_pos(1);
     v_tri_dist = vec3(0.0, 0.0, dist1);
-    vertex(screen_pos1, pos1.xyz, v_Normal[1], v_Color[1], v_Visible[1]);
+    vertex(screen_pos1, pos1.xyz, v_Normal[1], v_Color[1], v_Visible[1], v_tesInnerTri[1]);
 
     set_light_space_pos(2);
     v_tri_dist = vec3(dist2, 0.0, 0.0);
-    vertex(screen_pos2, pos2.xyz, v_Normal[2], v_Color[2], v_Visible[2]);
+    vertex(screen_pos2, pos2.xyz, v_Normal[2], v_Color[2], v_Visible[2], v_tesInnerTri[2]);
 
     EndPrimitive();
 }

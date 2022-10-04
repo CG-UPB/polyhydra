@@ -80,6 +80,7 @@ void main()
     if(u_is_bezier_mesh)
     {
         v_ovm_halfface_id = int(a_is_triangle+0.5);
+        v_isTriangle = 0;
     }
     else
     {
