@@ -21,8 +21,8 @@ The underlying topology of a Bézier mesh is encoded via the underlying OVM geom
 The control points defining each Bézier tetrahedron's face are stored in a face property named `"BezierFaceControlPoints"` which is attached to the corresponding face of a tetrahedron of the OVM geometry kernel.
 This means that control points for a Bézier tetrahedron are stored per face and not per tetrahedron, so that inner control points of a Bézier tetrahedron are not stored with this representation.
 The face property is of type `std::vector<double>`, since OpenVolumeMesh is able to serialize this type.
-All control points $c_{(i_2, i_1, i_0)}$ of a Bézier tetrahedron's must be stored in the following format in the face property:
-$$
+All control points $`c_{(i_2, i_1, i_0)}`$ of a Bézier tetrahedron's must be stored in the following format in the face property:
+```math
 \begin{align*}
 &c_{(0,0,m)},\ c_{(0,1,m-1)},\hskip 3em ...,\hskip 3em c_{(0,m,0)}, \\
 &c_{(1,0,m-1)},\ c_{(1,1,m-2)},\ ...,\ c_{(1,m-1,0)}, \\
@@ -30,8 +30,8 @@ $$
 &c_{(m-1,0,1)},\ c_{(m-1,1,0)}, \\
 &c_{(m, 0,0)}
 \end{align*}
-$$
-where $m$ is the degree of the Bézier triangle and $(i_2, i_1, i_0)$ is the multi-index of each control point, e.g. $c_{(0,0,m)}$, $c_{(0,m,0)}$ and $c_{(m, 0,0)}$ are the "corner control points" of the triangle. 
+```
+where $m$ is the degree of the Bézier triangle and $`(i_2, i_1, i_0)`$ is the multi-index of each control point, e.g. $`c_{(0,0,m)}`$, $`c_{(0,m,0)}`$ and $`c_{(m, 0,0)}`$ are the "corner control points" of the triangle. 
 In this *one-dimensional* vector, each control point is then encoded as its three successive coordinates.
 
 The degree of a Bézier mesh is encoded via a OpenVolumeMesh mesh property of type `int` named `"BezierDegree"`.
@@ -85,7 +85,7 @@ The output variables of the tessellation shader have in general the same names a
 ### `MeshVertexBuffer` class
 For Cell sizing, the Point rendering mode for Bézier meshes and for the OVM halfface index, some changes are made to `MeshVertexBuffer::add_cell_by_faces`.
 This includes setting the OVM halfface index for each vertex of the corresponding halfface.
-For the former two features, as vertices of a Bézier mesh the "corner control points" of each Bézier tetrahedron are used, i.e. the four control points with multi-indices $(0,0,0,m), (0,0,m,0), (0,m,0,0), (m,0,0,0)$, which are retrieved from the meshes face property holding the control points.
+For the former two features, as vertices of a Bézier mesh the "corner control points" of each Bézier tetrahedron are used, i.e. the four control points with multi-indices $`(0,0,0,m), (0,0,m,0), (0,m,0,0), (m,0,0,0)`$, which are retrieved from the meshes face property holding the control points.
 
 ### Miscellaneous
 - To the `ToolBar` class and static `AppState::settings` structure  additional fields and functions have been added, so that an additional menu entry is rendered below the existing ones to allow the user to change the tessellation level applied in the tessellation control shader for Bézier mesh rendering.
