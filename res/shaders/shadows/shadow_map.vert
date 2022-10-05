@@ -6,14 +6,18 @@ layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_is_digged;
 layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
+layout (location = 7) in float a_is_triangle;
 layout (location = 8) in float a_vertex_type_rounded;
 layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 15) in float a_min_edge_length;
 
+out vec4 v_Pos;
 flat out int v_Visible;
 flat out vec4 v_Color;
+flat out int v_ovm_halfface_id;
+flat out vec3 v_center;
 
 uniform vec4 u_object_color;
 uniform bool u_rounding;
@@ -28,6 +32,9 @@ uniform vec3 u_max;
 uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 uniform float u_average_cell_size;
+
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
 
 const float ROUNDED_VERTEX_TYPE_FACE    = 0.0;
 const float ROUNDED_VERTEX_TYPE_EDGE    = 1.0;
@@ -48,6 +55,18 @@ float get_shrink_factor(float angle, float dist) {
 
 void main()
 {
+    v_center = a_center;
+
+    // Use a_is_triangle as the ovm halfface id for bézier meshes.
+    if(u_is_bezier_mesh)
+    {
+        v_ovm_halfface_id = int(a_is_triangle+0.5);
+    }
+    else
+    {
+        v_ovm_halfface_id = -1;
+    }
+
     v_Visible = 1;
     v_Color = a_color;
 
@@ -102,5 +121,5 @@ void main()
     }
 
     vec3 pos = a_center + (position - a_center) * u_cell_size;
-    gl_Position = u_transform * vec4(pos, 1.0);
+    v_Pos = u_transform * vec4(pos, 1.0);
 }
