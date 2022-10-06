@@ -9,7 +9,7 @@ in vec3 tc_Normal[];
 in vec4 tc_Color[];
 in mat4 tc_LightSpacePos0[];
 in mat4 tc_LightSpacePos1[];
-in float tc_clipspace_z[];
+// in float tc_clipspace_z[];
 flat in int tc_Visible[];
 flat in int tc_isTriangle[];
 flat in int tc_ovm_halfface_id[];
@@ -20,7 +20,7 @@ out vec3 v_Normal;
 out vec4 v_Color;
 out mat4 v_LightSpacePos0;
 out mat4 v_LightSpacePos1;
-out float v_clipspace_z;
+// out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
 flat out int v_tesInnerTri;
@@ -169,7 +169,7 @@ void main()
 
     // in any case use the values of vertex shader for these values 
     v_Color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
-    v_clipspace_z     = tc_clipspace_z[0]    *x + tc_clipspace_z[1]    *y + tc_clipspace_z[2]    *z;
+    // // v_clipspace_z     = tc_clipspace_z[0]    *x + tc_clipspace_z[1]    *y + tc_clipspace_z[2]    *z;
     v_Visible         = tc_Visible[1]        ; // flat
     v_isTriangle      = tc_isTriangle[1]     ; // flat
 }
