@@ -14,7 +14,7 @@ namespace volumeshOS::Internal
             float wireframe_size = settings.wireframe_size;
             bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
-            if (draw_wireframe)
+            if (draw_wireframe || mesh->get_data().use_two_sided_lighting)
             {
                 glDisable(GL_CULL_FACE);
             }
@@ -24,14 +24,8 @@ namespace volumeshOS::Internal
                 glFrontFace(GL_CCW);
                 glCullFace(GL_BACK);
             }
-//            glEnable(GL_POLYGON_OFFSET_FILL);
-//            glPolygonOffset(0.001, -1.0);
 
             glDisable(GL_BLEND);
-//        glEnable(GL_BLEND);
-//        glBlendEquation(GL_FUNC_ADD);
-//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
             glDepthMask(GL_TRUE);
@@ -76,6 +70,8 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
 
+            m_mesh_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
+            m_mesh_shader->set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
             m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
             m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
             m_mesh_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
@@ -88,7 +84,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
             m_mesh_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
 
-            m_mesh_shader->set_uniform_float("u_shadow_strength", settings.shadow_strength);
+            m_mesh_shader->set_uniform_float("u_shadow_strength", settings.shadow.shadow_strength);
 
             m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
@@ -122,7 +118,7 @@ namespace volumeshOS::Internal
                 m_mesh_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
             }
             m_mesh_shader->set_uniform_mat4f("u_light_transform", l_transform);
-            m_mesh_shader->set_uniform_float("u_light_size", settings.light.size);
+            m_mesh_shader->set_uniform_float("u_light_size", settings.shadow.penumbra_scale);
 
 
 

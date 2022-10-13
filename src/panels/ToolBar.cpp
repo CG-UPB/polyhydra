@@ -261,6 +261,8 @@ namespace volumeshOS::Internal
             });
             ImGuiUtil::menu_item_filled("Position", [&]
             {
+                if(m_camera->last_frame == 0.0f)
+                    return;
                 auto camera_position = m_camera->position;
                 auto camera_target = m_camera->target;
                 auto camera_dir = (camera_target - camera_position);
@@ -278,9 +280,9 @@ namespace volumeshOS::Internal
                     }
                     camera_position = pos;
                     m_camera->set_position(camera_position);
-
                 }
             });
+
             ImGuiUtil::menu_item_filled("FOV", [&]
             {
                 float fov = m_camera->zoom;
@@ -327,14 +329,6 @@ namespace volumeshOS::Internal
                                       ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
                 {
                     light_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
-                }
-            });
-            ImGuiUtil::menu_item_filled("Size", [&]
-            {
-                float size = settings.light.size;
-                if (ImGui::DragFloat("##LightSize", &size, 0.1f, 0.0f, 100.0f))
-                {
-                    settings.light.size = size;
                 }
             });
 
@@ -526,7 +520,7 @@ namespace volumeshOS::Internal
             return;
         }
         shift_right(46 - ImGui::GetStyle().FramePadding.x);
-        if (ImGuiUtil::begin_menu_with_background("shadows", 1))
+        if (ImGuiUtil::begin_menu_with_background("shadows", 4))
         {
             ImGuiUtil::menu_item_filled("Cascades", [&]
             {
@@ -535,11 +529,29 @@ namespace volumeshOS::Internal
 
             ImGuiUtil::menu_item_filled("Strength", [&]
             {
-                float shadow_strength = settings.shadow_strength;
+                float shadow_strength = settings.shadow.shadow_strength;
                 if(ImGui::SliderFloat("##Strength", &shadow_strength, 0.0f, 1.0f))
                 {
-                    settings.shadow_strength = shadow_strength;
+                    settings.shadow.shadow_strength = shadow_strength;
                 };
+            });
+
+            ImGuiUtil::menu_item_filled("Penumbra", [&]
+            {
+                float penumbra = settings.shadow.penumbra_scale;
+                if (ImGui::DragFloat("##LightSize", &penumbra, 0.1f, 1.0f, 100.0f))
+                {
+                    settings.shadow.penumbra_scale = penumbra;
+                }
+            });
+
+            ImGuiUtil::menu_item_filled("Softness", [&]
+            {
+                float softness = settings.shadow.softness;
+                if (ImGui::DragFloat("##ShadowSoftness", &softness, 0.1f, 1.0f, 5.0f))
+                {
+                    settings.shadow.softness = softness;
+                }
             });
 
             ImGuiUtil::end_menu();

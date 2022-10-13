@@ -197,8 +197,10 @@ namespace volumeshOS::Internal
             {
                 for (uint32_t z = 0; z < 2; ++z)
                 {
-                    glm::vec4 corner = inverse * glm::vec4(2.0f * (float) x - 1.0f, 2.0f * (float) y - 1.0f,
-                                                           2.0f * (float) z - 1.0f, 1.0f);
+                    glm::vec4 corner = inverse * glm::vec4(2.0f * (float) x - 1.0f,
+                                                           2.0f * (float) y - 1.0f,
+                                                           2.0f * (float) z - 1.0f,
+                                                           1.0f);
                     frustum_corners.push_back(corner / corner.w);
                 }
             }
@@ -239,7 +241,7 @@ namespace volumeshOS::Internal
             max_z = std::max(max_z, transformed_corner.z);
         }
 
-        const float z_mult = 20.0;
+        const float z_mult = 10.0;
         if (min_z < 0)
         {
             min_z *= z_mult;

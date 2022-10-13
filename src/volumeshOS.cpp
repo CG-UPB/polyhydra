@@ -294,6 +294,7 @@ namespace volumeshOS
     {
         commands.emplace_back([mode]{
             camera->set_mode(mode);
+            Internal::AppState::settings.camera.mode = mode;
         });
     }
 
@@ -306,6 +307,7 @@ namespace volumeshOS
     {
         commands.emplace_back([x, y, z]{
             camera->set_position(glm::vec3(x, y, z));
+            Internal::AppState::settings.camera.position = glm::vec3(x, y, z);
         });
     }
 
@@ -362,6 +364,7 @@ namespace volumeshOS
         assert( fov >= 1.0 && fov <= 90.0);
         commands.emplace_back([fov]{
             camera->zoom = fov;
+            Internal::AppState::settings.camera.fov = fov;
         });
     }
 
@@ -605,6 +608,43 @@ namespace volumeshOS
             auto mesh_object = mesh_list->get_mesh(mesh.get_id());
             Internal::MeshSerializer::write_to_file(*mesh_object, path);
         });
+    }
+
+    void use_backface_culling(const VMesh& mesh, bool culling)
+    {
+
+        commands.emplace_back([mesh, culling]{
+            mesh_list->get_mesh(mesh.get_id())->get_data().use_back_face_culling = culling;
+        });
+    }
+
+    bool is_using_backface_culling(const VMesh& mesh)
+    {
+        return mesh_list->get_mesh(mesh.get_id())->get_data().use_back_face_culling;
+    }
+
+    void use_two_sided_lighting(const VMesh& mesh, bool ts_lighting)
+    {
+        commands.emplace_back([mesh, ts_lighting]{
+            mesh_list->get_mesh(mesh.get_id())->get_data().use_two_sided_lighting = ts_lighting;
+        });
+    }
+
+    bool is_using_two_sided_lighting(const VMesh& mesh)
+    {
+        return mesh_list->get_mesh(mesh.get_id())->get_data().use_two_sided_lighting;
+    }
+
+    void use_base_color(const VMesh& mesh, bool base_color)
+    {
+        commands.emplace_back([mesh, base_color]{
+            mesh_list->get_mesh(mesh.get_id())->get_data().use_base_color = base_color;
+        });
+    }
+
+    bool is_using_base_color(const VMesh& mesh)
+    {
+        return mesh_list->get_mesh(mesh.get_id())->get_data().use_base_color;
     }
 
     template<typename Vec4T>

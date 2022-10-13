@@ -257,6 +257,17 @@ namespace volumeshOS
     // Save a configuration file for a mesh
     void save_configuration(const VMesh& mesh, const std::string& path);
 
+    void use_backface_culling(const VMesh& mesh, bool culling);
+
+    bool is_using_backface_culling(const VMesh& mesh);
+
+    void use_two_sided_lighting(const VMesh& mesh, bool culling);
+
+    bool is_using_two_sided_lighting(const VMesh& mesh);
+
+    void use_base_color(const VMesh& mesh, bool base_color);
+
+    bool is_using_base_color(const VMesh& mesh);
 
     // Set color for all meshes (all cells and halffaces)
     template<typename Vec4T>
@@ -699,6 +710,36 @@ namespace volumeshOS
         inline void save_configuration(const std::string& path) const
         {
             volumeshOS::save_configuration(*this, path);
+        }
+
+        inline void use_backface_culling(const bool culling) const
+        {
+            volumeshOS::use_backface_culling(*this, culling);
+        }
+
+        [[nodiscard]] inline bool is_using_backface_culling() const
+        {
+            return volumeshOS::is_using_backface_culling(*this);
+        }
+
+        [[nodiscard]] inline bool is_using_two_sided_lighting() const
+        {
+            return volumeshOS::is_using_two_sided_lighting(*this);
+        }
+
+        inline void use_two_sided_lighting(const bool ts_lighting) const
+        {
+            volumeshOS::use_two_sided_lighting(*this, ts_lighting);
+        }
+
+        [[nodiscard]] inline bool is_using_base_color() const
+        {
+            return volumeshOS::is_using_base_color(*this);
+        }
+
+        inline  void use_base_color(const VMesh& mesh, bool base_color)const
+        {
+            volumeshOS::use_base_color(*this, base_color);
         }
 
 

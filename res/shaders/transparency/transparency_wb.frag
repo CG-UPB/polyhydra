@@ -26,6 +26,8 @@ uniform float u_t_min;
 uniform float u_t_max;
 
 // phong lighting model
+uniform bool  u_use_base_color;
+uniform bool  u_two_sided_lighting;
 uniform float u_spec_strength;
 uniform float u_ambient_strength;
 uniform float u_diffuse_strength;
@@ -295,16 +297,15 @@ vec3 calculate_pbr_lighting(vec3 albedo, vec3 n, vec3 l, vec3 v, float ao, float
 void main()
 {
     vec4 used_color = vec4(1.0f);
-    if(v_color.r >= 0.0 && v_color.g >= 0.0 && v_color.b >= 0.0)
-    {
-        used_color = v_color;
-    }
-    else
-    {
-        used_color = u_object_color;
-    }
+    used_color = u_use_base_color ? u_object_color : v_color;
+
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
+    vec3 v = normalize(u_cam_pos - v_pos);
+    if(u_two_sided_lighting && dot(n, l) <= 0 )
+    {
+        n = -n;
+    }
 
     if(v_color.a >= 1.0 - 0.01|| v_visible == 0)
     {

@@ -59,6 +59,9 @@ namespace volumeshOS::Internal
         bool visible                = true;
         int selection_id_offset     = 0;
         std::string name            = "default";
+        bool use_two_sided_lighting = false;
+        bool use_back_face_culling  = true;
+        bool use_base_color         = true;
     };
 
     class MeshObject
@@ -162,6 +165,9 @@ namespace volumeshOS::Internal
 
         void reset_rotation();
 
+    public:
+        bool just_locked = false;
+
     private:
         /**
          * Gets the center of the mesh (e.g for rotation) by calculating the bounding_box
@@ -182,7 +188,6 @@ namespace volumeshOS::Internal
     private:
 
         std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> m_mesh   = nullptr;
-        bool m_just_locked                                  = false;
         std::array<int, 2> m_selection_offset               = {-1, -1};
         std::pair<glm::vec3, glm::vec3> m_transformed_bb    = {};
         glm::vec3 m_slice_dir                               = {0.0f, 0.0f, 0.0f};

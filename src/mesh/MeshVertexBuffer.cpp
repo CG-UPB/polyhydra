@@ -364,7 +364,7 @@ namespace volumeshOS::Internal
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::FACE_NORMAL), vertex.halfface_normal);
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::VERTEX_NORMAL), vertex.vertex_normal);
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::CELL_CENTER), cell_center);
-                VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{-1.0f, -1.0f, -1.0f, 1.0f});
+                VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(0.0f);
@@ -615,7 +615,7 @@ namespace volumeshOS::Internal
         static RoundedCellData cell_data;
         cell_data.clear();
         cell_data.cell_id = cell.idx();
-        glm::vec4 color(-1.0f, -1.0f, -1.0f, 1.0f);
+        glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
         glm::vec3 zero(0.0f);
         int total_cell_vertex_count = 0;
         // iterate over the vertices that we have collected earlier

@@ -121,7 +121,7 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_float("u_ambient_strength",0.9f);
         m_ground_shader->set_uniform_float("u_diffuse_strength", 1.0f);
 
-        m_ground_shader->set_uniform_float("u_shadow_strength", settings.shadow_strength);
+        m_ground_shader->set_uniform_float("u_shadow_strength", settings.shadow.shadow_strength);
 
         m_ground_shader->set_uniform_bool("u_use_pbr", ground_options.use_pbr);
         m_ground_shader->set_uniform_float("u_metallic", ground_options.metallic);
@@ -135,8 +135,8 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_float("u_near", cam->near);
         m_ground_shader->set_uniform_float("u_far", cam->far);
 
-        float bias_min = 0.00001;
-        float bias_max = 0.0005;
+        float bias_min = 0.000;
+        float bias_max = 0.000;
         float bias_modifier = 0.1;
 
         m_ground_shader->set_uniform_float("u_bias_min", bias_min);
@@ -155,7 +155,8 @@ namespace volumeshOS::Internal
         }
 
         m_ground_shader->set_uniform_mat4f("u_light_transform", l_transform);
-        m_ground_shader->set_uniform_float("u_light_size", settings.light.size);
+        m_ground_shader->set_uniform_float("u_light_size", settings.shadow.penumbra_scale);
+        m_ground_shader->set_uniform_float("u_softness", settings.shadow.softness);
 
 
         // settings

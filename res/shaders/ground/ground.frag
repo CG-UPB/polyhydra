@@ -41,6 +41,7 @@ uniform float u_gamma;
 uniform vec3 u_background_color;
 
 uniform float u_shadow_strength;
+uniform float u_softness;
 
 uniform int u_cascade_level;
 uniform float u_cascade_ends[MAX_CASCADE_LEVEL];
@@ -83,6 +84,34 @@ vec2 poisson_disk[16] = vec2[](
     vec2( 0.14383161, -0.14100790 )
 );
 
+
+const vec2 Poisson25[25] = vec2[](
+    vec2(-0.978698, -0.0884121),
+    vec2(-0.841121, 0.521165),
+    vec2(-0.71746, -0.50322),
+    vec2(-0.702933, 0.903134),
+    vec2(-0.663198, 0.15482),
+    vec2(-0.495102, -0.232887),
+    vec2(-0.364238, -0.961791),
+    vec2(-0.345866, -0.564379),
+    vec2(-0.325663, 0.64037),
+    vec2(-0.182714, 0.321329),
+    vec2(-0.142613, -0.0227363),
+    vec2(-0.0564287, -0.36729),
+    vec2(-0.0185858, 0.918882),
+    vec2(0.0381787, -0.728996),
+    vec2(0.16599, 0.093112),
+    vec2(0.253639, 0.719535),
+    vec2(0.369549, -0.655019),
+    vec2(0.423627, 0.429975),
+    vec2(0.530747, -0.364971),
+    vec2(0.566027, -0.940489),
+    vec2(0.639332, 0.0284127),
+    vec2(0.652089, 0.669668),
+    vec2(0.773797, 0.345012),
+    vec2(0.968871, 0.840449),
+    vec2(0.991882, -0.657338));
+
 float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 line_dir)
 {
     vec2 af = frag_pos - line_start;
@@ -101,22 +130,23 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
     float avg_blocker_distance = 0.0;
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
 
+    float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
 
-    float search_width = light_size * (shadow_coords.z - 0.05) / shadow_coords.z;
-//    if(search_width < 0)
-//    {
-//        return 0;
-//    }
+
+    if(search_width < 0)
+    {
+        return 0;
+    }
 
     int range = int(search_width);
-    int samples = 3;
+    int samples = 4;
     for(int x = -samples; x <= samples; ++x)
     {
-        for (int y = -samples; y <= samples; ++y)
+        for (int y = -samples; y <= samples; y++)
         {
             vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
-            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x, y) + shift * texelSize, float(cascade_idx))).r;
-            if(z < (shadow_coords.z ))
+            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + (vec2(x, y) + shift) * texelSize, float(cascade_idx))).r;
+            if(z < (shadow_coords.z - bias))
             {
                 blockers++;
                 avg_blocker_distance += z;
@@ -141,8 +171,8 @@ float percentage_closer_filtering(vec3 shadow_coords, float radius, float bias, 
     int count = 0;
 
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
-    int range = int(radius * 10.0);
-    range = range > 40 ? 40 : range;
+    int range = int(radius);
+   // range = range > 40 ? 40 : range;
     range = range <  1 ?  2 : range;
 
     for(int x = - range; x <= range; ++x)
@@ -150,13 +180,14 @@ float percentage_closer_filtering(vec3 shadow_coords, float radius, float bias, 
         count++;
         for (int y = -range; y <= range; ++y)
         {
-            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x , y) * texelSize, float(cascade_idx))).r;
-            if(z < (shadow_coords.z - bias))
-            {
-                sum += 1.0;
-            }
+            int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
+            //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
+            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness  * vec2(x , y) * texelSize, float(cascade_idx))).r;
+
+            sum += depth < shadow_coords.z ? 1.0 : 0.0;
         }
     }
+
     count = count > 0 ? count : 1;
 
     return sum / (count * count);
@@ -174,16 +205,17 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
 
     //Step 1: Blocker search
     float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
-    if(blocker_distance == -1)
+    if(blocker_distance == -1.0)
         return 0.0;
 
     //Step 2: Penumbra estimation
     float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
-    if(penumbra_width == 0)
+    if(penumbra_width == 0.0)
         return 1.0;
 
     //Step 3: Filtering
-    float radius = penumbra_width;
+    float radius = light_size ;
+   // radius = light_size;
 
     return percentage_closer_filtering(shadow_coords, radius, bias, cascade_idx);
 }
@@ -452,7 +484,6 @@ void main()
         discard;
     }
 
-
     vec3 light_color = u_light_color;
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
@@ -476,10 +507,10 @@ void main()
         }
         for(int i = 0; i < cascade_level ; ++i)
         {
-            if(v_clipspace_z <= u_cascade_ends[i])
+            if(v_clipspace_z - 0.1 <= u_cascade_ends[i])
             {
                 cascade_idx = i;
-                i = cascade_level;
+                //i = cascade_level;
                 break;
             }
         }
@@ -491,11 +522,22 @@ void main()
         // calculate bias (depending on cascade level)
         float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
 
+        const float biasModifier = 0.5f;
+        if (cascade_level == cascade_level)
+        {
+            bias *= 1 / (100.0 * biasModifier);
+        }
+        else
+        {
+            bias *= 1 / (u_cascade_ends[cascade_level] * biasModifier);
+        }
+
         //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
 
         //cascade_idx = 0;
         //shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
-        shadow = u_shadow_strength * pcss_shadow_calculation(v_pos_ls[cascade_idx], 10.0 * u_light_size, bias, cascade_idx);
+        shadow = u_shadow_strength * pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
+//
     }
 
     float ao_factor = 1.0;

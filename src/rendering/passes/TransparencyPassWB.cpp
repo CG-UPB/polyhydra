@@ -110,6 +110,8 @@ namespace volumeshOS::Internal
             m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_transparency_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
 
+            m_transparency_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
+            m_transparency_shader->set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
             m_transparency_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
             m_transparency_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
             m_transparency_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);

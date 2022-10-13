@@ -18,6 +18,7 @@ namespace volumeshOS::Internal
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glCullFace(GL_BACK);
+
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
@@ -30,6 +31,15 @@ namespace volumeshOS::Internal
 
         for (const auto& mesh : renderer.render_list)
         {
+            if(mesh->get_data().use_two_sided_lighting)
+            {
+                glDisable(GL_CULL_FACE);
+            }
+            else
+            {
+                glEnable(GL_CULL_FACE);
+            }
+
             glm::mat4 transform = renderer.camera->world * mesh->get_data().get_transform();
             glm::mat4 view_transform = renderer.camera->view * transform;
 

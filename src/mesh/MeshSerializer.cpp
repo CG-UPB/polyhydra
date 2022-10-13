@@ -129,7 +129,7 @@ namespace volumeshOS::Internal
                 glm::vec3{in["slice_bb"]["min"]["x"], in["slice_bb"]["min"]["y"], in["slice_bb"]["min"]["z"]},
                 glm::vec3{in["slice_bb"]["max"]["x"], in["slice_bb"]["max"]["y"], in["slice_bb"]["max"]["z"]}
         );
-        mesh.m_just_locked = false;
+        mesh.just_locked = false;
         data.cell_size = in["cell_size"];
         data.slice_locked = in["slice_locked"];
         data.rounding_active = in["rounding_active"];

@@ -199,6 +199,11 @@ namespace volumeshOS::Internal
     {
         auto f = [locked](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->get_data().slice_locked = locked;
+            if(locked)
+            {
+                mesh->just_locked = true;
+            }
+
         };
         execute_for_mesh(f, id);
     }

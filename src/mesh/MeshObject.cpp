@@ -227,7 +227,7 @@ namespace volumeshOS::Internal
 
     std::pair<glm::vec3, glm::vec3>& MeshObject::get_world_bb(const glm::mat4& transform)
     {
-        if (m_data.slice_locked)
+        if (m_data.slice_locked && !just_locked)
         {
             return m_transformed_bb;
         }
@@ -288,14 +288,16 @@ namespace volumeshOS::Internal
     {
         if (!m_data.slice_locked)
         {
-            m_just_locked = true;
+            just_locked = true;
             m_slice_dir = glm::vec3(glm::inverse(world_transform) * glm::vec4(view_dir, 0.0f));
         }
         else
         {
-            if (m_just_locked)
+            //m_data.slice_locked = true;
+            if (just_locked)
             {
-                m_just_locked = false;
+                m_data.slice_locked = true;
+                just_locked = false;
                 m_slice_dir = glm::vec3(glm::inverse(m_data.get_transform()) * glm::vec4(view_dir, 0.0f));
             }
         }

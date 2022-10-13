@@ -103,7 +103,7 @@ void main()
     );
     mat4 scale = mat4(
         a_scale.x * scale_offset / u_scale_normalization, 0.0, 0.0, 0.0,
-        0.0, a_scale.y * scale_offset, 0.0, 0.0,
+        0.0, a_scale.y * scale_offset /  u_scale_normalization, 0.0, 0.0,
         0.0, 0.0, a_scale.z * scale_offset / u_scale_normalization, 0.0,
         0.0, 0.0, 0.0, 1.0
     );

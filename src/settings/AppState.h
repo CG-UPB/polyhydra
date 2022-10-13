@@ -18,7 +18,13 @@ namespace volumeshOS::Internal
     {
         glm::vec3 direction     = {0.5f, 1.0f, 1.0f};
         glm::vec3 color         = {0.94f, 0.86f, 0.75f};
-        float size              = 1.0f;
+    };
+
+    struct ShadowOptions
+    {
+        float shadow_strength    = 0.8;
+        float penumbra_scale     = 1.0f;
+        float softness           = 1.0f;
     };
 
     struct SkyOptions
@@ -72,6 +78,7 @@ namespace volumeshOS::Internal
             SSAOOptions ssao_custom                 = {};
             GroundOptions ground                    = {};
             CameraOptions camera                    = {};
+            ShadowOptions shadow                    = {};
             LightOptions light                      = {};
             SkyOptions sky                          = {};
             PostProcessingOptions post_processing   = {};
@@ -80,7 +87,6 @@ namespace volumeshOS::Internal
             bool transparency_active                = false;
             bool ssao_active                        = true;
             bool shadows_active                     = true;
-            float shadow_strength                   = 0.8;
             bool isolation_active                   = false;
             bool digging_active                     = false;
             int num_depth_peeling_passes            = 15;

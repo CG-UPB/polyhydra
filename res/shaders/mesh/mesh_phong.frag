@@ -32,6 +32,8 @@ uniform int u_viewport_width;
 uniform int u_viewport_height;
 
 // phong lighting model
+uniform bool  u_use_base_color;
+uniform bool  u_two_sided_lighting;
 uniform float u_spec_strength;
 uniform float u_ambient_strength;
 uniform float u_diffuse_strength;
@@ -209,7 +211,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
 
 
-    float search_width = light_size * (shadow_coords.z - 0.05) / shadow_coords.z;
+    float search_width = light_size * (shadow_coords.z - bias) / shadow_coords.z;
     if(search_width < 0)
     {
         return 0;
@@ -248,17 +250,18 @@ float percentage_closer_filtering(vec3 shadow_coords, float radius, float bias, 
     int count = 0;
 
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
-    int range = int(radius * 10.0);
+    int range = int(radius );
     range = range > 40 ? 40 : range;
     range = range <  1 ?  2 : range;
 
-    for(int x = - range; x <= range; ++x)
+
+    for(int x = -range; x <= range; ++x)
     {
         count++;
         for (int y = -range; y <= range; ++y)
         {
-            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x , y) * texelSize, float(cascade_idx))).r;
-            if(z < (shadow_coords.z - bias))
+            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy - vec2(x , y) * texelSize, float(cascade_idx))).r;
+            if(depth < (shadow_coords.z - bias))
             {
                 sum += 1.0;
             }
@@ -281,13 +284,13 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
 
     //Step 1: Blocker search
     float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
-    if(blocker_distance == -1)
-    return 0.0;
+    if(blocker_distance == -1.0)
+        return 0.0;
 
     //Step 2: Penumbra estimation
     float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
-    if(penumbra_width == 0)
-    return 1.0;
+    if(penumbra_width == 0.0)
+        return 1.0;
 
     //Step 3: Filtering
     float radius = penumbra_width;
@@ -317,7 +320,12 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     for(int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        //shadow += 0.25 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx), current_depth)));
+        float depth = texture(u_shadow_texture, vec3(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx))).r;
+        if(depth < current_depth)
+        {
+            shadow += 0.25;
+        }
+
     }
     return shadow;
 }
@@ -370,7 +378,8 @@ vec3 calculate_phong_lighting(vec3 color, vec3 n, vec3 l, float ao, float shadow
     //specular
     vec3 v = normalize(u_cam_pos - v_pos);
     vec3 r = reflect(-l, n);
-    float spec = pow(max(0.0, dot(v, r)), u_spec_exponent);
+    vec3 h = normalize(l + v);
+    float spec = pow(max(0.0, dot(h, n)), u_spec_exponent);
     vec3 specular = u_spec_strength * spec * u_light_color;
 
     float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
@@ -625,12 +634,12 @@ void main()
 #endif
 
     vec3 n = normalize(v_normal);
-//    if(dot(u_cam_pos - pos, n) <= -0.05)
-//    {
-//        n = -n;
-//    }
-
     vec3 l = normalize(u_light_pos);
+    vec3 v = normalize(u_cam_pos - v_pos);
+    if(u_two_sided_lighting && dot(n, l) <= 0 )
+    {
+        n = -n;
+    }
 
     float shadow = 0.0;
     if (u_draw_shadows)
@@ -641,14 +650,7 @@ void main()
 
     // Phong Shading
     vec4 used_color = vec4(1.0f);
-    if(v_color.r >= 0.0 && v_color.g >= 0.0 && v_color.b >= 0.0)
-    {
-        used_color = v_color;
-    }
-    else
-    {
-        used_color = u_object_color;
-    }
+    used_color = u_use_base_color ? u_object_color : v_color;
 
     //ambient
     float ao_factor = 1.0;

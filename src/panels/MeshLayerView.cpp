@@ -36,8 +36,7 @@ namespace volumeshOS::Internal
                 volumeshOS::focus_camera_on_mesh(VMesh(active_mesh_id));
             }
 
-            Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active now. The filter functions of "
-                                        "the Toolbar will change only the active mesh");
+            Tooltips::ToolTipByHovering("These Radio Buttons show which Mesh is active.");
 
             ImGui::SameLine();
 
@@ -138,6 +137,32 @@ namespace volumeshOS::Internal
                 ImGui::Separator();
                 ImGuiUtil::add_padding_y(0.5f);
                 ImGuiUtil::push_bold_font();
+                ImGui::Text("Lighting");
+                ImGui::PopFont();
+
+                auto base_color = mesh.is_using_base_color();
+                if(ImGui::Checkbox("Base Color", &base_color))
+                {
+                    use_base_color(mesh, base_color);
+                }
+
+                auto culling = mesh.is_using_backface_culling();
+                if(ImGui::Checkbox("Backface Culling", &culling))
+                {
+                    use_backface_culling(mesh, culling);
+                }
+
+                auto ts_lighting = mesh.is_using_two_sided_lighting();
+                if(ImGui::Checkbox("Two-Sided Lighting", &ts_lighting))
+                {
+                    use_two_sided_lighting(mesh, ts_lighting);
+                }
+
+
+                ImGuiUtil::add_padding_y(0.5f);
+                ImGui::Separator();
+                ImGuiUtil::add_padding_y(0.5f);
+                ImGuiUtil::push_bold_font();
                 ImGui::Text("Material");
                 ImGui::PopFont();
 
@@ -154,7 +179,7 @@ namespace volumeshOS::Internal
                 int lighting_model = static_cast<int>(mesh.get_lighting_mode());
                 ImGui::Combo("##Manual Mode SelectionMode:", &lighting_model, lighting_options,
                              IM_ARRAYSIZE(lighting_options), IM_ARRAYSIZE(lighting_options));
-                LightingMode mode = static_cast<LightingMode>(lighting_model);
+                auto mode = static_cast<LightingMode>(lighting_model);
                 mesh.set_lighting_mode(mode);
 
                 ImGuiUtil::add_padding_y(0.5f);

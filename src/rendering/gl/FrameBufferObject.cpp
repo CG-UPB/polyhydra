@@ -32,7 +32,7 @@ namespace volumeshOS::Internal
                     .format             = GL_RGBA,
                     .type               = GL_UNSIGNED_BYTE,
                     .attachment         = GL_COLOR_ATTACHMENT0,
-                    .texture_filter     = -1,
+                    .texture_filter     = GL_LINEAR,
                     .texture_wrap       = -1,
                     .texture_comp_func  = -1,
                     .texture_comp_mode  = -1,

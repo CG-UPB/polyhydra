@@ -1,6 +1,8 @@
 
 #include "volumeshOS.h"
 
+void test_functionality(volumeshOS::VMesh mesh);
+
 int main()
 {
     using namespace volumeshOS;
@@ -38,9 +40,8 @@ int main()
 
                         auto cylinder = mesh.add_shape<VCylinder>(c_it);
                         cylinder.set_position(pos);
-                        cylinder.set_scale(r, glm::length(glm::vec3(dir[0], dir[1], dir[2])), r);
-                        cylinder.set_direction(glm::vec3(1.0f, 0.0f, 0.0f));
-                        cylinders.push_back(cylinder);
+                        cylinder.set_scale(0.01f, glm::length(glm::vec3(dir[0], dir[1], dir[2])), 0.01f);
+                        cylinder.set_direction(dir);
                     }
                 }
             }
@@ -72,16 +73,14 @@ int main()
             }
         }
 
-        if(ImGui::DragFloat("Cylinder Radius", &r, 0.001f, 0.001f, 0.25f, "%.1f"))
+        if(ImGui::DragFloat("Cylinder Radius", &r, 0.1f, 0.1f, 0.5f, "%.1f"))
         {
             for(auto cylinder : cylinders)
             {
                 auto scale = cylinder.get_scale<glm::vec3>();
-                cylinder.set_scale(r, scale[1], r);
+                cylinder.set_scale(r, scale.y, r);
             }
         }
-
-
         ImGui::End();
     });
 
@@ -99,16 +98,35 @@ int main()
     use_log_window(false);
     //set_selection_mode(SelectionMode::ALL);
 
-    // Transparency Test
-    //auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
-    //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+//    set_camera_position(16.0f, 0.0f, 0.0f);
+//    set_camera_target(0.0f, -1.43f, 0.0f);
 
-    use_transparency(true);
-    //set_cell_rounding(mesh, 0.0f);
-    use_ambient_occlusion(false);
-    use_shadows(true);
-    set_camera_mode(volumeshOS::CameraMode::ORBIT);
-    //set_selection_mode(volumeshOS::SelectionMode::ALL);
+    auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
+    //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    
+    set_camera_mode(CameraMode::ORBIT);
+
+    //test_functionality(mesh);
 
     open();
+}
+
+void test_functionality(volumeshOS::VMesh mesh)
+{
+    using namespace volumeshOS;
+
+    use_shadows(false);
+    use_ambient_occlusion(false);
+    use_transparency(true);
+    use_ambient_occlusion(false);
+
+    mesh.set_position(0.0f, -1.43f, 0.0f);
+    mesh.set_scale(1.2f);
+
+    mesh.set_slice_factor(0.2f);
+    mesh.set_slice_lock(true);
+
+    mesh.set_cell_rounding(0.0f);
+    mesh.set_cell_size(0.5f);
+
 }

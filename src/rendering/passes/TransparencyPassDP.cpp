@@ -105,7 +105,6 @@ namespace volumeshOS::Internal
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_BLEND);
-//            glDisable(GL_CULL_FACE);
 
 
             if (i % 2 == 0)
@@ -149,6 +148,13 @@ namespace volumeshOS::Internal
 
     void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer)
     {
+
+        if(mesh->get_data().use_two_sided_lighting)
+        {
+            glDisable(GL_CULL_FACE);
+        }
+
+
         auto cam = renderer.camera;
         auto light = AppState::settings.light;
 
@@ -208,6 +214,16 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
         m_transparency_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
         m_transparency_shader->set_uniform_int("u_current_layer", layer);
+
+        m_transparency_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
+        m_transparency_shader->set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
+
+        m_transparency_shader->set_uniform_bool("u_use_pbr", mesh->get_data().use_pbr);
+        m_transparency_shader->set_uniform_float("u_metallic", mesh->get_data().metallic);
+        m_transparency_shader->set_uniform_float("u_roughness", mesh->get_data().roughness);
+        m_transparency_shader->set_uniform_float("u_gamma", AppState::settings.post_processing.gamma);
+        m_transparency_shader->set_uniform_vec3f("u_ground_color", AppState::settings.ground.solid_color);
+        m_transparency_shader->set_uniform_vec3f("u_background_color", AppState::settings.sky.sky_color);
 
         uint32_t depth_texture = renderer.buffers.target_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
         m_transparency_shader->set_uniform_sampler2D("max_depth_texture", GL_TEXTURE1, depth_texture);
