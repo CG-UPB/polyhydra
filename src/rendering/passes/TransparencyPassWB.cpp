@@ -120,6 +120,7 @@ namespace volumeshOS::Internal
             m_transparency_shader->set_uniform_bool("u_use_pbr", mesh->get_data().use_pbr);
             m_transparency_shader->set_uniform_float("u_metallic", mesh->get_data().metallic);
             m_transparency_shader->set_uniform_float("u_roughness", mesh->get_data().roughness);
+            m_transparency_shader->set_uniform_float("u_light_intensity", light.intensity);
             m_transparency_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
             m_transparency_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
             m_transparency_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);

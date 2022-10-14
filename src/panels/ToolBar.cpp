@@ -304,7 +304,7 @@ namespace volumeshOS::Internal
             return;
         }
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
-        if (ImGuiUtil::begin_menu_with_background("light", 2))
+        if (ImGuiUtil::begin_menu_with_background("light", 3))
         {
             ImGuiUtil::menu_item_filled("Direction", [&]
             {
@@ -331,7 +331,10 @@ namespace volumeshOS::Internal
                     light_color = glm::vec3(new_color1[0], new_color1[1], new_color1[2]);
                 }
             });
-
+            ImGuiUtil::menu_item_filled("Intensity", [&]
+            {
+                ImGui::DragFloat("##Intensity", &settings.light.intensity, 0.1f, 0.0f, 10.0f, "%.1f");
+            });
             ImGuiUtil::end_menu();
         }
     }

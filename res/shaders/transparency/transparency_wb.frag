@@ -37,6 +37,7 @@ uniform float u_spec_exponent;
 uniform bool u_use_pbr;
 uniform float u_metallic;
 uniform float u_roughness;
+uniform float u_light_intensity;
 uniform float u_gamma;
 uniform vec3 u_ground_color;
 uniform vec3 u_background_color;
@@ -257,7 +258,7 @@ vec3 calculate_pbr_lighting(vec3 albedo, vec3 n, vec3 l, vec3 v, float ao, float
 
     // we have a directional light, so no attenuation
     float attenuation = 1.0;
-    vec3 radiance = u_light_color * 5.0 * attenuation;
+    vec3 radiance = u_light_color * u_light_intensity * attenuation;
 
     // cook-torrance brdf
     float ndf = distribution_ggx(n, h, u_roughness);

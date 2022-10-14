@@ -6,6 +6,11 @@ const int MAX_CASCADE_LEVEL = 8;
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 8) out;
 
+const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
+const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
+const float ROUNDED_VERTEX_TYPE_CORNER   = 2.0;
+const float ROUNDED_VERTEX_TYPE_CENTER   = 3.0;
+
 // [P0.z > 0][P1.z > 0][P2.z > 0]
 const ivec4 lookup[8] = ivec4[](
     ivec4(3, 3, 3, 3),  // [0][0][0]
@@ -25,10 +30,13 @@ in mat4 v_LightSpacePos0[3];
 in mat4 v_LightSpacePos1[3];
 flat in int v_Visible[3];
 flat in int v_isTriangle[3];
+flat in float v_VertexTypeRounded[3];
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
 uniform mat4 u_view;
+
+uniform bool u_rounding;
 
 out vec3 v_pos;
 out vec3 v_normal;
@@ -71,6 +79,18 @@ void vertex(vec4 screen_pos, vec3 pos, vec3 normal, vec4 color, int visible)
     EmitVertex();
 }
 
+// when rounding is active, the color of the added rounding vertices should match the adjacent faces
+vec4 get_color(int i0, int i1, int i2)
+{
+    float type = v_VertexTypeRounded[i0];
+    if (u_rounding && (type == ROUNDED_VERTEX_TYPE_EDGE || type == ROUNDED_VERTEX_TYPE_CORNER))
+    {
+        int faceIndex = v_VertexTypeRounded[i1] == ROUNDED_VERTEX_TYPE_FACE ? i1 : i2;
+        return v_Color[faceIndex];
+    }
+    return v_Color[i0];
+}
+
 void main()
 {
     vec3 pos0 = v_Pos[0];
@@ -81,9 +101,6 @@ void main()
     vec4 viewspace_pos1 = u_view * vec4(pos1, 1.0);
     vec4 viewspace_pos2 = u_view * vec4(pos2, 1.0);
 
-//    vec4 screen_pos0 = u_projection * viewspace_pos0;
-//    vec4 screen_pos1 = u_projection * viewspace_pos1;
-//    vec4 screen_pos2 = u_projection * viewspace_pos2;
     vec4 screen_pos0 = u_projection * u_view * vec4(pos0, 1.0);
     vec4 screen_pos1 = u_projection * u_view * vec4(pos1, 1.0);
     vec4 screen_pos2 = u_projection * u_view * vec4(pos2, 1.0);
@@ -127,15 +144,15 @@ void main()
 
     set_light_space_pos(0);
     v_tri_dist = vec3(0.0, dist0, 0.0);
-    vertex(screen_pos0, pos0.xyz, v_Normal[0], v_Color[0], v_Visible[0]);
+    vertex(screen_pos0, pos0.xyz, v_Normal[0], get_color(0, 1, 2), v_Visible[0]);
 
     set_light_space_pos(1);
     v_tri_dist = vec3(0.0, 0.0, dist1);
-    vertex(screen_pos1, pos1.xyz, v_Normal[1], v_Color[1], v_Visible[1]);
+    vertex(screen_pos1, pos1.xyz, v_Normal[1], get_color(1, 0, 2), v_Visible[1]);
 
     set_light_space_pos(2);
     v_tri_dist = vec3(dist2, 0.0, 0.0);
-    vertex(screen_pos2, pos2.xyz, v_Normal[2], v_Color[2], v_Visible[2]);
+    vertex(screen_pos2, pos2.xyz, v_Normal[2], get_color(2, 0, 1), v_Visible[2]);
 
     EndPrimitive();
 }

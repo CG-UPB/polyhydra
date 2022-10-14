@@ -28,6 +28,7 @@ out mat4 v_LightSpacePos1;
 out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
+flat out float v_VertexTypeRounded;
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
@@ -129,6 +130,7 @@ void main()
             vec3 shrink_dir = normalize(a_face_center_rounded - position);
             position += shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
         }
+        v_VertexTypeRounded = type;
     }
 
     mat4 cam_space_mat = u_projection * view_transform;

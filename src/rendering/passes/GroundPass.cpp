@@ -126,6 +126,7 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_bool("u_use_pbr", ground_options.use_pbr);
         m_ground_shader->set_uniform_float("u_metallic", ground_options.metallic);
         m_ground_shader->set_uniform_float("u_roughness", ground_options.roughness);
+        m_ground_shader->set_uniform_float("u_light_intensity", light.intensity);
         m_ground_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
         m_ground_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
 

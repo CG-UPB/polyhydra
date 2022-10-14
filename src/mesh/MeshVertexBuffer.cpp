@@ -1244,7 +1244,7 @@ namespace volumeshOS::Internal
     void MeshVertexBuffer::update_attribute(VAO vao_id, Attribute attribute, T value, int halfface_id, int cell_id)
     {
         auto [val, val_size] = get_value_and_size(value);
-        m_vao_update_data.push_back({
+        m_vao_update_data.push_back(AttributeUpdateData{
                 vao_id,
                 attribute,
                 val,
