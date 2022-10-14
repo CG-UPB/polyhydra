@@ -192,7 +192,7 @@ namespace volumeshOS::Internal
                         IM_ARRAYSIZE(selection_modes),
                         IM_ARRAYSIZE(selection_modes)
                 );
-                //AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
+                AppState::settings.selection_mode = static_cast<SelectionMode>(mode);
                 AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
             });
             ImGuiUtil::menu_item_filled("Select by ID", [&]

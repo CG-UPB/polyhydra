@@ -18,9 +18,12 @@ namespace volumeshOS::Internal
         frame.width = width;
         frame.height = height;
 
-        buffers.target_framebuffer_ms = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
-        buffers.target_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
-        buffers.post_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
+        buffers.target_framebuffer_ms = std::make_shared<FrameBufferObject>(width, height,
+                                                                            FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        buffers.target_framebuffer = std::make_shared<FrameBufferObject>(width, height,
+                                                                         FrameBufferObject::RGBA_AND_DEPTH);
+        buffers.post_framebuffer = std::make_shared<FrameBufferObject>(width, height,
+                                                                       FrameBufferObject::RGBA_AND_DEPTH);
         buffers.selection_frame_buffer = std::make_shared<FrameBufferObject>(width / 2, height / 2,
                                                                              FrameBufferObject::RGBA_AND_DEPTH);
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
@@ -28,7 +31,7 @@ namespace volumeshOS::Internal
         passes.background_pass = std::make_shared<BackgroundPass>();
         passes.ground_pass = std::make_shared<GroundPass>();
         passes.pre_pass = std::make_shared<PrePass>(width, height);
-        passes.shadow_pass = std::make_shared<ShadowMapPass>(width * 2, height * 2);
+        passes.shadow_pass = std::make_shared<ShadowMapPass>(width, height);
         passes.mesh_pass = std::make_shared<MeshPass>();
         passes.ssao_pass = std::make_shared<SSAOPass>(width, height);
         passes.transparency_pass_wb = std::make_shared<TransparencyPassWB>(*this, width, height);
@@ -60,7 +63,7 @@ namespace volumeshOS::Internal
         passes.transparency_pass_dp->resize_buffers(frame.width, frame.height);
         passes.pre_pass->resize_buffers(frame.width, frame.height);
         passes.ssao_pass->resize_buffers(frame.width, frame.height);
-        passes.shadow_pass->resize_buffers(frame.width * 2, frame.height * 2);
+        passes.shadow_pass->resize_buffers(frame.width, frame.height);
         buffers.selection_frame_buffer->resize(frame.width / 2, frame.height / 2);
         buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, frame.width / 2, frame.height / 2);
         input.last.x = (float) width / 2.0f;
@@ -91,13 +94,14 @@ namespace volumeshOS::Internal
         }
 
         render_list.clear();
-        mesh_list->iterate([&](auto id, auto mesh){
-            mesh->update_vertex_buffer();
-            if (should_render_mesh(mesh))
-            {
-                render_list.push_back(mesh);
-            }
-        });
+        mesh_list->iterate([&](auto id, auto mesh)
+                           {
+                               mesh->update_vertex_buffer();
+                               if (should_render_mesh(mesh))
+                               {
+                                   render_list.push_back(mesh);
+                               }
+                           });
 
         buffers.target_framebuffer_ms->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -192,8 +196,10 @@ namespace volumeshOS::Internal
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
-        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
-        FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
+        FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, buffers.target_framebuffer_ms,
+                                buffers.target_framebuffer);
+        FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
+                                buffers.target_framebuffer);
 
         passes.post_processing_pass->render(*this);
     }
@@ -226,7 +232,7 @@ namespace volumeshOS::Internal
             }
         }
 
-        if(!AppState::settings.block_input)
+        if (!AppState::settings.block_input)
         {
             handle_camera_input();
             handle_mesh_input();
@@ -319,7 +325,7 @@ namespace volumeshOS::Internal
 
             }
 
-            if(ImGui::IsWindowFocused())
+            if (ImGui::IsWindowFocused())
             {
                 if (Input::key_pressed(Input::SWITCH_CAMERA_MODE))
                 {
@@ -329,11 +335,11 @@ namespace volumeshOS::Internal
                         new_target = volumeshOS::get_focused_mesh().get_position<glm::vec3>();
                     }
 
-                    if(camera->get_mode() == CameraMode::ORBIT)
+                    if (camera->get_mode() == CameraMode::ORBIT)
                     {
                         camera->set_mode(CameraMode::FLY);
                     }
-                    else if(camera->get_mode() == CameraMode::FLY)
+                    else if (camera->get_mode() == CameraMode::FLY)
                     {
                         camera->animated_look_at(new_target);
                         camera->set_mode(CameraMode::ORBIT);
@@ -357,9 +363,12 @@ namespace volumeshOS::Internal
         frame.width = export_width;
         frame.height = export_height;
 
-        auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
-        auto export_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
-        auto export_post_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height, FrameBufferObject::RGBA_AND_DEPTH);
+        auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,
+                                                                         FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        auto export_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height,
+                                                                      FrameBufferObject::RGBA_AND_DEPTH);
+        auto export_post_framebuffer = std::make_shared<FrameBufferObject>(export_width, export_height,
+                                                                           FrameBufferObject::RGBA_AND_DEPTH);
 
         auto prev_target_framebuffer_ms = buffers.target_framebuffer_ms;
         auto prev_target_framebuffer = buffers.target_framebuffer;
@@ -432,9 +441,9 @@ namespace volumeshOS::Internal
 
     void Renderer::handle_zoom()
     {
-        if(ImGui::IsWindowHovered())
+        if (Input::mouse_double_clicked())
         {
-            if (Input::mouse_double_clicked())
+            if (ImGui::IsWindowHovered())
             {
                 // now render our mesh scene to the framebuffer texture
                 //passes.pre_pass->get_framebuffer()->bind();

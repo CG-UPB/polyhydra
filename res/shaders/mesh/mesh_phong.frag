@@ -30,6 +30,8 @@ uniform vec4 u_object_color;
 
 uniform int u_viewport_width;
 uniform int u_viewport_height;
+uniform float u_near;
+uniform float u_far;
 
 // phong lighting model
 uniform bool  u_use_base_color;
@@ -49,6 +51,7 @@ uniform vec3 u_ground_color;
 uniform vec3 u_background_color;
 
 uniform float u_shadow_strength;
+uniform float u_softness;
 
 uniform float peel_depth;
 uniform int u_cascade_level;
@@ -211,21 +214,22 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
     float avg_blocker_distance = 0.0;
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
 
+    float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
 
-    float search_width = light_size * (shadow_coords.z - bias) / shadow_coords.z;
+
     if(search_width < 0)
     {
         return 0;
     }
 
     int range = int(search_width);
-    int samples = 3;
+    int samples = 4;
     for(int x = -samples; x <= samples; ++x)
     {
-        for (int y = -samples; y <= samples; ++y)
+        for (int y = -samples; y <= samples; y++)
         {
             vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
-            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x, y) + shift * texelSize, float(cascade_idx))).r;
+            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + (vec2(x, y) + shift) * texelSize, float(cascade_idx))).r;
             if(z < (shadow_coords.z - bias))
             {
                 blockers++;
@@ -245,29 +249,30 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 
 }
 
-float percentage_closer_filtering(vec3 shadow_coords, float radius, float bias, int cascade_idx)
+float percentage_closer_filtering(vec3 shadow_coords, float light_size, float radius, float bias, int cascade_idx)
 {
     float sum = 0;
     int count = 0;
 
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
-    int range = int(radius );
-    range = range > 40 ? 40 : range;
+    int range = int(light_size * radius);
+
+    range = range > 10 ? 10 : range;
     range = range <  1 ?  2 : range;
 
-
-    for(int x = -range; x <= range; ++x)
+    for(int x = - range; x <= range; ++x)
     {
         count++;
         for (int y = -range; y <= range; ++y)
         {
-            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy - vec2(x , y) * texelSize, float(cascade_idx))).r;
-            if(depth < (shadow_coords.z - bias))
-            {
-                sum += 1.0;
-            }
+            //int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
+            //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
+            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x , y) * texelSize, float(cascade_idx))).r;
+
+            sum += depth < shadow_coords.z - bias? 1.0 : 0.0;
         }
     }
+
     count = count > 0 ? count : 1;
 
     return sum / (count * count);
@@ -278,25 +283,29 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
     vec3 shadow_coords = pos_ls.rgb / pos_ls.w;
     shadow_coords = shadow_coords * 0.5 + 0.5;
 
+
     if(shadow_coords.z > 1.0)
     {
         return 0.0;
     }
 
-    //Step 1: Blocker search
-    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
-    if(blocker_distance == -1.0)
-        return 0.0;
-
-    //Step 2: Penumbra estimation
-    float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
-    if(penumbra_width == 0.0)
-        return 1.0;
+//    //Step 1: Blocker search
+//    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
+//    if(blocker_distance == -1.0)
+//        return 0.0;
+//
+//    //Step 2: Penumbra estimation
+//    float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
+//    if(penumbra_width == 0.0)
+//        return 1.0;
 
     //Step 3: Filtering
-    float radius = penumbra_width;
+    float radius = 1.0;
+    // radius = light_size;
 
-    return percentage_closer_filtering(shadow_coords, radius, bias, cascade_idx);
+    float shadow = percentage_closer_filtering(shadow_coords, light_size, radius, bias, cascade_idx);
+
+    return shadow;
 }
 
 float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
@@ -400,7 +409,7 @@ vec3 fresnel_schlick_roughness(float cos_theta, vec3 f0, float roughness)
 
 float distribution_ggx(vec3 n, vec3 h, float roughness)
 {
-    float a         = roughness * roughness;
+    float a         = roughness ;
     float a2        = a * a;
     float n_dot_h   = max(dot(n, h), 0.0);
     float n_dot_h2  = n_dot_h * n_dot_h;
@@ -590,7 +599,10 @@ vec3 calculate_pbr_lighting(vec3 albedo, vec3 n, vec3 l, vec3 v, float ao, float
     float denominator = 4.0 * max(dot(n, v), 0.0) * max(dot(n, l), 0.0) + 0.0001;
     vec3 specular = numerator / denominator;
 
+    specular = vec3(clamp(specular.x, 0.0, 1.0), clamp(specular.y, 0.0, 1.0), clamp(specular.z, 0.0, 1.0) );
+
     // outgoing radiance
+
     float n_dot_l = max(dot(n, l), 0.0);
     lo += (kd * albedo / PI + specular) * radiance * n_dot_l;
 
