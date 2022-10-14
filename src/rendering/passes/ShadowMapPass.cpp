@@ -33,8 +33,8 @@ namespace volumeshOS::Internal
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-//        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-//        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
         constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
         glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
@@ -156,6 +156,7 @@ namespace volumeshOS::Internal
 //        {
 //            cascade_ends[m_current_cascade_level - i] = (float)(1.0f / pow(2, (float)(i - 1))) * m_current_far;
 //        }
+
 
         // calculate frustum coordiantes for each cascade
         float n;
@@ -280,6 +281,8 @@ namespace volumeshOS::Internal
             m_debug_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", cascade_views[i]);
         }
         m_debug_shader->set_uniform_mat4f("u_inv_projection", glm::inverse(renderer.camera->projection));
+        m_debug_shader->set_uniform_float("u_near", renderer.camera->near);
+        m_debug_shader->set_uniform_float("u_far", renderer.camera->far);
         VertexArrayObject::draw_screen_quad();
         m_debug_framebuffer->unbind();
         m_debug_shader->unbind();

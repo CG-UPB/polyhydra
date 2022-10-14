@@ -22,6 +22,8 @@ uniform vec3 u_max;
 uniform vec3 u_slice_direction;
 uniform float u_slice_depth;
 uniform float u_peel_depth;
+uniform float u_max_peel_depth;
+uniform bool u_reverse_peeling;
 uniform float u_cell_size;
 uniform float u_scale_normalization;
 
@@ -83,7 +85,15 @@ void main()
         vec3 center = vec3(view_transform * vec4(a_cell_center, 1.0));
         float angle = dot(normalize(slice_dir), normalize(center - slice_point));
 
-        if (a_cell_peel_depth < u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_dug == 1.0)
+
+        float peel_depth = a_cell_peel_depth;
+
+        if(u_reverse_peeling)
+        {
+            peel_depth = u_max_peel_depth - peel_depth;
+        }
+
+        if (peel_depth < u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_dug == 1.0)
         {
             v_visible = 0;
             v_pos = vec3(0.0, 0.0, 0.0);
@@ -102,9 +112,9 @@ void main()
         position.x, position.y, position.z, 1.0
     );
     mat4 scale = mat4(
-        a_scale.x * scale_offset, 0.0, 0.0, 0.0,
-        0.0, a_scale.y * scale_offset, 0.0, 0.0,
-        0.0, 0.0, a_scale.z * scale_offset, 0.0,
+        a_scale.x * scale_offset , 0.0, 0.0, 0.0,
+        0.0, a_scale.y * scale_offset , 0.0, 0.0,
+        0.0, 0.0, a_scale.z * scale_offset , 0.0,
         0.0, 0.0, 0.0, 1.0
     );
     mat4 rotation = look_at(a_rotation.xyz, vec3(cos(a_rotation.w), 0.0, sin(a_rotation.w)));

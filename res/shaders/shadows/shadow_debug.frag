@@ -4,13 +4,16 @@ const int MAX_CASCADE_LEVEL = 8;
 
 in vec2 v_uv;
 
-uniform sampler2DArrayShadow u_shadow_texture;
+uniform sampler2DArray u_shadow_texture;
 uniform sampler2D u_depth;
 uniform mat4 u_inv_projection;
 uniform int u_cascade_level;
 
 uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
+
+uniform float u_near;
+uniform float u_far;
 
 out vec4 FragColor;
 
@@ -20,23 +23,15 @@ vec4 get_position(vec2 uv)
     return point / point.w;
 }
 
+float linearize_depth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // back to NDC
+    return (2.0 * u_near * u_far) / (u_far + u_near - z * (u_far - u_near));
+}
+
 void main()
 {
-    int n = u_cascade_level;
-    vec3 frag_pos_vs = get_position(v_uv).xyz;
-    vec4 frag_pos_ls = u_light_projection[n] * u_light_view[n] * vec4(frag_pos_vs.xyz, 1.0);
-    // range [-1, 1]
-    vec3 proj_coords = frag_pos_ls.xyz / frag_pos_ls.w;
-
-    // range [0, 1]
-    proj_coords = proj_coords * 0.5 + 0.5;
-    if (proj_coords.z > 0.0)
-    {
-        float depth = 1.0 - texture(u_shadow_texture, vec4(proj_coords.xy, float(u_cascade_level), proj_coords.z));
-        FragColor = vec4(depth, depth, depth, 1.0);
-    }
-    else
-    {
-        discard;
-    }
+    float depth = texture(u_shadow_texture, vec3(v_uv, float(u_cascade_level))).r;
+    depth = linearize_depth(depth);
+    FragColor = vec4(depth, depth, depth, 1.0);
 }

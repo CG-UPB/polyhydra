@@ -86,6 +86,8 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
 
             m_mesh_shader->set_uniform_float("u_shadow_strength", settings.shadow.shadow_strength);
+            m_mesh_shader->set_uniform_float("u_softness", settings.shadow.softness);
+
 
             m_mesh_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
@@ -97,12 +99,18 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
             m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
 
+            m_mesh_shader->set_uniform_float("u_near", cam->near);
+            m_mesh_shader->set_uniform_float("u_far", cam->far);
+
 
 //            m_bias_min = 0.00000001f;
 //            m_bias_max = 0.000003f;
 
-            m_bias_min = 0.000001f;
-            m_bias_max = 0.0001f;
+//            m_bias_min = 0.000001f;
+//            m_bias_max = 0.0001f;
+
+            m_bias_min = 0.0000001f;
+            m_bias_max = 0.003f;
 
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
             m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);

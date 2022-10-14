@@ -65,12 +65,10 @@ int main()
                     auto face = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(hf_it);
                     if (ovm.is_boundary(face))
                     {
-
+                        auto center = ovm.barycenter(face);
+                        auto normal = -ovm.normal(hf_it);
+                        mesh.set_color(hf_it, glm::vec4{abs(normal[0]), abs(normal[1]), abs(normal[2]), 1.0f});
                     }
-                    auto center = ovm.barycenter(face);
-                    auto normal = -ovm.normal(hf_it);
-                    auto n = (glm::vec3{normal[0], normal[1], normal[2]} + 1.0f) * 0.5f;
-                    mesh.set_color(hf_it, glm::vec4{n, 1.0f});
                 }
             }
         }
@@ -96,12 +94,11 @@ int main()
     });
 
     use_log_window(false);
-    //set_selection_mode(SelectionMode::ALL);
+    set_selection_mode(SelectionMode::CELL);
 
-//    set_camera_position(16.0f, 0.0f, 0.0f);
-//    set_camera_target(0.0f, -1.43f, 0.0f);
+    add_shape<VCylinder>();
 
-    //auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
+    auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
     //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     
     set_camera_mode(CameraMode::ORBIT);
