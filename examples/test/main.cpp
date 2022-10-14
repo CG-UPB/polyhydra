@@ -3,7 +3,7 @@
 
 void test_functionality(volumeshOS::VMesh mesh);
 
-int main()
+int main(int argc, char* argv[])
 {
     using namespace volumeshOS;
 
@@ -94,12 +94,13 @@ int main()
     });
 
     use_log_window(false);
-    set_selection_mode(SelectionMode::CELL);
+    //set_selection_mode(SelectionMode::CELL);
 
-    add_shape<VCylinder>();
-
-    auto mesh = load("/home/lukas/CLionProjects/volumeshos/cmake-build-debug/examples/test/res/sample_meshes/nut_el0_5_hex_opt.ovm");
-    //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    if (argc > 1)
+    {
+        auto mesh = load(argv[1]);
+        //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    }
     
     set_camera_mode(CameraMode::ORBIT);
 
