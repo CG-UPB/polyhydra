@@ -421,6 +421,5 @@ void main()
     {
         result = calculate_phong_lighting(used_color.rgb, n, l, v, ao_factor, shadow, u_light_color);
     }
-    result = vec3(shadow, shadow, shadow);
     FragColor = vec4(result, used_color.a);
 }
