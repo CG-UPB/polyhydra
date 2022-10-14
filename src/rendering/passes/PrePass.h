@@ -20,11 +20,16 @@ namespace volumeshOS::Internal
 
         [[nodiscard]] std::shared_ptr<PrePassFrameBufferObject> get_framebuffer() const;
 
-        void clear_position_buffer(const Renderer& renderer);
+        [[nodiscard]] uint32_t get_outline_texture() const;
 
     private:
 
-        std::shared_ptr<Shader> m_clear_position_shader;
+        static void draw_with_shader(const Renderer& renderer, Shader& shader);
+
+    private:
+
         std::shared_ptr<PrePassFrameBufferObject> m_pre_pass_framebuffer;
+        std::shared_ptr<FrameBufferObject> m_outline_framebuffer;
+        std::shared_ptr<Shader> m_outline_shader;
     };
 }

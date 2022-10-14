@@ -41,5 +41,10 @@ namespace volumeshOS::Internal
         {
             return get_texture(GL_COLOR_ATTACHMENT0);
         }
+
+        [[nodiscard]] inline uint32_t get_outline_texture()
+        {
+            return get_texture(GL_COLOR_ATTACHMENT1);
+        }
     };
 }

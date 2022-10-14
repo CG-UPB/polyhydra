@@ -41,6 +41,7 @@ namespace volumeshOS::Internal
         static void show_post_processing_menu();
         static void show_sky_menu();
 
+        static void show_shapes_menu();
         static void show_ground_menu();
         static void show_shadow_menu();
         static void show_ambient_occlusion_menu();
@@ -51,14 +52,9 @@ namespace volumeshOS::Internal
     private:
         std::shared_ptr<Internal::Camera> m_camera  = nullptr;
 
-        float m_slider_width                        = 180.0f;
-        float m_padding_right                       = 35.0f;
-
-        int m_current_selection_mode                = static_cast<int>(SelectionMode::OFF);
         int m_manual_selection_type                 = 0;
         int m_manual_selection_id                   = -1;
         int m_previous_manual_selection_id          = -1;
-
 
         ExportOptions m_export_options              = {};
         int m_export_dimensions[2]                  = {m_export_options.width, m_export_options.height};

@@ -35,8 +35,7 @@ vec4 get_position(vec2 uv)
 void main()
 {
     vec3 position = get_position(v_uv).xyz;
-    // this fragment is not an object, so no need to occlude it to save performance
-    if (position.z == -u_far)
+    if (position.z < -u_far * 0.2)
     {
         o_occlusion = 1.0;
         return;

@@ -42,10 +42,10 @@ namespace volumeshOS::Internal
             },
             // depth
             FrameBufferAttachment{
-                    .internal_format    = GL_DEPTH_COMPONENT,
-                    .format             = GL_DEPTH_COMPONENT,
-                    .type               = GL_FLOAT,
-                    .attachment         = GL_DEPTH_ATTACHMENT,
+                    .internal_format    = GL_DEPTH24_STENCIL8,
+                    .format             = GL_DEPTH_STENCIL,
+                    .type               = GL_UNSIGNED_INT_24_8,
+                    .attachment         = GL_DEPTH_STENCIL_ATTACHMENT,
                     .texture_filter     = -1,
                     .texture_wrap       = -1,
                     .texture_comp_func  = -1,
@@ -194,10 +194,17 @@ namespace volumeshOS::Internal
 
     void FrameBufferObject::copy(int attachment, int mask, const std::shared_ptr<FrameBufferObject>& src, const std::shared_ptr<FrameBufferObject>& dest)
     {
+        copy(attachment, attachment, mask, src, dest);
+    }
+
+    void FrameBufferObject::copy(int read_attachment, int draw_attachment, int mask,
+                                 const std::shared_ptr<FrameBufferObject>& src,
+                                 const std::shared_ptr<FrameBufferObject>& dest)
+    {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, src->get_id());
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->get_id());
-        glReadBuffer(attachment);
-        glDrawBuffer(attachment);
+        glReadBuffer(read_attachment);
+        glDrawBuffer(draw_attachment);
         glBlitFramebuffer(
                 0, 0,
                 src->get_width(), src->get_height(),

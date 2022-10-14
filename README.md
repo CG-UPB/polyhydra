@@ -1,8 +1,15 @@
-# **volumeshOS**
+<h1><a href="https://gitcg.informatik.uni-osnabrueck.de/teaching/volumeshos"><img src="res/icons/logo.png" width="50" heigth="50" /></a><a href="https://gitcg.informatik.uni-osnabrueck.de/teaching/volumeshos">volumeshOS</a> - flexible volumetric mesh visualization framework</h1>
 
-VolumeshOS is a lightweight framework to observe 3-dimensional meshes ...
+**volumeshOS** is a modern and lightweight framework to visualize volumetric mesh data. 
+With ease of use in mind, **volumeshOS** has been created thoroughly to support the development
+of algorithms for volumetric mesh *generation*, *manipulation* or *visualization*. It offers
+many useful features like:
+- **Selection:** Use either the API or graphical interface to visualize data of 
+                         *vertices*, *edges*, *halffaces* and *cells*.
+- ****
 
-...
+
+
 
 ImGui          : https://github.com/ocornut/imgui 
 

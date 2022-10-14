@@ -40,7 +40,7 @@ int main()
 
                         auto cylinder = mesh.add_shape<VCylinder>(c_it);
                         cylinder.set_position(pos);
-                        cylinder.set_scale(0.01f, glm::length(glm::vec3(dir[0], dir[1], dir[2])), 0.01f);
+                        cylinder.set_scale(0.1f, glm::length(glm::vec3(dir[0], dir[1], dir[2])), 0.1f);
                         cylinder.set_direction(dir);
                     }
                 }
@@ -87,14 +87,12 @@ int main()
     });
 
     on_cell_select([&](const VMesh vmesh, OpenVolumeMesh::CellHandle ch){
+        vmesh.select(ch);
         log("Cell " + std::to_string(ch.uidx()) + " was selected");
-        auto col = get_color<glm::vec4>(vmesh, ch);
-        auto& ovm = *vmesh.get_ovm();
-        for (auto hf_it : ovm.cell_halffaces(ch))
-        {
-            //vmesh.set_color(ch, glm::vec4(col.r, col.g, col.b, 0.5f));
-        }
-        return;
+    });
+    on_halfface_select([&](const VMesh vmesh, OpenVolumeMesh::HalfFaceHandle hf){
+        vmesh.select(hf);
+        log("Halfface " + std::to_string(hf.uidx()) + " was selected");
     });
 
     use_log_window(false);

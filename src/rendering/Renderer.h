@@ -17,6 +17,7 @@
 #include "../rendering/passes/TransparencyPassDP.h"
 #include "../rendering/passes/VertexOnlyPass.h"
 #include "../rendering/passes/PostProcessingPass.h"
+#include "../rendering/passes/OutlinePass.h"
 #include "../rendering/shapes/ShapeRenderer.h"
 #include "../mesh/MeshList.h"
 #include "camera/Camera.h"
@@ -34,6 +35,7 @@ namespace volumeshOS::Internal
     class TransparencyPassDP;
     class ShadowMapPass;
     class PostProcessingPass;
+    class OutlinePass;
 
     struct RenderData
     {
@@ -97,6 +99,7 @@ namespace volumeshOS::Internal
             std::shared_ptr<SelectionHoverPass> selection_hover_pass    = nullptr;
             std::shared_ptr<VertexOnlyPass> vertex_only_pass            = nullptr;
             std::shared_ptr<PostProcessingPass> post_processing_pass    = nullptr;
+            std::shared_ptr<OutlinePass> outline_pass                   = nullptr;
         } passes;
 
         // frame attributes
@@ -118,7 +121,7 @@ namespace volumeshOS::Internal
             glm::vec2 pos                   = {0.0f, 0.0f};
             glm::vec2 offset                = {0.0f, 0.0f};
             bool mesh_moving                = false;
-        }input;
+        } input;
 
     private:
 

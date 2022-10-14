@@ -38,6 +38,7 @@ namespace volumeshOS::Internal
         passes.selection_hover_pass = std::make_shared<SelectionHoverPass>();
         passes.vertex_only_pass = std::make_shared<VertexOnlyPass>();
         passes.post_processing_pass = std::make_shared<PostProcessingPass>();
+        passes.outline_pass = std::make_shared<OutlinePass>();
 
         input.last.x = (float) width / 2.0f;
         input.last.y = (float) height / 2.0f;
@@ -101,7 +102,8 @@ namespace volumeshOS::Internal
 
         buffers.target_framebuffer_ms->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glStencilMask(0xFF);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         buffers.target_framebuffer_ms->unbind();
 
         // Render Meshes
@@ -148,7 +150,7 @@ namespace volumeshOS::Internal
             passes.mesh_pass->render(*this);
 
 
-            FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
+            FrameBufferObject::copy(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
 
 
@@ -184,6 +186,8 @@ namespace volumeshOS::Internal
             shapes->render(*this);
         }
 
+        passes.outline_pass->render(*this);
+
         // set render states
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
@@ -193,7 +197,7 @@ namespace volumeshOS::Internal
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
-        FrameBufferObject::copy(GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
+        FrameBufferObject::copy(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
 
         passes.post_processing_pass->render(*this);
     }

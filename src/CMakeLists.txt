@@ -104,7 +104,7 @@ set(volumeshOS_core_SOURCES
         rendering/passes/GroundPass.cpp
         rendering/passes/GroundPass.h
         rendering/shapes/ShapeRenderer.h
-        rendering/shapes/ShapeRenderer.cpp rendering/shapes/Shapes.h rendering/shapes/Shapes.cpp rendering/meshes/ArrowMesh.h rendering/meshes/ArrowMesh.cpp rendering/meshes/ConeMesh.h rendering/meshes/ConeMesh.cpp rendering/passes/PostProcessingPass.h rendering/passes/PostProcessingPass.cpp)
+        rendering/shapes/ShapeRenderer.cpp rendering/shapes/Shapes.h rendering/shapes/Shapes.cpp rendering/meshes/ArrowMesh.h rendering/meshes/ArrowMesh.cpp rendering/meshes/ConeMesh.h rendering/meshes/ConeMesh.cpp rendering/passes/PostProcessingPass.h rendering/passes/PostProcessingPass.cpp rendering/passes/OutlinePass.h rendering/passes/OutlinePass.cpp)
 
 add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
 

@@ -14,7 +14,7 @@ namespace volumeshOS::Internal
             float wireframe_size = settings.wireframe_size;
             bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
-            if (draw_wireframe || mesh->get_data().use_two_sided_lighting)
+            if (draw_wireframe || mesh->get_data().use_back_face_culling)
             {
                 glDisable(GL_CULL_FACE);
             }

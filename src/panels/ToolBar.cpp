@@ -44,6 +44,7 @@ namespace volumeshOS::Internal
         show_camera_menu();
         show_sky_menu();
         show_light_menu();
+        show_shapes_menu();
         show_ground_menu();
 
         ImGui::Separator();
@@ -176,7 +177,7 @@ namespace volumeshOS::Internal
             return;
         }
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
-        if (ImGuiUtil::begin_menu_with_background("selection", 3))
+        if (ImGuiUtil::begin_menu_with_background("selection", 5))
         {
             ImGuiUtil::menu_item_filled("Mode", [&]
             {
@@ -192,7 +193,7 @@ namespace volumeshOS::Internal
                         IM_ARRAYSIZE(selection_modes),
                         IM_ARRAYSIZE(selection_modes)
                 );
-                //AppState::settings.selection_mode = static_cast<SelectionMode>(m_current_selection_mode);
+                AppState::settings.selection_mode = static_cast<SelectionMode>(mode);
                 AppState::settings.selection_active = AppState::settings.selection_mode != SelectionMode::OFF;
             });
             ImGuiUtil::menu_item_filled("Select by ID", [&]
@@ -210,6 +211,28 @@ namespace volumeshOS::Internal
                 if (m_manual_selection_id != m_previous_manual_selection_id && m_manual_selection_id >= 0)
                 {
                     m_previous_manual_selection_id = m_manual_selection_id;
+                }
+            });
+            ImGuiUtil::menu_item_filled("Outline Width", [&]
+            {
+                float width = settings.outline.width;
+                if (ImGui::DragFloat("##CameraFOV", &width, 0.5f, 0.0f, 20.0f))
+                {
+                    settings.outline.width = width;
+                }
+            });
+            ImGuiUtil::menu_item_filled("Outline Color", [&]
+            {
+                auto& outline_color = settings.outline.color;
+                float new_color[4];
+                new_color[0] = outline_color.r;
+                new_color[1] = outline_color.g;
+                new_color[2] = outline_color.b;
+                new_color[3] = outline_color.a;
+                if (ImGui::ColorEdit4("Light Color", new_color,
+                                      ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                {
+                    outline_color = glm::vec4(new_color[0], new_color[1], new_color[2], new_color[3]);
                 }
             });
             ImGuiUtil::end_menu();
@@ -414,6 +437,85 @@ namespace volumeshOS::Internal
         }
     }
 
+    void ToolBar::show_shapes_menu()
+    {
+        auto& settings = AppState::settings;
+        auto x = ImGui::GetCursorScreenPos().x;
+        if (!ImGui::CollapsingHeader("Shapes"))
+        {
+            return;
+        }
+        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
+        if (ImGuiUtil::begin_menu_with_background("shapes", settings.shapes.use_pbr ? 3 : 5))
+        {
+            ImGuiUtil::menu_item_filled("Use PBR", [&]
+            {
+                constexpr const char* lighting_options[] = {
+                        "Phong",
+                        "PBR"
+                };
+                int lighting_model = static_cast<int>(settings.shapes.use_pbr);
+                ImGui::Combo("##Manual Mode SelectionMode:", &lighting_model, lighting_options,
+                             IM_ARRAYSIZE(lighting_options), IM_ARRAYSIZE(lighting_options));
+                settings.shapes.use_pbr = static_cast<bool>(lighting_model);
+            });
+            if (settings.shapes.use_pbr)
+            {
+                ImGuiUtil::menu_item_filled("Metallic", [&]
+                {
+                    float metallic = settings.shapes.metallic;
+                    if (ImGui::SliderFloat("##Metallic", &metallic, 0.04f, 1.0f))
+                    {
+                        settings.shapes.metallic = metallic;
+                    }
+                });
+                ImGuiUtil::menu_item_filled("Roughness", [&]
+                {
+                    float roughness = settings.shapes.roughness;
+                    if (ImGui::SliderFloat("##Roughness", &roughness, 0.0f, 1.0f))
+                    {
+                        settings.shapes.roughness = roughness;
+                    }
+                });
+            }
+            else
+            {
+                ImGuiUtil::menu_item_filled("Ambient", [&]
+                {
+                    float ambient = settings.shapes.ambient_strength;
+                    if (ImGui::SliderFloat("##Metallic", &ambient, 0.04f, 1.0f))
+                    {
+                        settings.shapes.ambient_strength = ambient;
+                    }
+                });
+                ImGuiUtil::menu_item_filled("Diffuse", [&]
+                {
+                    float diffuse = settings.shapes.diffuse_strength;
+                    if (ImGui::SliderFloat("##Roughness", &diffuse, 0.0f, 1.0f))
+                    {
+                        settings.shapes.diffuse_strength = diffuse;
+                    }
+                });
+                ImGuiUtil::menu_item_filled("Specular", [&]
+                {
+                    float specular = settings.shapes.specular_strength;
+                    if (ImGui::SliderFloat("##Roughness", &specular, 0.0f, 1.0f))
+                    {
+                        settings.shapes.specular_strength = specular;
+                    }
+                });
+                ImGuiUtil::menu_item_filled("Specular Exponent", [&]
+                {
+                    float specular_exponent = settings.shapes.specular_exponent;
+                    if (ImGui::SliderFloat("##Roughness", &specular_exponent, 0.0f, 1.0f))
+                    {
+                        settings.shapes.specular_exponent = specular_exponent;
+                    }
+                });
+            }
+            ImGuiUtil::end_menu();
+        }
+    }
 
     void ToolBar::show_ground_menu()
     {

@@ -502,6 +502,42 @@ namespace volumeshOS
     void set_base_width(const VArrow& shape, float base_width);
 
 
+    // Set Lighting mode
+    void set_shape_lighting_mode(LightingMode mode);
+
+    LightingMode get_shape_lighting_mode();
+
+    // Set the ambient term for the phong lighting model of all shapes
+    void set_shape_ambient(float ambient);
+
+    float get_shape_ambient();
+
+    // Set the diffuse term for the phong lighting model of all shapes
+    void set_shape_diffuse(float diffuse);
+
+    float get_shape_diffuse();
+
+    // Set the specular term for the phong lighting model of all shapes
+    void set_shape_specular(float specular);
+
+    float get_shape_specular();
+
+    // Set the specular coefficient for the phong lighting model of all shapes
+    void set_shape_specular_coefficient(float coefficient);
+
+    float get_shape_specular_coefficient();
+
+    // Set the metallic term for the pbr lighting model of all shapes
+    void set_shape_metallic(float metallic);
+
+    float get_shape_metallic();
+
+    // Set the roughness term for the pbr lighting model of all shapes
+    void set_shape_roughness(float roughness);
+
+    float get_shape_roughness();
+
+
     /* Miscellaneous */
 
     struct ExportOptions

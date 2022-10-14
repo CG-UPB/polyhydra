@@ -1,16 +1,47 @@
 
 #include "Shader.h"
 #include "../../fs/FileManager.h"
+#include "../../util/StringUtil.h"
 
 namespace volumeshOS::Internal
 {
     std::unordered_map<std::string, std::shared_ptr<Shader>> Shader::s_shaders;
+    std::unordered_map<std::string, std::string> Shader::s_common_sources;
+
+    std::string Shader::get_shader_source(const FS_NAMESPACE::path& shader_path)
+    {
+        constexpr const auto include_directive = "#include";
+        constexpr const auto include_directive_offset = 9;
+        std::string source = FileManager::load_as_string(shader_path, true);
+        size_t pos = source.find(include_directive, 0);
+        while(pos != std::string::npos)
+        {
+            auto include_file_index = pos + include_directive_offset;
+            assert(source.at(include_file_index) == '"' && "invalid shader include syntax");
+            auto start = include_file_index + 1;
+            auto end_pos = start;
+            while (source.at(end_pos) != '"')
+            {
+                end_pos++;
+                assert(end_pos != std::string::npos && "unterminated string in shader include");
+            }
+            auto length = end_pos - start;
+            auto include_file_name = source.substr(start, length);
+            auto name_extension = StringUtil::split_str(include_file_name, ".");
+            assert(name_extension.size() == 2 && "invalid shader include syntax");
+            assert(name_extension[1] == "glsl" && "invalid shader include extension, only .glsl is allowed");
+            assert(s_common_sources.find(name_extension[0]) != s_common_sources.end() && "could not find shader include");
+            source = source.replace(pos, include_directive_offset + length + 2, s_common_sources[name_extension[0]]);
+            pos = source.find(include_directive, pos + 1);
+        }
+        return source;
+    }
 
     Shader::Shader(const FS_NAMESPACE::path& vertexPath, const FS_NAMESPACE::path& fragmentPath, const FS_NAMESPACE::path& geometryPath)
     {
         // update vertex and fragment shader contents
-        std::string vertexSource = FileManager::load_as_string(vertexPath, true);
-        std::string fragmentSource = FileManager::load_as_string(fragmentPath, true);
+        std::string vertexSource = get_shader_source(vertexPath);
+        std::string fragmentSource = get_shader_source(fragmentPath);
 
         // create a new shader program
         m_shaderID = glCreateProgram();
@@ -45,7 +76,7 @@ namespace volumeshOS::Internal
         uint32_t geometryID = -1;
         if (!geometryPath.empty())
         {
-            std::string geometrySource = FileManager::load_as_string(geometryPath, true);
+            std::string geometrySource = get_shader_source(geometryPath);
 
             geometryID = glCreateShader(GL_GEOMETRY_SHADER);
 
@@ -211,17 +242,33 @@ namespace volumeshOS::Internal
         std::unordered_map<std::string, ShaderSourcePath> shader_source_paths;
 
         FS_NAMESPACE::path shader_path = "shaders";
+
+        // parse common glsl files first, so we can include them afterwards
         for (auto& file: FS_NAMESPACE::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
         {
-            // we only care about shader files
-            if (FS_NAMESPACE::is_directory(file))
-            {
-                continue;
-            }
-
             // get file name and extension
             std::string name_without_extension = file.path().stem().string();
             std::string extension = file.path().extension().string();
+            if (FS_NAMESPACE::is_directory(file) || extension != ".glsl")
+            {
+                continue;
+            }
+            std::string source = FileManager::load_as_string(file.path(), true);
+            assert(s_common_sources.find(name_without_extension) == s_common_sources.end() && "glsl file already exists");
+            s_common_sources[name_without_extension] = source;
+        }
+
+        for (auto& file: FS_NAMESPACE::recursive_directory_iterator(FileManager::get_resource_path() / shader_path))
+        {
+            // get file name and extension
+            std::string name_without_extension = file.path().stem().string();
+            std::string extension = file.path().extension().string();
+
+            // we only care about shader files
+            if (FS_NAMESPACE::is_directory(file) || extension == ".glsl")
+            {
+                continue;
+            }
 
             // we only have a fragment shader for this, we will update that manually later
             if (name_without_extension == "transparency_wb" || name_without_extension == "transparency_dp")

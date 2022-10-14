@@ -40,6 +40,17 @@ namespace volumeshOS::Internal
         static void copy(int attachment, int mask, const std::shared_ptr<FrameBufferObject>& src, const std::shared_ptr<FrameBufferObject>& dest);
 
         /**
+         * Copies the attachment of one framebuffer to the attachment of another framebuffer.
+         *
+         * @param read_attachment attachment to be copied from
+         * @param draw_attachment attachment to be copied to
+         * @param mask mask, for example GL_COLOR_BUFFER_BIT
+         * @param src framebuffer to be copied from
+         * @param dest framebuffer to be copied to
+         */
+        static void copy(int read_attachment, int draw_attachment, int mask, const std::shared_ptr<FrameBufferObject>& src, const std::shared_ptr<FrameBufferObject>& dest);
+
+        /**
          * Creates a new FrameBufferObject with a specified width and height, and attachments.
          *
          * @param width width

@@ -29,7 +29,8 @@ namespace volumeshOS::Internal
         removed_meshes.clear();
 
         auto& camera = renderer.camera;
-        auto& light = AppState::settings.light;
+        auto& settings = AppState::settings;
+        auto& light = settings.light;
 
         glm::vec3 cam_pos(camera->view * glm::vec4(camera->position, 1.0));
         glm::vec3 light_pos(glm::normalize(light.direction));
@@ -50,6 +51,19 @@ namespace volumeshOS::Internal
         m_shape_shader->set_uniform_vec3f("u_light_color", light.color);
         m_shape_shader->set_uniform_vec3f("u_cam_pos", camera->position);
         m_shape_shader->set_uniform_float("u_gamma", AppState::settings.post_processing.gamma);
+
+        m_shape_shader->set_uniform_bool("u_use_pbr", settings.shapes.use_pbr);
+        m_shape_shader->set_uniform_float("u_light_intensity", light.intensity);
+        m_shape_shader->set_uniform_float("u_gamma", AppState::settings.post_processing.gamma);
+        m_shape_shader->set_uniform_vec3f("u_ground_color", AppState::settings.ground.solid_color);
+        m_shape_shader->set_uniform_vec3f("u_background_color", AppState::settings.sky.sky_color);
+        m_shape_shader->set_uniform_float("u_metallic", settings.shapes.metallic);
+        m_shape_shader->set_uniform_float("u_roughness", settings.shapes.roughness);
+
+        m_shape_shader->set_uniform_float("u_spec_strength", settings.shapes.specular_strength);
+        m_shape_shader->set_uniform_float("u_spec_exponent", settings.shapes.specular_exponent);
+        m_shape_shader->set_uniform_float("u_ambient_strength", settings.shapes.ambient_strength);
+        m_shape_shader->set_uniform_float("u_diffuse_strength", settings.shapes.diffuse_strength);
 
         int draw_calls = 0;
         for (auto& [mesh_id, types] : m_render_data_by_mesh_by_type)

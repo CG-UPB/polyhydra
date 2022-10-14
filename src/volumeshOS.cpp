@@ -201,7 +201,9 @@ namespace volumeshOS
 
     void set_rendering_mode(RenderingMode mode)
     {
-        Internal::AppState::settings.rendering_mode = mode;
+        commands.emplace_back([mode]{
+            Internal::AppState::settings.rendering_mode = mode;
+        });
     }
 
     RenderingMode get_rendering_mode()
@@ -221,13 +223,14 @@ namespace volumeshOS
     template<typename Vec3T>
     Vec3T get_sky_color()
     {
-        return Internal::AppState::settings.sky.sky_color;
-
+        return Internal::glm_vec3_to<Vec3T>(Internal::AppState::settings.sky.sky_color);
     }
 
     void set_selection_mode(SelectionMode mode)
     {
-        Internal::AppState::settings.selection_mode = mode;
+        commands.emplace_back([mode]{
+            Internal::AppState::settings.selection_mode = mode;
+        });
     }
 
     SelectionMode get_selection_mode()
@@ -361,7 +364,7 @@ namespace volumeshOS
 
     void set_camera_fov(float fov)
     {
-        assert( fov >= 1.0 && fov <= 90.0);
+        assert(fov >= 1.0 && fov <= 90.0);
         commands.emplace_back([fov]{
             camera->zoom = fov;
             Internal::AppState::settings.camera.fov = fov;
@@ -1357,6 +1360,91 @@ namespace volumeshOS
             arrow->base_width_percentage = base_width;
         });
     }
+
+    void set_shape_lighting_mode(LightingMode mode)
+    {
+        commands.emplace_back([mode]{
+            Internal::AppState::settings.shapes.use_pbr = static_cast<bool>(mode);
+        });
+    }
+
+    LightingMode get_shape_lighting_mode()
+    {
+        return Internal::AppState::settings.shapes.use_pbr ? LightingMode::PBR : LightingMode::PHONG;
+    }
+
+    void set_shape_ambient(float ambient)
+    {
+        commands.emplace_back([ambient]{
+            Internal::AppState::settings.shapes.ambient_strength = ambient;
+        });
+    }
+
+    float get_shape_ambient()
+    {
+        return Internal::AppState::settings.shapes.ambient_strength;
+    }
+
+    void set_shape_diffuse(float diffuse)
+    {
+        commands.emplace_back([diffuse]{
+            Internal::AppState::settings.shapes.diffuse_strength = diffuse;
+        });
+    }
+
+    float get_shape_diffuse()
+    {
+        return Internal::AppState::settings.shapes.diffuse_strength;
+    }
+
+    void set_shape_specular(float specular)
+    {
+        commands.emplace_back([specular]{
+            Internal::AppState::settings.shapes.specular_strength = specular;
+        });
+    }
+
+    float get_shape_specular()
+    {
+        return Internal::AppState::settings.shapes.specular_strength;
+    }
+
+    void set_shape_specular_coefficient(float coefficient)
+    {
+        commands.emplace_back([coefficient]{
+            Internal::AppState::settings.shapes.specular_exponent = coefficient;
+        });
+    }
+
+    float get_shape_specular_coefficient()
+    {
+        return Internal::AppState::settings.shapes.specular_exponent;
+    }
+
+    void set_shape_metallic(float metallic)
+    {
+        commands.emplace_back([metallic]{
+            Internal::AppState::settings.shapes.metallic = metallic;
+        });
+    }
+
+    float get_shape_metallic()
+    {
+        return Internal::AppState::settings.shapes.metallic;
+    }
+
+    void set_shape_roughness(float roughness)
+    {
+        commands.emplace_back([roughness]{
+            Internal::AppState::settings.shapes.roughness = roughness;
+        });
+    }
+
+    float get_shape_roughness()
+    {
+        return Internal::AppState::settings.shapes.roughness;
+    }
+
 
     void set_theme(Theme theme)
     {

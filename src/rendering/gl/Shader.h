@@ -166,6 +166,11 @@ namespace volumeshOS::Internal
 
         // all loaded shaders by name
         static std::unordered_map<std::string, std::shared_ptr<Shader>> s_shaders;
+        static std::unordered_map<std::string, std::string> s_common_sources;
+
+        static std::string get_shader_source(const FS_NAMESPACE::path& shader_path);
+
+    private:
 
         /**
          * Creates a new shader object from the given resource paths.

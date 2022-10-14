@@ -30,9 +30,20 @@ namespace volumeshOS::Internal
 
     struct SkyOptions
     {
-        glm::vec3 sky_color     = {0.24f, 0.6f, 0.77f};
+        glm::vec3 sky_color     = {0.5f, 0.75f, 0.8f};
         float fog_density       = 0.02f;
         glm::vec3 fog_color     = {0.5f, 0.6f, 0.7f};
+    };
+
+    struct ShapeOptions
+    {
+        float ambient_strength  = 1.0f;
+        float diffuse_strength  = 1.0f;
+        float specular_strength = 0.15f;
+        float specular_exponent = 8.0f;
+        bool use_pbr            = true;
+        float metallic          = 0.15;
+        float roughness         = 0.65;
     };
 
     struct GroundOptions
@@ -68,6 +79,12 @@ namespace volumeshOS::Internal
         float contrast      = 1.0f;
     };
 
+    struct OutlineOptions
+    {
+        float width         = 5.0f;
+        glm::vec4 color     = {1.0f, 0.3f, 0.0f, 1.0f};
+    };
+
     struct AppState
     {
         static struct AppSettings
@@ -77,12 +94,14 @@ namespace volumeshOS::Internal
             SelectionMode selection_mode            = SelectionMode::OFF;
             SSAOMode ssao_mode                      = SSAOMode::QUALITY;
             SSAOOptions ssao_custom                 = {};
+            ShapeOptions shapes                     = {};
             GroundOptions ground                    = {};
             CameraOptions camera                    = {};
             ShadowOptions shadow                    = {};
             LightOptions light                      = {};
             SkyOptions sky                          = {};
             PostProcessingOptions post_processing   = {};
+            OutlineOptions outline                  = {};
             bool shapes_active                      = true;
             bool selection_active                   = false;
             bool transparency_active                = false;
