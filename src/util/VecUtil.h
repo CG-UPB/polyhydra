@@ -82,8 +82,8 @@ namespace volumeshOS::Internal
 
         [[nodiscard]] static inline std::array<glm::vec3, 2> edge_vertices(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>& mesh, OpenVolumeMesh::EdgeHandle edge_handle)
         {
-            auto [v0, v1] = mesh.edge_vertices(edge_handle);
-            return {pos_to_vec3(mesh, v0), pos_to_vec3(mesh, v1)};
+            auto vs = mesh.edge_vertices(edge_handle);
+            return {pos_to_vec3(mesh, vs[0]), pos_to_vec3(mesh, vs[1])};
         }
 
         [[nodiscard]] static inline float get_angle_fast(const glm::vec3& vec0, const glm::vec3& vec1)

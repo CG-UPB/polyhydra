@@ -45,7 +45,13 @@ set(GLFW_LIBRARY_TYPE "STATIC")
 add_subdirectory(glfw)
 
 add_subdirectory(glm)
-add_subdirectory(OpenVolumeMesh)
+if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/OpenVolumeMesh/CMakeLists.txt")
+        add_subdirectory(OpenVolumeMesh)
+    else()
+        find_package(OpenVolumeMesh REQUIRED)
+    endif()
+endif()
 
 #json
 set(JSON_BuildTests OFF CACHE INTERNAL "")

@@ -222,13 +222,13 @@ namespace volumeshOS::Internal
         float min_edge_length = std::numeric_limits<float>::max();
         for (auto ce_it: mesh->cell_edges(cell))
         {
-            auto[v0, v1] = mesh->edge_vertices(ce_it);
+            auto vs = mesh->edge_vertices(ce_it);
             auto edge_len = (float) mesh->length(ce_it);
             if (edge_len < min_edge_length)
             {
                 min_edge_length = edge_len;
             }
-            add_from_to_vertex(mesh, v0, v1);
+            add_from_to_vertex(mesh, vs[0], vs[1]);
             m_selection_map.edge_ids.push_back(ce_it.idx());
             VecUtil::push_vec3(get_attrib_array(VAO::CYLINDER, Attribute::CELL_CENTER), cell_center);
             get_attrib_array(VAO::CYLINDER, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
@@ -299,6 +299,15 @@ namespace volumeshOS::Internal
 
                 // Get Midpoint of all Vertices
                 glm::vec3 midpoint(0.0f);
+
+                // float sum = 0;
+                // for (int i = 0; i < halfface_vertices.size(); i++)
+                // {
+                //     glm::vec3 evec = halfface_vertices[(i+1)%halfface_vertices.size()] - halfface_vertices[i];
+                //     midpoint = 0.5f * glm::length(evec) * glm::vec3(halfface_vertices[(i+1)%halfface_vertices.size()] + halfface_vertices[i]);
+                //     sum += glm::length(evec);
+                // }
+                // midpoint /= sum;
                 for (auto vertex_pos: halfface_vertices)
                 {
                     midpoint += vertex_pos;
@@ -534,18 +543,18 @@ namespace volumeshOS::Internal
                     // the corner vertex within the halfface
                     for (auto chfe_it: mesh->halfface_edges(current_halfface))
                     {
-                        auto [he0, he1] = mesh->edge_halfedges(chfe_it);
-                        auto from0 = mesh->from_vertex_handle(he0);
-                        auto from1 = mesh->from_vertex_handle(he1);
+                        auto hes = mesh->edge_halfedges(chfe_it);
+                        auto from0 = mesh->from_vertex_handle(hes[0]);
+                        auto from1 = mesh->from_vertex_handle(hes[1]);
                         auto found = false;
-                        if (from0 == from_vertex && current_halfedge != he0)
+                        if (from0 == from_vertex && current_halfedge != hes[0])
                         {
                             // we have found our halfedge
-                            current_halfedge = he0;
+                            current_halfedge = hes[0];
                             found = true;
-                        } else if (from1 == from_vertex && current_halfedge != he1)
+                        } else if (from1 == from_vertex && current_halfedge != hes[1])
                         {
-                            current_halfedge = he1;
+                            current_halfedge = hes[1];
                             found = true;
                         }
                         // we have found our halfedge
@@ -924,33 +933,33 @@ namespace volumeshOS::Internal
 
     void MeshVertexBuffer::set_face_color(int face_id, float r, float g, float b, float a)
     {
-        auto [hf0, hf1] = m_mesh->face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
+        auto hfs = m_mesh->face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
         glm::vec4 value = {r, g, b, a};
-        if (hf0.is_valid())
+        if (hfs[0].is_valid())
         {
-            update_halfface_attribute(VAO::MESH_FACE, Attribute::COLOR, hf0.idx(), value);
-            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::COLOR, hf0.idx(), value);
+            update_halfface_attribute(VAO::MESH_FACE, Attribute::COLOR, hfs[0].idx(), value);
+            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::COLOR, hfs[0].idx(), value);
         }
-        if (hf1.is_valid())
+        if (hfs[1].is_valid())
         {
-            update_halfface_attribute(VAO::MESH_FACE, Attribute::COLOR, hf1.idx(), value);
-            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::COLOR, hf1.idx(), value);
+            update_halfface_attribute(VAO::MESH_FACE, Attribute::COLOR, hfs[1].idx(), value);
+            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::COLOR, hfs[1].idx(), value);
         }
     }
 
     void MeshVertexBuffer::set_face_selection(int face_id, bool selected)
     {
-        auto [hf0, hf1] = m_mesh->face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
+        auto hfs = m_mesh->face_halffaces(OpenVolumeMesh::FaceHandle{face_id});
         float value = selected ? 1.0f : 0.0f;
-        if (hf0.is_valid())
+        if (hfs[0].is_valid())
         {
-            update_halfface_attribute(VAO::MESH_FACE, Attribute::SELECTION, hf0.idx(), value);
-            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::SELECTION, hf0.idx(), value);
+            update_halfface_attribute(VAO::MESH_FACE, Attribute::SELECTION, hfs[0].idx(), value);
+            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::SELECTION, hfs[0].idx(), value);
         }
-        if (hf1.is_valid())
+        if (hfs[1].is_valid())
         {
-            update_halfface_attribute(VAO::MESH_FACE, Attribute::SELECTION, hf1.idx(), value);
-            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::SELECTION, hf1.idx(), value);
+            update_halfface_attribute(VAO::MESH_FACE, Attribute::SELECTION, hfs[1].idx(), value);
+            update_halfface_attribute(VAO::MESH_ROUNDED, Attribute::SELECTION, hfs[1].idx(), value);
         }
     }
 
