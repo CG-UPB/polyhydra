@@ -265,13 +265,13 @@ namespace volumeshOS::Internal
                 ImGui::PopStyleColor();
             }
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, y_pos});
-            ImGui::Text("vertices: %zu", mesh->get_ovm()->n_vertices());
+            ImGui::Text("vertices: %zu", mesh->get_ovm()->n_logical_vertices());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("edges: %zu",mesh->get_ovm()->n_edges());
+            ImGui::Text("edges: %zu",mesh->get_ovm()->n_logical_edges());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("faces: %zu", mesh->get_ovm()->n_faces());
+            ImGui::Text("faces: %zu", mesh->get_ovm()->n_logical_faces());
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-            ImGui::Text("cells: %zu", mesh->get_ovm()->n_cells());
+            ImGui::Text("cells: %zu", mesh->get_ovm()->n_logical_cells());
         }
 
         // Show hovered element type and id
