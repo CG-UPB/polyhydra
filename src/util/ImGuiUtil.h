@@ -115,6 +115,7 @@ namespace volumeshOS::Internal
             ImGui::PushID(name.c_str());
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
+            ImGui::AlignTextToFramePadding();
             ImGui::Text("%s", name.c_str());
             ImGui::TableSetColumnIndex(1);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
@@ -123,13 +124,46 @@ namespace volumeshOS::Internal
         }
 
         template<typename VoidFunc>
-        static void menu_item(const std::string& name,float width, const VoidFunc& item)
+        static void menu_item_filled(const std::string& name, const std::string& icon, const VoidFunc& item)
         {
             ImGui::PushID(name.c_str());
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
+            ImGuiUtil::icon(icon, ImGui::GetFontSize() * 1.4f);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("%s", name.c_str());
+            ImGui::TableSetColumnIndex(2);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            item();
+            ImGui::PopID();
+        }
+
+        template<typename VoidFunc>
+        static void menu_item(const std::string& name, float width, const VoidFunc& item)
+        {
+            ImGui::PushID(name.c_str());
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::AlignTextToFramePadding();
             ImGui::Text("%s", name.c_str());
             ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - width);
+            item();
+            ImGui::PopID();
+        }
+
+        template<typename VoidFunc>
+        static void menu_item(const std::string& name, const std::string& icon, float width, const VoidFunc& item)
+        {
+            ImGui::PushID(name.c_str());
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGuiUtil::icon(icon, ImGui::GetFontSize() * 1.4f);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("%s", name.c_str());
+            ImGui::TableSetColumnIndex(2);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - width);
             item();
             ImGui::PopID();

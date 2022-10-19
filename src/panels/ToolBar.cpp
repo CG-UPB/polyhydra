@@ -28,6 +28,11 @@ namespace volumeshOS::Internal
         //ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
         ImGui::SetScrollX(1);
 
+        float y = ImGui::GetCursorPosY();
+        ImGui::SetCursorPosY(y - ImGui::GetStyle().WindowPadding.y * 0.4f);
+        ImGuiUtil::icon("icon_wrench.png", ImGui::GetFontSize() * 1.4f);
+        ImGui::SameLine();
+        ImGui::SetCursorPosY(y);
         ImGuiUtil::push_bold_font();
         ImGui::Text("Settings");
         ImGui::PopFont();
@@ -49,10 +54,17 @@ namespace volumeshOS::Internal
 
         ImGui::Separator();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y);
+
+        y = ImGui::GetCursorPosY();
+        ImGui::SetCursorPosY(y - ImGui::GetStyle().WindowPadding.y * 0.4f);
+        ImGuiUtil::icon("icon_eye.png", ImGui::GetFontSize() * 1.4f);
+        ImGui::SameLine();
+        ImGui::SetCursorPosY(y);
+
         ImGuiUtil::push_bold_font();
         ImGui::Text("Graphics");
         ImGui::PopFont();
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y * 0.5f);
 
         show_shadow_menu();
         show_ambient_occlusion_menu();
@@ -105,10 +117,11 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("General"))
+        if (!render_icon_header("General", "icon_globe.png"))
         {
             return;
         }
+
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         bool wireframe_or_vertices = settings.rendering_mode == RenderingMode::ONLY_VERTICES || settings.rendering_mode == RenderingMode::WIREFRAME;
         if (ImGuiUtil::begin_menu_with_background("rendering modes", wireframe_or_vertices? 3 : 2))
@@ -172,7 +185,7 @@ namespace volumeshOS::Internal
         auto& settings = AppState::settings;
 
         auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("Selection"))
+        if (!render_icon_header("Selection", "icon_select.png"))
         {
             return;
         }
@@ -243,7 +256,7 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("Camera"))
+        if (!render_icon_header("Camera", "icon_camera.png"))
         {
             return;
         }
@@ -322,7 +335,7 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("Light"))
+        if (!render_icon_header("Light", "icon_sun.png"))
         {
             return;
         }
@@ -368,7 +381,7 @@ namespace volumeshOS::Internal
         shift_right(-ImGui::GetStyle().FramePadding.x);
         ImGui::Checkbox("###Post Processing", &settings.post_processing.active);
         ImGui::SameLine();
-        if (!ImGui::CollapsingHeader("Post Processing"))
+        if (!render_icon_header("Post Processing", "icon_fx.png"))
         {
             return;
         }
@@ -395,7 +408,7 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("Sky"))
+        if (!render_icon_header("Sky", "icon_clouds.png"))
         {
             return;
         }
@@ -441,7 +454,7 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("Shapes"))
+        if (!render_icon_header("Shapes", "icon_shapes.png"))
         {
             return;
         }
@@ -521,7 +534,7 @@ namespace volumeshOS::Internal
     {
         auto& settings = AppState::settings;
         auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("Ground"))
+        if (!render_icon_header("Ground", "icon_plane.png"))
         {
             return;
         }
@@ -620,7 +633,7 @@ namespace volumeshOS::Internal
         }
 
         ImGui::SameLine();
-        if (!ImGui::CollapsingHeader("Shadows"))
+        if (!render_icon_header("Shadows", "icon_s.png"))
         {
             return;
         }
@@ -676,7 +689,7 @@ namespace volumeshOS::Internal
         }
 
         ImGui::SameLine();
-        if (!ImGui::CollapsingHeader("Ambient Occlusion"))
+        if (!render_icon_header("Ambient Occlusion", "icon_ao.png"))
         {
             return;
         }
@@ -739,7 +752,7 @@ namespace volumeshOS::Internal
             settings.transparency_active = transparency_active;
         }
         ImGui::SameLine();
-        if (!ImGui::CollapsingHeader("Transparency"))
+        if (!render_icon_header("Transparency", "icon_t.png"))
         {
             return;
         }
@@ -776,6 +789,18 @@ namespace volumeshOS::Internal
     void ToolBar::shift_right(float x)
     {
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (float)x);
+    }
+
+    bool ToolBar::render_icon_header(const std::string& name, const std::string& icon)
+    {
+        bool open = true;
+        if (!ImGui::CollapsingHeader(name.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
+        {
+            open = false;
+        }
+        ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::GetFontSize() - ImGui::GetStyle().FramePadding.x);
+        ImGuiUtil::icon(icon, ImGui::GetFontSize() * 1.4f);
+        return open;
     }
 
 } // namespace volumeshOS

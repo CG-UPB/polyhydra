@@ -47,6 +47,8 @@ namespace volumeshOS::Internal
         static void show_ambient_occlusion_menu();
         static void show_transparency_menu();
 
+        static bool render_icon_header(const std::string& name, const std::string& icon);
+
         static void shift_right(float x = 30.0f);
 
     private:

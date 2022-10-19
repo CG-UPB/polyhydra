@@ -74,7 +74,7 @@ namespace volumeshOS::Internal
 
             // Advanced Settings
 
-            auto& icon_ref = *UIUtil::get_icon("settings.png");
+            auto& icon_ref = *UIUtil::get_icon("icon_gear.png");
             float aspect_ratio = (float) icon_ref.get_width() / (float) icon_ref.get_height();
             float width = (ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y ) * aspect_ratio;
             float height = ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y ;
@@ -274,10 +274,13 @@ namespace volumeshOS::Internal
 
 
                 ImGui::SetCursorPos({cursor_pos.x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorPos().y});
-                if (ImGuiUtil::begin_menu_with_background("mesh", 9, ImGuiTableFlags_SizingFixedFit))
+                ImGuiUtil::add_background_rect(9);
+                ImGui::BeginGroup();
+                if (ImGui::BeginTable("mesh", 3, ImGuiTableFlags_SizingFixedFit))
                 {
-                    ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_WidthStretch, 0.3f);
-                    ImGui::TableSetupColumn("Two", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+                    ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_WidthStretch, 0.1f);
+                    ImGui::TableSetupColumn("Two", ImGuiTableColumnFlags_WidthStretch, 0.3f);
+                    ImGui::TableSetupColumn("Three", ImGuiTableColumnFlags_WidthStretch, 0.6f);
                     //ImGui::TableHeadersRow();
 
 
@@ -293,8 +296,7 @@ namespace volumeshOS::Internal
                     m_mesh_rotation[1] = glm::degrees(rot[1]);
                     m_mesh_rotation[2] = glm::degrees(rot[2]);
 
-
-                    ImGuiUtil::menu_item("Position", width, [&]
+                    ImGuiUtil::menu_item("Position", "icon_move.png", width, [&]
                     {
                         if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -100.0f, 100.0f, "%.1f"))
                         {
@@ -308,7 +310,7 @@ namespace volumeshOS::Internal
                     });
 
 
-                    ImGuiUtil::menu_item("Scale", width, [&]
+                    ImGuiUtil::menu_item("Scale", "icon_scale.png", width, [&]
                     {
                         if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f"))
                         {
@@ -323,7 +325,7 @@ namespace volumeshOS::Internal
 
                     //TODO Fix Object Rotation
                     ImGui::BeginDisabled(true);
-                    ImGuiUtil::menu_item("Rotation", width, [&]
+                    ImGuiUtil::menu_item("Rotation", "icon_rotate.png", width, [&]
                     {
                         if (ImGui::DragFloat3("##Rotation", m_mesh_rotation, 1.0f, -180.0f, 180.0f, "%.1f"))
                         {
@@ -347,22 +349,23 @@ namespace volumeshOS::Internal
                     ImGui::EndDisabled();
 
 
-                    ImGuiUtil::menu_item("Slicer", width, [&]
+                    ImGuiUtil::menu_item("Slicer", "icon_slice.png", width, [&]
                     {
                         m_slider_slicer = mesh.get_slice_factor();
                         m_slicer_locked = mesh.get_slice_lock();
-                        if (ImGui::SliderFloat("", &m_slider_slicer, 0.0f, 1.0f))
+                        if (ImGui::SliderFloat("##Slice", &m_slider_slicer, 0.0f, 1.0f))
                         {
                             mesh.set_slice_factor(m_slider_slicer);
                         }
                         ImGui::SameLine();
-                        if (ImGui::Checkbox("Lock", &m_slicer_locked))
+                        if (ImGuiUtil::icon_button(m_slicer_locked ? "icon_locked.png" : "icon_unlocked.png", ImGui::GetFontSize()))
                         {
+                            m_slicer_locked = !m_slicer_locked;
                             mesh.set_slice_lock(m_slicer_locked);
                         }
                     });
 
-                    ImGuiUtil::menu_item("Peel", width, [&]
+                    ImGuiUtil::menu_item("Peel", "icon_peel.png", width, [&]
                     {
 
                         m_slider_peel = mesh.get_peel_level();
@@ -372,7 +375,7 @@ namespace volumeshOS::Internal
                         // thats helpful for peeling with transparent transition
                         static float tolerance = 0.05;
 
-                        if (ImGui::SliderFloat(" ", &m_slider_peel, 0, peel_max))
+                        if (ImGui::SliderFloat("##Peel", &m_slider_peel, 0, peel_max))
                         {
                             if ((int) (m_slider_peel + tolerance) != (int) (m_slider_peel - tolerance))
                             {
@@ -380,26 +383,15 @@ namespace volumeshOS::Internal
                             }
                             mesh.set_peel_level(m_slider_peel);
                         }
-
                         ImGui::SameLine();
-
                         auto reverse_peeling = mesh.get_reverse_peeling();
-                        auto arrow_dir = reverse_peeling ? ImGuiDir_Right : ImGuiDir_Left;
-                        if (ImGui::ArrowButton("", arrow_dir))
+                        if (ImGuiUtil::icon_button(reverse_peeling ? "icon_peel_inner.png" : "icon_peel_outer.png", ImGui::GetFontSize()))
                         {
-                            if (reverse_peeling)
-                            {
-                                mesh.set_reverse_peeling(false);
-                            }
-                            else
-                            {
-                                mesh.set_reverse_peeling(true);
-                            }
+                            mesh.set_reverse_peeling(!reverse_peeling);
                         }
-
                     });
 
-                    ImGuiUtil::menu_item_filled("Cell Size", [&]
+                    ImGuiUtil::menu_item("Cell Size", "icon_cell_size.png", width, [&]
                     {
                         m_cell_size = mesh.get_cell_size();
                         if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f))
@@ -408,7 +400,7 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item_filled("Roundings", [&]
+                    ImGuiUtil::menu_item("Roundings", "icon_roundings.png", width, [&]
                     {
                         float actual_rounding_size = mesh.get_cell_rounding();
                         if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f"))
@@ -417,7 +409,7 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Digging", width, [&]
+                    ImGuiUtil::menu_item("Digging", "icon_dig.png", width, [&]
                     {
                         auto size = ImVec2(ImGui::CalcTextSize("Deactivate").x + 2 * ImGui::GetStyle().FramePadding.x,
                                            0.0f);
@@ -443,7 +435,7 @@ namespace volumeshOS::Internal
 
                     });
 
-                    ImGuiUtil::menu_item_filled("Isolation", [&]
+                    ImGuiUtil::menu_item_filled("Isolation", "icon_isolate.png", [&]
                     {
                         auto size = ImVec2(ImGui::CalcTextSize("Deactivate").x + 2 * ImGui::GetStyle().FramePadding.x,
                                            0.0f);
