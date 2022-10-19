@@ -248,13 +248,14 @@ namespace volumeshOS::Internal
         {
             // get file name and extension
             std::string name_without_extension = file.path().stem().string();
+            if (s_common_sources.find(name_without_extension) != s_common_sources.end())
+                continue;
             std::string extension = file.path().extension().string();
             if (FS_NAMESPACE::is_directory(file) || extension != ".glsl")
             {
                 continue;
             }
             std::string source = FileManager::load_as_string(file.path(), true);
-            assert(s_common_sources.find(name_without_extension) == s_common_sources.end() && "glsl file already exists");
             s_common_sources[name_without_extension] = source;
         }
 
