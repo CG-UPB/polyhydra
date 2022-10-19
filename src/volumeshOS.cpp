@@ -96,7 +96,7 @@ namespace volumeshOS
     }
 
     template<typename KernelType>
-    VMesh load(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, KernelType>* instance, const char* name)
+    VMesh load(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, KernelType>* instance, const char* name)
     {
         static_assert(std::is_base_of_v<OpenVolumeMesh::TopologyKernel, KernelType>);
         int id = next_mesh_id();
@@ -1461,9 +1461,9 @@ namespace volumeshOS
         });
     }
 
-    template VMesh load<OpenVolumeMesh::TopologyKernel>(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TopologyKernel>*, const char*);
-    template VMesh load<OpenVolumeMesh::TetrahedralMeshTopologyKernel>(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TetrahedralMeshTopologyKernel>*, const char*);
-    template VMesh load<OpenVolumeMesh::HexahedralMeshTopologyKernel>(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::HexahedralMeshTopologyKernel>*, const char*);
+    template VMesh load<OpenVolumeMesh::TopologyKernel>(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TopologyKernel>*, const char*);
+    template VMesh load<OpenVolumeMesh::TetrahedralMeshTopologyKernel>(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TetrahedralMeshTopologyKernel>*, const char*);
+    template VMesh load<OpenVolumeMesh::HexahedralMeshTopologyKernel>(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::HexahedralMeshTopologyKernel>*, const char*);
 
     template void set_color<glm::vec4>(const glm::vec4&);
     template void set_color<OpenVolumeMesh::Vec4d>(const OpenVolumeMesh::Vec4d&);
