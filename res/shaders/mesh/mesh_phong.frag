@@ -360,6 +360,10 @@ float get_shadow(vec3 normal, vec3 light_dir)
     //shadow = max(light_angle, 0.0);
     float bias = max(u_bias_max * (1.0f - max(0.0, dot(normal, light_dir))), u_bias_min);
 
+    //const float biasModifier = 0.5f;
+    //bias *= 1 / (u_cascade_ends[cascade_idx] * biasModifier);
+
+
     //return shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
     return pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
 }

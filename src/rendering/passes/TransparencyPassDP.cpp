@@ -149,7 +149,7 @@ namespace volumeshOS::Internal
     void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer)
     {
 
-        if(mesh->get_data().use_back_face_culling)
+        if(!mesh->get_data().use_back_face_culling)
         {
             glDisable(GL_CULL_FACE);
         }

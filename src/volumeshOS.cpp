@@ -379,7 +379,7 @@ namespace volumeshOS
     void set_light_direction(float x, float y, float z)
     {
         commands.emplace_back([x, y, z]{
-            auto dir = glm::vec3(x,y,z);
+            auto dir = glm::normalize(glm::vec3(x,y,z));
             Internal::AppState::settings.light.direction = dir;
         });
     }
@@ -1074,7 +1074,7 @@ namespace volumeshOS
         });
     }
 
-    void hide(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    void dig(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
     {
         commands.emplace_back([mesh, cell]{
             mesh_list->hide(mesh.get_id(), cell);

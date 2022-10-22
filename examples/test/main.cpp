@@ -1,5 +1,6 @@
 
 #include "volumeshOS.h"
+#include <random>
 
 void test_functionality(volumeshOS::VMesh mesh);
 
@@ -7,6 +8,7 @@ int main(int argc, char* argv[])
 {
     using namespace volumeshOS;
 
+    std::vector<OpenVolumeMesh::CellHandle> selected;
     std::vector<VCylinder> cylinders;
     float r = 0.05f;
 
@@ -60,15 +62,29 @@ int main(int argc, char* argv[])
             auto& ovm = *mesh.get_ovm();
             for (auto c_it : ovm.cells())
             {
-                for (auto hf_it : ovm.cell_halffaces(c_it))
+                for (auto f_it : ovm.cell_faces(c_it))
                 {
-                    auto face = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(hf_it);
-                    if (ovm.is_boundary(face))
+//                    auto face = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>::face_handle(hf_it);
+//                    if (ovm.is_boundary(face))
+//                    {
+//                        auto center = ovm.barycenter(face);
+//                        auto normal = -ovm.normal(hf_it);
+//                        mesh.set_color(hf_it, glm::vec4{abs(normal[0]), abs(normal[1]), abs(normal[2]), 1.0f});
+//                    }
+                    double alpha = (float)rand() / (float)RAND_MAX;
+                    std::cout << alpha << std::endl;
+                    alpha = alpha > 0.2 ? 1.0 : 0.0;
+                    auto color = glm::vec3(0.0f);
+                    for(int i = 0; i < 3; i++)
                     {
-                        auto center = ovm.barycenter(face);
-                        auto normal = -ovm.normal(hf_it);
-                        mesh.set_color(hf_it, glm::vec4{abs(normal[0]), abs(normal[1]), abs(normal[2]), 1.0f});
+                        color[i] = (float)rand() / (float)RAND_MAX;
                     }
+
+                    for(auto hf_it : ovm.face_halffaces(f_it))
+                    {
+                        mesh.set_color(hf_it, glm::vec4{color[0], color[1], color[2], alpha});
+                    }
+
                 }
             }
         }
@@ -85,12 +101,26 @@ int main(int argc, char* argv[])
     });
 
     on_cell_select([&](const VMesh vmesh, OpenVolumeMesh::CellHandle ch){
-        vmesh.select(ch);
+        if(std::find(selected.begin(), selected.end(), ch) != selected.end())
+        {
+            vmesh.deselect(ch);
+            selected.erase(std::remove(selected.begin(), selected.end(), ch), selected.end());
+        }
+        else
+        {
+            vmesh.select(ch);
+            selected.push_back(ch);
+        }
+
+
         log("Cell " + std::to_string(ch.uidx()) + " was selected");
     });
     on_halfface_select([&](const VMesh vmesh, OpenVolumeMesh::HalfFaceHandle hf){
         vmesh.select(hf);
         log("Halfface " + std::to_string(hf.uidx()) + " was selected");
+    });
+    on_position_select([&](float x, float y, float z){
+        log("Position selected");
     });
 
     use_log_window(false);

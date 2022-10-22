@@ -16,7 +16,7 @@ namespace volumeshOS::Internal
         SelectionPass();
 
         ~SelectionPass() = default;
-        void render(const Renderer& renderer) override;
+        void  render(const Renderer& renderer) override;
 
         /**
          * Renders specific Mesh

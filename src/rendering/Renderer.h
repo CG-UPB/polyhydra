@@ -105,6 +105,7 @@ namespace volumeshOS::Internal
         // frame attributes
         struct
         {
+            bool screenshot                 = true;
             int limit                       = 4;
             int current                     = 0;
             int width                       = 0;

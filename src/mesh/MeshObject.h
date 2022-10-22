@@ -47,13 +47,17 @@ namespace volumeshOS::Internal
         float cell_size             = 1.0f;
         bool slice_locked           = false;
         bool rounding_active        = true;
-        float rounding_size         = 0.2f;
+        float rounding_size         = 0.0f;
 
         // Transform Variables
         glm::vec3 position          = {0.0f, 0.0f, 0.0f};
         glm::vec3 scale             = {1.0f, 1.0f, 1.0f};
         glm::vec3 position_offset   = {0.0f, 0.0f, 0.0f};
         float scale_normalization   = 1.0f;
+
+        //bezier meshes
+        bool bezier                 = false;
+        int tesselation             = 10;
 
         // Other
         bool visible                = true;

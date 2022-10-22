@@ -105,8 +105,8 @@ namespace volumeshOS::Internal
             bool shapes_active                      = true;
             bool selection_active                   = false;
             bool transparency_active                = false;
-            bool ssao_active                        = true;
-            bool shadows_active                     = true;
+            bool ssao_active                        = false;
+            bool shadows_active                     = false;
             bool isolation_active                   = false;
             bool digging_active                     = false;
             int num_depth_peeling_passes            = 15;

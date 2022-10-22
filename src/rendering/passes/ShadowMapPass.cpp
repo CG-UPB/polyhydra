@@ -216,18 +216,18 @@ namespace volumeshOS::Internal
         {
             light.direction = glm::vec3(-0.001f, 1.0f, 0.01f);
         }
-        auto light_dir = glm::normalize(light.direction);
+        auto light_dir = 0.5f * glm::normalize(light.direction);
 
         //light.position = center + light_dir;
         light_positions[i] = center + light_dir;
         cascade_views[i] = glm::lookAt(center + light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
         float min_x = std::numeric_limits<float>::max();
-        float max_x = std::numeric_limits<float>::min();
+        float max_x = std::numeric_limits<float>::lowest();
         float min_y = std::numeric_limits<float>::max();
-        float max_y = std::numeric_limits<float>::min();
+        float max_y = std::numeric_limits<float>::lowest();
         float min_z = std::numeric_limits<float>::max();
-        float max_z = std::numeric_limits<float>::min();
+        float max_z = std::numeric_limits<float>::lowest();
 
         for (auto &c: frustum_corners)
         {
@@ -240,7 +240,7 @@ namespace volumeshOS::Internal
             max_z = std::max(max_z, transformed_corner.z);
         }
 
-        const float z_mult = 10.0;
+        const float z_mult = 15.0;
         if (min_z < 0)
         {
             min_z *= z_mult;
@@ -255,7 +255,7 @@ namespace volumeshOS::Internal
         {
             max_z *= z_mult;
         }
-        cascade_projections[i] = glm::ortho(min_x, max_x, min_y, max_y, min_z, max_z);
+        cascade_projections[i] = glm::ortho<float>(min_x, max_x, min_y, max_y, min_z, max_z);
     }
 
     uint32_t ShadowMapPass::get_depth_texture() const

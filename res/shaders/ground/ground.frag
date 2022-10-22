@@ -225,7 +225,7 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
     if(fade < 1.0)
     {
         float next_shadow = percentage_closer_filtering(next_shadow_coords, light_size, radius, bias, next_cascade_idx);
-        shadow = mix(shadow, next_shadow, 1.0 - fade);
+        shadow = mix(shadow, next_shadow, fade);
     }
 
     return shadow;
