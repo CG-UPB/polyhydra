@@ -409,12 +409,12 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Tesselation", width, [&]
+                    ImGuiUtil::menu_item("Tesselation", "icon_roundings.png", width, [&]
                     {
-                        float actual_rounding_size = mesh.get_cell_rounding();
-                        if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f"))
+                        int tesselation_level = mesh.get_tesselation_level();
+                        if (ImGui::SliderInt("", &tesselation_level, 0, 20))
                         {
-                            mesh.set_cell_rounding(actual_rounding_size);
+                            mesh.set_tesselation_level(tesselation_level);
                         }
                     });
 

@@ -808,6 +808,9 @@ namespace volumeshOS
      */
     [[nodiscard]] bool is_valid(const VMesh& mesh);
 
+    void set_tesselation_level(const VMesh& mesh, int level);
+
+    int get_tesselation_level(const VMesh& mesh);
 
     /* Shapes */
 
@@ -1558,6 +1561,16 @@ namespace volumeshOS
         inline void dig(OpenVolumeMesh::CellHandle cell) const
         {
             volumeshOS::dig(*this, cell);
+        }
+
+        inline void set_tesselation_level(int level) const
+        {
+            volumeshOS::set_tesselation_level(*this, level);
+        }
+
+        [[nodiscard]] inline int get_tesselation_level() const
+        {
+            return volumeshOS::get_tesselation_level(*this);
         }
 
         // Set the name of a mesh

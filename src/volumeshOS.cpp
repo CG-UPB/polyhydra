@@ -589,6 +589,18 @@ namespace volumeshOS
         return mesh.get_id() >= 0 && mesh_list->get_mesh(mesh.get_id()) != nullptr;
     }
 
+    void set_tesselation_level(const VMesh& mesh, int level)
+    {
+        commands.emplace_back([&mesh, &level]{
+            mesh_list->set_tesselation_level(mesh.get_id(),level);
+        });
+    }
+
+    int get_tesselation_level(const VMesh& mesh)
+    {
+        return mesh_list->get_tesselation_level(mesh.get_id());
+    }
+
     [[nodiscard]] OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* get_ovm(const VMesh& mesh)
     {
         assert(mesh.is_valid());

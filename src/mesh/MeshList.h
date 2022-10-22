@@ -143,6 +143,10 @@ namespace volumeshOS::Internal
         // Set the name of a mesh
         void set_name(MeshID id, const std::string& name);
 
+        void set_tesselation_level(MeshID id, const int level);
+
+        int get_tesselation_level(MeshID id);
+
 
         /* Getter */
 
