@@ -3,6 +3,7 @@
 
 #include "../panels/LogWindow.h"
 #include "MeshProperties.h"
+#include "mesh/MeshTextureBuffer.h"
 
 namespace volumeshOS::Internal
 {
@@ -29,6 +30,7 @@ namespace volumeshOS::Internal
         scale(glm::vec3(1.0f));
 
         m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
+        m_mtb = std::make_shared<MeshTextureBuffer>(m_mesh);
     }
 
     void MeshObject::update_vertex_buffer()
@@ -179,6 +181,11 @@ namespace volumeshOS::Internal
         return m_mvb->get_vao_by_face();
     }
 
+    std::shared_ptr<MeshTextureBuffer> MeshObject::get_mtb() const
+    {
+        return m_mtb;
+    }
+
     std::shared_ptr<VertexArrayObject> MeshObject::get_sphere_vao() const
     {
         return m_mvb->get_sphere_vao();
@@ -192,6 +199,11 @@ namespace volumeshOS::Internal
     std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> MeshObject::get_ovm() const
     {
         return m_mesh;
+    }
+
+    bool MeshObject::is_bezier_mesh() const
+    {
+        return *get_ovm()->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER).begin();
     }
 
     int MeshObject::calculate_selection_size() const

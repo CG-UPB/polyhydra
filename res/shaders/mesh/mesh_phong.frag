@@ -16,6 +16,7 @@ flat in int v_is_triangle;
 flat in vec4 v_a_adir;
 flat in vec4 v_b_bdir;
 flat in int v_use_lookup_path;
+flat in int v_tes_inner_tri;
 
 uniform bool u_draw_wireframe;
 uniform bool u_draw_shadows;
@@ -49,6 +50,8 @@ uniform float u_bias_min;
 uniform float u_bias_max;
 uniform float u_bias_modifier;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
@@ -89,6 +92,11 @@ void draw_wireframe(vec2 uv)
     {
         discard;
     }
+    if(u_is_bezier_mesh && v_tes_inner_tri == 1)
+    {
+        // Discard all inner triangles of a tessellated triangle.
+        discard;
+    }
     float size_factor = 0.0015 * u_wireframe_size;
     if (v_use_lookup_path == 1)
     {
@@ -122,7 +130,17 @@ void draw_wireframe(vec2 uv)
     }
     else
     {
-        float min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+        float min_dist_to_edge;
+        if(!u_is_bezier_mesh)
+        {
+            min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+        }
+        else
+        {
+            // For Bézier meshes, draw an outline only for outer edges.
+            min_dist_to_edge = v_tri_dist.y;
+        }
+
         if (min_dist_to_edge > size_factor)
         {
             discard;
@@ -206,7 +224,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 
     if(search_width < 0)
     {
-        return 0;
+        return 0.0;
     }
 
     int range = int(search_width);
@@ -391,6 +409,14 @@ void main()
 #endif
 
     vec3 n = normalize(v_normal);
+    vec3 l = normalize(u_light_pos);
+    vec3 v = normalize(u_cam_pos - v_pos);
+    if((u_is_bezier_mesh || u_two_sided_lighting) && dot(n, l) < 0 )
+    {
+        n = -n;
+    }
+
+
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
     if(u_two_sided_lighting && dot(n, l) <= 0 )

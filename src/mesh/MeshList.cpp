@@ -1,5 +1,6 @@
 
 #include "MeshList.h"
+#include "util/Types.h"
 
 namespace volumeshOS::Internal
 {
@@ -233,12 +234,20 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
-
     void MeshList::set_cell_size(const MeshID id, const float size)
     {
         assert(0.0f <= size <= 1.0f);
         auto f = [size](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->get_data().cell_size = size;
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::set_tessellation_level(const MeshID id, const int level)
+    {
+        assert(1 <= level && level <= 64);
+        auto f = [level](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().tessellation_level = level;
         };
         execute_for_mesh(f, id);
     }
@@ -494,6 +503,14 @@ namespace volumeshOS::Internal
     float MeshList::get_cell_size(const MeshID id)
     {
         return get_mesh(id)->get_data().cell_size;
+    }
+
+    int MeshList::get_tessellation_level(const MeshID id)
+    {
+        if(get_mesh(id)->is_bezier_mesh())
+            return get_mesh(id)->get_data().tessellation_level;
+        else
+            return 0;
     }
 
     bool MeshList::get_visibility(const MeshID id)

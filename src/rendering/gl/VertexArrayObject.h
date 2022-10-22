@@ -57,6 +57,12 @@ namespace volumeshOS::Internal
         void draw() const;
 
         /**
+         * Draws a single instance of this Vertex Array using glDrawElements
+         * in order to support Tessellation shader stages
+         */
+        void draw_patches() const;
+
+        /**
          * Draws multiple instances of this Vertex Array.
          *
          * @param num_instances number of instances to be drawn.

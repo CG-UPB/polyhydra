@@ -1,6 +1,6 @@
 #version 330 core
 
-flat in int v_visible;
+flat in int te_visible;
 
 uniform int u_selection_offset;
 uniform bool u_debug_mode;
@@ -21,7 +21,7 @@ ivec4 get_id_bits(int id)
 
 void main()
 {
-    if (v_visible == 0)
+    if (te_visible == 0)
     {
         discard;
     }

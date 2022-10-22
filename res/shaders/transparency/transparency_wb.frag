@@ -30,6 +30,8 @@ uniform float u_t_max;
 uniform bool  u_use_base_color;
 uniform bool  u_two_sided_lighting;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
 
 float near = 0.1f;
 float far = 100.0f;
@@ -46,6 +48,12 @@ void main()
     used_color = u_use_base_color ? u_object_color : v_color;
 
     vec3 n = normalize(v_normal);
+    // For Bézier meshes, always use a normal directed towards the camera.
+    if(u_is_bezier_mesh && dot(n, normalize(u_cam_pos -  v_pos)) < 0)
+    {
+        n = -n;
+    }
+
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
     if(u_two_sided_lighting && dot(n, l) <= 0 )

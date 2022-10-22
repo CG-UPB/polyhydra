@@ -14,8 +14,11 @@ layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 15) in float a_min_edge_length;
 
+out vec4 v_Pos;
 out vec3 v_normal;
 flat out int v_visible;
+flat out int v_ovm_halfface_id;
+flat out vec3 v_center;
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
@@ -36,6 +39,9 @@ uniform bool u_slice_locked;
 uniform bool u_rounding;
 uniform float u_rounding_size;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
+
 const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
 const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
 const float ROUNDED_VERTEX_TYPE_CORNER   = 2.0;
@@ -51,6 +57,19 @@ float get_shrink_factor(float angle, float dist) {
 
 void main()
 {
+    v_center = a_center;
+    
+    // Use a_is_triangle as the ovm halfface id for bézier meshes.
+    if(u_is_bezier_mesh)
+    {
+        v_ovm_halfface_id = int(a_is_triangle+0.5);
+    }
+    else
+    {
+        v_ovm_halfface_id = -1;
+    }
+
+
     // Visibility
     v_visible = 1;
 
@@ -116,5 +135,5 @@ void main()
         v_visible = 0;
     }
     vec3 pos = a_center + (position - a_center) * u_cell_size;
-    gl_Position = u_projection * u_view * u_transform * vec4(pos, 1.0);
+    v_Pos = u_projection * u_view * u_transform * vec4(pos, 1.0);
 }

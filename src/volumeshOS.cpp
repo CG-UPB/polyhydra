@@ -1,4 +1,3 @@
-
 #define VOS_IGNORE_INVALID_MESH
 #ifndef VOS_IGNORE_INVALID_MESH
     #define VOS_ASSERT_VALID_MESH(mesh, list) assert(list->get_mesh(mesh.get_id()) && "Invalid VMesh handle")
@@ -11,6 +10,7 @@
 #include <OpenVolumeMesh/Mesh/TetrahedralMeshTopologyKernel.hh>
 #include <OpenVolumeMesh/Mesh/HexahedralMeshTopologyKernel.hh>
 
+#include <memory>
 #include <ctime>
 
 #include "volumeshOS.h"
@@ -589,16 +589,10 @@ namespace volumeshOS
         return mesh.get_id() >= 0 && mesh_list->get_mesh(mesh.get_id()) != nullptr;
     }
 
-    void set_tesselation_level(const VMesh& mesh, int level)
+    bool is_bezier_mesh(const VMesh& mesh)
     {
-        commands.emplace_back([&mesh, &level]{
-            mesh_list->set_tesselation_level(mesh.get_id(),level);
-        });
-    }
-
-    int get_tesselation_level(const VMesh& mesh)
-    {
-        return mesh_list->get_tesselation_level(mesh.get_id());
+        std::shared_ptr<Internal::MeshObject> mesh_obj = mesh_list->get_mesh(mesh.get_id());
+        return mesh_obj != nullptr && mesh_obj->is_bezier_mesh();
     }
 
     [[nodiscard]] OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* get_ovm(const VMesh& mesh)
@@ -1031,6 +1025,20 @@ namespace volumeshOS
         assert(mesh.is_valid());
         return mesh_list->get_cell_rounding(mesh.get_id());
     }
+
+    void set_tessellation_level(const VMesh& mesh, int level)
+    {
+        commands.emplace_back([mesh, level]{
+            mesh_list->set_tessellation_level(mesh.get_id(), level);
+        });
+    }
+
+    float get_tessellation_level(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return mesh_list->get_tessellation_level(mesh.get_id());
+    }
+
 
     void set_cell_size(const VMesh& mesh, const float size)
     {

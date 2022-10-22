@@ -1,6 +1,7 @@
 
 #include "TransparencyPassWB.h"
 #include "../meshes/CommonMeshes.h"
+#include "mesh/MeshProperties.h"
 
 namespace volumeshOS::Internal
 {
@@ -78,6 +79,14 @@ namespace volumeshOS::Internal
             float wireframe_size = settings.wireframe_size;
             bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
 
+            bool is_bezier_mesh = mesh->is_bezier_mesh();
+            // Currently, cells sometimes appear hollow if CULL_FACE is not 
+            // disabled for Bézier meshes
+            if (is_bezier_mesh)
+            {
+                glDisable(GL_CULL_FACE);
+            }
+
             // Transform
             glm::mat4 transform = cam->world * mesh->get_data().get_transform();
             glm::mat4 l_transform = mesh->get_data().get_transform();
@@ -125,7 +134,8 @@ namespace volumeshOS::Internal
             m_transparency_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
             m_transparency_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
 
-            m_transparency_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+            // Do not use rounding on Bézier meshes.
+            m_transparency_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
             m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_transparency_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);
             m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
@@ -142,13 +152,26 @@ namespace volumeshOS::Internal
             m_transparency_shader->set_uniform_bool("u_draw_ao", settings.ssao_active);
             m_transparency_shader->set_uniform_float("u_wireframe_size", wireframe_size);
             m_transparency_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
+            
+            m_transparency_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+            if(is_bezier_mesh) 
+            {
+                mesh->get_mtb()->bind();
+                // Use Bezier Mesh Property to set uniform.
+                m_transparency_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+                
+                // GL_TEXTURE12 is used for control points storage.
+                m_transparency_shader->set_uniform_int("u_control_points_tb", 12);
+                // Use tessellation level value from toolbar.
+                m_transparency_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
+            }
 
             auto vao = mesh->get_vao();
-            if (mesh->get_data().rounding_active)
+            if (mesh->get_data().rounding_active && !is_bezier_mesh)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
-            vao->draw();
+            vao->draw_patches();
             m_transparency_shader->unbind();
         }
         m_transparent_framebuffer->unbind();

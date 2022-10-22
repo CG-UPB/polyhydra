@@ -4,6 +4,7 @@
 
 #include "../rendering/gl/VertexArrayObject.h"
 #include "MeshVertexBuffer.h"
+#include "MeshTextureBuffer.h"
 #include "../util/VecUtil.h"
 
 
@@ -48,16 +49,13 @@ namespace volumeshOS::Internal
         bool slice_locked           = false;
         bool rounding_active        = true;
         float rounding_size         = 0.0f;
+        int tessellation_level      = 20;
 
         // Transform Variables
         glm::vec3 position          = {0.0f, 0.0f, 0.0f};
         glm::vec3 scale             = {1.0f, 1.0f, 1.0f};
         glm::vec3 position_offset   = {0.0f, 0.0f, 0.0f};
         float scale_normalization   = 1.0f;
-
-        //bezier meshes
-        bool bezier                 = false;
-        int tesselation             = 10;
 
         // Other
         bool visible                = true;
@@ -154,12 +152,16 @@ namespace volumeshOS::Internal
 
         [[nodiscard]] std::shared_ptr<VertexArrayObject> get_sphere_vao() const;
 
+        [[nodiscard]] std::shared_ptr<MeshTextureBuffer> get_mtb() const;
+
         [[nodiscard]] int get_id() const
         {
             return m_id;
         }
 
         [[nodiscard]] std::shared_ptr<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>> get_ovm() const;
+
+        [[nodiscard]] bool is_bezier_mesh() const;
 
         void translate(const glm::vec3& vec);
 
@@ -196,6 +198,7 @@ namespace volumeshOS::Internal
         std::pair<glm::vec3, glm::vec3> m_transformed_bb    = {};
         glm::vec3 m_slice_dir                               = {0.0f, 0.0f, 0.0f};
         std::shared_ptr<MeshVertexBuffer> m_mvb             = nullptr;
+        std::shared_ptr<MeshTextureBuffer> m_mtb            = nullptr;
         MeshData m_data                                     = {};
         int m_id                                            = -1;
 

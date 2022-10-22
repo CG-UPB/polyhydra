@@ -99,6 +99,10 @@ There is also a ground plane where shadows can be projected on. The User has the
 #### Shapes
 A load of shapes (box, cylinder, sphere, cone, arrow) can be set into the scene. 
 
+#### Bézier Meshes
+Tetrahedral Bézier meshes can be visualized if they are represented as a OVM with certain face properties.
+For more information on this and on what changes were made to volumeshOS for Bézier mesh visualizaiton see [Information regarding Bézier mesh visualization](bezier_mesh_info.md).
+
 ## **How to Use**
 Getting an overview of the features is recommended to get an idea what kind of options can be set.
 So in addition to some maniging function, every parameter adjustable in the gui can be set or get.

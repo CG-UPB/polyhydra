@@ -3,6 +3,12 @@
 #include "../rendering/meshes/CommonMeshes.h"
 #include "../util/VecUtil.h"
 #include "MeshProperties.h"
+#include "OpenVolumeMesh/Geometry/Vector11T.hh"
+#include "glm/fwd.hpp"
+#include <X11/Xresource.h>
+#include <cmath>
+#include <string>
+#include <vector>
 
 namespace volumeshOS::Internal
 {
@@ -177,6 +183,9 @@ namespace volumeshOS::Internal
     {
         auto peel_property = mesh->request_cell_property<int>(MeshProperties::PROP_PEEL_DEPTH);
 
+        // Some special treatment for Bézeir meshes is necessary.
+        bool is_bezier_mesh = *mesh->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER).begin();
+
         static std::vector<HalffaceData> halffaces;
         halffaces.clear();
         static std::vector<glm::vec3> vertices;
@@ -184,13 +193,90 @@ namespace volumeshOS::Internal
 
         // add every vertex only once for the selection, no need to render them twice
         int num_selection_vertices = 0;
-        for (auto cv_it: mesh->cell_vertices(cell))
+        
+        if(!is_bezier_mesh)
         {
-            auto v_pos = VecUtil::pos_to_vec3(*mesh, cv_it);
-            vertices.push_back(v_pos);
-            VecUtil::push_vec3(get_attrib_array(VAO::SPHERE, Attribute::SELECTION_VERTEX_POSITION), v_pos);
-            m_selection_map.vertex_ids.push_back(cv_it.idx());
-            num_selection_vertices++;
+            for (auto cv_it: mesh->cell_vertices(cell))
+            {
+                auto v_pos = VecUtil::pos_to_vec3(*mesh, cv_it);
+                vertices.push_back(v_pos);
+                VecUtil::push_vec3(get_attrib_array(VAO::SPHERE, Attribute::SELECTION_VERTEX_POSITION), v_pos);
+                m_selection_map.vertex_ids.push_back(cv_it.idx());
+                num_selection_vertices++;
+            }
+        }
+        else
+        {
+            // I do not know what this does, but it is necessary.
+            for (auto cv_it: mesh->cell_vertices(cell))
+            {
+                m_selection_map.vertex_ids.push_back(cv_it.idx());
+            }
+
+            // For bezier meshes, uses as vertices, the corner control points.
+            // Corner control points are the ones with multi-index (0, 0, m), (0, m, 0), (m, 0, 0).
+            // Because a Bézier tetrahedron is defined through Bézier faces,
+            // every unique control point of all Bézier faces is retrieved.
+            vertices.clear();
+            std::vector<OpenVolumeMesh::Vec3d> corner_cps;
+            for(auto f : mesh->cell_faces(cell))
+            {
+                // m = Bézier mesh degree
+                int m = *mesh->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin();
+                auto cp_prop = mesh->request_face_property<std::vector<double>>(MeshProperties::PROP_BEZIER_FACE_CONTROL_POINTS);
+
+                std::vector<OpenVolumeMesh::Vec3d> cps;
+                cps.push_back(OpenVolumeMesh::Vec3d(cp_prop[f][0], cp_prop[f][1], cp_prop[f][2]));
+                cps.push_back(OpenVolumeMesh::Vec3d(cp_prop[f][3*m], cp_prop[f][3*m+1], cp_prop[f][3*m+2]));
+                cps.push_back(OpenVolumeMesh::Vec3d(cp_prop[f][3*((m+2)*(m+1)/2)-3], cp_prop[f][3*((m+2)*(m+1)/2)-2], cp_prop[f][3*((m+2)*(m+1)/2)-1]));
+
+                // Do not store doubles (a Bézeir tetrahedron has only 4 corner vertices, not 12):
+                for(OpenVolumeMesh::Vec3d& new_cp : cps)
+                {
+                    bool store = true;
+                    for(OpenVolumeMesh::Vec3d& old_cp : corner_cps)
+                    {
+                        if((new_cp-old_cp).length() < 0.000001)
+                        {
+                            store=false;
+                            break;
+                        }
+                    }
+                    if(store)
+                    {
+                        corner_cps.push_back(new_cp);
+                    }
+                }
+            }
+
+            // Give a warning if not the correct number of corner control points was retrieved.
+            // Use regular method in this case.
+            if(corner_cps.size() != 4)
+            {
+                Log::warn("Wrong number of Bézier tetrahedron corner control points found: " + std::to_string(corner_cps.size()) + ". Fallback to underlying OVM.");
+
+                // Fallback method (s. above).
+                num_selection_vertices = 0;
+                for (auto cv_it: mesh->cell_vertices(cell))
+                {
+                    auto v_pos = VecUtil::pos_to_vec3(*mesh, cv_it);
+                    vertices.push_back(v_pos);
+                    VecUtil::push_vec3(get_attrib_array(VAO::SPHERE, Attribute::SELECTION_VERTEX_POSITION), v_pos);
+                    m_selection_map.vertex_ids.push_back(cv_it.idx());
+                    num_selection_vertices++;
+                }
+            }
+            else 
+            {
+                // Else, use retrieved corner control points as vertices.
+                for (OpenVolumeMesh::Vec3d cp : corner_cps)
+                {
+                    auto v_pos = glm::vec3(cp[0], cp[1], cp[2]);
+                    vertices.push_back(v_pos);
+                    VecUtil::push_vec3(get_attrib_array(VAO::SPHERE, Attribute::SELECTION_VERTEX_POSITION), v_pos);
+                }
+                num_selection_vertices = 4;
+            }
         }
 
         // get the center, so we can add it as a vertex attribute
@@ -243,8 +329,11 @@ namespace volumeshOS::Internal
         int cell_vertex_offset = m_vertex_offset_face;
 
         // now we collect the geometry data from ovm, and create data for each face of the cell individually
+        std::vector<int> hf_ids; // Stores halfface ids for Bézeir meshes.
         for (auto chf_it: mesh->cell_halffaces(cell))
         {
+            hf_ids.push_back(chf_it.idx());
+
             static HalffaceData halfface_data;
             halfface_data.clear();
             int halfface_id = chf_it.idx();
@@ -362,6 +451,7 @@ namespace volumeshOS::Internal
 
         // now that we collected the data we need, we can update or buffer arrays
         int cell_vertex_count = 0;
+        int i = 0;
         for (const HalffaceData& halfface: halffaces)
         {
             float is_triangle = (halfface.vertices.size() > 3) ? 0.0f : 1.0f;
@@ -377,12 +467,15 @@ namespace volumeshOS::Internal
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(0.0f);
-                get_attrib_array(VAO::MESH_FACE, Attribute::IS_TRIANGLE).push_back(is_triangle);
+                // Use IS_TRIANGLE as the halfface id for Bézier meshes
+                // because the maximum number of vertex attributes are already declared in mesh_phong.vert
+                get_attrib_array(VAO::MESH_FACE, Attribute::IS_TRIANGLE).push_back( is_bezier_mesh ? hf_ids[i] : is_triangle);
                 get_attrib_array(VAO::MESH_FACE, Attribute::SELECTION).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::HOVERED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::MIN_EDGE_LEN).push_back(min_edge_length);
                 cell_vertex_count++;
             }
+            i++;
 
             // add all indices of the halfface
             VecUtil::push_buffer(halfface.indices, m_indices_face);

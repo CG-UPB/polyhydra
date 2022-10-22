@@ -6,6 +6,8 @@ layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
+// a_is_triangle holds the halfface id for Bézier meshes
+layout (location = 7) in float a_is_triangle;
 
 uniform mat4 u_mesh_transform;
 uniform mat4 u_projection;
@@ -19,10 +21,28 @@ uniform vec3 u_max;
 uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
+
+out vec4 v_Pos;
 flat out int v_visible;
+flat out int v_ovm_halfface_id;
+flat out vec3 v_center;
 
 void main()
 {
+    v_center = a_center;
+    
+    // Use a_is_triangle as the ovm halfface id for bézier meshes.
+    if(u_is_bezier_mesh)
+    {
+        v_ovm_halfface_id = int(a_is_triangle+0.5);
+    }
+    else
+    {
+        v_ovm_halfface_id = -1;
+    }
+
     ////////////////////////////////////////////////////////
     // Slicing and Peeling
     ////////////////////////////////////////////////////////
@@ -53,5 +73,5 @@ void main()
     ////////////////////////////////////////////////////////
 
     vec3 pos = a_center + (a_pos - a_center) * u_cell_size;
-    gl_Position = u_projection * u_view * u_mesh_transform * vec4(pos, 1.0);
+    v_Pos = u_projection * u_view * u_mesh_transform * vec4(pos, 1.0);
 }

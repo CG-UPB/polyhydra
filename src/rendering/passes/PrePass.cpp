@@ -1,5 +1,6 @@
 
 #include "PrePass.h"
+#include "mesh/MeshProperties.h"
 #include "../Renderer.h"
 
 namespace volumeshOS::Internal
@@ -8,15 +9,33 @@ namespace volumeshOS::Internal
     {
         shader.bind();
 
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        auto pre_phong_shader = Shader::pre_mesh_phong_shader();
+
+        pre_phong_shader->bind();
+
         for (const auto& mesh : renderer.render_list)
         {
-            if(mesh->get_data().use_two_sided_lighting)
+            bool is_bezier_mesh = mesh->is_bezier_mesh();
+            // Currently, cells sometimes appear hollow if CULL_FACE is not
+            // disabled for Bézier meshes
+            if ( is_bezier_mesh || mesh->get_data().use_two_sided_lighting)
             {
                 glDisable(GL_CULL_FACE);
             }
             else
             {
                 glEnable(GL_CULL_FACE);
+                glFrontFace(GL_CCW);
+                glCullFace(GL_BACK);
             }
 
             glm::mat4 transform = renderer.camera->world * mesh->get_data().get_transform();
@@ -52,17 +71,30 @@ namespace volumeshOS::Internal
             shader.set_uniform_vec3f("u_max", max);
             shader.set_uniform_vec3f("u_slice_direction", slice_direction);
             shader.set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            shader.set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+            shader.set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
             shader.set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             shader.set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
+            pre_phong_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+            if(is_bezier_mesh)
+            {
+                mesh->get_mtb()->bind();
+                // Use Bezier Mesh Property to set uniform.
+                shader.set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+
+                // GL_TEXTURE12 is used for control points storage.
+                shader.set_uniform_int("u_control_points_tb", 12);
+                // Use tessellation level value from toolbar.
+                shader.set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
+            }
+
             auto vao = mesh->get_vao();
-            if (mesh->get_data().rounding_active)
+            if (mesh->get_data().rounding_active && !is_bezier_mesh)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
 
-            vao->draw();
+            vao->draw_patches();
         }
         shader.unbind();
     }
@@ -76,9 +108,6 @@ namespace volumeshOS::Internal
 
         renderer.passes.ground_pass->render_pre(renderer);
 
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
-        glCullFace(GL_BACK);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);

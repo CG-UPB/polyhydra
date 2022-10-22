@@ -30,6 +30,9 @@ uniform bool  u_two_sided_lighting;
 
 uniform int u_current_layer;
 
+// uniforms for bezier meshes
+uniform bool u_is_bezier_mesh;
+
 uniform sampler2D last_depth_texture;
 uniform sampler2D max_depth_texture;
 
@@ -41,7 +44,7 @@ void main()
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
-    if(u_two_sided_lighting && dot(n, l) <= 0 )
+    if((u_two_sided_lighting || u_is_bezier_mesh) && dot(n, l) <= 0 )
     {
         n = -n;
     }

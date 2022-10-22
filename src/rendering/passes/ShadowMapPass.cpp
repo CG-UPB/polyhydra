@@ -1,5 +1,6 @@
 
 #include "ShadowMapPass.h"
+#include "mesh/MeshProperties.h"
 
 namespace volumeshOS::Internal
 {
@@ -96,6 +97,20 @@ namespace volumeshOS::Internal
             glm::vec3 view_dir = -glm::normalize(cam->get_front());
             auto slice_direction = mesh->get_slice_dir(transform, view_dir);
 
+            bool is_bezier_mesh = mesh->is_bezier_mesh();
+            // Currently, cells sometimes appear hollow if CULL_FACE is not 
+            // disabled for Bézier meshes
+            if (is_bezier_mesh)
+            {
+                glDisable(GL_CULL_FACE);
+            }
+            else
+            {
+                glEnable(GL_CULL_FACE);
+                glFrontFace(GL_CCW);
+                glCullFace(GL_BACK);
+            }
+
             // Shader uniforms
             m_shadow_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
             m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
@@ -107,7 +122,8 @@ namespace volumeshOS::Internal
             m_shadow_shader->set_uniform_vec3f("u_max", max);
             m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            m_shadow_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+            // Do not use rounding on Bézier meshes.
+            m_shadow_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
             m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
@@ -119,12 +135,25 @@ namespace volumeshOS::Internal
             m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[0]);
             m_shadow_shader->set_uniform_mat4f("u_transform", transform);
 
+            m_shadow_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+            if(is_bezier_mesh)
+            {
+                mesh->get_mtb()->bind();
+                // Use Bezier Mesh Property to set uniform.
+                m_shadow_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+                
+                // GL_TEXTURE12 is used for control points storage.
+                m_shadow_shader->set_uniform_int("u_control_points_tb", 12);
+                // Use tessellation level value from toolbar.
+                m_shadow_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
+            }
+
             auto vao = mesh->get_vao();
-            if (mesh->get_data().rounding_active)
+            if (mesh->get_data().rounding_active && !is_bezier_mesh)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }
-            vao->draw();
+            vao->draw_patches();
         }
 
         glCullFace(GL_BACK);

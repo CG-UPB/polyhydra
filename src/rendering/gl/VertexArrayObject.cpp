@@ -79,6 +79,17 @@ namespace volumeshOS::Internal
         update_statistics();
     }
 
+    void VertexArrayObject::draw_patches() const
+    {
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+        glPatchParameteri(GL_PATCH_VERTICES, 3);
+        glDrawElements(GL_PATCHES, m_num_indices, GL_UNSIGNED_INT, nullptr);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        update_statistics();
+    }
+
     void VertexArrayObject::draw_instanced(int num_instances) const
     {
         glBindVertexArray(m_vao);

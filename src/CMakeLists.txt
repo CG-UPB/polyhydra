@@ -15,6 +15,8 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/mesh/MeshObject.h
         ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.cpp
         ${VOLUMESHOS_SRC}/mesh/MeshVertexBuffer.h
+        ${VOLUMESHOS_SRC}/mesh/MeshTextureBuffer.cpp
+        ${VOLUMESHOS_SRC}/mesh/MeshTextureBuffer.h
 
         ${VOLUMESHOS_SRC}/panels/MeshView.cpp
         ${VOLUMESHOS_SRC}/panels/MeshView.h
