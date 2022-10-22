@@ -49,6 +49,7 @@ namespace volumeshOS::Internal
         bool slice_locked           = false;
         bool rounding_active        = true;
         float rounding_size         = 0.2f;
+        int tessellation_level      = 20;
 
         // Transform Variables
         glm::vec3 position          = {0.0f, 0.0f, 0.0f};

@@ -125,6 +125,9 @@ namespace volumeshOS::Internal
         // Set the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
         void set_cell_size(MeshID id, float size);
 
+        // Set the tessellation level of a given mesh (1 - 64). (non-Bézier meshes are not affected)
+        void set_tessellation_level(MeshID id, int level);
+
         // Set the cell visibility of a mesh
         void set_visibility(MeshID id, OpenVolumeMesh::CellHandle cell, bool visible);
 
@@ -190,6 +193,9 @@ namespace volumeshOS::Internal
 
         // Returns the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
         float get_cell_size(MeshID id);
+
+        // Returns the tessellation level of a given mesh. 0 is returned for non-Bézier meshes
+        int get_tessellation_level(MeshID id);
 
         // Returns the visibility of a cell
         bool get_visibility(MeshID id, OpenVolumeMesh::CellHandle cell);

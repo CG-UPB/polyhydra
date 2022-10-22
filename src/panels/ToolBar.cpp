@@ -45,7 +45,6 @@ namespace volumeshOS::Internal
         show_sky_menu();
         show_light_menu();
         show_ground_menu();
-        show_bezier_mesh_menu();
 
         ImGui::Separator();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y);
@@ -367,31 +366,6 @@ namespace volumeshOS::Internal
             ImGuiUtil::menu_item_filled("Contrast", [&]
             {
                 ImGui::DragFloat("##Contrast", &settings.post_processing.contrast, 0.01f, 0.0f, 2.0f, "%.2f");
-            });
-            ImGuiUtil::end_menu();
-        }
-    }
-
-    void ToolBar::show_bezier_mesh_menu()
-    {
-        auto& settings = AppState::settings;
-        auto x = ImGui::GetCursorScreenPos().x;
-        if (!ImGui::CollapsingHeader("Bézier Meshes"))
-        {
-            return;
-        }
-        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
-        if (ImGuiUtil::begin_menu_with_background("bezier_mesh", 1))
-        {
-            ImGuiUtil::menu_item_filled("Tessellation Level", [&]
-            {
-                int tess_lvl = settings.bezier_meshes.tessellation_level;
-                int max_tess_lvl;
-                glGetIntegerv(GL_MAX_TESS_GEN_LEVEL,&max_tess_lvl);
-                if (ImGui::DragInt("##CameraFOV", &tess_lvl, 1, 1, max_tess_lvl))
-                {
-                    settings.bezier_meshes.tessellation_level = tess_lvl;
-                }
             });
             ImGuiUtil::end_menu();
         }

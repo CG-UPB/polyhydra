@@ -3,6 +3,7 @@
 #include "../util/Tooltips.h"
 #include "NewFileDialog.h"
 #include "../util/ImGuiUtil.h"
+#include "imgui.h"
 #include "volumeshOS.h"
 
 namespace volumeshOS::Internal
@@ -438,6 +439,18 @@ namespace volumeshOS::Internal
                             AppState::settings.isolation_active = m_isolation_started;
                         }
                     });
+
+                    if(mesh.is_bezier_mesh())
+                    {
+                        ImGuiUtil::menu_item_filled("Tessellation Level", [&]
+                        {
+                            int tessellation_level = mesh.get_tessellation_level();
+                            if (ImGui::SliderInt("", &tessellation_level, 1, 64))
+                            {
+                                mesh.set_tessellation_level(tessellation_level);
+                            }
+                        });
+                    }
 
                     ImGuiUtil::end_menu();
                 }

@@ -156,7 +156,7 @@ namespace volumeshOS::Internal
             // GL_TEXTURE12 is used for control points storage.
             m_selection_shader->set_uniform_int("u_control_points_tb", 12);
             // Use tessellation level value from toolbar.
-            m_selection_shader->set_uniform_int("u_bezier_tessellation_level", AppState::settings.bezier_meshes.tessellation_level);
+            m_selection_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
         }
         mesh->get_vao()->draw_patches();
 

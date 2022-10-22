@@ -417,6 +417,12 @@ namespace volumeshOS
 
     float get_cell_rounding(const VMesh& mesh);
 
+    // Set the tessellation level for Bézier meshes (non-Bézier meshes are not affected)
+    void set_tessellation_level(const VMesh& mesh, int level);
+
+    // Return the tessellation level of a given mesh. (0 for non-Bézier meshes)
+    float get_tessellation_level(const VMesh& mesh);
+
     // Set the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
     void set_cell_size(const VMesh& mesh, float size);
 
@@ -443,6 +449,9 @@ namespace volumeshOS
 
     // Returns true if the mesh is a valid handle
     [[nodiscard]] bool is_valid(const VMesh& mesh);
+
+    // Returns true if the mesh is a Bézier mesh
+    [[nodiscard]] bool is_bezier_mesh(const VMesh& mesh);
 
 
     /* Shapes */
@@ -1044,6 +1053,18 @@ namespace volumeshOS
             volumeshOS::set_cell_size(*this, size);
         }
 
+        // Returns the tessellation level of a given mesh (0 for non-Bézier meshes)
+        [[nodiscard]] inline int get_tessellation_level() const
+        {
+            return volumeshOS::get_tessellation_level(*this);
+        }
+
+        // Set the tessellation level of a given mesh. (non-Bézier meshes are not affected)
+        inline void set_tessellation_level(int level) const
+        {
+            volumeshOS::set_tessellation_level(*this, level);
+        }
+
         // Returns the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
         [[nodiscard]] inline float get_cell_size() const
         {
@@ -1131,6 +1152,12 @@ namespace volumeshOS
         [[nodiscard]] inline bool is_valid() const
         {
             return volumeshOS::is_valid(*this);
+        }
+
+        // Return true if the mesh is bezier mesh
+        [[nodiscard]] inline bool is_bezier_mesh() const
+        {
+            return volumeshOS::is_bezier_mesh(*this);
         }
 
         // Returns the internal volumeshOS id of this mesh

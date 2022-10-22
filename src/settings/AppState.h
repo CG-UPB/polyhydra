@@ -61,11 +61,6 @@ namespace volumeshOS::Internal
         float contrast      = 1.0f;
     };
 
-    struct BezierMeshOptions
-    {
-        int tessellation_level = 20;
-    };
-
     struct AppState
     {
         static struct AppSettings
@@ -80,7 +75,6 @@ namespace volumeshOS::Internal
             LightOptions light                      = {};
             SkyOptions sky                          = {};
             PostProcessingOptions post_processing   = {};
-            BezierMeshOptions bezier_meshes         = {};
             bool shapes_active                      = true;
             bool selection_active                   = false;
             bool transparency_active                = false;
