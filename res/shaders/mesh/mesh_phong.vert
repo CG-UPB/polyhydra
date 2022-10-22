@@ -25,7 +25,7 @@ out vec3 v_Normal;
 out vec4 v_Color;
 out mat4 v_LightSpacePos0;
 out mat4 v_LightSpacePos1;
-out float v_clipspace_z;
+// out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
 flat out int v_ovm_halfface_id;
