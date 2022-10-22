@@ -56,7 +56,7 @@ void add_control_points_to_vector(std::vector<volumeshOS::VSphere>& cps, volumes
     {
         auto control_point = mesh.add_shape<volumeshOS::VSphere>();
         control_point.set_position(*coord_it, *(coord_it+1), *(coord_it+2));
-        control_point.set_scale(scale, scale/normalization_factor, scale);
+        control_point.set_scale(scale, scale, scale);
         control_point.set_color(color);
         cps.push_back(control_point);
     }
@@ -221,7 +221,7 @@ int main()
                     float normalization_factor = mesh_ids_normalization_factors[mesh_faces_cps.first];
                     for (auto& cp : face_cps.second)
                     {
-                        cp.set_scale(cp_scale, cp_scale/normalization_factor, cp_scale);
+                        cp.set_scale(cp_scale, cp_scale, cp_scale);
                     }
                 }
             }

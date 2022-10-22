@@ -411,18 +411,16 @@ void main()
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
-    if((u_is_bezier_mesh || u_two_sided_lighting) && dot(n, l) < 0 )
+    if(u_two_sided_lighting && dot(n, l) < 0 )
     {
         n = -n;
     }
 
-
-    vec3 l = normalize(u_light_pos);
-    vec3 v = normalize(u_cam_pos - v_pos);
-    if(u_two_sided_lighting && dot(n, l) <= 0 )
+    if(u_is_bezier_mesh  && dot(n, v) < 0 )
     {
         n = -n;
     }
+
 
     float shadow = 0.0;
     if (u_draw_shadows)

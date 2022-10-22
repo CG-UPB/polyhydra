@@ -757,7 +757,7 @@ namespace volumeshOS
     void set_tessellation_level(const VMesh& mesh, int level);
 
     // Return the tessellation level of a given mesh. (0 for non-Bézier meshes)
-    float get_tessellation_level(const VMesh& mesh);
+    int get_tessellation_level(const VMesh& mesh);
 
 
     /**
@@ -1580,16 +1580,6 @@ namespace volumeshOS
         inline void dig(OpenVolumeMesh::CellHandle cell) const
         {
             volumeshOS::dig(*this, cell);
-        }
-
-        inline void set_tesselation_level(int level) const
-        {
-            volumeshOS::set_tesselation_level(*this, level);
-        }
-
-        [[nodiscard]] inline int get_tesselation_level() const
-        {
-            return volumeshOS::get_tesselation_level(*this);
         }
 
         // Set the name of a mesh

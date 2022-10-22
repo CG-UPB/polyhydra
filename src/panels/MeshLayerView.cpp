@@ -275,7 +275,7 @@ namespace volumeshOS::Internal
 
 
                 ImGui::SetCursorPos({cursor_pos.x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorPos().y});
-                ImGuiUtil::add_background_rect(10);
+                ImGuiUtil::add_background_rect(9);
                 ImGui::BeginGroup();
                 if (ImGui::BeginTable("mesh", 3, ImGuiTableFlags_SizingFixedFit))
                 {
@@ -401,23 +401,28 @@ namespace volumeshOS::Internal
                         }
                     });
 
-                    ImGuiUtil::menu_item("Roundings", "icon_roundings.png", width, [&]
+                    if(mesh.is_bezier_mesh())
                     {
-                        float actual_rounding_size = mesh.get_cell_rounding();
-                        if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f"))
+                        ImGuiUtil::menu_item("Tessellation", "icon_roundings.png", width, [&]
                         {
-                            mesh.set_cell_rounding(actual_rounding_size);
-                        }
-                    });
-
-                    ImGuiUtil::menu_item("Tesselation", "icon_roundings.png", width, [&]
+                            int tesselation_level = mesh.get_tessellation_level();
+                            if (ImGui::SliderInt("", &tesselation_level, 1, 64))
+                            {
+                                mesh.set_tessellation_level(tesselation_level);
+                            }
+                        });
+                    }
+                    else
                     {
-                        int tesselation_level = mesh.get_tesselation_level();
-                        if (ImGui::SliderInt("", &tesselation_level, 0, 20))
+                        ImGuiUtil::menu_item("Roundings", "icon_roundings.png", width, [&]
                         {
-                            mesh.set_tesselation_level(tesselation_level);
-                        }
-                    });
+                            float actual_rounding_size = mesh.get_cell_rounding();
+                            if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f"))
+                            {
+                                mesh.set_cell_rounding(actual_rounding_size);
+                            }
+                        });
+                    }
 
                     ImGuiUtil::menu_item("Digging", "icon_dig.png", width, [&]
                     {
@@ -465,18 +470,6 @@ namespace volumeshOS::Internal
                             AppState::settings.isolation_active = m_isolation_started;
                         }
                     });
-
-                    if(mesh.is_bezier_mesh())
-                    {
-                        ImGuiUtil::menu_item_filled("Tessellation Level", [&]
-                        {
-                            int tessellation_level = mesh.get_tessellation_level();
-                            if (ImGui::SliderInt("", &tessellation_level, 1, 64))
-                            {
-                                mesh.set_tessellation_level(tessellation_level);
-                            }
-                        });
-                    }
 
                     ImGuiUtil::end_menu();
                 }

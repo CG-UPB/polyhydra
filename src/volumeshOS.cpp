@@ -1033,7 +1033,7 @@ namespace volumeshOS
         });
     }
 
-    float get_tessellation_level(const VMesh& mesh)
+    int get_tessellation_level(const VMesh& mesh)
     {
         assert(mesh.is_valid());
         return mesh_list->get_tessellation_level(mesh.get_id());

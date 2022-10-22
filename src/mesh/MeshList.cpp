@@ -301,13 +301,6 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
-    void MeshList::set_tesselation_level(volumeshOS::Internal::MeshID id, const int level)
-    {
-        auto f = [level](const std::shared_ptr<MeshObject>& mesh) -> void{
-            mesh->get_data().tesselation = level;
-        };
-        execute_for_mesh(f, id);
-    }
 
     void MeshList::set_color(const glm::vec4& color)
     {
@@ -507,10 +500,11 @@ namespace volumeshOS::Internal
 
     int MeshList::get_tessellation_level(const MeshID id)
     {
-        if(get_mesh(id)->is_bezier_mesh())
-            return get_mesh(id)->get_data().tessellation_level;
-        else
-            return 0;
+//        if(get_mesh(id)->is_bezier_mesh())
+//            return get_mesh(id)->get_data().tessellation_level;
+//        else
+//            return 0;
+        return get_mesh(id)->get_data().tessellation_level;
     }
 
     bool MeshList::get_visibility(const MeshID id)
@@ -531,11 +525,6 @@ namespace volumeshOS::Internal
     const std::string& MeshList::get_name(MeshID id)
     {
         return get_mesh(id)->get_data().name;
-    }
-
-    int MeshList::get_tesselation_level(MeshID id)
-    {
-        return get_mesh(id)->get_data().tesselation;
     }
 
     glm::vec4 MeshList::get_color(const MeshID id)
