@@ -948,6 +948,14 @@ namespace volumeshOS
         return Internal::glm_vec3_to<Vec3T>(mesh_list->get_rotation(mesh.get_id()));
     }
 
+    template <typename Vec3T>
+    Vec3T get_transformed_point(const VMesh& mesh, const Vec3T& point)
+    {
+        assert(mesh.is_valid());
+        return Internal::glm_vec3_to<Vec3T>(glm::vec3(mesh_list->get_mesh(mesh.get_id())->get_data().get_transform()
+                                                    * glm::vec4(Internal::to_glm_vec3(point), 1)));
+    }
+
     void reset_rotation(const VMesh& mesh)
     {
         commands.emplace_back([mesh]{
@@ -1558,6 +1566,11 @@ namespace volumeshOS
     template std::array<double, 3> get_rotation<std::array<double, 3>>(const VMesh&);
     template std::array<float, 3> get_rotation<std::array<float, 3>>(const VMesh&);
 
+    template glm::vec3 get_transformed_point<glm::vec3>(const VMesh& mesh, const glm::vec3& point);
+    template OpenVolumeMesh::Vec3d get_transformed_point<OpenVolumeMesh::Vec3d>(const VMesh& mesh, const OpenVolumeMesh::Vec3d& point);
+    template OpenVolumeMesh::Vec3f get_transformed_point<OpenVolumeMesh::Vec3f>(const VMesh& mesh, const OpenVolumeMesh::Vec3f& point);
+    template std::array<double, 3> get_transformed_point<std::array<double, 3>>(const VMesh& mesh, const std::array<double, 3>& point);
+    template std::array<float, 3> get_transformed_point<std::array<float, 3>>(const VMesh& mesh, const std::array<float, 3>& point);
 
     template void set_camera_position<glm::vec3>(const glm::vec3&);
     template void set_camera_position<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);

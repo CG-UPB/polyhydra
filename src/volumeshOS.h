@@ -695,6 +695,9 @@ namespace volumeshOS
     template<typename Vec3T>
     Vec3T get_rotation(const VMesh& mesh);
 
+    template<typename Vec3T>
+    Vec3T get_transformed_point(const VMesh& mesh, const Vec3T& point);
+
     // Resets the rotation of a mesh
     void reset_rotation(const VMesh& mesh);
 
@@ -1167,7 +1170,7 @@ namespace volumeshOS
             return volumeshOS::is_using_base_color(*this);
         }
 
-        inline  void use_base_color(const VMesh& mesh, bool base_color)const
+        inline void use_base_color(bool base_color)const
         {
             volumeshOS::use_base_color(*this, base_color);
         }
@@ -1437,6 +1440,13 @@ namespace volumeshOS
             return volumeshOS::get_rotation<Vec3T>(*this);
         }
 
+        // Returns the rotation of a mesh using euler angles
+        template<typename Vec3T>
+        [[nodiscard]] inline Vec3T get_transformed_point(const Vec3T& point) const
+        {
+            return volumeshOS::get_transformed_point<Vec3T>(*this, point);
+        }
+
         inline void reset_rotation() const
         {
             volumeshOS::reset_rotation(*this);
@@ -1534,7 +1544,7 @@ namespace volumeshOS
         }
 
         // Set currently active mesh
-        inline void set_focused_mesh(VMesh mesh) const
+        inline void set_focused_mesh() const
         {
             volumeshOS::set_focused_mesh(*this);
         }
