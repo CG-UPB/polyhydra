@@ -129,7 +129,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 
     if(search_width < 0)
     {
-        return 0;
+        return 0.0;
     }
 
     int range = int(search_width);
