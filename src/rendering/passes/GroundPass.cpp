@@ -29,11 +29,13 @@ namespace volumeshOS::Internal
 
         m_pre_ground_shader->bind();
 
+        auto& settings = AppState::settings.ground;
+
         m_pre_ground_shader->set_uniform_mat4f("u_transform", renderer.camera->world);
         m_pre_ground_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
         m_pre_ground_shader->set_uniform_mat4f("u_view", renderer.camera->view);
-        m_pre_ground_shader->set_uniform_float("u_height", AppState::settings.ground.height);
-        m_pre_ground_shader->set_uniform_bool("u_visible", AppState::settings.ground.visible);
+        m_pre_ground_shader->set_uniform_float("u_height", settings.height);
+        m_pre_ground_shader->set_uniform_bool("u_visible", settings.solid || settings.grid);
 
         m_vao->draw();
 
@@ -52,8 +54,10 @@ namespace volumeshOS::Internal
 
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
+        glDepthFunc(GL_LEQUAL);
         glDepthMask(GL_TRUE);
+
+        glClear(GL_DEPTH_BUFFER_BIT);
 
         if (shadow_only)
         {
@@ -69,7 +73,7 @@ namespace volumeshOS::Internal
             }
             grid = false;
         }
-        else if (grid)
+        else if (!settings.ground.solid)
         {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -100,7 +104,8 @@ namespace volumeshOS::Internal
         // Shader uniforms
         m_ground_shader->set_uniform_bool("u_wireframe", settings.rendering_mode == RenderingMode::WIREFRAME);
         m_ground_shader->set_uniform_bool("u_vertices", settings.rendering_mode == RenderingMode::ONLY_VERTICES);
-        m_ground_shader->set_uniform_bool("u_visible", ground_options.visible);
+        m_ground_shader->set_uniform_bool("u_visible", ground_options.solid || ground_options.grid);
+        volumeshOS::log(std::to_string(ground_options.solid || ground_options.grid));
         m_ground_shader->set_uniform_bool("u_solid", ground_options.solid);
         m_ground_shader->set_uniform_vec3f("u_solid_color", ground_options.solid_color);
         m_ground_shader->set_uniform_bool("u_grid", grid);

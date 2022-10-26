@@ -377,9 +377,10 @@ void main()
         color = u_grid_color;
         color = color - col * vec3(1.0 - color.x, 1.0 - color.y, 1.0 - color.z);
         alpha = 1.0 - col;
-        if(col == 1.0)
+        if(col != 1.0)
         {
-            discard;
+            FragColor = vec4(u_grid_color, (1.0 - col));
+            return;
         }
     }
     else if(!u_grid && u_solid)

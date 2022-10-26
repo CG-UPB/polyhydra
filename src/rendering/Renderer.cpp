@@ -111,7 +111,7 @@ namespace volumeshOS::Internal
         buffers.target_framebuffer_ms->unbind();
 
         // Render Meshes
-        passes.pre_pass->render(*this);
+        //passes.pre_pass->render(*this);
 
         handle_zoom();
 
@@ -488,7 +488,7 @@ namespace volumeshOS::Internal
                 camera->animated_look_at(glm::vec3(pos), new_cam_pos);
 
 
-                passes.pre_pass->get_framebuffer()->unbind();
+                buffers.target_framebuffer->unbind();
 
             }
         }
