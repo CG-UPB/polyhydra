@@ -12,6 +12,7 @@ in mat4 tc_LightSpacePos1[];
 // in float tc_clipspace_z[];
 flat in int tc_Visible[];
 flat in int tc_isTriangle[];
+flat in float tc_VertexTypeRounded[];
 flat in int tc_ovm_halfface_id[];
 flat in vec3 tc_center[];
 
@@ -23,6 +24,7 @@ out mat4 v_LightSpacePos1;
 // out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
+flat out float v_VertexTypeRounded;
 flat out int v_tesInnerTri;
 
 // necessary for calculating bezier mesh face normals

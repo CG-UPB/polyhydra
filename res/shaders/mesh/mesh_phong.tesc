@@ -10,6 +10,7 @@ in mat4 v_LightSpacePos1[];
 // in float v_clipspace_z[];
 flat in int v_Visible[];
 flat in int v_isTriangle[];
+flat in float v_VertexTypeRounded[];
 flat in int v_ovm_halfface_id[];
 flat in vec3 v_center[];
 
@@ -21,6 +22,7 @@ out mat4 tc_LightSpacePos1[];
 // out float tc_clipspace_z[];
 flat out int tc_Visible[];
 flat out int tc_isTriangle[];
+flat out float tc_VertexTypeRounded[];
 flat out int tc_ovm_halfface_id[];
 flat out vec3 tc_center[];
 
@@ -47,6 +49,7 @@ void main()
     // tc_clipspace_z[ID]     =     v_clipspace_z[sourceID];
     tc_Visible[ID]         =         v_Visible[sourceID];
     tc_isTriangle[ID]      =      v_isTriangle[sourceID];
+    tc_VertexTypeRounded[ID] =  tc_VertexTypeRounded[sourceID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[sourceID];
     tc_center[ID]          =          v_center[sourceID];
 
