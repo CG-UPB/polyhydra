@@ -174,4 +174,5 @@ void main()
     // // v_clipspace_z     = tc_clipspace_z[0]    *x + tc_clipspace_z[1]    *y + tc_clipspace_z[2]    *z;
     v_Visible         = tc_Visible[1]        ; // flat
     v_isTriangle      = tc_isTriangle[1]     ; // flat
+    v_VertexTypeRounded=tc_VertexTypeRounded[1];
 }
