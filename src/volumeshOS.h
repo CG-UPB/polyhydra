@@ -991,74 +991,151 @@ namespace volumeshOS
      */
     void use_log_window(bool log_window);
 
-
+    /**
+     * Utility wrapper class for using shapes
+     */
     struct VShape
     {
+        /**
+         * This should not be called to construct a shape, use the api-method to add shapes
+         * @param id internal shape id
+         */
         explicit VShape(int id = -1) : m_id(id)
         {}
 
+        /**
+         * Remove this shape from the scene
+         */
         inline void remove() const
         {
             volumeshOS::remove_shape(*this);
         }
 
+        /**
+         * Set the position of this shape
+         *
+         * @param x X coordinate
+         * @param y Y coordinate
+         * @param z Z coordinate
+         */
         inline void set_position(float x, float y, float z) const
         {
             volumeshOS::set_position(*this, x, y, z);
         }
 
+        /**
+         * Set the position of this shape
+         *
+         * @tparam Vec3T 3D Vector type
+         * @param position position to be set
+         */
         template<typename Vec3T>
         inline void set_position(const Vec3T& position) const
         {
             volumeshOS::set_position<Vec3T>(*this, position);
         }
 
+        /**
+         * Set the orientation of this shape using an axis and an angle. The axis is up (0, 1, 0) by default
+         *
+         * @param axis_x X component of the rotation axis
+         * @param axis_y Y component of the rotation axis
+         * @param axis_z Z component of the rotation axis
+         * @param angle rotation angle around the given axis in radians
+         */
         inline void set_direction(float axis_x, float axis_y, float axis_z, float angle = 0.0f) const
         {
             volumeshOS::set_direction(*this, axis_x, axis_y, axis_z, angle);
         }
 
+        /**
+         * Set the orientation of this shape using an axis and an angle. The axis is up (0, 1, 0) by default
+         *
+         * @tparam Vec3T 3D Vector type
+         * @param axis rotation axis
+         * @param angle rotation angle around the given axis in radians
+         */
         template<typename Vec3T>
         inline void set_direction(const Vec3T& axis, float angle = 0.0f) const
         {
             volumeshOS::set_direction<Vec3T>(*this, axis, angle);
         }
 
+        /**
+         * Set the scale of this shape by axis. Default is (1, 1, 1)
+         *
+         * @param x X scale
+         * @param y Y scale
+         * @param z Z scale
+         */
         inline void set_scale(float x, float y, float z) const
         {
             volumeshOS::set_scale(*this, x, y, z);
         }
 
+        /**
+         * Set the scale of this shape for all axis. Default is (1, 1, 1)
+         *
+         * @param scalar scale value
+         */
         inline void set_scale(float scalar) const
         {
             volumeshOS::set_scale(*this, scalar);
         }
 
+        /**
+         * Set the scale of this shape by axis. Default is (1, 1, 1)
+         *
+         * @tparam Vec3T 3D Vector type
+         * @param scale scale vector
+         */
         template<typename Vec3T>
         inline void set_scale(const Vec3T& scale) const
         {
             volumeshOS::set_scale<Vec3T>(*this, scale);
         }
 
+        /**
+         * Set the color of this shape. The default color is white (1, 1, 1, 1)
+         *
+         * @tparam Vec4T 4D Vector type
+         * @param color vector containing the rgba components
+         */
         template<typename Vec4T>
         inline void set_color(const Vec4T& color) const
         {
             volumeshOS::set_color<Vec4T>(*this, color);
         }
 
+        /**
+         * Returns the current position of this shape
+         *
+         * @tparam Vec3T 3D Vector type
+         * @return current position
+         */
         template<typename Vec3T>
         [[nodiscard]] inline Vec3T get_position() const
         {
             return volumeshOS::get_position<Vec3T>(*this);
         }
 
+        /**
+         * Returns the current scale of this shape
+         *
+         * @tparam Vec3T 3D Vector type
+         * @return current scale
+         */
         template<typename Vec3T>
         [[nodiscard]] inline Vec3T get_scale() const
         {
             return volumeshOS::get_scale<Vec3T>(*this);
         }
 
-        // Returns the internal volumeshOS id of this shape
+        /**
+         * Returns the internal volumeshOS id of this shape
+         *
+         * @return internal id
+         */
         [[nodiscard]] int get_id() const
         {
             return m_id;
@@ -1068,35 +1145,63 @@ namespace volumeshOS
         int m_id;
     };
 
+    /**
+     * Represents a sphere shape. Use as template parameter to add it to the scene
+     */
     struct VSphere : public VShape
     {
         using VShape::VShape;
     };
 
+    /**
+     * Represents a cylinder shape. Use as template parameter to add it to the scene.
+     * The two ends lie on the world y-axis by default (upwards).
+     */
     struct VCylinder : public VShape
     {
         using VShape::VShape;
     };
 
+    /**
+     * Represents a box shape. Use as template parameter to add it to the scene
+     */
     struct VBox : public VShape
     {
         using VShape::VShape;
     };
 
+    /**
+     * Represents a cone shape. Use as template parameter to add it to the scene.
+     * The tip and bottom lie on the world y-axis by default (upwards).
+     */
     struct VCone : public VShape
     {
         using VShape::VShape;
     };
 
+    /**
+     * Represents an arrow shape. Use as template parameter to add it to the scene.
+     * The tip points upwards (0, 1, 0) in world coordinates by default.
+     */
     struct VArrow : public VShape
     {
         using VShape::VShape;
 
+        /**
+         * Set the start of the arrow tip in percentage (between 0 and 1). So a height of 0.7 means 30% tip and 70% base
+         *
+         * @param tip_height height of the arrow tip in percentage
+         */
         inline void set_tip_height(float tip_height) const
         {
             volumeshOS::set_tip_height(*this, tip_height);
         }
 
+        /**
+         * Set the width of the arrow base in percentage (default 0.5). So a width of 0.3 means 30% of the tip width
+         *
+         * @param base_width width of the arrow base in percentage
+         */
         inline void set_base_width(float base_width) const
         {
             volumeshOS::set_base_width(*this, base_width);
