@@ -23,12 +23,8 @@ layout (location = 15) in float a_min_edge_length;
 out vec3 v_Pos;
 out vec3 v_Normal;
 out vec4 v_Color;
-out mat4 v_LightSpacePos0;
-out mat4 v_LightSpacePos1;
 // out float v_clipspace_z;
 flat out int v_Visible;
-flat out int v_isTriangle;
-flat out float v_VertexTypeRounded;
 flat out int v_ovm_halfface_id;
 flat out vec3 v_center;
 
@@ -84,7 +80,6 @@ void main()
     if(u_is_bezier_mesh)
     {
         v_ovm_halfface_id = int(a_is_triangle+0.5);
-        v_isTriangle = 0;
     }
     else
     {
@@ -117,7 +112,6 @@ void main()
         v_Normal = vec3(0.0, 0.0, 0.0);
         v_Color = vec4(0.0, 0.0, 0.0, 0.0);
         v_Visible = 0;
-        v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
         return;
     }
     
@@ -148,7 +142,6 @@ void main()
             vec3 shrink_dir = normalize(a_face_center_rounded - position);
             position += shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
         }
-        v_VertexTypeRounded = type;
     }
 
     mat4 cam_space_mat = u_projection * view_transform;
@@ -164,24 +157,23 @@ void main()
     v_Normal = mat3(transpose(inverse(u_transform))) * normal;
 
     // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
-    mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
-    v_LightSpacePos0[0] = light_space_mat * vec4(pos, 1.0);
-    light_space_mat = u_light_projection[1] * u_light_view[1] * u_light_transform;
-    v_LightSpacePos0[1] = light_space_mat * vec4(pos, 1.0);
-    light_space_mat = u_light_projection[2] * u_light_view[2] * u_light_transform;
-    v_LightSpacePos0[2] = light_space_mat * vec4(pos, 1.0);
-    light_space_mat = u_light_projection[3] * u_light_view[3] * u_light_transform;
-    v_LightSpacePos0[3] = light_space_mat * vec4(pos, 1.0);
-    light_space_mat = u_light_projection[4] * u_light_view[4] * u_light_transform;
-    v_LightSpacePos1[0] = light_space_mat * vec4(pos, 1.0);
-    light_space_mat = u_light_projection[5] * u_light_view[5] * u_light_transform;
-    v_LightSpacePos1[1] = light_space_mat * vec4(pos, 1.0);
-    light_space_mat = u_light_projection[6] * u_light_view[6] * u_light_transform;
-    v_LightSpacePos1[2] = light_space_mat * vec4(pos, 1.0);
-    light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
-    v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
+//    mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
+//    v_LightSpacePos0[0] = light_space_mat * vec4(pos, 1.0);
+//    light_space_mat = u_light_projection[1] * u_light_view[1] * u_light_transform;
+//    v_LightSpacePos0[1] = light_space_mat * vec4(pos, 1.0);
+//    light_space_mat = u_light_projection[2] * u_light_view[2] * u_light_transform;
+//    v_LightSpacePos0[2] = light_space_mat * vec4(pos, 1.0);
+//    light_space_mat = u_light_projection[3] * u_light_view[3] * u_light_transform;
+//    v_LightSpacePos0[3] = light_space_mat * vec4(pos, 1.0);
+//    light_space_mat = u_light_projection[4] * u_light_view[4] * u_light_transform;
+//    v_LightSpacePos1[0] = light_space_mat * vec4(pos, 1.0);
+//    light_space_mat = u_light_projection[5] * u_light_view[5] * u_light_transform;
+//    v_LightSpacePos1[1] = light_space_mat * vec4(pos, 1.0);
+//    light_space_mat = u_light_projection[6] * u_light_view[6] * u_light_transform;
+//    v_LightSpacePos1[2] = light_space_mat * vec4(pos, 1.0);
+//    light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
+//    v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
 
-    v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
 
     float peel_alpha = (u_peel_depth - peel_depth);
     if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)

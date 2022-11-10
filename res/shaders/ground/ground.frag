@@ -5,9 +5,9 @@
 const int MAX_CASCADE_LEVEL = 8;
 
 in vec3 v_pos;
+in vec4 v_color;
 in vec3 v_normal;
 in vec2 v_uv;
-in vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 in float v_clipspace_z;
 
 uniform bool u_visible;
@@ -117,145 +117,145 @@ float random(vec3 seed, int i){
     float dot_product = dot(seed4, vec4(12.9898,78.233,45.164,94.673));
     return fract(sin(dot_product) * 43758.5453);
 }
-
-float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int cascade_idx)
-{
-    int blockers = 0;
-    float avg_blocker_distance = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
-
-    float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
-
-
-    if(search_width < 0)
-    {
-        return 0.0;
-    }
-
-    int range = int(search_width);
-    int samples = 2;
-    for(int x = -samples; x <= samples; ++x)
-    {
-        for (int y = -samples; y <= samples; y++)
-        {
-            vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
-            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + (vec2(x, y) + shift) * texelSize, float(cascade_idx))).r;
-            if(z < (shadow_coords.z - bias))
-            {
-                blockers++;
-                avg_blocker_distance += z;
-            }
-        }
-    }
-
-    if(blockers > 0)
-    {
-        return avg_blocker_distance / blockers;
-    }
-    else
-    {
-        return -1.0;
-    }
-
-}
-
-float percentage_closer_filtering(vec3 shadow_coords, float light_size, float radius, float bias, int cascade_idx)
-{
-    float sum = 0;
-    int count = 0;
-
-    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
-    int range = int(light_size * radius);
-   // range = range > 40 ? 40 : range;
-    range = range <  1 ?  2 : range;
-
-    for(int x = - range; x <= range; ++x)
-    {
-        count++;
-        for (int y = -range; y <= range; ++y)
-        {
-            //int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
-            //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
-            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness  * vec2(x , y) * texelSize, float(cascade_idx))).r;
-
-            sum += depth < shadow_coords.z ? 1.0 : 0.0;
-        }
-    }
-
-    count = count > 0 ? count : 1;
-
-    return sum / (count * count);
-}
-
-float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cascade_idx)
-{
-    vec3 shadow_coords = pos_ls.rgb / pos_ls.w;
-    shadow_coords = shadow_coords * 0.5 + 0.5;
-
-
-    if(shadow_coords.z > 1.0)
-    {
-        return 0.0;
-    }
-
-    //Step 1: Blocker search
-    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
-    if(blocker_distance == -1.0)
-        return 0.0;
-
-    //Step 2: Penumbra estimation
-    float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
-    if(penumbra_width == 0.0)
-        return 1.0;
-
-    //Step 3: Filtering
-    float radius = 2.0 * penumbra_width;
-   // radius = light_size;
-
-    float start = cascade_idx == 0 ? u_near : u_cascade_ends[cascade_idx - 1];
-    float end = u_cascade_ends[cascade_idx];
-
-    int next_cascade_idx = min(u_cascade_level, cascade_idx + 1);
-    vec3 next_shadow_coords = (v_pos_ls[next_cascade_idx].xyz / v_pos_ls[next_cascade_idx].w) * 0.5 + 0.5;
-
-    float fade = clamp((1.0 - v_clipspace_z / u_cascade_ends[cascade_idx]) / 0.05, 0.0, 1.0);
-
-    float shadow = percentage_closer_filtering(shadow_coords, light_size, radius, bias, cascade_idx);
-
-    if(fade < 1.0)
-    {
-        float next_shadow = percentage_closer_filtering(next_shadow_coords, light_size, radius, bias, next_cascade_idx);
-        shadow = mix(shadow, next_shadow, fade);
-    }
-
-    return shadow;
-}
-
-float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
-{
-    float shadow = 0.0;
-
-    // range [-1, 1]
-    vec3 proj_coords = pos_ls.xyz / pos_ls.w;
-
-    // range [0, 1]
-    proj_coords = proj_coords * 0.5 + 0.5;
-
-    float current_depth = proj_coords.z;
-    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
-
-    if (current_depth > 1.0)
-    {
-        return 0.0;
-    }
-
-    for(int i = 0; i < 4; i++)
-    {
-        int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        //shadow += 0.25 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 700.0), float(cascade_idx), current_depth ))).r;
-    }
-    return shadow;
-}
+//
+//float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int cascade_idx)
+//{
+//    int blockers = 0;
+//    float avg_blocker_distance = 0.0;
+//    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
+//
+//    float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
+//
+//
+//    if(search_width < 0)
+//    {
+//        return 0.0;
+//    }
+//
+//    int range = int(search_width);
+//    int samples = 2;
+//    for(int x = -samples; x <= samples; ++x)
+//    {
+//        for (int y = -samples; y <= samples; y++)
+//        {
+//            vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
+//            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + (vec2(x, y) + shift) * texelSize, float(cascade_idx))).r;
+//            if(z < (shadow_coords.z - bias))
+//            {
+//                blockers++;
+//                avg_blocker_distance += z;
+//            }
+//        }
+//    }
+//
+//    if(blockers > 0)
+//    {
+//        return avg_blocker_distance / blockers;
+//    }
+//    else
+//    {
+//        return -1.0;
+//    }
+//
+//}
+//
+//float percentage_closer_filtering(vec3 shadow_coords, float light_size, float radius, float bias, int cascade_idx)
+//{
+//    float sum = 0;
+//    int count = 0;
+//
+//    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
+//    int range = int(light_size * radius);
+//   // range = range > 40 ? 40 : range;
+//    range = range <  1 ?  2 : range;
+//
+//    for(int x = - range; x <= range; ++x)
+//    {
+//        count++;
+//        for (int y = -range; y <= range; ++y)
+//        {
+//            //int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
+//            //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
+//            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness  * vec2(x , y) * texelSize, float(cascade_idx))).r;
+//
+//            sum += depth < shadow_coords.z ? 1.0 : 0.0;
+//        }
+//    }
+//
+//    count = count > 0 ? count : 1;
+//
+//    return sum / (count * count);
+//}
+//
+//float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cascade_idx)
+//{
+//    vec3 shadow_coords = pos_ls.rgb / pos_ls.w;
+//    shadow_coords = shadow_coords * 0.5 + 0.5;
+//
+//
+//    if(shadow_coords.z > 1.0)
+//    {
+//        return 0.0;
+//    }
+//
+//    //Step 1: Blocker search
+//    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
+//    if(blocker_distance == -1.0)
+//        return 0.0;
+//
+//    //Step 2: Penumbra estimation
+//    float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
+//    if(penumbra_width == 0.0)
+//        return 1.0;
+//
+//    //Step 3: Filtering
+//    float radius = 2.0 * penumbra_width;
+//   // radius = light_size;
+//
+//    float start = cascade_idx == 0 ? u_near : u_cascade_ends[cascade_idx - 1];
+//    float end = u_cascade_ends[cascade_idx];
+//
+//    int next_cascade_idx = min(u_cascade_level, cascade_idx + 1);
+//    vec3 next_shadow_coords = (v_pos_ls[next_cascade_idx].xyz / v_pos_ls[next_cascade_idx].w) * 0.5 + 0.5;
+//
+//    float fade = clamp((1.0 - v_clipspace_z / u_cascade_ends[cascade_idx]) / 0.05, 0.0, 1.0);
+//
+//    float shadow = percentage_closer_filtering(shadow_coords, light_size, radius, bias, cascade_idx);
+//
+//    if(fade < 1.0)
+//    {
+//        float next_shadow = percentage_closer_filtering(next_shadow_coords, light_size, radius, bias, next_cascade_idx);
+//        shadow = mix(shadow, next_shadow, fade);
+//    }
+//
+//    return shadow;
+//}
+//
+//float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
+//{
+//    float shadow = 0.0;
+//
+//    // range [-1, 1]
+//    vec3 proj_coords = pos_ls.xyz / pos_ls.w;
+//
+//    // range [0, 1]
+//    proj_coords = proj_coords * 0.5 + 0.5;
+//
+//    float current_depth = proj_coords.z;
+//    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
+//
+//    if (current_depth > 1.0)
+//    {
+//        return 0.0;
+//    }
+//
+//    for(int i = 0; i < 4; i++)
+//    {
+//        int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
+//        //shadow += 0.25 * (1.0 - texture(u_shadow_texture, vec4(proj_coords.xy + (poisson_disk[i] / 700.0), float(cascade_idx), current_depth ))).r;
+//    }
+//    return shadow;
+//}
 
 float linearize_depth(float depth)
 {
@@ -278,54 +278,54 @@ void main()
     float shadow = 0.0;
     bool no_shadows = u_wireframe || u_vertices;
 
-    if (u_draw_shadows && !no_shadows)
-    {
-        // shadow calculation
-        // calculate cascade level
-        int cascade_idx = -1;
-        int cascade_level = 1;
-        if(u_cascade_level < MAX_CASCADE_LEVEL)
-        {
-            cascade_level = u_cascade_level;
-        }
-        else
-        {
-            cascade_level = MAX_CASCADE_LEVEL;
-        }
-        for(int i = 0; i < cascade_level ; ++i)
-        {
-            if(v_clipspace_z - u_near <= u_cascade_ends[i])
-            {
-                cascade_idx = i;
-                //i = cascade_level;
-                break;
-            }
-        }
-        if(cascade_idx == -1)
-        {
-            cascade_idx = u_cascade_level;
-        }
-
-        // calculate bias (depending on cascade level)
-        float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
-
-        const float biasModifier = 0.5f;
-        if (cascade_level == cascade_level)
-        {
-            bias *= 1 / (100.0 * biasModifier);
-        }
-        else
-        {
-            bias *= 1 / (u_cascade_ends[cascade_level] * biasModifier);
-        }
-
-        //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
-
-        //cascade_idx = 0;
-        //shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
-        shadow = u_shadow_strength * pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
+//    if (u_draw_shadows && !no_shadows)
+//    {
+//        // shadow calculation
+//        // calculate cascade level
+//        int cascade_idx = -1;
+//        int cascade_level = 1;
+//        if(u_cascade_level < MAX_CASCADE_LEVEL)
+//        {
+//            cascade_level = u_cascade_level;
+//        }
+//        else
+//        {
+//            cascade_level = MAX_CASCADE_LEVEL;
+//        }
+//        for(int i = 0; i < cascade_level ; ++i)
+//        {
+//            if(v_clipspace_z - u_near <= u_cascade_ends[i])
+//            {
+//                cascade_idx = i;
+//                //i = cascade_level;
+//                break;
+//            }
+//        }
+//        if(cascade_idx == -1)
+//        {
+//            cascade_idx = u_cascade_level;
+//        }
 //
-    }
+//        // calculate bias (depending on cascade level)
+//        float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
+//
+//        const float biasModifier = 0.5f;
+//        if (cascade_level == cascade_level)
+//        {
+//            bias *= 1 / (100.0 * biasModifier);
+//        }
+//        else
+//        {
+//            bias *= 1 / (u_cascade_ends[cascade_level] * biasModifier);
+//        }
+//
+//        //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
+//
+//        //cascade_idx = 0;
+//        //shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
+//        shadow = u_shadow_strength * pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
+////
+//    }
 
     float ao_factor = 1.0;
     if(u_draw_ao && !no_shadows)

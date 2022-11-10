@@ -7,33 +7,19 @@ const int MAX_CASCADE_LEVEL = 8;
 in vec3 tc_Pos[];
 in vec3 tc_Normal[];
 in vec4 tc_Color[];
-in mat4 tc_LightSpacePos0[];
-in mat4 tc_LightSpacePos1[];
+in vec2 tc_UV[];
 // in float tc_clipspace_z[];
 flat in int tc_Visible[];
-flat in int tc_isTriangle[];
-flat in float tc_VertexTypeRounded[];
 flat in int tc_ovm_halfface_id[];
 flat in vec3 tc_center[];
 
 out vec3 v_pos;
 out vec3 v_normal;
 out vec4 v_color;
-out mat4 v_LightSpacePos0;
-out mat4 v_LightSpacePos1;
+out vec2 v_uv;
 // out float v_clipspace_z;
 flat out int v_visible;
-//flat out int v_isTriangle;
-//flat out float v_VertexTypeRounded;
-flat out int v_tes_inner_tri;
 
-//out vec3 v_pos;
-//out vec3 v_normal;
-//out vec4 v_color;
-//out vec4 v_pos_ls[MAX_CASCADE_LEVEL];
-//flat out int v_visible;
-//out float v_clipspace_z;
-//flat out int v_tes_inner_tri;
 
 // necessary for calculating bezier mesh face normals
 uniform mat4 u_transform;
@@ -111,7 +97,6 @@ void main()
     {
         // if the mesh is a bezier mesh evaluate the bezier triangle of the
         // current face for the given barycentric coordinates (x, y, z)
-        
 
         // m is the bezier mesh degree (often used in papers)
         int m = u_bezier_degree;
@@ -152,26 +137,25 @@ void main()
 
         // Do not render inner tessellated triangled in wireframe mode.
         // For a inner triangle no barycentric coordinate is 0.
-        v_tes_inner_tri = int(ceil(min(min(x, y), z)));
     
         // Casced Shaowmap for Bézier meshes.
         // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
-        mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
-        v_LightSpacePos0[0] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[1] * u_light_view[1] * u_light_transform;
-        v_LightSpacePos0[1] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[2] * u_light_view[2] * u_light_transform;
-        v_LightSpacePos0[2] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[3] * u_light_view[3] * u_light_transform;
-        v_LightSpacePos0[3] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[4] * u_light_view[4] * u_light_transform;
-        v_LightSpacePos1[0] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[5] * u_light_view[5] * u_light_transform;
-        v_LightSpacePos1[1] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[6] * u_light_view[6] * u_light_transform;
-        v_LightSpacePos1[2] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
-        v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
+//        mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
+//        v_LightSpacePos0[0] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[1] * u_light_view[1] * u_light_transform;
+//        v_LightSpacePos0[1] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[2] * u_light_view[2] * u_light_transform;
+//        v_LightSpacePos0[2] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[3] * u_light_view[3] * u_light_transform;
+//        v_LightSpacePos0[3] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[4] * u_light_view[4] * u_light_transform;
+//        v_LightSpacePos1[0] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[5] * u_light_view[5] * u_light_transform;
+//        v_LightSpacePos1[1] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[6] * u_light_view[6] * u_light_transform;
+//        v_LightSpacePos1[2] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
+//        v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
     }
     else
     {
@@ -179,15 +163,11 @@ void main()
         v_pos = (vec4(v_pos, 1.0)).xyz;
         gl_Position = u_projection * u_view  * vec4(v_pos, 1.0);
         v_normal      = tc_Normal[0]         *x + tc_Normal[1]         *y + tc_Normal[2]         *z;
-        v_tes_inner_tri = 0;
-        v_LightSpacePos0  = tc_LightSpacePos0[0] *x + tc_LightSpacePos0[1] *y + tc_LightSpacePos0[2] *z;
-        v_LightSpacePos1  = tc_LightSpacePos1[0] *x + tc_LightSpacePos1[1] *y + tc_LightSpacePos1[2] *z;
-    }
 
+    }
+    v_uv = tc_UV[0] * x + tc_UV[1] * y + tc_UV[2] * z;
     // in any case use the values of vertex shader for these values 
     v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
     // // v_clipspace_z     = tc_clipspace_z[0]    *x + tc_clipspace_z[1]    *y + tc_clipspace_z[2]    *z;
     v_visible         = tc_Visible[1]        ; // flat
- //   v_isTriangle      = tc_isTriangle[1]     ; // flat
-//    v_VertexTypeRounded=tc_VertexTypeRounded[0] * x + tc_VertexTypeRounded[1] * y + tc_VertexTypeRounded[2] * z;
 }

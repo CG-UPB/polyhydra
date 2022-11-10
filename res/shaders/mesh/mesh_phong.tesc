@@ -5,24 +5,20 @@ layout(vertices = 3) out;
 in vec3 v_Pos[];
 in vec3 v_Normal[];
 in vec4 v_Color[];
-in mat4 v_LightSpacePos0[];
-in mat4 v_LightSpacePos1[];
+in vec2 v_UV[];
+
 // in float v_clipspace_z[];
 flat in int v_Visible[];
-flat in int v_isTriangle[];
-flat in float v_VertexTypeRounded[];
+//flat in int v_isTriangle[];
+//flat in float v_VertexTypeRounded[];
 flat in int v_ovm_halfface_id[];
 flat in vec3 v_center[];
 
 out vec3 tc_Pos[];
 out vec3 tc_Normal[];
 out vec4 tc_Color[];
-out mat4 tc_LightSpacePos0[];
-out mat4 tc_LightSpacePos1[];
-// out float tc_clipspace_z[];
+out vec2 tc_UV[];
 flat out int tc_Visible[];
-flat out int tc_isTriangle[];
-flat out float tc_VertexTypeRounded[];
 flat out int tc_ovm_halfface_id[];
 flat out vec3 tc_center[];
 
@@ -44,12 +40,9 @@ void main()
     tc_Pos[ID]             =             v_Pos[gl_InvocationID];
     tc_Normal[ID]          =          v_Normal[gl_InvocationID];
     tc_Color[ID]           =           v_Color[gl_InvocationID];
-    tc_LightSpacePos0[ID]  =  v_LightSpacePos0[gl_InvocationID];
-    tc_LightSpacePos1[ID]  =  v_LightSpacePos1[gl_InvocationID];
+    tc_UV[ID]              =         v_UV[gl_InvocationID];
     // tc_clipspace_z[ID]     =     v_clipspace_z[gl_InvocationID];
     tc_Visible[ID]         =         v_Visible[gl_InvocationID];
-    tc_isTriangle[ID]      =      v_isTriangle[gl_InvocationID];
-    tc_VertexTypeRounded[ID] =  v_VertexTypeRounded[gl_InvocationID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[gl_InvocationID];
     tc_center[ID]          =          v_center[gl_InvocationID];
 
