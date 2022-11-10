@@ -362,7 +362,7 @@ namespace volumeshOS::Internal
                         if (ImGuiUtil::icon_button(m_slicer_locked ? "icon_locked.png" : "icon_unlocked.png", ImGui::GetFontSize()))
                         {
                             m_slicer_locked = !m_slicer_locked;
-                            mesh.set_slice_lock(m_slicer_locked);
+                            mesh.set_slice_locked(m_slicer_locked);
                         }
                     });
 
@@ -385,10 +385,10 @@ namespace volumeshOS::Internal
                             mesh.set_peel_level(m_slider_peel);
                         }
                         ImGui::SameLine();
-                        auto reverse_peeling = mesh.get_reverse_peeling();
+                        auto reverse_peeling = mesh.is_using_reverse_peeling();
                         if (ImGuiUtil::icon_button(reverse_peeling ? "icon_peel_inner.png" : "icon_peel_outer.png", ImGui::GetFontSize()))
                         {
-                            mesh.set_reverse_peeling(!reverse_peeling);
+                            mesh.use_reverse_peeling(!reverse_peeling);
                         }
                     });
 

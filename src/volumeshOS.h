@@ -9,12 +9,19 @@ namespace volumeshOS
     struct VShape;
     struct VArrow;
 
+    /**
+     *
+     */
     void init();
 
-    // Open volumeshOS context and start rendering
+    /**
+     * Open volumeshOS context and start rendering
+     */
     void open();
 
-    // Close volumeshOS context
+    /**
+     * Close volumeshOS context
+     */
     void close();
 
 
@@ -22,11 +29,15 @@ namespace volumeshOS
 
     /* Callbacks */
 
-    // Define programmer user interface here
+    /**
+     * Define programmer user interface. This function is calles once per frame and can be used to define ImGUI Interface.
+     * @param callback
+     */
     void on_gui_render(const std::function<void()>& callback);
 
     /**
      * Convert Mesh from OpenVolumeMesh into a new VMesh object
+     * @tparam KernelType OVM Kernel
      * @param instance OVM mesh
      * @param name name that is shown in the mesh list
      * @return Vmesh object
@@ -63,8 +74,12 @@ namespace volumeshOS
      * Set given mesh into focus. Some operations only occur on the focused mesh.
      * @param mesh VMesh
      */
-    void set_focused_mesh(const VMesh mesh);
+    void set_focused_mesh(const VMesh& mesh);
 
+    /**
+     * Get given mesh into focus. Some operations only occur on the focused mesh.
+     * @return
+     */
     VMesh get_focused_mesh();
 
     /**
@@ -74,6 +89,11 @@ namespace volumeshOS
      */
     void set_name(const VMesh& mesh, const std::string& name);
 
+    /**
+     * Get name of mesh
+     * @param mesh
+     * @return
+     */
     const std::string& get_name(const VMesh& mesh);
 
 
@@ -89,12 +109,29 @@ namespace volumeshOS
      */
     void set_rendering_mode(RenderingMode mode);
 
+    /**
+    * Get Rendering Mode.
+    * Phong: Rendering using phong shading \n
+    * Flat : Rendering using flat shading \n
+    * Lines: Rendering edges aka wireframe \n
+    * Points: Rendering vertices aka points \n
+     * @return
+     */
     RenderingMode get_rendering_mode();
 
-    // Set Background color
+    /**
+     * Set Sky color
+     * @tparam Vec3T 3D vector type
+     * @param color vector in range [0,1]
+     */
     template<typename Vec3T>
     void set_sky_color(const Vec3T& color);
 
+    /**
+     * Get Sky color
+     * @tparam Vec3T
+     * @return color vector in range [0,1]
+     */
     template<typename Vec3T>
     Vec3T& get_sky_color();
 
@@ -113,6 +150,15 @@ namespace volumeshOS
      */
     void set_selection_mode(SelectionMode mode);
 
+    /**
+     * Get Selection Mode.
+     * OFF: Selection off
+     * VERTEX: Select Vertices
+     * EDGE: Select Edges
+     * FACE: Select Faces
+     * ALL: Select everything at once
+     * @return
+     */
     SelectionMode get_selection_mode();
 
     /**
@@ -191,6 +237,10 @@ namespace volumeshOS
      */
     void set_camera_mode(CameraMode mode);
 
+    /**
+     *
+     * @return
+     */
     CameraMode get_camera_mode();
 
     /**
@@ -201,13 +251,19 @@ namespace volumeshOS
      */
     void set_camera_position(float x, float y, float z);
 
-    /**
-     * Set camera postion in world coordinates.
-     * @param position coordinate vector
-     */
+     /**
+      * Set camera postion in world coordinates.
+      * @tparam Vec3T 3D vector type
+      * @param position coordinate vector
+      */
     template<typename Vec3T>
     void set_camera_position(const Vec3T& position);
 
+    /**
+     * Get camera postion in world coordinates.
+     * @tparam Vec3T 3D vector type
+     * @return
+     */
     template<typename Vec3T>
     Vec3T get_camera_position();
 
@@ -219,13 +275,19 @@ namespace volumeshOS
      */
     void set_camera_target(float x, float y, float z);
 
-    /**
-     * Set camera target in world coordinates.
-     * @param target coordinate vector
-     */
+     /**
+      * Set camera target in world coordinates.
+      * @tparam Vec3T
+      * @param target coordinate vector
+      */
     template<typename Vec3T>
     void set_camera_target(const Vec3T& target);
 
+    /**
+     * Get camera target in world coordinates.
+     * @tparam Vec3T 3D vector type
+     * @return
+     */
     template<typename Vec3T>
     Vec3T get_camera_target();
 
@@ -241,6 +303,10 @@ namespace volumeshOS
      */
     void set_camera_fov(float fov);
 
+    /**
+     * Get camera filed of view
+     * @return value between 1 and 90 (degree).
+     */
     float get_fov();
 
     /* LIGHT */
@@ -268,26 +334,38 @@ namespace volumeshOS
 
     /**
      * Set gamma value for post processing.
-     * @param gamma value
+     * @param gamma value in range [0,1]
      */
     void set_gamma(float gamma);
 
+    /**
+     * Get gamma value for post processing.
+     * @return value in range [0,1]
+     */
     float get_gamma();
 
     /**
      * Set saturation value for post processing.
-     * @param saturation value
+     * @param saturation value in range [0,1]
      */
     void set_saturation(float saturation);
 
+    /**
+     * Get saturation value for post processing.
+     * @return saturation value in range [0,1]
+     */
     float get_saturation();
 
     /**
      * Set contrast value for post processing.
-     * @param contrast value
+     * @param contrast value in range [0,1]
      */
     void set_contrast(float contrast);
 
+    /**
+     * Get contrast value for post processing.
+     * @return value in range [0,1]
+     */
     float get_contrast();
 
 
@@ -299,6 +377,10 @@ namespace volumeshOS
      */
     void use_ground(bool ground);
 
+    /**
+     * True when ground is enabled.
+     * @return is_using_ground
+     */
     bool is_using_ground();
 
     /**
@@ -307,15 +389,25 @@ namespace volumeshOS
      */
     void use_grid(bool grid);
 
+    /**
+     * True when grid is enabled.
+     * @return is_using_grid
+     */
     bool is_using_grid();
 
     /**
      * Set ground color.
+     * @tparam Vec3T 3D vector type
      * @param color vector in range [0,1]
      */
     template<typename Vec3T>
     void set_ground_color(const Vec3T& color);
 
+    /**
+     * Get ground color vector.
+     * @tparam Vec3T 3D vector type
+     * @return color vector in range [0,1]
+     */
     template<typename Vec3T>
     Vec3T get_ground_color();
 
@@ -326,15 +418,24 @@ namespace volumeshOS
     template<typename Vec3T>
     void set_grid_color(const Vec3T& color);
 
+    /**
+     * Get grid color vector.
+     * @tparam Vec3T 3D vector type
+     * @return color vector in range [0,1]
+     */
     template<typename Vec3T>
     Vec3T get_grid_color();
 
     /**
-     * Set ground height.
-     * @param height value in range world coordinates.
+     * Set ground height in world coordinates.
+     * @param height value
      */
     void set_ground_height(float height);
 
+    /**
+     * Get ground height.
+     * @return value
+     */
     float get_gound_height();
 
 
@@ -346,6 +447,10 @@ namespace volumeshOS
      */
     void use_shadows(bool shadows);
 
+    /**
+     * True if shadows are enabled
+     * @return is_using_shadows
+     */
     bool is_using_shadows();
 
 
@@ -357,6 +462,10 @@ namespace volumeshOS
      */
     void use_ambient_occlusion( bool ssao);
 
+    /**
+     * True if ambient occlusion is enabled.
+     * @return
+     */
     bool is_using_ambient_occlusion();
 
     /**
@@ -365,6 +474,10 @@ namespace volumeshOS
     */
     void use_transparency( bool transparency);
 
+    /**
+     * True if transparency is enabled.
+     * @return is_using_transparency
+     */
     bool is_using_transparency();
 
 
@@ -405,8 +518,6 @@ namespace volumeshOS
      */
     void clear(const VMesh& mesh);
 
-
-
     /**
      * Returns the OpenVolumeMesh instance of a mesh.
      * @param mesh mesh to return
@@ -441,6 +552,11 @@ namespace volumeshOS
      */
     void use_backface_culling(const VMesh& mesh, bool culling);
 
+    /**
+     * True if backface culling is enabled for mesh
+     * @param mesh
+     * @return is_using_backface_culling
+     */
     bool is_using_backface_culling(const VMesh& mesh);
 
     /**
@@ -450,6 +566,11 @@ namespace volumeshOS
      */
     void use_two_sided_lighting(const VMesh& mesh, bool ts_lighting);
 
+    /**
+     * True if two sided lighting is enabled for mesh
+     * @param mesh
+     * @return is_using_two_sided_lighting
+     */
     bool is_using_two_sided_lighting(const VMesh& mesh);
 
     /**
@@ -460,10 +581,16 @@ namespace volumeshOS
      */
     void use_base_color(const VMesh& mesh, bool base_color);
 
+    /**
+     * True if base color is used for mesh
+     * @param mesh
+     * @return is_using_base_color
+     */
     bool is_using_base_color(const VMesh& mesh);
 
     /**
      * Set color for all meshes
+     * @tparam Vec4T 4D vector type
      * @param color color vector in range [0,1]
      */
     template<typename Vec4T>
@@ -477,6 +604,12 @@ namespace volumeshOS
     template<typename Vec4T>
     void set_color(const VMesh& mesh, const Vec4T& color);
 
+    /**
+     * Get color of mesh
+     * @tparam Vec4T 4D vector type
+     * @param mesh
+     * @return color vector in range [0,1]
+     */
     template<typename Vec4T>
     Vec4T get_color(const VMesh& mesh);
 
@@ -484,16 +617,24 @@ namespace volumeshOS
      * Set color for one meshes
      * @param mesh
      * @param cell OVM Cell handle
-     * @param color color vector in range [0,1]
+     * @param color vector in range [0,1]
      */
     template<typename Vec4T>
     void set_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, const Vec4T& color);
 
+    /**
+     * Get color of a cell
+     * @tparam Vec4T 4D vector type
+     * @param mesh
+     * @param cell OVM Cell handle
+     * @return color vector in range [0,1]
+     */
     template<typename Vec4T>
     [[nodiscard]] Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
 
     /**
      * Set color for one meshes
+     * @tparam Vec4T 4D vector type
      * @param mesh
      * @param face OVM Face handle
      * @param color color vector in range [0,1]
@@ -503,13 +644,21 @@ namespace volumeshOS
 
     /**
      * Set color for one meshes
+     * @tparam Vec4T 4D vector type
      * @param mesh
      * @param halfface OVM Halfface handle
-     * @param color color vector in range [0,1]
+     * @param color vector in range [0,1]
      */
     template<typename Vec4T>
     void set_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface, const Vec4T& color);
 
+    /**
+     * Get color of a halfface
+     * @tparam Vec4T 4D vector type
+     * @param mesh
+     * @param halfface
+     * @return color vector in range [0,1]
+     */
     template<typename Vec4T>
     Vec4T get_color(const VMesh& mesh, OpenVolumeMesh::HalfFaceHandle halfface);
 
@@ -601,6 +750,13 @@ namespace volumeshOS
      */
     void set_lighting_mode(const VMesh& mesh, LightingMode mode);
 
+    /**
+     * Get Lighting mode of a mesh
+     * @param mesh
+     * PHONG: Phong lighting. Affected by ambient, diffuse, specular term.
+     * PBR: Physically Based Rendering. Affected by metallic and roughness term.
+     * @return
+     */
     LightingMode get_lighting_mode(const VMesh& mesh);
 
 
@@ -611,6 +767,11 @@ namespace volumeshOS
      */
     void set_ambient(const VMesh& mesh, float ambient);
 
+    /**
+     * Get ambient term for Phong Lighting.
+     * @param mesh
+     * @return ambient value in range [0,1]
+     */
     float get_ambient(const VMesh& mesh);
 
     /**
@@ -620,6 +781,11 @@ namespace volumeshOS
      */
     void set_diffuse(const VMesh& mesh, float diffuse);
 
+    /**
+     * Get diffuse term for Phong Lighting.
+     * @param mesh
+     * @return diffuse value in range [0,1]
+     */
     float get_diffuse(const VMesh& mesh);
 
     /**
@@ -629,6 +795,11 @@ namespace volumeshOS
      */
     void set_specular(const VMesh& mesh, float specular);
 
+    /**
+     * Get specular term for Phong Lighting.
+     * @param mesh
+     * @return specular value in range [0,1]
+     */
     float get_specular(const VMesh& mesh);
 
     /**
@@ -638,6 +809,11 @@ namespace volumeshOS
      */
     void set_specular_coefficient(const VMesh& mesh, float coefficient);
 
+    /**
+     * Get specular coefficient for Phong Lighting.
+     * @param mesh
+     * @return coefficient value in range [0,10]
+     */
     float get_specular_coefficient(const VMesh& mesh);
 
     /**
@@ -647,6 +823,11 @@ namespace volumeshOS
      */
     void set_metallic(const VMesh& mesh, float metallic);
 
+    /**
+     * Get metallic term for PBR Lighting.
+     * @param mesh
+     * @return metallic value in range [0,1]
+     */
     float get_metallic(const VMesh& mesh);
 
     /**
@@ -656,49 +837,96 @@ namespace volumeshOS
      */
     void set_roughness(const VMesh& mesh, float roughness);
 
+    /**
+     * Get roughness term for PBR Lighting.
+     * @param mesh
+     * @return roughness value in range [0,1]
+     */
     float get_roughness(const VMesh& mesh);
 
 
     /**
      * Set the position of a mesh in world coordinates.
+     * @param mesh
      * @param x X coordinate
      * @param y Y coordinate
      * @param z Z coordinate
      */
     void set_position(const VMesh& mesh, float x, float y, float z);
 
-    /**
-     * Set position of a mesh in world coordinates.
-     * @param position coordinate vector
-     */
+     /**
+      * Set position of a mesh in world coordinates.
+      * @tparam Vec3T 3D vector type
+      * @param mesh
+      * @param position coordinate vector
+      */
     template<typename Vec3T>
     void set_position(const VMesh& mesh, const Vec3T& position);
 
+    /**
+     * Get position of a mesh in world coordinates.
+     * @tparam Vec3T 3D vector type
+     * @param mesh
+     * @return position coordinate vector
+     */
     template<typename Vec3T>
     [[nodiscard]] Vec3T get_position(const VMesh& mesh);
 
     /**
      * Set scale of a mesh.
+     * @param mesh
      * @param scale
      */
     void set_scale(const VMesh& mesh, float scale);
 
+    /**
+     * Get scale of mesh
+     * @param mesh
+     * @return scale
+     */
     float get_scale(const VMesh& mesh);
 
-    // Set the rotation of a mesh using euler angles
+    /**
+     * Set the rotation of a mesh using euler angles
+     * @param mesh
+     * @param x
+     * @param y
+     * @param z
+     */
     void set_rotation(const VMesh& mesh, float x, float y, float z);
 
-    // Set the rotation of a mesh
+    /**
+     * Set the rotation of a mesh.
+     * @tparam Vec3T 3D vector type
+     * @param mesh
+     * @param rotation vector in range [0,1]
+     */
     template<typename Vec3T>
     void set_rotation(const VMesh& mesh, const Vec3T& rotation);
 
+    /**
+     * Get the rotation of a mesh.
+     * @tparam Vec3T 3D vector type
+     * @param mesh
+     * @return rotation vector in range [0,1]
+     */
     template<typename Vec3T>
     Vec3T get_rotation(const VMesh& mesh);
 
+    /**
+     * Get point transform
+     * @tparam Vec3T 3D vector type
+     * @param mesh
+     * @param point
+     * @return
+     */
     template<typename Vec3T>
     Vec3T get_transformed_point(const VMesh& mesh, const Vec3T& point);
 
-    // Resets the rotation of a mesh
+    /**
+     * Resets the rotation of a mesh.
+     * @param mesh
+     */
     void reset_rotation(const VMesh& mesh);
 
     /**
@@ -708,6 +936,11 @@ namespace volumeshOS
      */
     void set_slice_factor(const VMesh& mesh, float factor);
 
+    /**
+     * Get slice factor
+     * @param mesh
+     * @return value in range [0,1]
+     */
     float get_slice_factor(const VMesh& mesh);
 
 
@@ -718,19 +951,28 @@ namespace volumeshOS
      */
     void set_slice_locked(const VMesh& mesh, bool lock);
 
+    /**
+     * True when slicing is locked.
+     * @param mesh
+     * @return slice_locked
+     */
     bool get_slice_locked(const VMesh& mesh);
 
     /**
      * Set the peel level for a given mesh.
      * @param mesh
-     * @param level Value between 0 (no peel) and the total number of depth layers in the mesh.
+     * @param level value between 0 (no peel) and the total number of depth layers in the mesh.
      *              Float values can be displayed transparent when transparency is active.
      */
     void set_peel_level(const VMesh& mesh, float level);
 
+    /**
+     * Get peel level of a mesh
+     * @param mesh
+     * @return value between 0 (no peel) and the total number of depth layers in the mesh.
+     */
     float get_peel_level(const VMesh& mesh);
 
-    // Returns maximum peel depth. Depends on mesh
     /**
      * Returns maximum peel depth. Depends on mesh.
      * @param mesh
@@ -745,6 +987,11 @@ namespace volumeshOS
      */
     void use_reverse_peeling(const VMesh& mesh, bool reverse);
 
+    /**
+     * True when reverse_peeling is enabled.
+     * @param mesh
+     * @return is_using_reverse_peeling
+     */
     bool is_using_reverse_peeling(const VMesh& mesh);
 
     /**
@@ -754,12 +1001,25 @@ namespace volumeshOS
      */
     void set_cell_rounding(const VMesh& mesh, float rounding);
 
+    /**
+     * Get the rounding factor of a mesh.
+     * @param mesh
+     * @return rounding 0 (no rounding) to 1 (full rounding).
+     */
     float get_cell_rounding(const VMesh& mesh);
 
-    // Set the tessellation level for Bézier meshes (non-Bézier meshes are not affected)
+    /**
+     * Set the tessellation level for Bézier meshes (non-Bézier meshes are not affected)
+     * @param mesh
+     * @param level value in range [0,64]
+     */
     void set_tessellation_level(const VMesh& mesh, int level);
 
-    // Return the tessellation level of a given mesh. (0 for non-Bézier meshes)
+    /**
+     * Get the tessellation level for Bézier meshes (non-Bézier meshes are not affected)
+     * @param mesh
+     * @return level value in range [0,64]
+     */
     int get_tessellation_level(const VMesh& mesh);
 
 
@@ -770,16 +1030,27 @@ namespace volumeshOS
      */
     void set_cell_size(const VMesh& mesh, float size);
 
+    /**
+     * Get the cell size of a given mesh.
+     * @param mesh
+     * @return rounding 0 (infinitely small) to 1 (original size)
+     */
     float get_cell_size(const VMesh& mesh);
 
     /**
-     * Set Cell (in-)visible.
+     * Set Cell (in-)visibility.
      * @param mesh
      * @param cell OVM Cell handle
      * @param visible
      */
     void set_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell, bool visible);
 
+    /**
+     * Get cell (in-)visibility
+     * @param mesh
+     * @param cell
+     * @return visible
+     */
     bool get_visibility(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
 
     /**
@@ -789,6 +1060,11 @@ namespace volumeshOS
      */
     void set_visibility(const VMesh& mesh, bool visible);
 
+    /**
+     * Get mesh (in-)visible.
+     * @param mesh
+     * @return visible
+     */
     bool get_visibility(const VMesh& mesh);
 
     /**
@@ -818,53 +1094,156 @@ namespace volumeshOS
      */
     [[nodiscard]] bool is_valid(const VMesh& mesh);
 
-    // Returns true if the mesh is a Bézier mesh
+    /**
+     * True if the mesh is a Bézier mesh
+     * @param mesh
+     * @return is_bezier
+     */
     [[nodiscard]] bool is_bezier_mesh(const VMesh& mesh);
 
 
     /* Shapes */
 
+    /**
+     * Add shape
+     * @tparam ShapeType VArrow,VBox,VSphere,VCylinder,VCone
+     * @return VShape object
+     */
     template<typename ShapeType>
     [[nodiscard]] ShapeType add_shape();
 
+    /**
+     * Add shape to mesh
+     * @tparam ShapeType VArrow,VBox,VSphere,VCylinder,VCone
+     * @param mesh
+     * @return VShape object
+     */
     template<typename ShapeType>
     [[nodiscard]] ShapeType add_shape(const VMesh& mesh);
 
+    /**
+     * Add shape to cell. This way they share properties with it (like visibility and size).
+     * @tparam ShapeType VArrow,VBox,VSphere,VCylinder,VCone
+     * @param mesh
+     * @param cell OVM cell handle
+     * @return VShape object
+     */
     template<typename ShapeType>
     [[nodiscard]] ShapeType add_shape(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
 
+    /**
+     * Remove shape.
+     * @param shape
+     */
     void remove_shape(const VShape& shape);
 
+    /**
+     * Remove all shapes.
+     */
     void remove_shapes();
 
+    /**
+     * Set the position of this shape in
+     * @param shape
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param z Z coordinate
+     */
     void set_position(const VShape& shape, float x, float y, float z);
 
+    /**
+     * Set the position of this shape
+     * @tparam Vec3T 3D vector type
+     * @param shape
+     * @param position vector
+     */
     template<typename Vec3T>
     void set_position(const VShape& shape, const Vec3T& position);
 
+    /**
+     * Set the orientation of this shape using an axis and an angle. The axis is up (0, 1, 0) by default
+     * @param shape
+     * @param axis_x X component of the rotation axis
+     * @param axis_y Y component of the rotation axis
+     * @param axis_z Z component of the rotation axis
+     * @param angle rotation angle around the given axis in radians
+     */
     void set_direction(const VShape& shape, float axis_x, float axis_y, float axis_z, float angle = 0.0f);
 
+    /**
+     * Set the orientation of this shape using an axis and an angle. The axis is up (0, 1, 0) by default
+     * @param shape
+     * @tparam Vec3T 3D Vector type
+     * @param axis rotation axis
+     * @param angle rotation angle around the given axis in radians
+     */
     template<typename Vec3T>
     void set_direction(const VShape& shape, const Vec3T& axis, float angle = 0.0f);
 
+    /**
+     * Set the scale of this shape for all axis. Default is (1, 1, 1)
+     * @param shape
+     * @param scalar scale value
+     */
     void set_scale(const VShape& shape, float scalar);
 
+    /**
+     * Set the scale of this shape by axis. Default is (1, 1, 1)
+     * @param shape
+     * @param x X scale
+     * @param y Y scale
+     * @param z Z scale
+     */
     void set_scale(const VShape& shape, float x, float y, float z);
 
+    /**
+     * Set the scale of this shape by axis. Default is (1, 1, 1)
+     * @param shape
+     * @tparam Vec3T 3D Vector type
+     * @param scale scale vector
+     */
     template<typename Vec3T>
     void set_scale(const VShape& shape, const Vec3T& scale);
 
+    /**
+     * Set the color of this shape. The default color is white (1, 1, 1, 1)
+     * @param shape
+     * @tparam Vec4T 4D Vector type
+     * @param color vector containing the rgba components
+     */
     template<typename Vec4T>
     void set_color(const VShape& shape, const Vec4T& color);
 
+    /**
+     * Returns the current position of this shape
+     * @param shape
+     * @tparam Vec3T 3D Vector type
+     * @return current position
+     */
     template<typename Vec3T>
     [[nodiscard]] Vec3T get_position(const VShape& shape);
 
+    /**
+     * Returns the current scale of this shape
+     * @param shape
+     * @tparam Vec3T 3D Vector type
+     * @return current scale
+     */
     template<typename Vec3T>
     [[nodiscard]] Vec3T get_scale(const VShape& shape);
 
+    /**
+     * Set the start of the arrow tip in percentage (between 0 and 1). So a height of 0.7 means 30% tip and 70% base
+     * @param shape VArrow object
+     * @param tip_height height of the arrow tip in percentage
+     */
     void set_tip_height(const VArrow& shape, float tip_height);
 
+    /**
+     * Set the width of the arrow base in percentage (default 0.5). So a width of 0.3 means 30% of the tip width
+     * @param shape VArrow object
+     * @param base_width width of the arrow base in percentage
+     */
     void set_base_width(const VArrow& shape, float base_width);
 
 
@@ -873,34 +1252,76 @@ namespace volumeshOS
 
     LightingMode get_shape_lighting_mode();
 
-    // Set the ambient term for the phong lighting model of all shapes
+    /**
+     * Set the ambient term for the phong lighting model of all shapes
+     * @param ambient value in range [0,1]
+     */
     void set_shape_ambient(float ambient);
 
+    /**
+     * Get the ambient term for the phong lighting model of all shapes
+     * @return ambient value in range [0,1]
+     */
     float get_shape_ambient();
 
-    // Set the diffuse term for the phong lighting model of all shapes
+    /**
+     * Set the diffuse term for the phong lighting model of all shapes
+     * @param diffuse value in range [0,1]
+     */
     void set_shape_diffuse(float diffuse);
 
+    /**
+     * Get the diffuse term for the phong lighting model of all shapes
+     * @return diffuse value in range [0,1]
+     */
     float get_shape_diffuse();
 
-    // Set the specular term for the phong lighting model of all shapes
+    /**
+     * Set the specular term for the phong lighting model of all shapes
+     * @param specular value in range [0,1]
+     */
     void set_shape_specular(float specular);
 
+    /**
+     * Get the specular term for the phong lighting model of all shapes
+     * @return specular value in range [0,1]
+     */
     float get_shape_specular();
 
-    // Set the specular coefficient for the phong lighting model of all shapes
+    /**
+     * Set the specular coefficient for the phong lighting model of all shapes
+     * @param coefficient value in range [0,10]
+     */
     void set_shape_specular_coefficient(float coefficient);
 
+    /**
+     * Get the specular coefficient for the phong lighting model of all shapes
+     * @return coefficient value in range [0,10]
+     */
     float get_shape_specular_coefficient();
 
-    // Set the metallic term for the pbr lighting model of all shapes
+    /**
+     * Set the metallic term for the pbr lighting model of all shapes
+     * @param metallic value in range [0,1]
+     */
     void set_shape_metallic(float metallic);
 
+    /**
+     * Get the metallic term for the pbr lighting model of all shapes
+     * @return metallic value in range [0,1]
+     */
     float get_shape_metallic();
 
-    // Set the roughness term for the pbr lighting model of all shapes
+    /**
+     * Set the roughness term for the pbr lighting model of all shapes
+     * @param roughness value in range [0,1]
+     */
     void set_shape_roughness(float roughness);
 
+    /**
+     * Get the roughness term for the pbr lighting model of all shapes
+     * @return roughness value in range [0,1]
+     */
     float get_shape_roughness();
 
 
@@ -916,10 +1337,17 @@ namespace volumeshOS
         bool ground_shadow_only = false;    // if ground and shadows are active, export only the area in shadow
     };
 
-    // Export the current viewport as png
+    /**
+     * Export the current viewport as png
+     * @param options
+     */
     void export_image(const ExportOptions& options = {});
 
-    // Export the current viewport as png to a specified file
+    /**
+     * Export the current viewport as png to a specified file
+     * @param path
+     * @param options
+     */
     void export_image(const std::string& path, const ExportOptions& options = {});
 
 
@@ -957,7 +1385,8 @@ namespace volumeshOS
     /**
      * Returns the current height of the viewport
      * @return
-     */    int get_viewport_height();
+     */
+    int get_viewport_height();
 
 
     /* LOG_WINDOW */
@@ -1026,7 +1455,7 @@ namespace volumeshOS
         /**
          * Set the position of this shape
          *
-         * @tparam Vec3T 3D Vector type
+         * @tparam Vec3T 3D vector type
          * @param position position to be set
          */
         template<typename Vec3T>
@@ -1214,95 +1643,158 @@ namespace volumeshOS
         explicit VMesh(int id = -1) : m_id(id)
         {}
 
-        // Set mesh from ovm instance without generating a new id
+        /**
+         * Set mesh from ovm instance without generating a new id.
+         * @param instance
+         */
         inline void update(OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance) const
         {
             volumeshOS::update(*this, instance);
         }
 
-        // Set mesh from file path without generating a new id
+        /**
+         * Set mesh from file without generating a new id.
+         * @param path file path
+         */
         inline void update(const std::string& path) const
         {
             volumeshOS::update(*this, path);
         }
 
-        // Remove mesh from volumeshOS
+        /**
+         * Remove mesh from volumeshOS.
+         */
         inline void clear() const
         {
             volumeshOS::clear(*this);
         }
 
-        // Returns the OpenVolumeMesh instance of this mesh
+        /**
+         * Returns the OpenVolumeMesh instance of a mesh.
+         * @return ovm instance
+         */
         [[nodiscard]] inline OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* get_ovm() const
         {
             return volumeshOS::get_ovm(*this);
         }
 
-        // Load a configuration file for a mesh
+        /**
+         * Load a configuration file for a mesh. This way settings can be saved across several program executions.
+         * @param path path to config file
+         */
         inline void load_configuration(const std::string& path) const
         {
             volumeshOS::load_configuration(*this, path);
         }
 
-        // Save a configuration file for a mesh
+        /**
+         * Save a configuration file for a mesh. This way settings can be saved across several program executions.
+         * @param path path to config file
+         */
         inline void save_configuration(const std::string& path) const
         {
             volumeshOS::save_configuration(*this, path);
         }
 
+        /**
+         * Enable/Disable backface culling for a mesh. In special cases some faces wants to be seen from behind.
+         * @param culling
+         */
         inline void use_backface_culling(const bool culling) const
         {
             volumeshOS::use_backface_culling(*this, culling);
         }
 
+        /**
+         * True if backface culling is enabled for mesh
+         * @return is_using_backface_culling
+         */
         [[nodiscard]] inline bool is_using_backface_culling() const
         {
             return volumeshOS::is_using_backface_culling(*this);
         }
 
+        /**
+         * True if two sided lighting is enabled for mesh
+         * @return is_using_two_sided_lighting
+         */
         [[nodiscard]] inline bool is_using_two_sided_lighting() const
         {
             return volumeshOS::is_using_two_sided_lighting(*this);
         }
 
+        /**
+         * Enable/Disable two sided lighting for a mesh.
+         * @param mesh
+         * @param ts_lighting
+         */
         inline void use_two_sided_lighting(const bool ts_lighting) const
         {
             volumeshOS::use_two_sided_lighting(*this, ts_lighting);
         }
 
+        /**
+         * True if two sided lighting is enabled for mesh
+         * @return is_using_two_sided_lighting
+         */
         [[nodiscard]] inline bool is_using_base_color() const
         {
             return volumeshOS::is_using_base_color(*this);
         }
 
+        /**
+         * Enable/Disable base color for a mesh.
+         * When enabled the color for the whole mesh can be specified in the GUI. Otherwise ever cell has its own color.
+         * @param base_color
+         */
         inline void use_base_color(bool base_color)const
         {
             volumeshOS::use_base_color(*this, base_color);
         }
 
 
-        // Set color for one mesh (all cells and halffaces)
+        /**
+         * Set color for a meshes
+         * @tparam Vec4T 4D vector type
+         * @param color color vector in range [0,1]
+         */
         template<typename Vec4T>
         inline void set_color(const Vec4T& color) const
         {
             volumeshOS::set_color<Vec4T>(*this, color);
         }
 
-        // Set color for one cell of a mesh
+        /**
+         * Set color for one meshes
+         * @tparam Vec4T 4D vector type
+         * @param cell OVM Cell handle
+         * @param color vector in range [0,1]
+         */
         template<typename Vec4T>
         inline void set_color(OpenVolumeMesh::CellHandle cell, const Vec4T& color) const
         {
             volumeshOS::set_color<Vec4T>(*this, cell, color);
         }
 
-        // Set color for one face (both halffaces) of a mesh
+        /**
+         * Set color for one meshes
+         * @tparam Vec4T 4D vector type
+         * @param face OVM Face handle
+         * @param color color vector in range [0,1]
+         */
         template<typename Vec4T>
         inline void set_color(OpenVolumeMesh::FaceHandle face, const Vec4T& color) const
         {
             volumeshOS::set_color<Vec4T>(*this, face, color);
         }
 
-        // Set color for one halfface of a mesh
+        /**
+         * Set color for one meshes
+         * @tparam Vec4T 4D vector type
+         * @param mesh
+         * @param halfface OVM Halfface handle
+         * @param color vector in range [0,1]
+         */
         template<typename Vec4T>
         inline void set_color(OpenVolumeMesh::HalfFaceHandle halfface, const Vec4T& color) const
         {
@@ -1310,406 +1802,612 @@ namespace volumeshOS
         }
 
 
-        // Returns the color of the mesh
+        /**
+         * Get color of mesh
+         * @tparam Vec4T 4D vector type
+         * @return color vector in range [0,1]
+         */
         template<typename Vec4T>
         [[nodiscard]] inline Vec4T get_color() const
         {
             return volumeshOS::get_color<Vec4T>(*this);
         }
 
-        // Returns the color of a cell from a given mesh
+        /**
+         * Get color of a cell
+         * @tparam Vec4T 4D vector type
+         * @param cell OVM Cell handle
+         * @return color vector in range [0,1]
+         */
         template<typename Vec4T>
         [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::CellHandle cell) const
         {
             return volumeshOS::get_color<Vec4T>(*this, cell);
         }
 
-        // Returns the color of a halfface from a given mesh
+        /**
+         * Get color of a halfface
+         * @tparam Vec4T 4D vector type
+         * @param halfface
+         * @return color vector in range [0,1]
+         */
         template<typename Vec4T>
         [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::HalfFaceHandle halfface) const
         {
             return volumeshOS::get_color<Vec4T>(*this, halfface);
         }
 
-        // Returns the color of an edge from a given mesh
-        template<typename Vec4T>
-        [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::EdgeHandle edge) const
-        {
-            return volumeshOS::get_color<Vec4T>(*this, edge);
-        }
-
-        // Returns the color of a vertex from a given mesh
-        template<typename Vec4T>
-        [[nodiscard]] inline Vec4T get_color(OpenVolumeMesh::VertexHandle vertex) const
-        {
-            return volumeshOS::get_color<Vec4T>(*this, vertex);
-        }
-
-
-        // Select one cell of a mesh
+        /**
+         * Select a Cell. Selected Cells gets highlighted and callbacks are called.
+         * @param cell OVM Cell handle
+         */
         inline void select(OpenVolumeMesh::CellHandle cell) const
         {
             volumeshOS::select(*this, cell);
         }
 
-        // Select one face (both halffaces) of a mesh
+        /**
+         * Select a Face. Selected Faces gets highlighted and callbacks are called.
+         * @param face OVM Face handle
+         */
         inline void select(OpenVolumeMesh::FaceHandle face) const
         {
             volumeshOS::select(*this, face);
         }
 
-        // Select one halfface of a mesh
+        /**
+         * Select a Halfface. Selected Halffaces gets highlighted and callbacks are called.
+         * @param halfface OVM Halfface handle
+         */
         inline void select(OpenVolumeMesh::HalfFaceHandle halfface) const
         {
             volumeshOS::select(*this, halfface);
         }
 
-        // Select one edge of a mesh
+        /**
+         * Select a Edge. Selected Edges gets highlighted and callbacks are called.
+         * @param edge OVM Edge handle
+         */
         inline void select(OpenVolumeMesh::EdgeHandle edge) const
         {
             volumeshOS::select(*this, edge);
         }
 
-        // Select one vertex of a mesh
+        /**
+         * Select a Vertex. Selected Vertices gets highlighted and callbacks are called.
+         * @param vertex OVM Vertex handle
+         */
         inline void select(OpenVolumeMesh::VertexHandle vertex) const
         {
             volumeshOS::select(*this, vertex);
         }
 
 
-        // Deselect one cell of a mesh
+        /**
+         * Deselect a Cell.
+         * @param cell OVM Cell handle
+         */
         inline void deselect(OpenVolumeMesh::CellHandle cell) const
         {
             volumeshOS::deselect(*this, cell);
         }
 
-        // Deselect one face (both halffaces) of a mesh
+        /**
+         * Deselect a Face.
+         * @param face OVM Face handle
+         */
         inline void deselect(OpenVolumeMesh::FaceHandle face) const
         {
             volumeshOS::deselect(*this, face);
         }
 
-        // Deselect one halfface of a mesh
+        /**
+         * Deselect a Halfface.
+         * @param halfface OVM Halfface handle
+         */
         inline void deselect(OpenVolumeMesh::HalfFaceHandle halfface) const
         {
             volumeshOS::deselect(*this, halfface);
         }
 
-        // Deselect one edge of a mesh
+        /**
+         * Deselect a Edge.
+         * @param edge OVM Edge handle
+         */
         inline void deselect(OpenVolumeMesh::EdgeHandle edge) const
         {
             volumeshOS::deselect(*this, edge);
         }
 
-        // Deselect one vertex of a mesh
+        /**
+         * Deselect a Vertex.
+         * @param edge OVM Vertex handle
+         */
         inline void deselect(OpenVolumeMesh::VertexHandle vertex) const
         {
             volumeshOS::deselect(*this, vertex);
         }
 
-        // Deselect all entities of a mesh
+        /**
+         * Deselect every selected entity.
+         * @param mesh
+         */
         inline void reset_selection() const
         {
             volumeshOS::reset_selection(*this);
         }
 
 
-        // Set the ambient term for the phong lighting model of a mesh
+        /**
+         * Set ambient term for Phong Lighting.
+         * @param ambient value in range [0,1]
+         */
         inline void set_ambient(float ambient) const
         {
             volumeshOS::set_ambient(*this, ambient);
         }
 
-        // Returns the ambient term for the phong lighting model of a mesh
+        /**
+         * Get ambient term for Phong Lighting.
+         * @return ambient value in range [0,1]
+         */
         [[nodiscard]] inline float get_ambient() const
         {
             return volumeshOS::get_ambient(*this);
         }
 
-        // Set the diffuse term for the phong lighting model of a mesh
+        /**
+         * Set diffuse term for Phong Lighting.
+         * @param diffuse value in range [0,1]
+         */
         inline void set_diffuse(float diffuse) const
         {
             volumeshOS::set_diffuse(*this, diffuse);
         }
 
-        // Returns the diffuse term for the phong lighting model of a mesh
+        /**
+         * Get diffuse term for Phong Lighting.
+         * @return diffuse value in range [0,1]
+         */
         [[nodiscard]] inline float get_diffuse() const
         {
             return volumeshOS::get_diffuse(*this);
         }
 
-        // Set the specular term for the phong lighting model of a mesh
+        /**
+         * Set specular term for Phong Lighting.
+         * @param specular value in range [0,1]
+         */
         inline void set_specular(float specular) const
         {
             volumeshOS::set_specular(*this, specular);
         }
 
-        // Returns the specular term for the phong lighting model of a mesh
+        /**
+         * Get specular term for Phong Lighting.
+         * @return specular value in range [0,1]
+         */
         [[nodiscard]] inline float get_specular() const
         {
             return volumeshOS::get_specular(*this);
         }
 
-        // Set the specular coefficient for the phong lighting model of a mesh
+        /**
+         * Set specular coefficient for Phong Lighting.
+         * @param coefficient value in range [0,10]
+         */
         inline void set_specular_coefficient(float coefficient) const
         {
             volumeshOS::set_specular_coefficient(*this, coefficient);
         }
 
-        // Returns the specular coefficient for the phong lighting model of a mesh
+        /**
+         * Get specular coefficient for Phong Lighting.
+         * @return coefficient value in range [0,10]
+         */
         [[nodiscard]] inline float get_specular_coefficient() const
         {
             return volumeshOS::get_specular_coefficient(*this);
         }
 
-        // Set parameters for the phong lighting model of a mesh
+        /**
+         * Set Lighting mode for a mesh.
+         * @param mode
+         * PHONG: Phong lighting. Affected by ambient, diffuse, specular term.
+         * PBR: Physically Based Rendering. Affected by metallic and roughness term.
+         */
         inline void set_lighting_mode(LightingMode mode) const
         {
             volumeshOS::set_lighting_mode(*this, mode);
         }
 
+        /**
+         * Get Lighting mode of a mesh
+         * PHONG: Phong lighting. Affected by ambient, diffuse, specular term.
+         * PBR: Physically Based Rendering. Affected by metallic and roughness term.
+         * @return
+         */
         [[nodiscard]] inline LightingMode get_lighting_mode() const
         {
             return volumeshOS::get_lighting_mode(*this);
         }
 
+        /**
+         * Set metallic term for PBR Lighting.
+         * @param metallic value in range [0,1]
+         */
         inline void set_metallic(float metallic) const
         {
             volumeshOS::set_metallic(*this, metallic);
         }
 
+        /**
+         * Get metallic term for PBR Lighting.
+         * @return metallic value in range [0,1]
+         */
         [[nodiscard]] inline float get_metallic() const
         {
             return volumeshOS::get_metallic(*this);
         }
 
+        /**
+         * Set roughness term for PBR Lighting.
+         * @param roughness value in range [0,1]
+         */
         inline void set_roughness(float roughness) const
         {
             volumeshOS::set_roughness(*this, roughness);
         }
 
-        // Set the position of a mesh
-        inline void set_position(float x, float y, float z) const
-        {
-            volumeshOS::set_position(*this, x, y, z);
-        }
-
+        /**
+         * Get roughness term for PBR Lighting.
+         * @param mesh
+         * @return roughness value in range [0,1]
+         */
         [[nodiscard]] inline float get_roughness() const
         {
             return volumeshOS::get_roughness(*this);
         }
 
-        // Set the position of a mesh
+        /**
+         * Set the position of a mesh in world coordinates.
+         * @param x X coordinate
+         * @param y Y coordinate
+         * @param z Z coordinate
+         */
+        inline void set_position(float x, float y, float z) const
+        {
+            volumeshOS::set_position(*this, x, y, z);
+        }
+
+
+        /**
+         * Set position of a mesh in world coordinates.
+         * @tparam Vec3T 3D vector type
+         * @param position coordinate vector
+         */
         template<typename Vec3T>
         inline void set_position(const Vec3T& position) const
         {
             volumeshOS::set_position<Vec3T>(*this, position);
         }
 
-        // Returns the position of a mesh
+        /**
+         * Get position of a mesh in world coordinates.
+         * @tparam Vec3T 3D vector type
+         * @return position coordinate vector
+         */
         template<typename Vec3T>
         [[nodiscard]] inline Vec3T get_position() const
         {
             return volumeshOS::get_position<Vec3T>(*this);
         }
 
-        // Set the scale of a mesh
+        /**
+         * Set scale of a mesh.
+         * @param scale
+         */
         inline void set_scale(float scale) const
         {
             volumeshOS::set_scale(*this, scale);
         }
 
-        // Returns the scale of a mesh
+        /**
+         * Get scale of mesh
+         * @param mesh
+         * @return scale
+         */
         [[nodiscard]] inline float get_scale() const
         {
             return volumeshOS::get_scale(*this);
         }
 
-        // Set the rotation of a mesh using euler angles
+        /**
+         * Set the rotation of a mesh using euler angles
+         * @param x
+         * @param y
+         * @param z
+         */
         inline void set_rotation(float x, float y, float z) const
         {
             volumeshOS::set_rotation(*this, x, y, z);
         }
 
-        // Set the rotation of a mesh using euler angles
+        /**
+         * Set the rotation of a mesh.
+         * @tparam Vec3T 3D vector type
+         * @param rotation vector in range [0,1]
+         */
         template<typename Vec3T>
         inline void set_rotation(const Vec3T& rotation) const
         {
             volumeshOS::set_rotation<Vec3T>(*this, rotation);
         }
 
-        // Returns the rotation of a mesh using euler angles
+        /**
+         * Get the rotation of a mesh.
+         * @tparam Vec3T 3D vector type
+         * @return rotation vector in range [0,1]
+         */
         template<typename Vec3T>
         [[nodiscard]] inline Vec3T get_rotation() const
         {
             return volumeshOS::get_rotation<Vec3T>(*this);
         }
 
-        // Returns the rotation of a mesh using euler angles
+        /**
+         * Get point transform
+         * @tparam Vec3T 3D vector type
+         * @param point
+         * @return
+         */
         template<typename Vec3T>
         [[nodiscard]] inline Vec3T get_transformed_point(const Vec3T& point) const
         {
             return volumeshOS::get_transformed_point<Vec3T>(*this, point);
         }
 
+        /**
+         * Resets the rotation of a mesh.
+         */
         inline void reset_rotation() const
         {
             volumeshOS::reset_rotation(*this);
         }
 
-        // Set the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
+        /**
+         * Set scale of a mesh.
+         * @param factor value in range [0,1]
+         */
         inline void set_slice_factor(float factor) const
         {
             volumeshOS::set_slice_factor(*this, factor);
         }
 
-        // Returns the slice factor for a mesh. 0 (no slicing) to 1 (full slicing of the mesh)
+        /**
+         * Get slice factor
+         * @return value in range [0,1]
+         */
         [[nodiscard]] inline float get_slice_factor() const
         {
             return volumeshOS::get_slice_factor(*this);
         }
 
-        // Lock the direction of the slice plane
-        inline void set_slice_lock(bool lock) const
+        /**
+         * Lock the direction of the slice plane. Aligned by camera view direction.
+         * @param lock
+         */
+        inline void set_slice_locked(bool lock) const
         {
             volumeshOS::set_slice_locked(*this, lock);
         }
 
-        // Returns the lock direction of the slice plane
+        /**
+         * True when slicing is locked.
+         * @return slice_locked
+         */
         [[nodiscard]] inline bool get_slice_lock() const
         {
             return volumeshOS::get_slice_locked(*this);
         }
 
-        // Set the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
+        /**
+         * Set the peel level for a given mesh.
+         * @param level value between 0 (no peel) and the total number of depth layers in the mesh.
+         *              Float values can be displayed transparent when transparency is active.
+         */
         inline void set_peel_level(float level) const
         {
             volumeshOS::set_peel_level(*this, level);
         }
 
-        // Returns the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
+        /**
+         * Get peel level of a mesh
+         * @return value between 0 (no peel) and the total number of depth layers in the mesh.
+         */
         [[nodiscard]] inline float get_peel_level() const
         {
             return volumeshOS::get_peel_level(*this);
         }
 
-        // Set the peel level for a given mesh. 0 (no peel) up to the total number of depth layers in the mesh
-        inline void set_reverse_peeling(bool reverse) const
+        /**
+         * Enable/Disable reverse peeling for a mesh. Inner layers gets peeled first.
+         * @param reverse
+         */
+        inline void use_reverse_peeling(bool reverse) const
         {
             volumeshOS::use_reverse_peeling(*this, reverse);
         }
 
-        // Returns if reverse peeling is active
-        [[nodiscard]] inline bool get_reverse_peeling() const
+        /**
+         * Returns maximum peel depth. Depends on mesh.
+         * @return maximum peel depth
+         */
+        [[nodiscard]] inline bool is_using_reverse_peeling() const
         {
             return volumeshOS::is_using_reverse_peeling(*this);
         }
 
-        // Returns the number of cell depth layers of the mesh
+        /**
+         * Returns maximum peel depth. Depends on mesh.
+         * @return maximum peel depth
+         */
         [[nodiscard]] inline int get_max_peel_depth() const
         {
             return volumeshOS::get_max_peel_depth(*this);
         }
 
 
-        // Set the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
+        /**
+         * Set the rounding factor for each cell of a mesh.
+         * @param rounding 0 (no rounding) to 1 (full rounding).
+         */
         inline void set_cell_rounding(float rounding) const
         {
             volumeshOS::set_cell_rounding(*this, rounding);
         }
 
-        // Returns the rounding factor for each cell of a mesh. 0 (no rounding) to 1 (full rounding)
+        /**
+         * Get the rounding factor of a mesh.
+         * @return rounding 0 (no rounding) to 1 (full rounding).
+         */
         [[nodiscard]] inline float get_cell_rounding() const
         {
             return volumeshOS::get_cell_rounding(*this);
         }
 
-        // Set the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
-        inline void set_cell_size(float size) const
-        {
-            volumeshOS::set_cell_size(*this, size);
-        }
-
-        // Returns the tessellation level of a given mesh (0 for non-Bézier meshes)
+        /**
+         * Get the tessellation level for Bézier meshes (non-Bézier meshes are not affected)
+         * @return level value in range [0,64]
+         */
         [[nodiscard]] inline int get_tessellation_level() const
         {
             return volumeshOS::get_tessellation_level(*this);
         }
 
-        // Set the tessellation level of a given mesh. (non-Bézier meshes are not affected)
+        /**
+         * Set the tessellation level for Bézier meshes (non-Bézier meshes are not affected)
+         * @param level value in range [0,64]
+         */
         inline void set_tessellation_level(int level) const
         {
             volumeshOS::set_tessellation_level(*this, level);
         }
 
-        // Returns the cell size of a given mesh. 0 (infinitely small) to 1 (original size)
+        /**
+         * Set the cell size of a given mesh.
+         * @param rounding 0 (infinitely small) to 1 (original size).
+         */
+        inline void set_cell_size(float size) const
+        {
+            volumeshOS::set_cell_size(*this, size);
+        }
+
+        /**
+         * Get the cell size of a given mesh.
+         * @return rounding 0 (infinitely small) to 1 (original size)
+         */
         [[nodiscard]] inline float get_cell_size() const
         {
             return volumeshOS::get_cell_size(*this);
         }
 
-        // Set currently active mesh
+        /**
+         * Get given mesh into focus. Some operations only occur on the focused mesh.
+         * @return
+         */
         inline void set_focused_mesh() const
         {
             volumeshOS::set_focused_mesh(*this);
         }
 
-        // Set the cell visibility of a mesh
+        /**
+         * Set Cell (in-)visibility.
+         * @param cell OVM Cell handle
+         * @param visible
+         */
         inline void set_visibility(OpenVolumeMesh::CellHandle cell, bool visible) const
         {
             volumeshOS::set_visibility(*this, cell, visible);
         }
 
-        // Returns the visibility of a cell
+        /**
+         * Get cell (in-)visibility
+         * @param cell
+         * @return visible
+         */
         [[nodiscard]] inline bool get_visibility(OpenVolumeMesh::CellHandle cell) const
         {
             return volumeshOS::get_visibility(*this, cell);
         }
 
-        // Set the visibility of a mesh
+        /**
+         * Set mesh (in-)visible.
+         * @param visible
+         */
         inline void set_visibility(bool visible) const
         {
             volumeshOS::set_visibility(*this, visible);
         }
 
-        // Returns the visibility of the mesh
+        /**
+         * Get mesh (in-)visible.
+         * @return visible
+         */
         [[nodiscard]] inline bool get_visibility() const
         {
             return volumeshOS::get_visibility(*this);
         }
 
-
-        // Reset the visibility so that all cells are visible
+        /**
+         * Set all cells visible.
+         */
         inline void reset_visibility() const
         {
             volumeshOS::reset_visibility(*this);
         }
 
-        // Isolate a single cell of a mesh, making it the only visible cell
+        /**
+         * Isolate a single cell of a mesh, making it the only visible cell.
+         * @param cell OVM Cell handle
+         */
         inline void isolate(OpenVolumeMesh::CellHandle cell) const
         {
             volumeshOS::isolate(*this, cell);
         }
 
-        // Hide a cell of a mesh
+        /**
+         * Dig a single cell of a mesh, making it invisible.
+         * @param cell OVM Cell handle
+         */
         inline void dig(OpenVolumeMesh::CellHandle cell) const
         {
             volumeshOS::dig(*this, cell);
         }
 
-        // Set the name of a mesh
+        /**
+         * Set name for mesh
+         * @param name name string
+         */
         inline void set_name(const std::string& name) const
         {
             volumeshOS::set_name(*this, name);
         }
 
-        // Returns the name of the mesh
+        /**
+         * Get name for mesh
+         * @param name name string
+         */
         [[nodiscard]] inline const std::string& get_name() const
         {
             return volumeshOS::get_name(*this);
         }
 
-
+        /**
+         * Add shape to mesh
+         * @tparam ShapeType VArrow,VBox,VSphere,VCylinder,VCone
+         * @return VShape object
+         */
         template<typename ShapeType>
         [[nodiscard]] inline ShapeType add_shape() const
         {
@@ -1717,6 +2415,12 @@ namespace volumeshOS
             return volumeshOS::add_shape<ShapeType>(*this);
         }
 
+        /**
+         * Add shape to cell. This way they share properties with it (like visibility and size).
+         * @tparam ShapeType VArrow,VBox,VSphere,VCylinder,VCone
+         * @param cell OVM cell handle
+         * @return VShape object
+         */
         template<typename ShapeType>
         [[nodiscard]] inline ShapeType add_shape(OpenVolumeMesh::CellHandle cell) const
         {
@@ -1725,19 +2429,28 @@ namespace volumeshOS
         }
 
 
-        // Returns true if the mesh is a valid handle
+        /**
+         * Returns true if the mesh is a valid handle.
+         * @return validity of VMesh
+         */
         [[nodiscard]] inline bool is_valid() const
         {
             return volumeshOS::is_valid(*this);
         }
 
-        // Return true if the mesh is bezier mesh
+        /**
+         * True if the mesh is a Bézier mesh
+         * @return is_bezier
+         */
         [[nodiscard]] inline bool is_bezier_mesh() const
         {
             return volumeshOS::is_bezier_mesh(*this);
         }
 
-        // Returns the internal volumeshOS id of this mesh
+        /**
+         * Returns the internal volumeshOS id of this mesh
+         * @return internal id
+         */
         [[nodiscard]] int get_id() const
         {
             return m_id;

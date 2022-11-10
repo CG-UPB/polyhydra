@@ -152,7 +152,7 @@ void test_functionality(volumeshOS::VMesh mesh)
     mesh.set_scale(1.2f);
 
     mesh.set_slice_factor(0.2f);
-    mesh.set_slice_lock(true);
+    mesh.set_slice_locked(true);
 
     mesh.set_cell_rounding(0.0f);
     mesh.set_cell_size(0.5f);
