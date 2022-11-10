@@ -7,7 +7,6 @@ const int MAX_CASCADE_LEVEL = 8;
 in vec3 tc_Pos[];
 in vec3 tc_Normal[];
 in vec4 tc_Color[];
-in vec2 tc_UV[];
 // in float tc_clipspace_z[];
 flat in int tc_Visible[];
 flat in int tc_ovm_halfface_id[];
@@ -165,8 +164,7 @@ void main()
         v_normal      = tc_Normal[0]         *x + tc_Normal[1]         *y + tc_Normal[2]         *z;
 
     }
-    v_uv = tc_UV[0] * x + tc_UV[1] * y + tc_UV[2] * z;
-    // in any case use the values of vertex shader for these values 
+    // in any case use the values of vertex shader for these values
     v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
     // // v_clipspace_z     = tc_clipspace_z[0]    *x + tc_clipspace_z[1]    *y + tc_clipspace_z[2]    *z;
     v_visible         = tc_Visible[1]        ; // flat

@@ -17,7 +17,6 @@ flat in vec3 v_center[];
 out vec3 tc_Pos[];
 out vec3 tc_Normal[];
 out vec4 tc_Color[];
-out vec2 tc_UV[];
 flat out int tc_Visible[];
 flat out int tc_ovm_halfface_id[];
 flat out vec3 tc_center[];
@@ -40,7 +39,6 @@ void main()
     tc_Pos[ID]             =             v_Pos[gl_InvocationID];
     tc_Normal[ID]          =          v_Normal[gl_InvocationID];
     tc_Color[ID]           =           v_Color[gl_InvocationID];
-    tc_UV[ID]              =         v_UV[gl_InvocationID];
     // tc_clipspace_z[ID]     =     v_clipspace_z[gl_InvocationID];
     tc_Visible[ID]         =         v_Visible[gl_InvocationID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[gl_InvocationID];
