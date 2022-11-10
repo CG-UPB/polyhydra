@@ -5,10 +5,8 @@
 const int MAX_CASCADE_LEVEL = 8;
 
 in vec3 v_pos;
-in vec4 v_color;
 in vec3 v_normal;
 in vec2 v_uv;
-in float v_clipspace_z;
 
 uniform bool u_visible;
 uniform bool u_solid;
@@ -265,6 +263,8 @@ float linearize_depth(float depth)
 
 void main()
 {
+    FragColor = vec4(1.0, 0.4, 0.1, 1.0);
+
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
     if(!u_visible || !(u_solid || u_grid))
     {
