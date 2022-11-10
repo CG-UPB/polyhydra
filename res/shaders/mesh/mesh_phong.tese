@@ -16,27 +16,33 @@ flat in float tc_VertexTypeRounded[];
 flat in int tc_ovm_halfface_id[];
 flat in vec3 tc_center[];
 
-out vec3 v_Pos;
-out vec3 v_Normal;
-out vec4 v_Color;
+out vec3 v_pos;
+out vec3 v_normal;
+out vec4 v_color;
 out mat4 v_LightSpacePos0;
 out mat4 v_LightSpacePos1;
 // out float v_clipspace_z;
-flat out int v_Visible;
-flat out int v_isTriangle;
-flat out float v_VertexTypeRounded;
-flat out int v_tesInnerTri;
+flat out int v_visible;
+//flat out int v_isTriangle;
+//flat out float v_VertexTypeRounded;
+flat out int v_tes_inner_tri;
+
+//out vec3 v_pos;
+//out vec3 v_normal;
+//out vec4 v_color;
+//out vec4 v_pos_ls[MAX_CASCADE_LEVEL];
+//flat out int v_visible;
+//out float v_clipspace_z;
+//flat out int v_tes_inner_tri;
 
 // necessary for calculating bezier mesh face normals
 uniform mat4 u_transform;
+uniform mat4 u_view;
+uniform mat4 u_projection;
 uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_transform;
 uniform float u_cell_size;
-// uniform mat4 u_view;
-// uniform vec3 u_cam_pos;
-
-// uniform bool u_draw_wireframe;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
@@ -127,23 +133,26 @@ void main()
         vec3 a = control_points[cp_2d_index_to_1d(0, 0, 1)];
         vec3 b = control_points[cp_2d_index_to_1d(0, 1, 1)];
         vec3 c = control_points[cp_2d_index_to_1d(1, 0, 1)];
-        v_Normal = mat3(transpose(inverse(u_transform))) * cross(c - a, b - a);
+        v_normal = mat3(transpose(inverse(u_transform))) * cross(c - a, b - a);
 
         // Obtain the final position by doing the last step of linear interpolation
         // of the de casteljau algorithm.
-        v_Pos  = control_points[cp_2d_index_to_1d(0, 0, 1)]*x;
-        v_Pos += control_points[cp_2d_index_to_1d(1, 0, 1)]*y;
-        v_Pos += control_points[cp_2d_index_to_1d(0, 1, 1)]*z;
+        v_pos  = control_points[cp_2d_index_to_1d(0, 0, 1)]*x;
+        v_pos += control_points[cp_2d_index_to_1d(1, 0, 1)]*y;
+        v_pos += control_points[cp_2d_index_to_1d(0, 1, 1)]*z;
         
         // Perform Cell sizing.
-        vec3 pos = tc_center[0] + (v_Pos - tc_center[0]) * u_cell_size;
+        vec3 pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
         
-        v_Pos = vec3(u_transform * vec4(pos, 1.0));
 
+        v_pos = (u_view * u_transform * vec4(v_pos, 1.0)).xyz;
+        gl_Position = u_projection * vec4(v_pos, 1.0);
+
+        //v_pos = vec3(u_transform * vec4(pos, 1.0));
 
         // Do not render inner tessellated triangled in wireframe mode.
         // For a inner triangle no barycentric coordinate is 0.
-        v_tesInnerTri = int(ceil(min(min(x, y), z)));
+        v_tes_inner_tri = int(ceil(min(min(x, y), z)));
     
         // Casced Shaowmap for Bézier meshes.
         // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
@@ -166,17 +175,19 @@ void main()
     }
     else
     {
-        v_Pos         = tc_Pos[0]            *x + tc_Pos[1]            *y + tc_Pos[2]            *z;
-        v_Normal      = tc_Normal[0]         *x + tc_Normal[1]         *y + tc_Normal[2]         *z;
-        v_tesInnerTri = 0;
+        v_pos         = tc_Pos[0]            *x + tc_Pos[1]            *y + tc_Pos[2]            *z;
+        v_pos = (vec4(v_pos, 1.0)).xyz;
+        gl_Position = u_projection * u_view  * vec4(v_pos, 1.0);
+        v_normal      = tc_Normal[0]         *x + tc_Normal[1]         *y + tc_Normal[2]         *z;
+        v_tes_inner_tri = 0;
         v_LightSpacePos0  = tc_LightSpacePos0[0] *x + tc_LightSpacePos0[1] *y + tc_LightSpacePos0[2] *z;
         v_LightSpacePos1  = tc_LightSpacePos1[0] *x + tc_LightSpacePos1[1] *y + tc_LightSpacePos1[2] *z;
     }
 
     // in any case use the values of vertex shader for these values 
-    v_Color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
+    v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
     // // v_clipspace_z     = tc_clipspace_z[0]    *x + tc_clipspace_z[1]    *y + tc_clipspace_z[2]    *z;
-    v_Visible         = tc_Visible[1]        ; // flat
-    v_isTriangle      = tc_isTriangle[1]     ; // flat
-    v_VertexTypeRounded=tc_VertexTypeRounded[0] * x + tc_VertexTypeRounded[1] * y + tc_VertexTypeRounded[2] * z;
+    v_visible         = tc_Visible[1]        ; // flat
+ //   v_isTriangle      = tc_isTriangle[1]     ; // flat
+//    v_VertexTypeRounded=tc_VertexTypeRounded[0] * x + tc_VertexTypeRounded[1] * y + tc_VertexTypeRounded[2] * z;
 }

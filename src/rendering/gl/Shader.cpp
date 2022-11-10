@@ -74,24 +74,24 @@ namespace volumeshOS::Internal
 
         // setup geometry shader, if it exists
         uint32_t geometryID = -1;
-        if (!geometryPath.empty())
-        {
-            std::string geometrySource = get_shader_source(geometryPath);
-
-            geometryID = glCreateShader(GL_GEOMETRY_SHADER);
-
-            const GLchar* geomBuf = geometrySource.c_str();
-            glShaderSource(geometryID, 1, &geomBuf, nullptr);
-            glCompileShader(geometryID);
-            glGetShaderiv(geometryID, GL_COMPILE_STATUS, &success);
-            if (!success)
-            {
-                glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
-                std::cout << "Error while compiling " << geometryPath << " -> " << infoLog << std::endl;
-            }
-
-            glAttachShader(m_shaderID, geometryID);
-        }
+//        if (!geometryPath.empty())
+//        {
+//            std::string geometrySource = get_shader_source(geometryPath);
+//
+//            geometryID = glCreateShader(GL_GEOMETRY_SHADER);
+//
+//            const GLchar* geomBuf = geometrySource.c_str();
+//            glShaderSource(geometryID, 1, &geomBuf, nullptr);
+//            glCompileShader(geometryID);
+//            glGetShaderiv(geometryID, GL_COMPILE_STATUS, &success);
+//            if (!success)
+//            {
+//                glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
+//                std::cout << "Error while compiling " << geometryPath << " -> " << infoLog << std::endl;
+//            }
+//
+//            glAttachShader(m_shaderID, geometryID);
+//        }
 
         // setup tessellation control and evaluation shader, if they exists
         unsigned int tessellationControlID = -1;
@@ -149,10 +149,10 @@ namespace volumeshOS::Internal
         glDeleteShader(vertexID);
         glDeleteShader(fragmentID);
 
-        if (geometryID > 0)
-        {
-            glDeleteShader(geometryID);
-        }
+//        if (geometryID > 0)
+//        {
+//            glDeleteShader(geometryID);
+//        }
         if (tessellationControlID > 0) 
         {
             glDeleteShader(tessellationControlID);

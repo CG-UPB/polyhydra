@@ -388,6 +388,7 @@ float get_shadow(vec3 normal, vec3 light_dir)
 
 void main()
 {
+
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
     if (u_draw_wireframe)
     {

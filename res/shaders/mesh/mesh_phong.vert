@@ -198,4 +198,5 @@ void main()
         v_Color = vec4(mix(v_Color.rgb, hover_color, 0.3), 1.0) + vec4(hover_color * hover_strength, 0.0);
         v_Color.a = alpha;
     }
+
 }

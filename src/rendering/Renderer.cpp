@@ -150,14 +150,10 @@ namespace volumeshOS::Internal
                 passes.ground_pass->render(*this);
             }
 
-
             passes.mesh_pass->render(*this);
-
 
             FrameBufferObject::copy(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
-
-
 
 
             // Render transparent objects
