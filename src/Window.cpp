@@ -130,7 +130,7 @@ namespace volumeshOS::Internal
             return;
         }
 
-        glEnable(GL_MULTISAMPLE);
+        //glEnable(GL_MULTISAMPLE);
     }
 
     void Window::init_imgui()

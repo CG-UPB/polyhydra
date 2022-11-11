@@ -1,5 +1,6 @@
 
 #include "volumeshOS.h"
+#include "OpenVolumeMesh/Mesh/TetrahedralMesh.hh"
 #include <random>
 
 void test_functionality(volumeshOS::VMesh mesh);
@@ -128,10 +129,21 @@ int main(int argc, char* argv[])
 
     if (argc > 1)
     {
-        auto mesh = load(argv[1]);
+        //auto mesh = load(argv[1]);
         //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     }
-    
+    else
+    {
+        OpenVolumeMesh::GeometricTetrahedralMeshV3d myMesh;
+        std::vector<OpenVolumeMesh::VertexHandle> vertices;
+        vertices.push_back(myMesh.add_vertex(OpenVolumeMesh::Vec3d(1,0,0)));
+        vertices.push_back(myMesh.add_vertex(OpenVolumeMesh::Vec3d(0,1,0)));
+        vertices.push_back(myMesh.add_vertex(OpenVolumeMesh::Vec3d(0,0,1)));
+        vertices.push_back(myMesh.add_vertex(OpenVolumeMesh::Vec3d(1,0,1)));
+        myMesh.add_cell(vertices);
+        auto mesh = load(&myMesh);
+    }
+
     set_camera_mode(CameraMode::ORBIT);
 
     //test_functionality(mesh);
