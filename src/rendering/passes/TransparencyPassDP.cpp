@@ -215,7 +215,7 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_float("u_t_min", m_min);
         m_transparency_shader->set_uniform_float("u_t_max", m_max);
         // Do not use rounding on Bézier meshes.
-        m_transparency_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
+        m_transparency_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
         m_transparency_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
         m_transparency_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
         m_transparency_shader->set_uniform_int("u_viewport_width", renderer.buffers.target_framebuffer->get_width());
@@ -255,7 +255,7 @@ namespace volumeshOS::Internal
         }
 
         auto vao = mesh->get_vao();
-        if (mesh->get_data().rounding_active && !is_bezier_mesh)
+        if (mesh->get_data().rounding_size > 0.0f && !is_bezier_mesh)
         {
             vao = mesh->get_mvb()->get_vao_rounded();
         }

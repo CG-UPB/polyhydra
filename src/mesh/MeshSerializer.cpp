@@ -64,7 +64,6 @@ namespace volumeshOS::Internal
         };
         out["cell_size"] = data.cell_size;
         out["slice_locked"] = data.slice_locked;
-        out["rounding_active"] = data.rounding_active;
         out["rounding_size"] = data.rounding_size;
 
         out["position"] = {
@@ -132,7 +131,6 @@ namespace volumeshOS::Internal
         mesh.just_locked = false;
         data.cell_size = in["cell_size"];
         data.slice_locked = in["slice_locked"];
-        data.rounding_active = in["rounding_active"];
         data.rounding_size = in["rounding_size"];
         data.visible = in["visible"];
 

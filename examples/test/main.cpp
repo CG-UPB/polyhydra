@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 
     if (argc > 1)
     {
-        auto mesh = load(argv[1]);
+        //auto mesh = load(argv[1]);
         //mesh.set_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     }
     

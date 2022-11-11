@@ -53,7 +53,7 @@ namespace volumeshOS::Internal
             m_shader->set_uniform_vec3f("u_max", max);
             m_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
             m_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            m_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_active);
+            m_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_size > 0.0f);
             m_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
@@ -63,7 +63,7 @@ namespace volumeshOS::Internal
             m_shader->set_uniform_vec4f("u_outline_color", AppState::settings.outline.color);
 
             auto vao = mesh->get_vao();
-            if (mesh->get_data().rounding_active)
+            if (mesh->get_data().rounding_size > 0.0f)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }

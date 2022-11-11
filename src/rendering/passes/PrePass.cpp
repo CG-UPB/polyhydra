@@ -71,7 +71,7 @@ namespace volumeshOS::Internal
             shader.set_uniform_vec3f("u_max", max);
             shader.set_uniform_vec3f("u_slice_direction", slice_direction);
             shader.set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            shader.set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
+            shader.set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
             shader.set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             shader.set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
@@ -89,7 +89,7 @@ namespace volumeshOS::Internal
             }
 
             auto vao = mesh->get_vao();
-            if (mesh->get_data().rounding_active && !is_bezier_mesh)
+            if (mesh->get_data().rounding_size > 0.0f && !is_bezier_mesh)
             {
                 vao = mesh->get_mvb()->get_vao_rounded();
             }

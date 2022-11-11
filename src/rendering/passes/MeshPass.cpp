@@ -94,7 +94,7 @@ namespace volumeshOS::Internal
 
 
             // Do not use rounding on Bézier meshes.
-            m_mesh_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_active);
+            m_mesh_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);
             m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
@@ -172,7 +172,7 @@ namespace volumeshOS::Internal
             else
             {
                 auto vao = mesh->get_vao();
-                if (mesh->get_data().rounding_active && !is_bezier_mesh)
+                if (mesh->get_data().rounding_size > 0.0 && !is_bezier_mesh)
                 {
                     vao = mesh->get_mvb()->get_vao_rounded();
                 }
