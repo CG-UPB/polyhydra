@@ -66,6 +66,7 @@ namespace volumeshOS::Internal
             {
                 m_mesh_list.erase(it);
                 m_total_meshes--;
+                return;
             }
             else
             {
@@ -162,7 +163,15 @@ namespace volumeshOS::Internal
     void MeshList::set_scale(MeshID id, float scale)
     {
         auto f = [scale](const std::shared_ptr<MeshObject>& mesh) -> void{
-            mesh->scale(glm::vec3(scale));
+            if(scale < 0.0f)
+            {
+                mesh->scale(glm::vec3(0.0f));
+            }
+            else
+            {
+                mesh->scale(glm::vec3(scale));
+            }
+
         };
         execute_for_mesh(f, id);
     }
@@ -211,9 +220,16 @@ namespace volumeshOS::Internal
 
     void MeshList::set_peel_level(const MeshID id, const float level)
     {
-        assert(0.0f <= level <= 1.0f);
+        assert(level >= 0.0);
         auto f = [level](const std::shared_ptr<MeshObject>& mesh) -> void{
-            mesh->get_data().peel_level = level;
+            if(level > mesh->get_data().max_peel_depth)
+            {
+                mesh->get_data().peel_level = mesh->get_data().max_peel_depth;
+            }
+            else
+            {
+                mesh->get_data().peel_level = level;
+            }
         };
         execute_for_mesh(f, id);
     }

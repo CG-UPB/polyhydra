@@ -385,7 +385,9 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(46 - ImGui::GetStyle().FramePadding.x);
+        ImGui::InvisibleButton("invisible button shadow", ImVec2(2,2));
+        ImGui::SameLine();
+        shift_right(ImGui::GetStyle().FramePadding.x);
         if (ImGuiUtil::begin_menu_with_background("post", 3))
         {
             ImGuiUtil::menu_item_filled("Gamma", [&]
@@ -637,7 +639,9 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(46 - ImGui::GetStyle().FramePadding.x);
+        ImGui::InvisibleButton("invisible button shadow", ImVec2(2,2));
+        ImGui::SameLine();
+        shift_right(ImGui::GetStyle().FramePadding.x);
         if (ImGuiUtil::begin_menu_with_background("shadows", 4))
         {
             ImGuiUtil::menu_item_filled("Cascades", [&]
@@ -693,7 +697,9 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(46 - ImGui::GetStyle().FramePadding.x);
+        ImGui::InvisibleButton("invisible button shadow", ImVec2(2,2));
+        ImGui::SameLine();
+        shift_right(ImGui::GetStyle().FramePadding.x);
         if (ImGuiUtil::begin_menu_with_background("ssao", settings.ssao_mode == SSAOMode::CUSTOM ? 6 : 1))
         {
             ImGuiUtil::menu_item_filled("Preset", [&]
@@ -756,7 +762,9 @@ namespace volumeshOS::Internal
         {
             return;
         }
-        shift_right(46 - ImGui::GetStyle().FramePadding.x);
+        ImGui::InvisibleButton("invisible button shadow", ImVec2(2,2));
+        ImGui::SameLine();
+        shift_right(ImGui::GetStyle().FramePadding.x);
         auto transparency_mode = settings.transparency_mode;
         if (ImGuiUtil::begin_menu_with_background("transparency",
                                                   transparency_mode == TransparencyMode::DEPTH_PEELING ? 3 : 2))

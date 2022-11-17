@@ -474,9 +474,9 @@ namespace volumeshOS::Internal
                     ImGuiUtil::end_menu();
                 }
             }
-            ImGui::Separator();
         }
-
+        // some space to the next item
+        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 2));
 
     }
 } // namespace volumeshOS

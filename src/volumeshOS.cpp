@@ -101,9 +101,10 @@ namespace volumeshOS
         static_assert(std::is_base_of_v<OpenVolumeMesh::TopologyKernel, KernelType>);
         int id = next_mesh_id();
         VMesh vmesh(id);
-        commands.emplace_back([id, instance, name]{
-            auto mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
-            mesh->assign(instance);
+        auto mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
+        mesh->assign(instance);
+
+        commands.emplace_back([id, mesh, name]{
             mesh_list->add_mesh(id, mesh);
             if (name != nullptr)
             {
@@ -540,9 +541,9 @@ namespace volumeshOS
 
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
     {
-        commands.emplace_back([mesh, instance]{
-            auto ovm = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
-            ovm->assign(instance);
+        auto ovm = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
+        ovm->assign(instance);
+        commands.emplace_back([mesh, ovm]{
             mesh_list->set_mesh(mesh.get_id(), ovm);
         });
     }

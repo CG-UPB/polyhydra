@@ -2215,6 +2215,7 @@ namespace volumeshOS
          * Set the peel level for a given mesh.
          * @param level value between 0 (no peel) and the total number of depth layers in the mesh.
          *              Float values can be displayed transparent when transparency is active.
+         *              Values above the maximum peel level are set to maximumum peel level
          */
         inline void set_peel_level(float level) const
         {
@@ -2287,7 +2288,7 @@ namespace volumeshOS
 
         /**
          * Set the tessellation level for Bézier meshes (non-Bézier meshes are not affected)
-         * @param level value in range [0,64]
+         * @param level value in range [1,64]
          */
         inline void set_tessellation_level(int level) const
         {
