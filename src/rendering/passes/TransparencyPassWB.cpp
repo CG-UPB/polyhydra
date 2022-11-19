@@ -71,8 +71,7 @@ namespace volumeshOS::Internal
         {
             m_transparency_shader->bind();
 
-            auto cam = renderer.camera;
-            auto light = AppState::settings.light;
+            const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
             auto& settings = AppState::settings;
             bool draw_wireframe = settings.rendering_mode == RenderingMode::WIREFRAME;
@@ -87,26 +86,13 @@ namespace volumeshOS::Internal
                 glDisable(GL_CULL_FACE);
             }
 
-            // Transform
-            glm::mat4 transform = cam->world * mesh->get_data().get_transform();
-            glm::mat4 l_transform = mesh->get_data().get_transform();
-            glm::mat4 view_transform = cam->view * transform;
-
-            // volumeshOS Operations
-            glm::vec3 view_dir = -glm::normalize(cam->get_front());
-            auto slice_direction = mesh->get_slice_dir(transform, view_dir);
-
-            glm::vec3 cam_pos(cam->position);
-            glm::vec3 light_pos(glm::normalize(light.direction));
-
-
 
             // Shader uniforms
-            m_transparency_shader->set_uniform_mat4f("u_transform", transform);
+            m_transparency_shader->set_uniform_mat4f("u_transform", data.transform);
             m_transparency_shader->set_uniform_mat4f("u_projection", cam->projection);
             m_transparency_shader->set_uniform_mat4f("u_view", cam->view);
-            m_transparency_shader->set_uniform_vec3f("u_light_pos", light_pos);
-            m_transparency_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
+            m_transparency_shader->set_uniform_vec3f("u_light_pos", data.light_pos);
+            m_transparency_shader->set_uniform_vec3f("u_cam_pos", data.cam_pos);
             m_transparency_shader->set_uniform_vec3f("u_light_color", light.color);
             m_transparency_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
             m_transparency_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
@@ -114,9 +100,9 @@ namespace volumeshOS::Internal
             m_transparency_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
             m_transparency_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
             m_transparency_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
-            m_transparency_shader->set_uniform_vec3f("u_min", mesh->get_world_bb(view_transform).first);
-            m_transparency_shader->set_uniform_vec3f("u_max", mesh->get_world_bb(view_transform).second);
-            m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_transparency_shader->set_uniform_vec3f("u_min", data.bb_min);
+            m_transparency_shader->set_uniform_vec3f("u_max", data.bb_max);
+            m_transparency_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
             m_transparency_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
 
             m_transparency_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);

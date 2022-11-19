@@ -155,30 +155,11 @@ namespace volumeshOS::Internal
             glDisable(GL_CULL_FACE);
         }
 
+        const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
         auto cam = renderer.camera;
         auto light = AppState::settings.light;
 
-        glm::mat4 transform = cam->world * mesh->get_data().get_transform();
-        glm::mat4 view_transform = cam->view * transform;
-
-        // Cell operations
-        float cell_size = mesh->get_data().cell_size;
-        float peel_depth = mesh->get_data().peel_level;
-        float slice_depth = mesh->get_data().slice_level;
-
-        auto bb = mesh->get_world_bb(view_transform);
-        auto min = bb.first;
-        auto max = bb.second;
-
-        // volumeshOS Operations
-        glm::vec3 view_dir = -glm::normalize(cam->get_front());
-        auto slice_direction = mesh->get_slice_dir(transform, view_dir);
-
-        // Use cam positin to the same position as in the mesh pass
-        // glm::vec3 cam_pos(cam->view * glm::vec4(cam->position, 1.0));
-        glm::vec3 cam_pos(cam->position);
-        glm::vec3 light_pos(glm::normalize(light.direction));
 
         bool use_vertex_normals = AppState::settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
         
@@ -191,21 +172,21 @@ namespace volumeshOS::Internal
         }
         
         // set all of our uniforms
-        m_transparency_shader->set_uniform_mat4f("u_transform", transform);
+        m_transparency_shader->set_uniform_mat4f("u_transform", data.transform);
         m_transparency_shader->set_uniform_mat4f("u_projection", cam->projection);
         m_transparency_shader->set_uniform_mat4f("u_view", cam->view);
-        m_transparency_shader->set_uniform_vec3f("u_light_pos", light_pos);
-        m_transparency_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
+        m_transparency_shader->set_uniform_vec3f("u_light_pos", data.light_pos);
+        m_transparency_shader->set_uniform_vec3f("u_cam_pos", data.cam_pos);
         m_transparency_shader->set_uniform_vec3f("u_light_color", light.color);
-        m_transparency_shader->set_uniform_float("u_cell_size", cell_size);
+        m_transparency_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
         m_transparency_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
-        m_transparency_shader->set_uniform_float("u_peel_depth", peel_depth);
+        m_transparency_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
         m_transparency_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
         m_transparency_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
-        m_transparency_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_transparency_shader->set_uniform_vec3f("u_min", min);
-        m_transparency_shader->set_uniform_vec3f("u_max", max);
-        m_transparency_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+        m_transparency_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+        m_transparency_shader->set_uniform_vec3f("u_min", data.bb_min);
+        m_transparency_shader->set_uniform_vec3f("u_max", data.bb_max);
+        m_transparency_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
         m_transparency_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
         m_transparency_shader->set_uniform_float("u_pow", m_pow);
         m_transparency_shader->set_uniform_float("u_alpha_pow", m_alpha_pow);

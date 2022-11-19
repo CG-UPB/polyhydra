@@ -20,38 +20,22 @@ namespace volumeshOS::Internal
 
         for (const auto& mesh : renderer.render_list)
         {
-            glm::mat4 transform = renderer.camera->world * mesh->get_data().get_transform();
-            glm::mat4 view_transform = renderer.camera->view * transform;
-
-            // Cell operations
-            float cell_size = mesh->get_data().cell_size;
-            float peel_depth = mesh->get_data().peel_level;
-            float slice_depth = mesh->get_data().slice_level;
-
-            auto bb = mesh->get_world_bb(view_transform);
-            auto min = bb.first;
-            auto max = bb.second;
-
-            // volumeshOS Operations
-            glm::vec3 view_dir = -glm::normalize(renderer.camera->get_front());
-            auto slice_direction = mesh->get_slice_dir(transform, view_dir);
-
-            glm::vec3 cam_pos(renderer.camera->view * glm::vec4(renderer.camera->position, 1.0));
+            const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
             // set all of our uniforms
-            m_shader->set_uniform_mat4f("u_transform", transform);
+            m_shader->set_uniform_mat4f("u_transform", data.transform);
             m_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
             m_shader->set_uniform_mat4f("u_view", renderer.camera->view);
-            m_shader->set_uniform_vec3f("u_cam_pos", cam_pos);
-            m_shader->set_uniform_float("u_cell_size", cell_size);
+            m_shader->set_uniform_vec3f("u_cam_pos", data.cam_pos);
+            m_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
             m_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
-            m_shader->set_uniform_float("u_peel_depth", peel_depth);
+            m_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
             m_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
             m_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
-            m_shader->set_uniform_float("u_slice_depth", slice_depth);
-            m_shader->set_uniform_vec3f("u_min", min);
-            m_shader->set_uniform_vec3f("u_max", max);
-            m_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+            m_shader->set_uniform_vec3f("u_min", data.bb_min);
+            m_shader->set_uniform_vec3f("u_max", data.bb_max);
+            m_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
             m_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
             m_shader->set_uniform_bool("u_rounding", mesh->get_data().rounding_size > 0.0f);
             m_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);

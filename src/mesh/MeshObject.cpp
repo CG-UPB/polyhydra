@@ -288,6 +288,55 @@ namespace volumeshOS::Internal
             }
         }
 
+//        std::vector<float> vertices;
+//        glm::vec4 min;
+//        glm::vec4 max;
+//        bool init = true;
+//
+//        for (auto v_it: m_mesh->vertices())
+//        {
+//            if (m_mesh->is_boundary(v_it))
+//            {
+//                auto v_pos = m_mesh->vertex(v_it);
+//                glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);
+//                // apply transformation matrix
+//                vec = transform * vec;
+//
+//                if(init)
+//                {
+//                    min = vec;
+//                    max = vec;
+//                    init = false;
+//                }
+//
+//                glm::vec3 vertex(vec[0], vec[1], vec[2]);
+//                if (vertex.x < min.x)
+//                {
+//                    min.x = vertex.x;
+//                }
+//                else if (vertex.x > max.x)
+//                {
+//                    max.x = vertex.x;
+//                }
+//                if (vertex.y < min.y)
+//                {
+//                    min.y = vertex.y;
+//                }
+//                else if (vertex.y > max.y)
+//                {
+//                    max.y = vertex.y;
+//                }
+//                if (vertex.z < min.z)
+//                {
+//                    min.z = vertex.z;
+//                }
+//                else if (vertex.z > max.z)
+//                {
+//                    max.z = vertex.z;
+//                }
+//            }
+//        }
+
         // undo the transformation for bounding box
         glm::vec3 m1(glm::inverse(transform) * min);
         glm::vec3 m2(glm::inverse(transform) * max);

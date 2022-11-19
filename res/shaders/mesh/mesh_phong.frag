@@ -389,10 +389,7 @@ float get_shadow(vec3 normal, vec3 light_dir)
 void main()
 {
     float depth = texelFetch(u_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
-    if(gl_FragCoord.z > depth + 0.00001)
-    {
-        discard;
-    }
+
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
     if (u_draw_wireframe)

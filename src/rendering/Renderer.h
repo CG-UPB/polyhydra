@@ -124,11 +124,36 @@ namespace volumeshOS::Internal
             bool mesh_moving                = false;
         } input;
 
+       struct PassData
+        {
+            MeshData data;
+
+            glm::mat4 transform;
+            glm::mat4 projection;
+            glm::mat4 view;
+            glm::mat4 view_transform;
+            glm::vec3 view_dir;
+            glm::vec3 cam_pos;
+            glm::vec3 light_pos;
+            glm::vec3 light_color;
+            glm::mat4 light_transform;
+
+            glm::vec3 slice_direction;
+
+            glm::vec3 bb_min;
+            glm::vec3 bb_max;
+
+        };
+
+        std::unordered_map<int, PassData> pass_data_list;
+
     private:
 
         void handle_zoom();
         void handle_input();
         void handle_camera_input();
         void handle_mesh_input();
+
+        void update_pass_data();
     };
 }

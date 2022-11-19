@@ -80,22 +80,7 @@ namespace volumeshOS::Internal
 
         for (const auto& mesh: renderer.render_list)
         {
-            // Transform
-            glm::mat4 transform = cam->world * mesh->get_data().get_transform();
-            glm::mat4 view_transform = cam->view * transform;
-
-            // Cell operations
-            float cell_size = mesh->get_data().cell_size;
-            float peel_depth = mesh->get_data().peel_level;
-            float slice_depth = mesh->get_data().slice_level;
-
-            auto bb = mesh->get_world_bb(view_transform);
-            auto min = bb.first;
-            auto max = bb.second;
-
-            // volumeshOS Operations
-            glm::vec3 view_dir = -glm::normalize(cam->get_front());
-            auto slice_direction = mesh->get_slice_dir(transform, view_dir);
+            const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
             bool is_bezier_mesh = mesh->is_bezier_mesh();
             // Currently, cells sometimes appear hollow if CULL_FACE is not 
@@ -113,14 +98,14 @@ namespace volumeshOS::Internal
 
             // Shader uniforms
             m_shadow_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
-            m_shadow_shader->set_uniform_float("u_cell_size", cell_size);
-            m_shadow_shader->set_uniform_float("u_peel_depth", peel_depth);
+            m_shadow_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+            m_shadow_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
             m_shadow_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
             m_shadow_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
-            m_shadow_shader->set_uniform_float("u_slice_depth", slice_depth);
-            m_shadow_shader->set_uniform_vec3f("u_min", min);
-            m_shadow_shader->set_uniform_vec3f("u_max", max);
-            m_shadow_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_shadow_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+            m_shadow_shader->set_uniform_vec3f("u_min", data.bb_min);
+            m_shadow_shader->set_uniform_vec3f("u_max", data.bb_max);
+            m_shadow_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
             m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
             // Do not use rounding on Bézier meshes.
             m_shadow_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
@@ -133,7 +118,7 @@ namespace volumeshOS::Internal
                 m_shadow_shader->set_uniform_mat4f("u_light_space_matrices[" + std::to_string(i) + "]" , light_space_mat);
             }
             m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[0]);
-            m_shadow_shader->set_uniform_mat4f("u_transform", transform);
+            m_shadow_shader->set_uniform_mat4f("u_transform", data.transform);
 
             m_shadow_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
             if(is_bezier_mesh)

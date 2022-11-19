@@ -96,22 +96,7 @@ namespace volumeshOS::Internal
         glDepthMask(GL_TRUE);
         glDisable(GL_BLEND);
 
-        // Transform Data
-        glm::mat4 transform = renderer.camera->world * mesh->get_data().get_transform();
-        glm::mat4 view_transform = renderer.camera->view * transform;
-
-        // Cell operations
-        float cell_size = mesh->get_data().cell_size;
-        float peel_depth = mesh->get_data().peel_level;
-        float slice_depth = mesh->get_data().slice_level;
-
-        auto bb = mesh->get_world_bb(view_transform);
-        auto min = bb.first;
-        auto max = bb.second;
-
-        // volumeshOS Operations
-        glm::vec3 view_dir = -glm::normalize(renderer.camera->get_front());
-        auto slice_direction = mesh->get_slice_dir(transform, view_dir);
+        const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
         // Get SelectionMode Mode
         // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
@@ -130,20 +115,20 @@ namespace volumeshOS::Internal
         m_selection_shader->bind();
 
         // Set Uniforms
-        m_selection_shader->set_uniform_mat4f("u_mesh_transform", transform);
+        m_selection_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
         m_selection_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
         m_selection_shader->set_uniform_mat4f("u_view", renderer.camera->view);
         m_selection_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
         m_selection_shader->set_uniform_bool("u_debug_mode", m_debug);
         m_selection_shader->set_uniform_bool("u_faces_selectable", faces_selectable);
-        m_selection_shader->set_uniform_float("u_cell_size", cell_size);
-        m_selection_shader->set_uniform_float("u_peel_depth", peel_depth);
+        m_selection_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+        m_selection_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
         m_selection_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
         m_selection_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
-        m_selection_shader->set_uniform_float("u_slice_depth", slice_depth);
-        m_selection_shader->set_uniform_vec3f("u_min", min);
-        m_selection_shader->set_uniform_vec3f("u_max", max);
-        m_selection_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+        m_selection_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+        m_selection_shader->set_uniform_vec3f("u_min", data.bb_min);
+        m_selection_shader->set_uniform_vec3f("u_max", data.bb_max);
+        m_selection_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
         m_selection_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
         
         m_selection_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
@@ -171,17 +156,17 @@ namespace volumeshOS::Internal
             m_selection_cylinder_shader->bind();
 
             // Set Uniforms
-            m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", transform);
+            m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
             m_selection_cylinder_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
             m_selection_cylinder_shader->set_uniform_mat4f("u_view", renderer.camera->view);
             m_selection_cylinder_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
             m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", m_debug);
-            m_selection_cylinder_shader->set_uniform_float("u_cell_size", cell_size);
-            m_selection_cylinder_shader->set_uniform_float("u_peel_depth", peel_depth);
-            m_selection_cylinder_shader->set_uniform_float("u_slice_depth", slice_depth);
-            m_selection_cylinder_shader->set_uniform_vec3f("u_min", min);
-            m_selection_cylinder_shader->set_uniform_vec3f("u_max", max);
-            m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_selection_cylinder_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+            m_selection_cylinder_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+            m_selection_cylinder_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+            m_selection_cylinder_shader->set_uniform_vec3f("u_min", data.bb_min);
+            m_selection_cylinder_shader->set_uniform_vec3f("u_max", data.bb_max);
+            m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
             m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
             m_selection_cylinder_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
@@ -199,18 +184,18 @@ namespace volumeshOS::Internal
             m_selection_sphere_shader->bind();
 
             // Set Uniforms
-            m_selection_sphere_shader->set_uniform_mat4f("u_mesh_transform", transform);
+            m_selection_sphere_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
             m_selection_sphere_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
             m_selection_sphere_shader->set_uniform_mat4f("u_view", renderer.camera->view);
             m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", renderer.camera->position);
             m_selection_sphere_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
             m_selection_sphere_shader->set_uniform_bool("u_debug_mode", m_debug);
-            m_selection_sphere_shader->set_uniform_float("u_cell_size", cell_size);
-            m_selection_sphere_shader->set_uniform_float("u_peel_depth", peel_depth);
-            m_selection_sphere_shader->set_uniform_float("u_slice_depth", slice_depth);
-            m_selection_sphere_shader->set_uniform_vec3f("u_min", min);
-            m_selection_sphere_shader->set_uniform_vec3f("u_max", max);
-            m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", slice_direction);
+            m_selection_sphere_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+            m_selection_sphere_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+            m_selection_sphere_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+            m_selection_sphere_shader->set_uniform_vec3f("u_min", data.bb_min);
+            m_selection_sphere_shader->set_uniform_vec3f("u_max", data.bb_max);
+            m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
             m_selection_sphere_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
             m_selection_sphere_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 

@@ -77,6 +77,36 @@ namespace volumeshOS::Internal
         return mesh->get_data().visible && mesh->get_vao() != nullptr;
     }
 
+    void Renderer::update_pass_data()
+    {
+        pass_data_list.clear();
+        PassData pass_data = {};
+
+        auto light = AppState::settings.light;
+        auto cam = camera;
+
+        for(const auto& mesh : render_list)
+        {
+            pass_data.data = mesh->get_data();
+            pass_data.transform = cam->world * pass_data.data.get_transform();
+            pass_data.projection = cam->projection;
+            pass_data.view = cam->view;
+            pass_data.view_transform = cam->view * pass_data.transform;
+            pass_data.view_dir = glm::normalize(cam->target - cam->position);
+            pass_data.slice_direction = mesh->get_slice_dir(pass_data.transform, -glm::normalize(cam->get_front()));
+            pass_data.cam_pos = cam->position;
+            pass_data.light_pos = glm::normalize(light.direction);
+            pass_data.light_color = light.color;
+            pass_data.light_transform = pass_data.transform;
+
+            auto bb = mesh->get_world_bb(pass_data.view_transform);
+            pass_data.bb_min = bb.first;
+            pass_data.bb_max = bb.second;
+
+            pass_data_list[mesh->get_id()] = pass_data;
+        }
+    }
+
     void Renderer::render(const RenderData& data)
     {
         // reset statistics for the new frame
@@ -103,6 +133,7 @@ namespace volumeshOS::Internal
                                    render_list.push_back(mesh);
                                }
                            });
+        update_pass_data();
 
         buffers.target_framebuffer_ms->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -190,7 +221,7 @@ namespace volumeshOS::Internal
             shapes->render(*this);
         }
 
-        passes.outline_pass->render(*this);
+        //passes.outline_pass->render(*this);
 
         // set render states
         glDisable(GL_DEPTH_TEST);
