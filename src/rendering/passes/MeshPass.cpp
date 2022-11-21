@@ -36,24 +36,11 @@ namespace volumeshOS::Internal
 
             // Get shader
             auto m_mesh_shader = Shader::get("mesh_phong");
-
             m_mesh_shader->bind();
 
             const auto& data = renderer.pass_data_list.at(mesh->get_id());
             auto cam = renderer.camera;
             auto light = AppState::settings.light;
-
-//            // Transform
-//            glm::mat4 transform = cam->world * mesh->get_data().get_transform();
-//            glm::mat4 l_transform = mesh->get_data().get_transform();
-//            glm::mat4 view_transform = cam->view * transform;
-//
-//            // volumeshOS Operations
-//            glm::vec3 view_dir = -glm::normalize(cam->get_front());
-//            auto slice_direction = mesh->get_slice_dir(transform, view_dir);
-//
-//            glm::vec3 cam_pos(cam->position);
-//            glm::vec3 light_pos(glm::normalize(light.direction));
 
 
             // Shader uniforms
@@ -109,12 +96,6 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_far", cam->far);
 
 
-//            m_bias_min = 0.00000001f;
-//            m_bias_max = 0.000003f;
-
-//            m_bias_min = 0.000001f;
-//            m_bias_max = 0.0001f;
-
             m_bias_min = 0.0000001f;
             m_bias_max = 0.003f;
 
@@ -134,7 +115,6 @@ namespace volumeshOS::Internal
             }
             m_mesh_shader->set_uniform_mat4f("u_light_transform", data.light_transform);
             m_mesh_shader->set_uniform_float("u_light_size", settings.shadow.penumbra_scale);
-
 
 
             // settings

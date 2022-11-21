@@ -391,7 +391,11 @@ namespace volumeshOS
     {
         commands.emplace_back([direction]{
             auto dir = Internal::to_glm_vec3(direction);
-            Internal::AppState::settings.light.direction = glm::normalize(dir);
+            dir.r = std::clamp(dir.r, -1.0f, 1.0f);
+            dir.g = std::clamp(dir.g, -1.0f, 1.0f);
+            dir.b = std::clamp(dir.b, -1.0f, 1.0f);
+
+            Internal::AppState::settings.light.direction = dir;
         });
     }
 
@@ -1590,6 +1594,12 @@ namespace volumeshOS
     template void set_camera_target<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
     template void set_camera_target<std::array<double, 3>>(const std::array<double, 3>&);
     template void set_camera_target<std::array<float, 3>>(const std::array<float, 3>&);
+
+    template void set_light_direction<glm::vec3>(const glm::vec3&);
+    template void set_light_direction<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
+    template void set_light_direction<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
+    template void set_light_direction<std::array<double, 3>>(const std::array<double, 3>&);
+    template void set_light_direction<std::array<float, 3>>(const std::array<float, 3>&);
 
     template glm::vec3 get_camera_target<glm::vec3>();
     template OpenVolumeMesh::Vec3d get_camera_target<OpenVolumeMesh::Vec3d>();

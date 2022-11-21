@@ -222,9 +222,9 @@ namespace volumeshOS::Internal
     {
         assert(level >= 0.0);
         auto f = [level](const std::shared_ptr<MeshObject>& mesh) -> void{
-            if(level > mesh->get_data().max_peel_depth)
+            if(level > mesh->get_data().max_peel_depth + 1.0f)
             {
-                mesh->get_data().peel_level = mesh->get_data().max_peel_depth;
+                mesh->get_data().peel_level = mesh->get_data().max_peel_depth + 1.0f;
             }
             else
             {

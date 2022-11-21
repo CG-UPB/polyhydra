@@ -72,7 +72,6 @@ int main(int argc, char* argv[])
 //                        mesh.set_color(hf_it, glm::vec4{abs(normal[0]), abs(normal[1]), abs(normal[2]), 1.0f});
 //                    }
                     double alpha = (float)rand() / (float)RAND_MAX;
-                    std::cout << alpha << std::endl;
                     alpha = alpha > 0.2 ? 1.0 : 0.0;
                     auto color = glm::vec3(0.0f);
                     for(int i = 0; i < 3; i++)

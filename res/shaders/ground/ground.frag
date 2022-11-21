@@ -265,6 +265,7 @@ float linearize_depth(float depth)
 
 void main()
 {
+
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
     if(!u_visible || !(u_solid || u_grid))
     {
@@ -381,6 +382,10 @@ void main()
         {
             FragColor = vec4(u_grid_color, (1.0 - col));
             return;
+        }
+        else
+        {
+            discard;
         }
     }
     else if(!u_grid && u_solid)

@@ -144,6 +144,7 @@ namespace volumeshOS::Internal
         // Render Meshes
         passes.pre_pass->render(*this);
 
+        // Checks for double click to orbit camera around clicked point and zooms in
         handle_zoom();
 
         if (settings.rendering_mode == RenderingMode::ONLY_VERTICES)
@@ -152,11 +153,11 @@ namespace volumeshOS::Internal
             {
                 passes.background_pass->render(*this);
             }
-            passes.vertex_only_pass->render(*this);
             if (data.render_ground)
             {
                 passes.ground_pass->render(*this);
             }
+            passes.vertex_only_pass->render(*this);
         }
         else
         {
@@ -170,7 +171,6 @@ namespace volumeshOS::Internal
                 passes.shadow_pass->render(*this);
             }
 
-
             if (data.render_bg)
             {
                 passes.background_pass->render(*this);
@@ -181,15 +181,10 @@ namespace volumeshOS::Internal
                 passes.ground_pass->render(*this);
             }
 
-
             passes.mesh_pass->render(*this);
-
 
             FrameBufferObject::copy(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
-
-
-
 
             // Render transparent objects
             if (settings.transparency_active)

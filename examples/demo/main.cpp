@@ -66,12 +66,13 @@ OpenVolumeMesh::GeometricPolyhedralMeshV3d gen_mesh()
     return mesh;
 }
 
-void setup_mesh(volumeshOS::VMesh mesh, std::string name = "")
+VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, std::string name = "")
 {
-    // Note: None of these settings are necessary to set before open the viewer
-    //       Most of them set the default value just for demonstration
-    //       See volumeshOS.h for more information
+    // Note: None of these settings needs to be set before opening the viewer
+    //       Most of these examples just set the default value for demonstration
+    //       See volumeshOS.h for further information
 
+    auto mesh = load(&ovm_mesh);
     mesh.set_name(name);
 
     // these functions can be used to get insight of cells
@@ -80,46 +81,53 @@ void setup_mesh(volumeshOS::VMesh mesh, std::string name = "")
 
     // if true there is one color that can be set inside the viewer.
     // otherwise each cell/face has an own color value
-    mesh.use_base_color(true);
+    mesh.use_base_color(false);
 
 
     // example usage of mesh related functions
-    mesh.set_position(0.0, 0.0, 0.0);
-    mesh.set_scale(1.0);
+    mesh.set_position(0.0f, 0.0f, 0.0f);
+    mesh.set_scale(0.5f);
     //mesh.set_rotation(...);
 
-    mesh.set_color(std::array<float, 4>{0.0, 1.0, 0.0, 1.0});
+    // if using base color set color as follows
+    mesh.set_color(std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
+
+    // otherwise set color for each cell
+    for(auto cit : ovm_mesh.cells())
+    {
+        mesh.set_color(cit, std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
+    }
 
     // settings for phong lighting
-    mesh.set_ambient(1.0);
-    mesh.set_diffuse(1.0);
-    mesh.set_specular(0.15);
-    mesh.set_specular_coefficient(8.0);
+    mesh.set_ambient(1.0f);
+    mesh.set_diffuse(1.0f);
+    mesh.set_specular(0.15f);
+    mesh.set_specular_coefficient(8.0f);
 
     // settings for physically based lighting (PBR)
-    mesh.set_metallic(0.15);
-    mesh.set_roughness(0.65);
+    mesh.set_metallic(0.15f);
+    mesh.set_roughness(0.65f);
 
     // set lighting mode: Phong or PBR
     mesh.set_lighting_mode(LightingMode::PBR);
 
     // slice into the mesh; direction is given by view direction
-    mesh.set_slice_factor(0.0);
+    mesh.set_slice_factor(0.0f);
     mesh.set_slice_locked(false);
     // peel the mesh; opens inner layers;
-    mesh.set_peel_level(0.0);
+    mesh.set_peel_level(0.0f);
     // when true peeling is done from the inside to the outside
     mesh.use_reverse_peeling(false);
     // set cell size; moves cell vertices to its center
-    mesh.set_cell_size(1.0);
+    mesh.set_cell_size(1.0f);
     // rounds the edges of a cell
-    mesh.set_cell_rounding(0.0);
+    mesh.set_cell_rounding(0.0f);
 
     // set tessellation level (1-64) for bezier meshes:
     mesh.set_tessellation_level(1);
     mesh.set_visibility(true);
 
-
+    return mesh;
 }
 
 void setup_graphics()
@@ -140,46 +148,61 @@ void setup_graphics()
     set_saturation(1.0);
     set_contrast(1.0);
 
+    // Chose between ORBIT and FLY for camera
+    set_camera_mode(CameraMode::ORBIT);
+
+    // Set direction for light as cube position [-1,1]x[-1,1]x[-1,1]
+    set_light_direction(std::array<float,3>{0.5f, 1.0f, 1.0f});
+
+    // Ground
+    // you can choose between a solid ground, a grid or both
+    use_grid(true);
+    use_ground(true);
+    set_ground_height(-5.0f);
+
+
+}
+
+void face_select(const VMesh mesh, OpenVolumeMesh::FaceHandle fh)
+{
+    log("Face " + std::to_string(fh.uidx()) + " was selected");
+}
+
+void cell_select(const VMesh mesh, OpenVolumeMesh::CellHandle ch)
+{
+    log("Cell " + std::to_string(ch.uidx()) + " was selected");
+
+    auto color = mesh.get_color<glm::vec4>(ch);
+    color = glm::vec4(color.b, color.r, color.g, 1.0f);
+    mesh.set_color(ch, color);
 }
 
 int main(int argc, char* argv[])
 {
-
     // generate ovm mesh
     auto ovm_mesh = gen_mesh();
 
     // load mesh into view; get VMesh object in return to operate on
-    auto mesh = load(&ovm_mesh);
-    setup_mesh(mesh, "Cube");
+    auto mesh = setup_mesh(ovm_mesh, "Cube");
 
+    // graphic settings
     setup_graphics();
-
-    // Ground
-
-    set_camera_mode(CameraMode::ORBIT);
 
     // define lambda function that gets executed each frame
     // use ImGUI to setup your own GUI
-    on_gui_render([mesh](){
+    on_gui_render([](){
         ImGui::Begin("MyPanel");
-
         if (ImGui::Button("Load Mesh"))
         {
             // open a file manager to select an ovm file
             load_from_dialog("Select OVM file");
         }
-        if(ImGui::Button("Grow"))
-        {
-            mesh.set_scale(mesh.get_scale() + 0.2f);
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Shrink"))
-        {
-            mesh.set_scale(mesh.get_scale() - 0.2f);
-        }
-
         ImGui::End();
     });
+
+    // you can either use lambdas like shown above or use std::bind as follows:
+    on_face_select(&face_select);
+    on_cell_select(&cell_select);
 
 
     open();
