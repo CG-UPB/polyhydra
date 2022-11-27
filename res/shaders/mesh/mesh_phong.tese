@@ -1,6 +1,6 @@
 #version 400 core
 
-layout(triangles, equal_spacing, ccw) in;
+layout(triangles, fractional_odd_spacing, ccw) in;
 
 const int MAX_CASCADE_LEVEL = 8;
 
@@ -33,6 +33,7 @@ uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_transform;
 uniform float u_cell_size;
+uniform bool u_rounding;
 // uniform mat4 u_view;
 // uniform vec3 u_cam_pos;
 
@@ -44,6 +45,7 @@ uniform int u_bezier_degree;
 
 // use texture buffer for control points
 uniform samplerBuffer u_control_points_tb;
+
 
 // a maximum bezier degree needs to be set because the De Casteljau algorithm 
 // needs an array and GLSL only supports local arrays with static sizes
@@ -166,11 +168,81 @@ void main()
     }
     else
     {
-        v_Pos         = tc_Pos[0]            *x + tc_Pos[1]            *y + tc_Pos[2]            *z;
-        v_Normal      = tc_Normal[0]         *x + tc_Normal[1]         *y + tc_Normal[2]         *z;
+
         v_tesInnerTri = 0;
         v_LightSpacePos0  = tc_LightSpacePos0[0] *x + tc_LightSpacePos0[1] *y + tc_LightSpacePos0[2] *z;
         v_LightSpacePos1  = tc_LightSpacePos1[0] *x + tc_LightSpacePos1[1] *y + tc_LightSpacePos1[2] *z;
+
+        float edge_factor = 0.9;
+        float corner_factor = 0.9;
+
+        if((x == 0.0 && y == 0.0) || (y == 0.0 && z == 0.0) || (x == 0.0 && z == 0.0))
+        {
+            // original vertices
+            v_Pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+            v_Normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
+        }
+        else
+        {
+            // vertices laying on some edge
+            v_Pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+            v_Normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
+
+            if(x == 0.0)
+            {
+                if(y > z)
+                {
+                    v_Pos = tc_Pos[1] * edge_factor + tc_Pos[2] * (1.0 - edge_factor);
+                }
+                else
+                {
+                    v_Pos = tc_Pos[2] * edge_factor + tc_Pos[1] * (1.0 - edge_factor);
+                }
+            }
+            else if(y == 0.0)
+            {
+                if(x > z)
+                {
+                    v_Pos = tc_Pos[0] * edge_factor + tc_Pos[2] * (1.0 - edge_factor);
+                }
+                else
+                {
+                    v_Pos = tc_Pos[2] * edge_factor + tc_Pos[0] * (1.0 - edge_factor);
+                }
+            }
+            else if(z == 0.0)
+            {
+                if(x > y)
+                {
+                    v_Pos = tc_Pos[0] * edge_factor + tc_Pos[1] * (1.0 - edge_factor);
+                }
+                else
+                {
+                    v_Pos = tc_Pos[1] * edge_factor + tc_Pos[0] * (1.0 - edge_factor);
+                }
+            }
+            else
+            {
+                // inner points, pull them toward their closest certex
+                // get maximum
+                float f = corner_factor;
+                float g = ((1.0 - corner_factor)/2.0);
+
+                if(x > y && x > z)
+                {
+                    v_Pos = tc_Pos[0] * f + tc_Pos[1] * g + tc_Pos[2] * g;
+                }
+                else if(y > z)
+                {
+                    v_Pos = tc_Pos[0] * g + tc_Pos[1] * f + tc_Pos[2] * g;
+                }
+                else
+                {
+                    v_Pos = tc_Pos[0] * g + tc_Pos[1] * g + tc_Pos[2] * f;
+                }
+            }
+        }
+
     }
 
     // in any case use the values of vertex shader for these values 

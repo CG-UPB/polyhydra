@@ -1,7 +1,5 @@
 #version 400 core
 
-layout(vertices = 3) out;
-
 in vec3 v_Pos[];
 in vec3 v_Normal[];
 in vec4 v_Color[];
@@ -29,6 +27,13 @@ flat out vec3 tc_center[];
 uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
 uniform int u_bezier_tessellation_level;
+uniform bool u_rounding;
+
+#if u_rounding
+layout(vertices = 3) out;
+#else
+layout(vertices = 3) out;
+#endif
 
 #define ID gl_InvocationID
 
@@ -74,10 +79,20 @@ void main()
         }
         else
         {
-            gl_TessLevelInner[0] = 1;
-            gl_TessLevelOuter[0] = 1;
-            gl_TessLevelOuter[1] = 1;
-            gl_TessLevelOuter[2] = 1;
+            if(u_rounding)
+            {
+                gl_TessLevelInner[0] = 2;
+                gl_TessLevelOuter[0] = 3;
+                gl_TessLevelOuter[1] = 3;
+                gl_TessLevelOuter[2] = 3;
+            }
+            else
+            {
+                gl_TessLevelInner[0] = 1;
+                gl_TessLevelOuter[0] = 1;
+                gl_TessLevelOuter[1] = 1;
+                gl_TessLevelOuter[2] = 1;
+            }
         }
     }
 }

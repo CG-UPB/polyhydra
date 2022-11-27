@@ -392,11 +392,11 @@ void main()
 
 
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
-    if (u_draw_wireframe)
-    {
-        draw_wireframe(uv);
-        return;
-    }
+//    if (u_draw_wireframe)
+//    {
+//        draw_wireframe(uv);
+//        return;
+//    }
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass

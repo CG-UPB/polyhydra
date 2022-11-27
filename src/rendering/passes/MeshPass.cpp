@@ -21,6 +21,8 @@ namespace volumeshOS::Internal
             if (draw_wireframe || is_bezier_mesh || !mesh->get_data().use_back_face_culling)
             {
                 glDisable(GL_CULL_FACE);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glLineWidth(settings.wireframe_size);
             }
             else
             {
@@ -159,6 +161,7 @@ namespace volumeshOS::Internal
                 }
                 vao->draw_patches();
             }
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             m_mesh_shader->unbind();
         }

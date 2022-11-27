@@ -247,6 +247,7 @@ namespace volumeshOS::Internal
         std::vector<float> vertices;
         for (auto v_it: m_mesh->vertices())
         {
+
             auto v_pos = m_mesh->vertex(v_it);
             glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);
             // apply transformation matrix
@@ -255,6 +256,8 @@ namespace volumeshOS::Internal
             vertices.push_back(vec[0]);
             vertices.push_back(vec[1]);
             vertices.push_back(vec[2]);
+
+
         }
 
         glm::vec4 min(vertices[0], vertices[1], vertices[2], 1.0);

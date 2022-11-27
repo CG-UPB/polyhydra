@@ -430,17 +430,17 @@ namespace volumeshOS::Internal
         glReadPixels(0, 0, sWidth, sHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 
         // since we are rendering on a transparent background, we need to undo the pre-multiplication
-        for (size_t i = 0; i < buffer.size() / 4; i++)
-        {
-            float r = (float) ((int) buffer[i * 4]) / 255.0f;
-            float g = (float) ((int) buffer[i * 4 + 1]) / 255.0f;
-            float b = (float) ((int) buffer[i * 4 + 2]) / 255.0f;
-            float a = (float) ((int) buffer[i * 4 + 3]) / 255.0f;
-            float alpha = std::max(a, 0.00001f);
-            buffer[i * 4] = (unsigned char) ((int) ((r / alpha) * 255.0f));
-            buffer[i * 4 + 1] = (unsigned char) ((int) ((g / alpha) * 255.0f));
-            buffer[i * 4 + 2] = (unsigned char) ((int) ((b / alpha) * 255.0f));
-        }
+//        for (size_t i = 0; i < buffer.size() / 4; i++)
+//        {
+//            float r = (float) ((int) buffer[i * 4]) / 255.0f;
+//            float g = (float) ((int) buffer[i * 4 + 1]) / 255.0f;
+//            float b = (float) ((int) buffer[i * 4 + 2]) / 255.0f;
+//            float a = (float) ((int) buffer[i * 4 + 3]) / 255.0f;
+//            float alpha = std::max(a, 0.00001f);
+//            buffer[i * 4] = (unsigned char) ((int) ((r / alpha) * 255.0f));
+//            buffer[i * 4 + 1] = (unsigned char) ((int) ((g / alpha) * 255.0f));
+//            buffer[i * 4 + 2] = (unsigned char) ((int) ((b / alpha) * 255.0f));
+//        }
 
         stbi_flip_vertically_on_write(true);
 

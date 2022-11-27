@@ -310,7 +310,7 @@ void main()
         // calculate bias (depending on cascade level)
         float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
 
-        const float biasModifier = 0.5f;
+        const float biasModifier = 0.1f;
         if (cascade_level == cascade_level)
         {
             bias *= 1 / (100.0 * biasModifier);
@@ -343,7 +343,8 @@ void main()
         vec3 out_color = vec3(0.25, 0.25, 0.25);
         if (shadow != 0.0)
         {
-            FragColor = vec4(out_color * ao_factor, shadow * 0.25);
+            shadow = clamp(shadow - ao_factor, 0.0, 1.0);
+            FragColor = vec4(out_color , 1.0 - shadow);
         }
         else
         {

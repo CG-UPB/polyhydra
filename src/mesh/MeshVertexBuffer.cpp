@@ -15,7 +15,7 @@ namespace volumeshOS::Internal
 
     AttributeDefinitions::AttributeDefinitions()
     {
-        auto mesh_vaos = {VAO::MESH_FACE, VAO::MESH_ROUNDED};
+        auto mesh_vaos = {VAO::MESH_FACE};
         define_attribute(Attribute::POSITION, {0, 3, false}, mesh_vaos);
         define_attribute(Attribute::FACE_NORMAL, {1, 3, false}, mesh_vaos);
         define_attribute(Attribute::CELL_CENTER, {2, 3, false}, mesh_vaos);
@@ -68,9 +68,9 @@ namespace volumeshOS::Internal
         m_vao.face = std::make_shared<VertexArrayObject>(positions_by_face, m_indices_face);
         add_vao_attributes(m_vao.face, VAO::MESH_FACE);
 
-        auto& positions_rounded = get_attrib_array(VAO::MESH_ROUNDED, Attribute::POSITION);
-        m_vao.rounded = std::make_shared<VertexArrayObject>(positions_rounded, m_indices_rounded);
-        add_vao_attributes(m_vao.rounded, VAO::MESH_ROUNDED);
+//        auto& positions_rounded = get_attrib_array(VAO::MESH_ROUNDED, Attribute::POSITION);
+//        m_vao.rounded = std::make_shared<VertexArrayObject>(positions_rounded, m_indices_rounded);
+//        add_vao_attributes(m_vao.rounded, VAO::MESH_ROUNDED);
 
         m_vao.selection_sphere = std::make_shared<VertexArrayObject>(CommonMeshes::Sphere::selection_sphere().vertices(),
                                                        CommonMeshes::Sphere::selection_sphere().indices());
@@ -152,7 +152,7 @@ namespace volumeshOS::Internal
         if (m_current_loading_cell_it->is_valid() && m_current_loading_cell_it != m_mesh->cells_end())
         {
             add_cell_by_faces(m_mesh, *m_current_loading_cell_it);
-            add_cell_rounded(m_mesh, *m_current_loading_cell_it);
+            //add_cell_rounded(m_mesh, *m_current_loading_cell_it);
             m_current_loading_cell_it++;
             m_num_loaded_cells++;
         }
@@ -966,7 +966,7 @@ namespace volumeshOS::Internal
     std::shared_ptr<VertexArrayObject> MeshVertexBuffer::get_vao_rounded()
     {
         update_vertex_arrays();
-        return m_vao.rounded;
+        return m_vao.face;
     }
 
     int MeshVertexBuffer::to_vertex_id(int value)

@@ -66,7 +66,7 @@ OpenVolumeMesh::GeometricPolyhedralMeshV3d gen_mesh()
     return mesh;
 }
 
-VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, std::string name = "")
+VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, const std::string& name = "")
 {
     // Note: None of these settings needs to be set before opening the viewer
     //       Most of these examples just set the default value for demonstration
@@ -184,6 +184,7 @@ int main(int argc, char* argv[])
 
     // load mesh into view; get VMesh object in return to operate on
     auto mesh = setup_mesh(ovm_mesh, "Cube");
+    setup_mesh(ovm_mesh, "Cube2");
 
     // graphic settings
     setup_graphics();
