@@ -3,6 +3,8 @@
 in vec3 v_Pos[];
 in vec3 v_Normal[];
 in vec4 v_Color[];
+flat in float v_min_edge_length[];
+in vec3 v_center[];
 in mat4 v_LightSpacePos0[];
 in mat4 v_LightSpacePos1[];
 // in float v_clipspace_z[];
@@ -10,11 +12,12 @@ flat in int v_Visible[];
 flat in int v_isTriangle[];
 flat in float v_VertexTypeRounded[];
 flat in int v_ovm_halfface_id[];
-flat in vec3 v_center[];
 
 out vec3 tc_Pos[];
 out vec3 tc_Normal[];
 out vec4 tc_Color[];
+flat out float tc_min_edge_length[];
+out vec3 tc_center[];
 out mat4 tc_LightSpacePos0[];
 out mat4 tc_LightSpacePos1[];
 // out float tc_clipspace_z[];
@@ -22,7 +25,6 @@ flat out int tc_Visible[];
 flat out int tc_isTriangle[];
 flat out float tc_VertexTypeRounded[];
 flat out int tc_ovm_halfface_id[];
-flat out vec3 tc_center[];
 
 uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
@@ -49,6 +51,8 @@ void main()
     tc_Pos[ID]             =             v_Pos[gl_InvocationID];
     tc_Normal[ID]          =          v_Normal[gl_InvocationID];
     tc_Color[ID]           =           v_Color[gl_InvocationID];
+    tc_min_edge_length[ID] =  v_min_edge_length[gl_InvocationID];
+    tc_center[ID]          =  v_center[gl_InvocationID];
     tc_LightSpacePos0[ID]  =  v_LightSpacePos0[gl_InvocationID];
     tc_LightSpacePos1[ID]  =  v_LightSpacePos1[gl_InvocationID];
     // tc_clipspace_z[ID]     =     v_clipspace_z[gl_InvocationID];
@@ -56,7 +60,6 @@ void main()
     tc_isTriangle[ID]      =      v_isTriangle[gl_InvocationID];
     tc_VertexTypeRounded[ID] =  v_VertexTypeRounded[gl_InvocationID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[gl_InvocationID];
-    tc_center[ID]          =          v_center[gl_InvocationID];
 
     if (ID == 0) 
     {

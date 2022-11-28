@@ -23,6 +23,8 @@ layout (location = 15) in float a_min_edge_length;
 out vec3 v_Pos;
 out vec3 v_Normal;
 out vec4 v_Color;
+flat out float v_min_edge_length;
+out vec3 v_center;
 out mat4 v_LightSpacePos0;
 out mat4 v_LightSpacePos1;
 // out float v_clipspace_z;
@@ -30,7 +32,6 @@ flat out int v_Visible;
 flat out int v_isTriangle;
 flat out float v_VertexTypeRounded;
 flat out int v_ovm_halfface_id;
-flat out vec3 v_center;
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
@@ -116,6 +117,7 @@ void main()
         v_Pos = vec3(0.0, 0.0, 0.0);
         v_Normal = vec3(0.0, 0.0, 0.0);
         v_Color = vec4(0.0, 0.0, 0.0, 0.0);
+        v_min_edge_length = 0.0;
         v_Visible = 0;
         v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
         return;
@@ -182,6 +184,8 @@ void main()
     v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
 
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
+    v_min_edge_length =  a_min_edge_length;
+    v_center = a_center;
 
     float peel_alpha = (u_peel_depth - peel_depth);
     if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
