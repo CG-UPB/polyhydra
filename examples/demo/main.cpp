@@ -184,7 +184,6 @@ int main(int argc, char* argv[])
 
     // load mesh into view; get VMesh object in return to operate on
     auto mesh = setup_mesh(ovm_mesh, "Cube");
-    setup_mesh(ovm_mesh, "Cube2");
 
     // graphic settings
     setup_graphics();

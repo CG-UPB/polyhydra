@@ -1,4 +1,5 @@
 #version 400 core
+#define PI 3.14159265359
 
 layout(triangles, fractional_odd_spacing, ccw) in;
 
@@ -7,6 +8,8 @@ const int MAX_CASCADE_LEVEL = 8;
 in vec3 tc_Pos[];
 in vec3 tc_Normal[];
 in vec4 tc_Color[];
+flat in float tc_min_edge_length[];
+in vec3 tc_center[];
 in mat4 tc_LightSpacePos0[];
 in mat4 tc_LightSpacePos1[];
 // in float tc_clipspace_z[];
@@ -14,7 +17,6 @@ flat in int tc_Visible[];
 flat in int tc_isTriangle[];
 flat in float tc_VertexTypeRounded[];
 flat in int tc_ovm_halfface_id[];
-flat in vec3 tc_center[];
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -34,6 +36,8 @@ uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_transform;
 uniform float u_cell_size;
 uniform bool u_rounding;
+uniform float u_rounding_size;
+uniform float u_average_cell_size;
 // uniform mat4 u_view;
 // uniform vec3 u_cam_pos;
 
@@ -46,6 +50,8 @@ uniform int u_bezier_degree;
 // use texture buffer for control points
 uniform samplerBuffer u_control_points_tb;
 
+const float EDGE_FACTOR = 1.0 / sqrt(2.0);
+const float CORNER_FACTOR = sqrt(2.0);
 
 // a maximum bezier degree needs to be set because the De Casteljau algorithm 
 // needs an array and GLSL only supports local arrays with static sizes
@@ -94,6 +100,11 @@ void copy_control_points(inout vec3 dest[MAX_CPS_PER_TRI], int control_points_of
     for(int i = 0; i < num_tri_cps; i++) {
         dest[i] = texelFetch(u_control_points_tb, control_points_offset + i).xyz;
     }
+}
+
+float get_shrink_factor(float angle, float dist) {
+    float half_angle = angle * 0.5;
+    return dist * (1.0 / cos(half_angle) - tan(half_angle));
 }
 
 void main()
@@ -176,70 +187,90 @@ void main()
         float edge_factor = 0.9;
         float corner_factor = 0.9;
 
+        float r = min(u_rounding_size * u_average_cell_size * 0.3, tc_min_edge_length[1] * 0.3);
+        vec3 face_center = tc_Pos[0] * (1.0/3.0) + tc_Pos[1] * (1.0/3.0) + tc_Pos[2] * (1.0/3.0);
+        float dihedral_angle = PI / 2.0;
+
         if((x == 0.0 && y == 0.0) || (y == 0.0 && z == 0.0) || (x == 0.0 && z == 0.0))
         {
-            // original vertices
+            // CORNER VERTICES
             v_Pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
             v_Normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
+            face_center = tc_center[1];
+            float dist = CORNER_FACTOR * r;
+            vec3 shrink_dir = normalize(face_center - v_Pos);
+            v_Pos += shrink_dir * get_shrink_factor(dihedral_angle, dist);
+
         }
         else
         {
-            // vertices laying on some edge
+            // EDGE VERTICES
             v_Pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
             v_Normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
+
+            float dist = EDGE_FACTOR * r;
 
             if(x == 0.0)
             {
                 if(y > z)
                 {
-                    v_Pos = tc_Pos[1] * edge_factor + tc_Pos[2] * (1.0 - edge_factor);
+                    vec3 edge_dir = normalize(tc_Pos[2] - tc_Pos[1]);
+                    vec3 shrink_dir = normalize(face_center - tc_Pos[1]);
+                    v_Pos = tc_Pos[1] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
                 }
                 else
                 {
-                    v_Pos = tc_Pos[2] * edge_factor + tc_Pos[1] * (1.0 - edge_factor);
+                    vec3 edge_dir = normalize(tc_Pos[1] - tc_Pos[2]);
+                    vec3 shrink_dir = normalize(face_center - tc_Pos[2]);
+                    v_Pos = tc_Pos[2] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
                 }
             }
             else if(y == 0.0)
             {
                 if(x > z)
                 {
-                    v_Pos = tc_Pos[0] * edge_factor + tc_Pos[2] * (1.0 - edge_factor);
+                    vec3 edge_dir = normalize(tc_Pos[2] - tc_Pos[0]);
+                    vec3 shrink_dir = normalize(face_center - tc_Pos[0]);
+                    v_Pos = tc_Pos[0] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
                 }
                 else
                 {
-                    v_Pos = tc_Pos[2] * edge_factor + tc_Pos[0] * (1.0 - edge_factor);
+                    vec3 edge_dir = normalize(tc_Pos[0] - tc_Pos[2]);
+                    vec3 shrink_dir = normalize(face_center - tc_Pos[2]);
+                    v_Pos = tc_Pos[2] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
                 }
             }
             else if(z == 0.0)
             {
                 if(x > y)
                 {
-                    v_Pos = tc_Pos[0] * edge_factor + tc_Pos[1] * (1.0 - edge_factor);
+                    vec3 edge_dir = normalize(tc_Pos[1] - tc_Pos[0]);
+                    vec3 shrink_dir = normalize(face_center - tc_Pos[0]);
+                    v_Pos = tc_Pos[0] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
                 }
                 else
                 {
-                    v_Pos = tc_Pos[1] * edge_factor + tc_Pos[0] * (1.0 - edge_factor);
+                    vec3 edge_dir = normalize(tc_Pos[0] - tc_Pos[1]);
+                    vec3 shrink_dir = normalize(face_center - tc_Pos[1]);
+                    v_Pos = tc_Pos[1] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
                 }
             }
             else
             {
-                // inner points, pull them toward their closest certex
-                // get maximum
-                float f = corner_factor;
-                float g = ((1.0 - corner_factor)/2.0);
-
+                // FACE_VERTICES
                 if(x > y && x > z)
                 {
-                    v_Pos = tc_Pos[0] * f + tc_Pos[1] * g + tc_Pos[2] * g;
+                    v_Pos = tc_Pos[0] + normalize(face_center - tc_Pos[0]) * r;
                 }
                 else if(y > z)
                 {
-                    v_Pos = tc_Pos[0] * g + tc_Pos[1] * f + tc_Pos[2] * g;
+                    v_Pos = tc_Pos[1] + normalize(face_center - tc_Pos[1]) * r;
                 }
                 else
                 {
-                    v_Pos = tc_Pos[0] * g + tc_Pos[1] * g + tc_Pos[2] * f;
+                    v_Pos = tc_Pos[2] + normalize(face_center - tc_Pos[2]) * r;
                 }
+
             }
         }
 

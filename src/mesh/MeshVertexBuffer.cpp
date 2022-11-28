@@ -24,26 +24,14 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::COLOR, {5, 4, false}, mesh_vaos);
         define_attribute(Attribute::IS_ISOLATED, {6, 1, false}, mesh_vaos);
         define_attribute(Attribute::IS_TRIANGLE, {7, 1, false}, mesh_vaos);
-
-        // new vertex attribute: part of original face or
-
-//        const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
-//        const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
-//        const float ROUNDED_VERTEX_TYPE_CORNER   = 2.0;
-//        const float ROUNDED_VERTEX_TYPE_CENTER   = 3.0;
-        define_attribute(Attribute::VERTEX_TYPE, {8, 1, false}, mesh_vaos);
-
-        define_attribute(Attribute::FACE_CENTER, {9, 3, false}, mesh_vaos);
-        define_attribute(Attribute::TO_VERTEX, {10, 3, false}, mesh_vaos);
-        define_attribute(Attribute::DIHEDRAL_ANGLE, {11, 1, false}, mesh_vaos);
-        define_attribute(Attribute::MIN_EDGE_LEN, {15, 1, false}, mesh_vaos);
-
-
+        define_attribute(Attribute::VERTEX_TYPE, {8, 1, false}, mesh_vaos); //
+        define_attribute(Attribute::FACE_CENTER, {9, 3, false}, mesh_vaos); //
+        define_attribute(Attribute::TO_VERTEX, {10, 3, false}, mesh_vaos);  //
+        define_attribute(Attribute::DIHEDRAL_ANGLE, {11, 1, false}, mesh_vaos); //
         define_attribute(Attribute::SELECTION, {12, 1, false}, mesh_vaos);
         define_attribute(Attribute::HOVERED, {13, 1, false}, mesh_vaos);
         define_attribute(Attribute::VERTEX_NORMAL, {14, 3, false}, mesh_vaos);
-
-
+        define_attribute(Attribute::MIN_EDGE_LEN, {15, 1, false}, mesh_vaos);
 
         auto sphere_vaos = {VAO::SPHERE};
         define_attribute(Attribute::POSITION, {0, 3, false}, sphere_vaos);
