@@ -268,6 +268,9 @@ namespace volumeshOS::Internal
 
         void add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
 
+
+        void add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
+
         uint32_t add_vertex_data_to_cell_data(
                 RoundedCellData& data,
                 float type,

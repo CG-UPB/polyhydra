@@ -24,14 +24,26 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::COLOR, {5, 4, false}, mesh_vaos);
         define_attribute(Attribute::IS_ISOLATED, {6, 1, false}, mesh_vaos);
         define_attribute(Attribute::IS_TRIANGLE, {7, 1, false}, mesh_vaos);
+
+        // new vertex attribute: part of original face or
+
+//        const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
+//        const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
+//        const float ROUNDED_VERTEX_TYPE_CORNER   = 2.0;
+//        const float ROUNDED_VERTEX_TYPE_CENTER   = 3.0;
         define_attribute(Attribute::VERTEX_TYPE, {8, 1, false}, mesh_vaos);
+
         define_attribute(Attribute::FACE_CENTER, {9, 3, false}, mesh_vaos);
         define_attribute(Attribute::TO_VERTEX, {10, 3, false}, mesh_vaos);
         define_attribute(Attribute::DIHEDRAL_ANGLE, {11, 1, false}, mesh_vaos);
+        define_attribute(Attribute::MIN_EDGE_LEN, {15, 1, false}, mesh_vaos);
+
+
         define_attribute(Attribute::SELECTION, {12, 1, false}, mesh_vaos);
         define_attribute(Attribute::HOVERED, {13, 1, false}, mesh_vaos);
         define_attribute(Attribute::VERTEX_NORMAL, {14, 3, false}, mesh_vaos);
-        define_attribute(Attribute::MIN_EDGE_LEN, {15, 1, false}, mesh_vaos);
+
+
 
         auto sphere_vaos = {VAO::SPHERE};
         define_attribute(Attribute::POSITION, {0, 3, false}, sphere_vaos);
@@ -557,6 +569,49 @@ namespace volumeshOS::Internal
         data.indices.push_back(m_current_rounded_index + i0);
         data.indices.push_back(m_current_rounded_index + i2);
         data.indices.push_back(m_current_rounded_index + i1);
+    }
+
+    void MeshVertexBuffer::add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
+    {
+        // Attributes for all vertices:
+        //      - Position
+        //      - Normal
+        // Corner vertex (black):
+        //      - Rounding direction into cell (average from adjacent face centers) (vec3)
+        //      - Average dihedral angle of adjacent faces (flat or sharp corner?) (float)
+        // Face vertex (blue):
+        //      - Rounding direction on top of the face (dir to face center) (vec3)
+        // Edge vertex (red):
+        //      - Rounding direction along edge (dir to opposite vertex) (2x vec3)
+        //      - Rounding direction into cell (average from adjacent face centers of the edge) (2x vec3)
+        //      - Dihedral angle between the two adjacent faces (2x float)
+        // Center vertex (green):
+        //      -
+
+        // Per vertex attribute data for rounding (assuming that we only have corner vertices):
+        //      - Rounding direction into cell (average from adjacent face centers) (vec3)
+        //      - Average dihedral angle of adjacent faces (flat or sharp corner?) (float)
+        //      - Rounding direction on top of the face (dir to face center) (vec3)
+        //      - Rounding direction along edge (dir to opposite vertex) (2x vec3)
+        //      - Rounding direction into cell (average from adjacent face centers of the edge) (2x vec3)
+        //      - Dihedral angle between the two adjacent faces (2x float)
+        // Combined:
+        //      - 6x vec3
+        //      - 3x float
+
+
+        // What do we need:
+        // For each halfface of a cell, add the corner vertices and possibly an additional center vertex for hex meshes
+        //      For each added vertex the following attributes:
+        //          - Per Vertex:
+        //              - Is it an additional center vertex?
+        //              - Vertex normal
+        //              - Face center point
+        //          - Per outgoing edge:
+        //              - Dihedral angle between the two adjacent faces of the edge
+        //              - Normal of between the two adjacent face of the edge
+        //              - Center point between the two face centers of the adjacent faces of the edge
+        //
     }
 
     void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
