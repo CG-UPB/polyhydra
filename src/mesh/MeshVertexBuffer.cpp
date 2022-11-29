@@ -25,7 +25,7 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::IS_ISOLATED, {6, 1, false}, mesh_vaos);
         define_attribute(Attribute::IS_TRIANGLE, {7, 1, false}, mesh_vaos);
         define_attribute(Attribute::VERTEX_TYPE, {8, 1, false}, mesh_vaos); //
-        define_attribute(Attribute::FACE_CENTER, {9, 3, false}, mesh_vaos); //
+        define_attribute(Attribute::FACE_CENTER, {9, 4, false}, mesh_vaos); //
         define_attribute(Attribute::TO_VERTEX, {10, 3, false}, mesh_vaos);  //
         define_attribute(Attribute::DIHEDRAL_ANGLE, {11, 1, false}, mesh_vaos); //
         define_attribute(Attribute::SELECTION, {12, 1, false}, mesh_vaos);
@@ -190,6 +190,10 @@ namespace volumeshOS::Internal
         static std::vector<glm::vec3> vertices;
         vertices.clear();
 
+        static std::unordered_map<int, glm::vec4> data_by_vertex_id;
+        data_by_vertex_id.clear();
+        add_cell(mesh, cell, data_by_vertex_id);
+
         // add every vertex only once for the selection, no need to render them twice
         int num_selection_vertices = 0;
         
@@ -343,6 +347,8 @@ namespace volumeshOS::Internal
             halfface_vertices.clear();
             static std::vector<glm::vec3> vertex_normals;
             vertex_normals.clear();
+            static std::vector<int> vertex_ids;
+            vertex_ids.clear();
             for (auto hfhe_it: mesh->halfface_halfedges(chf_it))
             {
                 // get the corresponding edge vertex
@@ -352,6 +358,7 @@ namespace volumeshOS::Internal
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
                 vertex_normals.push_back(vertex_normal);
                 halfface_vertices.push_back(VecUtil::pos_to_vec3(*mesh, vertex));
+                vertex_ids.push_back(vertex.idx());
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
@@ -364,6 +371,7 @@ namespace volumeshOS::Internal
                     auto vertex_pos = halfface_vertices[i];
                     // get geometry data
                     VertexData v_data;
+                    v_data.id = vertex_ids[i];
                     v_data.position = vertex_pos;
                     barycenter += vertex_pos;
                     v_data.halfface_normal = -normal;
@@ -432,6 +440,7 @@ namespace volumeshOS::Internal
                 {
                     auto vertex_pos = halfface_vertices[i];
                     VertexData v_data;
+                    v_data.id = vertex_ids[i];
                     v_data.position = vertex_pos;
                     v_data.halfface_normal = hf_normal;
                     v_data.vertex_normal = vertex_normals[i];
@@ -463,6 +472,8 @@ namespace volumeshOS::Internal
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::VERTEX_NORMAL), vertex.vertex_normal);
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::CELL_CENTER), cell_center);
                 VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+                auto vertex_rounding_data = data_by_vertex_id[vertex.id];
+                VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::FACE_CENTER), vertex_rounding_data);
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(0.0f);
@@ -559,47 +570,68 @@ namespace volumeshOS::Internal
         data.indices.push_back(m_current_rounded_index + i1);
     }
 
-    void MeshVertexBuffer::add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
+    void MeshVertexBuffer::add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell, std::unordered_map<int, glm::vec4>& res)
     {
-        // Attributes for all vertices:
-        //      - Position
-        //      - Normal
-        // Corner vertex (black):
-        //      - Rounding direction into cell (average from adjacent face centers) (vec3)
-        //      - Average dihedral angle of adjacent faces (flat or sharp corner?) (float)
-        // Face vertex (blue):
-        //      - Rounding direction on top of the face (dir to face center) (vec3)
-        // Edge vertex (red):
-        //      - Rounding direction along edge (dir to opposite vertex) (2x vec3)
-        //      - Rounding direction into cell (average from adjacent face centers of the edge) (2x vec3)
-        //      - Dihedral angle between the two adjacent faces (2x float)
-        // Center vertex (green):
-        //      -
+        // iterate over all vertices of the cell and calculate S_c
+        for (auto chf_it: mesh->cell_halffaces(cell))
+        {
+            for (auto hfhe_it: mesh->halfface_halfedges(chf_it))
+            {
+                // this is the corner vertex we are currently looking at
+                auto corner = mesh->from_vertex_handle(hfhe_it);
+                // since we are iterating over the halfedges, we can get vertices twice, so just check the next one
+                if (res.contains(corner.idx()))
+                {
+                    continue;
+                }
+                auto current_halfedge = hfhe_it;
+                auto current_halfface = chf_it;
 
-        // Per vertex attribute data for rounding (assuming that we only have corner vertices):
-        //      - Rounding direction into cell (average from adjacent face centers) (vec3)
-        //      - Average dihedral angle of adjacent faces (flat or sharp corner?) (float)
-        //      - Rounding direction on top of the face (dir to face center) (vec3)
-        //      - Rounding direction along edge (dir to opposite vertex) (2x vec3)
-        //      - Rounding direction into cell (average from adjacent face centers of the edge) (2x vec3)
-        //      - Dihedral angle between the two adjacent faces (2x float)
-        // Combined:
-        //      - 6x vec3
-        //      - 3x float
+                auto corner_pos = VecUtil::pos_to_vec3(*mesh, corner);
+                auto to_pos = VecUtil::pos_to_vec3(*mesh, mesh->to_vertex_handle(current_halfedge));
+                auto n_c = glm::normalize(to_pos - corner_pos);
+                float a_c = 0.0;
+                int out_count = 1;
 
+                auto last_halfface_normal = halfface_normal_to_vec3(chf_it.idx());
 
-        // What do we need:
-        // For each halfface of a cell, add the corner vertices and possibly an additional center vertex for hex meshes
-        //      For each added vertex the following attributes:
-        //          - Per Vertex:
-        //              - Is it an additional center vertex?
-        //              - Vertex normal
-        //              - Face center point
-        //          - Per outgoing edge:
-        //              - Dihedral angle between the two adjacent faces of the edge
-        //              - Normal of between the two adjacent face of the edge
-        //              - Center point between the two face centers of the adjacent faces of the edge
-        //
+                auto current_halfedge_length = mesh->length(hfhe_it);
+                auto min_halfedge_len = current_halfedge_length;
+                do
+                {
+                    current_halfface = mesh->adjacent_halfface_in_cell(current_halfface, current_halfedge);
+                    auto current_halfface_normal = halfface_normal_to_vec3(current_halfface.idx());
+                    a_c += PI - VecUtil::get_angle(current_halfface_normal, last_halfface_normal);
+                    out_count++;
+                    // exit condition, we have closed the loop
+                    if (current_halfface == chf_it)
+                    {
+                        break;
+                    }
+                    // now that we have our next halfface, we need to find the associated halfedge that starts at
+                    // the corner vertex within the halfface
+                    for (auto chfhe_it : mesh->halfface_halfedges(current_halfface))
+                    {
+                        auto from = mesh->from_vertex_handle(chfhe_it);
+                        // we have found our halfedge
+                        if (from == corner && current_halfedge != chfhe_it)
+                        {
+                            to_pos = VecUtil::pos_to_vec3(*mesh, mesh->to_vertex_handle(current_halfedge));
+                            n_c += glm::normalize(to_pos - corner_pos);
+                            current_halfedge_length = mesh->length(current_halfedge);
+                            if (current_halfedge_length < min_halfedge_len)
+                            {
+                                min_halfedge_len = current_halfedge_length;
+                            }
+                            break;
+                        }
+                    }
+                    last_halfface_normal = current_halfface_normal;
+                } while (current_halfface != chf_it);
+                auto s_c = glm::normalize(n_c) / (float) glm::sin(a_c / (2.0 * out_count));
+                res[corner.idx()] = glm::vec4{s_c, min_halfedge_len};
+            }
+        }
     }
 
     void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)

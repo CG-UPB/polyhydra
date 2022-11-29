@@ -12,7 +12,7 @@ layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
 layout (location = 7) in float a_is_triangle;
 layout (location = 8) in float a_vertex_type_rounded;
-layout (location = 9) in vec3 a_face_center_rounded;
+layout (location = 9) in vec4 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 12) in float a_is_selected;
@@ -194,6 +194,7 @@ void main()
     }
 
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
+    v_Color = a_face_center_rounded;
 
     if (a_hovered != 0.0)
     {

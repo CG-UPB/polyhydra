@@ -9,6 +9,7 @@ namespace volumeshOS::Internal
 
     struct VertexData
     {
+        int id;
         glm::vec3 position{};
         glm::vec3 halfface_normal{};
         glm::vec3 vertex_normal{};
@@ -269,7 +270,7 @@ namespace volumeshOS::Internal
         void add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
 
 
-        void add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
+        void add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell, std::unordered_map<int, glm::vec4>& res);
 
         uint32_t add_vertex_data_to_cell_data(
                 RoundedCellData& data,
