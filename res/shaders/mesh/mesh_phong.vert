@@ -194,7 +194,6 @@ void main()
     }
 
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
-    v_Color = a_face_center_rounded;
 
     if (a_hovered != 0.0)
     {

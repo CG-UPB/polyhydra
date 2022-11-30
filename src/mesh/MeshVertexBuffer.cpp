@@ -472,6 +472,9 @@ namespace volumeshOS::Internal
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::VERTEX_NORMAL), vertex.vertex_normal);
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::CELL_CENTER), cell_center);
                 VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+                get_attrib_array(VAO::MESH_FACE, Attribute::VERTEX_TYPE).push_back(0.0f);
+                get_attrib_array(VAO::MESH_FACE, Attribute::DIHEDRAL_ANGLE).push_back(0.0f);
+                VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::TO_VERTEX), glm::vec3{});
                 auto vertex_rounding_data = data_by_vertex_id[vertex.id];
                 VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::FACE_CENTER), vertex_rounding_data);
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
@@ -610,11 +613,25 @@ namespace volumeshOS::Internal
                     }
                     // now that we have our next halfface, we need to find the associated halfedge that starts at
                     // the corner vertex within the halfface
-                    for (auto chfhe_it : mesh->halfface_halfedges(current_halfface))
+                    for (auto chfe_it: mesh->halfface_edges(current_halfface))
                     {
-                        auto from = mesh->from_vertex_handle(chfhe_it);
+                        auto hes = mesh->edge_halfedges(chfe_it);
+                        auto from0 = mesh->from_vertex_handle(hes[0]);
+                        auto from1 = mesh->from_vertex_handle(hes[1]);
+                        auto found = false;
+                        if (from0 == corner && current_halfedge != hes[0])
+                        {
+                            // we have found our halfedge
+                            current_halfedge = hes[0];
+                            found = true;
+                        }
+                        else if (from1 == corner && current_halfedge != hes[1])
+                        {
+                            current_halfedge = hes[1];
+                            found = true;
+                        }
                         // we have found our halfedge
-                        if (from == corner && current_halfedge != chfhe_it)
+                        if (found)
                         {
                             to_pos = VecUtil::pos_to_vec3(*mesh, mesh->to_vertex_handle(current_halfedge));
                             n_c += glm::normalize(to_pos - corner_pos);
