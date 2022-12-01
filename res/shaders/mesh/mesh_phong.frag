@@ -388,9 +388,6 @@ float get_shadow(vec3 normal, vec3 light_dir)
 
 void main()
 {
-    float depth = texelFetch(u_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
-
-
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 //    if (u_draw_wireframe)
 //    {
@@ -407,7 +404,7 @@ void main()
     }
 
 #if 0 // show wireframe on top of the mesh, comment out the other wireframe stuff on top or this won't work
-    draw_wireframe_ontop(uv);
+    //draw_wireframe_ontop(uv);
     //return;
 #endif
 
@@ -426,11 +423,11 @@ void main()
 
 
     float shadow = 0.0;
-    if (u_draw_shadows)
-    {
-        shadow = get_shadow(n, l);
-        shadow = shadow * u_shadow_strength;
-    }
+//    if (u_draw_shadows)
+//    {
+//        shadow = get_shadow(n, l);
+//        shadow = shadow * u_shadow_strength;
+//    }
 
     // Phong Shading
     vec4 used_color = vec4(1.0f);
