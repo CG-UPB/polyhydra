@@ -30,7 +30,30 @@ namespace volumeshOS::Internal
         scale(glm::vec3(1.0f));
 
         m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
-        m_mtb = std::make_shared<MeshTextureBuffer>(m_mesh);
+        m_mtb = std::make_shared<MeshTextureBuffer>(m_mesh, GL_TEXTURE12);
+        update_texture_buffer();
+    }
+
+    void MeshObject::update_texture_buffer()
+    {
+        if(*m_mesh->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER)->begin())
+        {
+            OpenVolumeMesh::FacePropertyT<std::vector<double>> controlPointProp =
+                    m_mesh->request_face_property<std::vector<double>>(MeshProperties::PROP_BEZIER_FACE_CONTROL_POINTS);
+
+            std::vector<float> bezier_control_points_array;
+            // iterate over values and copy them into m_bezier_control_points_array
+            int i = 0;
+            for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin(); f_it != m_mesh->faces_end(); ++f_it)
+            {
+                for (double cp_coord: controlPointProp[*f_it])
+                {
+                    bezier_control_points_array.push_back((float) cp_coord);
+                    i++;
+                }
+            }
+            m_mtb->update_buffer(sizeof(float)*controlPointProp.size()*(controlPointProp.begin()->size()), bezier_control_points_array);
+        }
     }
 
     void MeshObject::update_vertex_buffer()

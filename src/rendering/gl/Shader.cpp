@@ -210,6 +210,13 @@ namespace volumeshOS::Internal
         this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
     }
 
+    void Shader::set_uniform_texbuffer(const std::string& name, uint32_t binding, uint32_t texture_id)
+    {
+        glActiveTexture(binding);
+        glBindTexture(GL_TEXTURE_BUFFER, texture_id);
+        this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
+    }
+
     void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& value)
     {
         glUniformMatrix4fv(get_uniform(name), 1, GL_FALSE, &value[0][0]);

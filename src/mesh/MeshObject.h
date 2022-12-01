@@ -92,6 +92,8 @@ namespace volumeshOS::Internal
          */
         void update_vertex_buffer();
 
+        void update_texture_buffer();
+
         /**
          * converts selection id of vertices to OVM id
          * @param value id value

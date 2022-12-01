@@ -6,9 +6,11 @@ layout(triangles, equal_spacing, ccw) in;
 const int MAX_CASCADE_LEVEL = 8;
 
 in vec3 tc_Pos[];
-in vec3 tc_Normal[];
+in vec3 tc_FaceNormal[];
+in vec3 tc_VertexNormal[];
 in vec4 tc_Color[];
 flat in float tc_min_edge_length[];
+in vec4 tc_rounding_sphere_center[];
 in vec3 tc_center[];
 in mat4 tc_LightSpacePos0[];
 in mat4 tc_LightSpacePos1[];
@@ -28,17 +30,36 @@ flat out int v_isTriangle;
 flat out float v_VertexTypeRounded;
 flat out int v_tesInnerTri;
 
+//out vec3 v_pos;
+//out vec3 v_normal;
+//out vec4 v_color;
+//out vec4 v_pos_ls[MAX_CASCADE_LEVEL];
+//flat out int v_visible;
+//out float v_clipspace_z;
+//flat out int v_tes_inner_tri;
+//
+//out vec3 v_tri_dist;
+//flat out int v_is_triangle;
+//flat out vec4 v_a_adir;
+//flat out vec4 v_b_bdir;
+//flat out int v_use_lookup_path;
+
+
+
 // necessary for calculating bezier mesh face normals
 uniform mat4 u_transform;
 uniform mat4 u_view;
 uniform mat4 u_projection;
+
 uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_transform;
 uniform float u_cell_size;
+uniform bool u_wireframe;
 uniform bool u_rounding;
 uniform float u_rounding_size;
 uniform float u_average_cell_size;
+uniform bool u_use_vertex_normals;
 // uniform mat4 u_view;
 // uniform vec3 u_cam_pos;
 
@@ -53,6 +74,17 @@ uniform samplerBuffer u_control_points_tb;
 
 const float EDGE_FACTOR = 1.0 / sqrt(2.0);
 const float CORNER_FACTOR = sqrt(2.0);
+
+const ivec4 lookup[8] = ivec4[](
+ivec4(3, 3, 3, 3),  // [0][0][0]
+ivec4(2, 2, 0, 1),  // [0][0][1]
+ivec4(1, 1, 0, 2),  // [0][1][0]
+ivec4(1, 2, 0, 0),  // [0][1][1]
+ivec4(0, 0, 1, 2),  // [1][0][0]
+ivec4(0, 2, 1, 1),  // [1][0][1]
+ivec4(0, 1, 2, 2),  // [1][1][0]
+ivec4(3, 3, 3, 3)   // [1][1][1]
+);
 
 // a maximum bezier degree needs to be set because the De Casteljau algorithm
 // needs an array and GLSL only supports local arrays with static sizes
@@ -106,6 +138,11 @@ void copy_control_points(inout vec3 dest[MAX_CPS_PER_TRI], int control_points_of
 float get_shrink_factor(float angle, float dist) {
     float half_angle = angle * 0.5;
     return dist * (1.0 / cos(half_angle) - tan(half_angle));
+}
+
+float dist_to_edge(vec3 e0, vec3 e1, vec3 p)
+{
+    return length(cross(p - e0, p - e1)) / length(e1 - e0);
 }
 
 void main()
@@ -164,34 +201,38 @@ void main()
     
         // Casced Shaowmap for Bézier meshes.
         // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
-        mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
-        v_LightSpacePos0[0] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[1] * u_light_view[1] * u_light_transform;
-        v_LightSpacePos0[1] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[2] * u_light_view[2] * u_light_transform;
-        v_LightSpacePos0[2] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[3] * u_light_view[3] * u_light_transform;
-        v_LightSpacePos0[3] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[4] * u_light_view[4] * u_light_transform;
-        v_LightSpacePos1[0] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[5] * u_light_view[5] * u_light_transform;
-        v_LightSpacePos1[1] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[6] * u_light_view[6] * u_light_transform;
-        v_LightSpacePos1[2] = light_space_mat * vec4(pos, 1.0);
-        light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
-        v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
+//        mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
+//        v_LightSpacePos0[0] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[1] * u_light_view[1] * u_light_transform;
+//        v_LightSpacePos0[1] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[2] * u_light_view[2] * u_light_transform;
+//        v_LightSpacePos0[2] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[3] * u_light_view[3] * u_light_transform;
+//        v_LightSpacePos0[3] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[4] * u_light_view[4] * u_light_transform;
+//        v_LightSpacePos1[0] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[5] * u_light_view[5] * u_light_transform;
+//        v_LightSpacePos1[1] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[6] * u_light_view[6] * u_light_transform;
+//        v_LightSpacePos1[2] = light_space_mat * vec4(pos, 1.0);
+//        light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
+//        v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
+    }
+    else if(u_wireframe)
+    {
+
     }
     else
     {
 
         v_tesInnerTri = 0;
-        v_LightSpacePos0  = tc_LightSpacePos0[0] *x + tc_LightSpacePos0[1] *y + tc_LightSpacePos0[2] *z;
-        v_LightSpacePos1  = tc_LightSpacePos1[0] *x + tc_LightSpacePos1[1] *y + tc_LightSpacePos1[2] *z;
+//        v_LightSpacePos0  = tc_LightSpacePos0[0] *x + tc_LightSpacePos0[1] *y + tc_LightSpacePos0[2] *z;
+//        v_LightSpacePos1  = tc_LightSpacePos1[0] *x + tc_LightSpacePos1[1] *y + tc_LightSpacePos1[2] *z;
 
         float edge_factor = 0.9;
         float corner_factor = 0.9;
 
-        float r = min(u_rounding_size * u_average_cell_size * 0.3, tc_min_edge_length[1] * 0.3);
+        float r = min(u_rounding_size * u_average_cell_size * 0.3, u_rounding_size * tc_min_edge_length[1] * 0.3);
         vec3 face_center = tc_Pos[0] * (1.0/3.0) + tc_Pos[1] * (1.0/3.0) + tc_Pos[2] * (1.0/3.0);
         float dihedral_angle = PI / 2.0;
 
@@ -199,86 +240,105 @@ void main()
         {
             // CORNER VERTICES
             v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
-            v_normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
-            face_center = tc_center[1];
-            float dist = CORNER_FACTOR * r;
-            vec3 shrink_dir = normalize(face_center - v_pos);
-            v_pos += shrink_dir * get_shrink_factor(dihedral_angle, dist);
+            vec4 rounding_center = tc_rounding_sphere_center[0] * x + tc_rounding_sphere_center[1] * y + tc_rounding_sphere_center[2] * z;
+            if(u_use_vertex_normals)
+            {
+                v_normal = tc_VertexNormal[0] * x + tc_VertexNormal[1] * y + tc_VertexNormal[2] * z;
+            }
+            else
+            {
+                v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
+            }
 
+//            face_center = tc_rounding_sphere_center[idx].xyz;
+//            float dist = CORNER_FACTOR * r;
+//            vec3 shrink_dir = normalize(face_center - v_Pos);
+//            v_Pos += shrink_dir * get_shrink_factor(dihedral_angle, dist);
+            vec3 p_c = v_pos + r * rounding_center.xyz;
+            v_pos = p_c + r * (v_pos - p_c);
+        }
+        else if(x != 0.0 && y != 0.0 && z != 0.0)
+        {
+            v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+            v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
+            // FACE_VERTICES
+            if(x > y && x > z)
+            {
+                vec4 rounding_center = tc_rounding_sphere_center[0];
+                vec3 p_c = v_pos + r * rounding_center.xyz;
+                v_pos = p_c + r * (v_pos - p_c);
+            }
+            else if(y > z)
+            {
+                vec4 rounding_center = tc_rounding_sphere_center[1];
+                vec3 p_c = v_pos + r * rounding_center.xyz;
+                v_pos = p_c + r * (v_pos - p_c);
+            }
+            else
+            {
+                vec4 rounding_center = tc_rounding_sphere_center[2];
+                vec3 p_c = v_pos + r * rounding_center.xyz;
+                v_pos = p_c + r * (v_pos - p_c);
+            }
         }
         else
         {
             // EDGE VERTICES
             v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
-            v_normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
+            v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
 
             float dist = EDGE_FACTOR * r;
+
+            int from_idx = -1;
+            int to_idx = -1;
 
             if(x == 0.0)
             {
                 if(y > z)
                 {
-                    vec3 edge_dir = normalize(tc_Pos[2] - tc_Pos[1]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[1]);
-                    v_Pos = tc_Pos[1] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
+                    to_idx = 2;
+                    from_idx = 1;
                 }
                 else
                 {
-                    vec3 edge_dir = normalize(tc_Pos[1] - tc_Pos[2]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[2]);
-                    v_pos = tc_Pos[2] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
+                    to_idx = 1;
+                    from_idx = 2;
                 }
             }
             else if(y == 0.0)
             {
                 if(x > z)
                 {
-                    vec3 edge_dir = normalize(tc_Pos[2] - tc_Pos[0]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[0]);
-                    v_pos = tc_Pos[0] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
+                    to_idx = 2;
+                    from_idx = 0;
                 }
                 else
                 {
-                    vec3 edge_dir = normalize(tc_Pos[0] - tc_Pos[2]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[2]);
-                    v_pos = tc_Pos[2] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
+                    to_idx = 0;
+                    from_idx = 2;
                 }
             }
             else if(z == 0.0)
             {
                 if(x > y)
                 {
-                    vec3 edge_dir = normalize(tc_Pos[1] - tc_Pos[0]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[0]);
-                    v_pos = tc_Pos[0] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
+                    to_idx = 1;
+                    from_idx = 0;
                 }
                 else
                 {
-                    vec3 edge_dir = normalize(tc_Pos[0] - tc_Pos[1]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[1]);
-                    v_pos = tc_Pos[1] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
-                }
-            }
-            else
-            {
-                // FACE_VERTICES
-                if(x > y && x > z)
-                {
-                    v_pos = tc_Pos[0] + normalize(face_center - tc_Pos[0]) * r;
-                }
-                else if(y > z)
-                {
-                    v_pos = tc_Pos[1] + normalize(face_center - tc_Pos[1]) * r;
-                }
-                else
-                {
-                    v_pos = tc_Pos[2] + normalize(face_center - tc_Pos[2]) * r;
+                    to_idx = 0;
+                    from_idx = 1;
                 }
 
             }
+            vec4 rounding_center = tc_rounding_sphere_center[from_idx];
+            vec3 p_c = v_pos + r * rounding_center.xyz;
+            v_pos = p_c + r * (v_pos - p_c);
         }
-
+        gl_Position = u_projection * u_view * vec4(v_pos, 1.0);
     }
+
 
     // in any case use the values of vertex shader for these values 
     v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;

@@ -3,11 +3,13 @@
 layout(vertices = 3) out;
 
 in vec3 v_Pos[];
-in vec3 v_Normal[];
+in vec3 v_FaceNormal[];
+in vec3 v_VertexNormal[];
 in vec4 v_Color[];
 in vec2 v_UV[];
 
 flat in float v_min_edge_length[];
+in vec4 v_rounding_sphere_center[];
 in vec3 v_center[];
 in mat4 v_LightSpacePos0[];
 in mat4 v_LightSpacePos1[];
@@ -18,9 +20,11 @@ flat in float v_VertexTypeRounded[];
 flat in int v_ovm_halfface_id[];
 
 out vec3 tc_Pos[];
-out vec3 tc_Normal[];
+out vec3 tc_FaceNormal[];
+out vec3 tc_VertexNormal[];
 out vec4 tc_Color[];
 flat out float tc_min_edge_length[];
+out vec4 tc_rounding_sphere_center[];
 out vec3 tc_center[];
 out mat4 tc_LightSpacePos0[];
 out mat4 tc_LightSpacePos1[];
@@ -30,6 +34,7 @@ flat out int tc_isTriangle[];
 flat out float tc_VertexTypeRounded[];
 flat out int tc_ovm_halfface_id[];
 
+uniform bool u_rounding;
 uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
 uniform int u_bezier_tessellation_level;
@@ -46,9 +51,11 @@ void main()
     }
 
     tc_Pos[ID]             =             v_Pos[gl_InvocationID];
-    tc_Normal[ID]          =          v_Normal[gl_InvocationID];
+    tc_FaceNormal[ID]      =          v_FaceNormal[gl_InvocationID];
+    tc_VertexNormal[ID]    =          v_VertexNormal[gl_InvocationID];
     tc_Color[ID]           =           v_Color[gl_InvocationID];
     tc_min_edge_length[ID] =  v_min_edge_length[gl_InvocationID];
+    tc_rounding_sphere_center[ID] = v_rounding_sphere_center[gl_InvocationID];
     tc_center[ID]          =  v_center[gl_InvocationID];
     tc_LightSpacePos0[ID]  =  v_LightSpacePos0[gl_InvocationID];
     tc_LightSpacePos1[ID]  =  v_LightSpacePos1[gl_InvocationID];

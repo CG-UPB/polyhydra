@@ -21,9 +21,11 @@ layout (location = 14) in vec3 a_vertex_normal;
 layout (location = 15) in float a_min_edge_length;
 
 out vec3 v_Pos;
-out vec3 v_Normal;
+out vec3 v_FaceNormal;
+out vec3 v_VertexNormal;
 out vec4 v_Color;
 flat out float v_min_edge_length;
+out vec4 v_rounding_sphere_center;
 out vec3 v_center;
 out mat4 v_LightSpacePos0;
 out mat4 v_LightSpacePos1;
@@ -115,7 +117,8 @@ void main()
     if (peel_depth + 1.0 <= u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
     {
         v_Pos = vec3(0.0, 0.0, 0.0);
-        v_Normal = vec3(0.0, 0.0, 0.0);
+        v_FaceNormal = vec3(0.0, 0.0, 0.0);
+        v_VertexNormal = vec3(0.0, 0.0, 0.0);
         v_Color = vec4(0.0, 0.0, 0.0, 0.0);
         v_min_edge_length = 0.0;
         v_Visible = 0;
@@ -163,7 +166,9 @@ void main()
     }
 
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
-    v_Normal = mat3(transpose(inverse(u_transform))) * normal;
+
+    v_FaceNormal = mat3(transpose(inverse(u_transform))) * a_normal;
+    v_VertexNormal = mat3(transpose(inverse(u_transform))) * a_vertex_normal;
 
     // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
     mat4 light_space_mat = u_light_projection[0] * u_light_view[0] * u_light_transform;
@@ -186,6 +191,7 @@ void main()
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
     v_min_edge_length =  a_min_edge_length;
     v_center = a_center;
+    v_rounding_sphere_center = a_face_center_rounded;
 
     float peel_alpha = (u_peel_depth - peel_depth);
     if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
