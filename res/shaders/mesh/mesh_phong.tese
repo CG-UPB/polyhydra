@@ -145,6 +145,19 @@ float dist_to_edge(vec3 e0, vec3 e1, vec3 p)
     return length(cross(p - e0, p - e1)) / length(e1 - e0);
 }
 
+mat3 get_edge_triangle(int corner_idx, float l)
+{
+    vec3 a,b,c = vec3(0.0);
+
+    return mat3(a,b,c);
+}
+
+vec3 get_sphere_point_of_contact(int corner_idx)
+{
+
+    return vec3(0.0);
+}
+
 void main()
 {
     // barycentric coordinates of current triangle
@@ -229,12 +242,9 @@ void main()
 //        v_LightSpacePos0  = tc_LightSpacePos0[0] *x + tc_LightSpacePos0[1] *y + tc_LightSpacePos0[2] *z;
 //        v_LightSpacePos1  = tc_LightSpacePos1[0] *x + tc_LightSpacePos1[1] *y + tc_LightSpacePos1[2] *z;
 
-        float edge_factor = 0.9;
-        float corner_factor = 0.9;
 
         float r = min(u_rounding_size * u_average_cell_size * 0.3, u_rounding_size * tc_min_edge_length[1] * 0.3);
-        vec3 face_center = tc_Pos[0] * (1.0/3.0) + tc_Pos[1] * (1.0/3.0) + tc_Pos[2] * (1.0/3.0);
-        float dihedral_angle = PI / 2.0;
+        r = u_rounding_size * (tc_min_edge_length[1] * 0.3);
 
         if((x == 0.0 && y == 0.0) || (y == 0.0 && z == 0.0) || (x == 0.0 && z == 0.0))
         {
@@ -250,12 +260,9 @@ void main()
                 v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
             }
 
-//            face_center = tc_rounding_sphere_center[idx].xyz;
-//            float dist = CORNER_FACTOR * r;
-//            vec3 shrink_dir = normalize(face_center - v_Pos);
-//            v_Pos += shrink_dir * get_shrink_factor(dihedral_angle, dist);
             vec3 p_c = v_pos + r * rounding_center.xyz;
-            v_pos = p_c + r * (v_pos - p_c);
+            v_normal = normalize(v_pos - p_c);
+            v_pos = p_c + r * v_normal;
         }
         else if(x != 0.0 && y != 0.0 && z != 0.0)
         {
@@ -266,19 +273,22 @@ void main()
             {
                 vec4 rounding_center = tc_rounding_sphere_center[0];
                 vec3 p_c = v_pos + r * rounding_center.xyz;
-                v_pos = p_c + r * (v_pos - p_c);
+                v_normal = normalize(v_pos - p_c);
+                v_pos = p_c + r * v_normal;
             }
             else if(y > z)
             {
                 vec4 rounding_center = tc_rounding_sphere_center[1];
                 vec3 p_c = v_pos + r * rounding_center.xyz;
-                v_pos = p_c + r * (v_pos - p_c);
+                v_normal = normalize(v_pos - p_c);
+                v_pos = p_c + r * v_normal;
             }
             else
             {
                 vec4 rounding_center = tc_rounding_sphere_center[2];
                 vec3 p_c = v_pos + r * rounding_center.xyz;
-                v_pos = p_c + r * (v_pos - p_c);
+                v_normal = normalize(v_pos - p_c);
+                v_pos = p_c + r * v_normal;
             }
         }
         else
