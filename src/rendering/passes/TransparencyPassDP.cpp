@@ -223,7 +223,7 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_sampler2D("max_depth_texture", GL_TEXTURE1, depth_texture);
 
         m_transparency_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
-        if(is_bezier_mesh) 
+        if(is_bezier_mesh)
         {
             auto mtb = mesh->get_mtb();
             // Use Bezier Mesh Property to set uniform.

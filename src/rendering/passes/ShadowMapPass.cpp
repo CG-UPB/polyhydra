@@ -4,51 +4,61 @@
 
 namespace volumeshOS::Internal
 {
-    ShadowMapPass::ShadowMapPass(int width, int height) : m_width(width), m_height(height)
+    ShadowMapPass::ShadowMapPass(int width, int height) :
+    m_width(width), m_height(height)
     {
         m_shadow_shader = Shader::get("shadow_map");
         m_debug_shader = Shader::get("shadow_debug");
         m_debug_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
-        generate_cascade_textures(width, height);
+        generate_cascade_textures();
     }
 
-    void ShadowMapPass::generate_cascade_textures(int width, int height)
+    void ShadowMapPass::generate_cascade_textures()
     {
-        glGenFramebuffers(1, &m_shadow_framebuffer);
 
-        glGenTextures(1, &m_depth_texture);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, m_depth_texture);
-        glTexImage3D(
-                GL_TEXTURE_2D_ARRAY,
-                0,
-                GL_DEPTH_COMPONENT32F,
-                width,
-                height,
-                max_cascades + 1,
-                0,
-                GL_DEPTH_COMPONENT,
-                GL_FLOAT,
-                nullptr);
+        std::vector<FrameBufferAttachment> attachments =
+                {
+                        FrameBufferAttachment{
+                                .internal_format    = GL_RGBA,
+                                .format             = GL_RGBA,
+                                .type               = GL_UNSIGNED_BYTE,
+                                .attachment         = GL_COLOR_ATTACHMENT0,
+                                .texture_filter     = GL_LINEAR,
+                                .texture_wrap       = GL_CLAMP_TO_EDGE
+                        }
+                };
+        m_shadow_framebuffer = std::make_shared<FrameBufferObject>(m_width, m_height, attachments);;
+        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
 
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        for(unsigned int i = 0; i < max_cascades; i++)
+        {
+            unsigned int tex;
+            glGenTextures(1, &tex);
+            glBindTexture(GL_TEXTURE_2D, tex);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
-        glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
+            constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+            shadow_maps[i] = tex;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_framebuffer);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_texture, 0);
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
 
-        int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE)
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        if(status != GL_FRAMEBUFFER_COMPLETE)
         {
             std::cout << "Error: " << status << std::endl;
             exit(1);
         }
+
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -70,7 +80,7 @@ namespace volumeshOS::Internal
 
         m_shadow_shader->bind();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_framebuffer);
+        m_shadow_framebuffer->bind();
 
         glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
         glViewport(0, 0, m_width, m_height);
@@ -151,10 +161,11 @@ namespace volumeshOS::Internal
     {
         m_width = width;
         m_height = height;
-        glDeleteTextures(1, &m_depth_texture);
-        glDeleteFramebuffers(1, &m_shadow_framebuffer);
+        glDeleteTextures((int) max_cascades, &shadow_maps[0]);
+        m_shadow_framebuffer->resize(width, height);
         m_debug_framebuffer->resize(width, height);
-        generate_cascade_textures(width, height);
+
+        generate_cascade_textures();
     }
 
     void ShadowMapPass::calculate_cascades(const Renderer& renderer)

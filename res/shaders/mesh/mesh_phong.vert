@@ -29,7 +29,7 @@ out vec4 v_rounding_sphere_center;
 out vec3 v_center;
 out mat4 v_LightSpacePos0;
 out mat4 v_LightSpacePos1;
-// out float v_clipspace_z;
+//out float v_clipspace_z;
 flat out int v_Visible;
 flat out int v_isTriangle;
 flat out float v_VertexTypeRounded;
@@ -129,32 +129,6 @@ void main()
     // Roundings
     vec3 position = a_pos;
     float alpha = u_object_color.a * a_color.a;
-//    if (u_rounding)
-//    {
-//        float type = a_vertex_type_rounded;
-//        float r = min(u_rounding_size * u_average_cell_size * 0.3, a_min_edge_length * 0.3);
-//        // this vertex lies on the inner triangle
-//        if (type == ROUNDED_VERTEX_TYPE_FACE)
-//        {
-//            position += normalize(a_face_center_rounded - position) * r;
-//        }
-//        // this vertex lies on an edge
-//        else if (type == ROUNDED_VERTEX_TYPE_EDGE)
-//        {
-//            float dist = EDGE_FACTOR * r;
-//            vec3 edge_dir = normalize(a_to_vertex_rounded - position);
-//            vec3 shrink_dir = normalize(a_face_center_rounded - position);
-//            position += edge_dir * dist + shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
-//        }
-//        // this is a corner vertex
-//        else if (type == ROUNDED_VERTEX_TYPE_CORNER)
-//        {
-//            float dist = CORNER_FACTOR * r;
-//            vec3 shrink_dir = normalize(a_face_center_rounded - position);
-//            position += shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
-//        }
-//        v_VertexTypeRounded = type;
-//    }
 
     mat4 cam_space_mat = u_projection * view_transform;
     vec3 pos = a_center + (position - a_center) * u_cell_size;

@@ -191,7 +191,7 @@ namespace volumeshOS::Internal
 
         m_ground_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
 
-        m_vao->draw();
+        m_vao->draw_patches();
 
         m_ground_shader->unbind();
         renderer.buffers.target_framebuffer_ms->unbind();

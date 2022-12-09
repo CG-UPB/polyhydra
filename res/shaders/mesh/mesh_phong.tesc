@@ -50,20 +50,20 @@ void main()
         sourceID = (sourceID+1)%3;
     }
 
-    tc_Pos[ID]             =             v_Pos[gl_InvocationID];
-    tc_FaceNormal[ID]      =          v_FaceNormal[gl_InvocationID];
-    tc_VertexNormal[ID]    =          v_VertexNormal[gl_InvocationID];
-    tc_Color[ID]           =           v_Color[gl_InvocationID];
-    tc_min_edge_length[ID] =  v_min_edge_length[gl_InvocationID];
-    tc_rounding_sphere_center[ID] = v_rounding_sphere_center[gl_InvocationID];
-    tc_center[ID]          =  v_center[gl_InvocationID];
-    tc_LightSpacePos0[ID]  =  v_LightSpacePos0[gl_InvocationID];
-    tc_LightSpacePos1[ID]  =  v_LightSpacePos1[gl_InvocationID];
+    tc_Pos[ID]             =             v_Pos[sourceID];
+    tc_FaceNormal[ID]      =          v_FaceNormal[sourceID];
+    tc_VertexNormal[ID]    =          v_VertexNormal[sourceID];
+    tc_Color[ID]           =           v_Color[sourceID];
+    tc_min_edge_length[ID] =  v_min_edge_length[sourceID];
+    tc_rounding_sphere_center[ID] = v_rounding_sphere_center[sourceID];
+    tc_center[ID]          =  v_center[sourceID];
+    tc_LightSpacePos0[ID]  =  v_LightSpacePos0[sourceID];
+    tc_LightSpacePos1[ID]  =  v_LightSpacePos1[sourceID];
     // tc_clipspace_z[ID]     =     v_clipspace_z[gl_InvocationID];
-    tc_Visible[ID]         =         v_Visible[gl_InvocationID];
-    tc_isTriangle[ID]      =      v_isTriangle[gl_InvocationID];
-    tc_VertexTypeRounded[ID] =  v_VertexTypeRounded[gl_InvocationID];
-    tc_ovm_halfface_id[ID] = v_ovm_halfface_id[gl_InvocationID];
+    tc_Visible[ID]         =         v_Visible[sourceID];
+    tc_isTriangle[ID]      =      v_isTriangle[sourceID];
+    tc_VertexTypeRounded[ID] =  v_VertexTypeRounded[sourceID];
+    tc_ovm_halfface_id[ID] = v_ovm_halfface_id[sourceID];
 
     if (ID == 0) 
     {

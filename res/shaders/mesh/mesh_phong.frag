@@ -57,7 +57,9 @@ uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
 uniform sampler2D u_transparent_shadow_texture;
 uniform sampler2D u_color_filter_texture;
-uniform sampler2DArray u_shadow_texture;
+uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
+
+//uniform sampler2DArray u_shadow_texture;
 
 out vec4 FragColor;
 
@@ -389,11 +391,11 @@ float get_shadow(vec3 normal, vec3 light_dir)
 void main()
 {
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
-//    if (u_draw_wireframe)
-//    {
-//        draw_wireframe(uv);
-//        return;
-//    }
+    if (u_draw_wireframe)
+    {
+        draw_wireframe(uv);
+        return;
+    }
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
@@ -403,10 +405,10 @@ void main()
         discard;
     }
 
-#if 0 // show wireframe on top of the mesh, comment out the other wireframe stuff on top or this won't work
-    //draw_wireframe_ontop(uv);
-    //return;
-#endif
+//#if 0 // show wireframe on top of the mesh, comment out the other wireframe stuff on top or this won't work
+//    draw_wireframe_ontop(uv);
+//    return;
+//#endif
 
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
@@ -423,11 +425,11 @@ void main()
 
 
     float shadow = 0.0;
-//    if (u_draw_shadows)
-//    {
-//        shadow = get_shadow(n, l);
-//        shadow = shadow * u_shadow_strength;
-//    }
+    if (u_draw_shadows)
+    {
+        shadow = get_shadow(n, l);
+        shadow = shadow * u_shadow_strength;
+    }
 
     // Phong Shading
     vec4 used_color = vec4(1.0f);

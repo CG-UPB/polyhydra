@@ -32,6 +32,7 @@ uniform vec3 u_max;
 uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 uniform float u_average_cell_size;
+uniform int u_cascade_level;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
