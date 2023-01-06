@@ -27,9 +27,8 @@ out vec2 v_uv;
 out vec4 v_pos_ls[MAX_CASCADE_LEVEL];
 out float v_clipspace_z;
 flat out int v_visible;
-flat out int v_isTriangle;
 flat out float v_VertexTypeRounded;
-flat out int v_tesInnerTri;
+flat out int v_tes_inner_tri;
 
 out vec3 v_tri_dist;
 flat out int v_is_triangle;
@@ -216,7 +215,7 @@ void main()
 
         // Do not render inner tessellated triangled in wireframe mode.
         // For a inner triangle no barycentric coordinate is 0.
-        v_tesInnerTri = int(ceil(min(min(x, y), z)));
+        v_tes_inner_tri = int(ceil(min(min(x, y), z)));
 
         // Casced Shaowmap for Bézier meshes.
         // Cascaded Shadowmap (loops do not work here, we need to unroll the loop to compile this)
@@ -236,6 +235,63 @@ void main()
         v_pos_ls[6] = light_space_mat * vec4(pos, 1.0);
         light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
         v_pos_ls[7] = light_space_mat * vec4(pos, 1.0);
+
+        if(u_draw_wireframe)
+        {
+            vec3 pos0 = tc_Pos[0];
+            vec3 pos1 = tc_Pos[1];
+            vec3 pos2 = tc_Pos[2];
+
+            vec4 screen_pos0 = u_projection * u_view * vec4(pos0, 1.0);
+            vec4 screen_pos1 = u_projection * u_view * vec4(pos1, 1.0);
+            vec4 screen_pos2 = u_projection * u_view * vec4(pos2, 1.0);
+
+            vec3 ndc_pos[3] = vec3[](
+            vec3(screen_pos0.xyz / screen_pos0.w),
+            vec3(screen_pos1.xyz / screen_pos1.w),
+            vec3(screen_pos2.xyz / screen_pos2.w)
+            );
+
+            int lookup_case = 4 * int(ndc_pos[0].z > 0) + 2 * int(ndc_pos[1].z > 0) + int(ndc_pos[2].z > 0);
+            ivec4 ndc_index = lookup[lookup_case];
+            if (ndc_index.x < 3)
+            {
+                vec2 a_p = ndc_pos[ndc_index.x].xy;
+                vec2 b_p = ndc_pos[ndc_index.y].xy;
+                vec2 aa_p = ndc_pos[ndc_index.z].xy;
+                vec2 bb_p = ndc_pos[ndc_index.w].xy;
+
+                vec2 a_v = a_p.xy * 0.5 + 0.5;
+                vec2 b_v = b_p.xy * 0.5 + 0.5;
+                vec2 a_dir = normalize(a_v - ((a_p + (aa_p - a_p)) * 0.5 + 0.5));
+                vec2 b_dir = normalize(b_v - ((b_p + (bb_p - b_p)) * 0.5 + 0.5));
+
+                v_a_adir = vec4(a_v, a_dir);
+                v_b_bdir = vec4(b_v, b_dir);
+                v_use_lookup_path = 1;
+            }
+            else
+            {
+                v_use_lookup_path = 0;
+            }
+            float dist = 0.0;
+            if(x > 0.0)
+            {
+                dist = dist_to_edge(ndc_pos[1], ndc_pos[2], ndc_pos[0]);
+                v_tri_dist = vec3(0.0, dist, 0.0);
+            }
+            else if(y > 0.0)
+            {
+                dist = dist_to_edge(ndc_pos[0], ndc_pos[2], ndc_pos[1]);
+                v_tri_dist = vec3(0.0, 0.0, dist);
+            }
+            else if(z > 0.0)
+            {
+                dist = dist_to_edge(ndc_pos[0], ndc_pos[1], ndc_pos[2]);
+                v_tri_dist = vec3(dist, 0.0, 0.0);
+            }
+        }
+
     }
     else if (u_draw_wireframe)
     {
@@ -303,7 +359,7 @@ void main()
     else
     {
 
-        v_tesInnerTri = 0;
+        v_tes_inner_tri = 0;
 
         v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
         v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + + tc_FaceNormal[2] * z;
@@ -370,8 +426,6 @@ void main()
 
                 int from_idx = -1;
                 int to_idx = -1;
-
-
 
                 if (x == 0.0)
                 {
@@ -440,6 +494,6 @@ void main()
     // in any case use the values of vertex shader for these values 
     v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
     v_visible         = tc_Visible[1];// flat
-    v_isTriangle      = tc_isTriangle[1];// flat
+    v_is_triangle      = tc_isTriangle[1];// flat
     v_VertexTypeRounded=tc_VertexTypeRounded[0] * x + tc_VertexTypeRounded[1] * y + tc_VertexTypeRounded[2] * z;
 }

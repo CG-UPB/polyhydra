@@ -278,54 +278,54 @@ void main()
     float shadow = 0.0;
     bool no_shadows = u_wireframe || u_vertices;
 
-    if (u_draw_shadows && !no_shadows)
-    {
-        // shadow calculation
-        // calculate cascade level
-        int cascade_idx = -1;
-        int cascade_level = 1;
-        if(u_cascade_level < MAX_CASCADE_LEVEL)
-        {
-            cascade_level = u_cascade_level;
-        }
-        else
-        {
-            cascade_level = MAX_CASCADE_LEVEL;
-        }
-        for(int i = 0; i < cascade_level ; ++i)
-        {
-            if(v_clipspace_z - u_near <= u_cascade_ends[i])
-            {
-                cascade_idx = i;
-                //i = cascade_level;
-                break;
-            }
-        }
-        if(cascade_idx == -1)
-        {
-            cascade_idx = u_cascade_level;
-        }
-
-        // calculate bias (depending on cascade level)
-        float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
-
-        const float biasModifier = 0.5f;
-        if (cascade_level == cascade_level)
-        {
-            bias *= 1 / (100.0 * biasModifier);
-        }
-        else
-        {
-            bias *= 1 / (u_cascade_ends[cascade_level] * biasModifier);
-        }
-
-        //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
-
-        //cascade_idx = 0;
-        //shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
-        shadow = u_shadow_strength * pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
+//    if (u_draw_shadows && !no_shadows)
+//    {
+//        // shadow calculation
+//        // calculate cascade level
+//        int cascade_idx = -1;
+//        int cascade_level = 1;
+//        if(u_cascade_level < MAX_CASCADE_LEVEL)
+//        {
+//            cascade_level = u_cascade_level;
+//        }
+//        else
+//        {
+//            cascade_level = MAX_CASCADE_LEVEL;
+//        }
+//        for(int i = 0; i < cascade_level ; ++i)
+//        {
+//            if(v_clipspace_z - u_near <= u_cascade_ends[i])
+//            {
+//                cascade_idx = i;
+//                //i = cascade_level;
+//                break;
+//            }
+//        }
+//        if(cascade_idx == -1)
+//        {
+//            cascade_idx = u_cascade_level;
+//        }
 //
-    }
+//        // calculate bias (depending on cascade level)
+//        float bias = max(u_bias_max * (1.0f - max(0.0, dot(n, l))), u_bias_min);
+//
+//        const float biasModifier = 0.5f;
+//        if (cascade_level == cascade_level)
+//        {
+//            bias *= 1 / (100.0 * biasModifier);
+//        }
+//        else
+//        {
+//            bias *= 1 / (u_cascade_ends[cascade_level] * biasModifier);
+//        }
+//
+//        //bias *= 1.0 / (u_cascade_ends[cascade_level] * u_bias_modifier);
+//
+//        //cascade_idx = 0;
+//        //shadow = u_shadow_strength * shadow_calculation(v_pos_ls[cascade_idx], bias, cascade_idx);
+//        shadow = u_shadow_strength * pcss_shadow_calculation(v_pos_ls[cascade_idx], u_light_size, bias, cascade_idx);
+////
+//    }
 
     float ao_factor = 1.0;
     if(u_draw_ao && !no_shadows)

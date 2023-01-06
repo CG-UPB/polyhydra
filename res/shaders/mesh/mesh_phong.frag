@@ -219,7 +219,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 {
     int blockers = 0;
     float avg_blocker_distance = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
+    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture[cascade_idx], 0));
 
     float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
 
@@ -236,7 +236,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
         for (int y = -samples; y <= samples; y++)
         {
             vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
-            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + (vec2(x, y) + shift) * texelSize, float(cascade_idx))).r;
+            float z = texture(u_shadow_texture[cascade_idx], vec2(shadow_coords.xy + (vec2(x, y) + shift) * texelSize)).r;
             if(z < (shadow_coords.z - bias))
             {
                 blockers++;
@@ -261,7 +261,7 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
     float sum = 0;
     int count = 0;
 
-    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
+    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture[cascade_idx], 0));
     int range = int(light_size * radius);
 
     range = range > 10 ? 10 : range;
@@ -274,8 +274,7 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
         {
             //int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
             //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
-            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x , y) * texelSize, float(cascade_idx))).r;
-
+            float depth = texture(u_shadow_texture[cascade_idx], vec2(shadow_coords.xy + vec2(x , y) * texelSize)).r;
             sum += depth < shadow_coords.z - bias? 1.0 : 0.0;
         }
     }
@@ -327,7 +326,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     proj_coords = proj_coords * 0.5 + 0.5;
 
     float current_depth = proj_coords.z - bias;
-    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
+    float closest_depth = texture(u_shadow_texture[cascade_idx], vec2(proj_coords.xy)).r;
 
     if (current_depth > 1.0)
     {
@@ -337,7 +336,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     for(int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        float depth = texture(u_shadow_texture, vec3(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx))).r;
+        float depth = texture(u_shadow_texture[cascade_idx], vec2(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4)).r;
         if(depth < current_depth)
         {
             shadow += 0.25;

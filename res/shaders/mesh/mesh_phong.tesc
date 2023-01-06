@@ -45,7 +45,7 @@ void main()
 {
     // For the wireframe mode, the order of vertex data is different
     int sourceID = ID;
-    if(u_draw_wireframe && sourceID < 3)
+    if(u_draw_wireframe && u_is_bezier_mesh && sourceID < 3)
     {
         sourceID = (sourceID+1)%3;
     }
@@ -74,7 +74,7 @@ void main()
             {
                 // in wireframe mode inner triangles are not necessary
                 // and gl_TessLevelInner[0] = 1 sometimes yields incorrect outlines
-                gl_TessLevelInner[0] = 2;
+                gl_TessLevelInner[0] = 1;
             }
             else
             {
