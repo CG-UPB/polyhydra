@@ -57,5 +57,4 @@ void main()
     light_space_mat = u_light_projection[7] * u_light_view[7] * u_light_transform;
     v_LightSpacePos1[3] = light_space_mat * vec4(pos, 1.0);
 
-
 }

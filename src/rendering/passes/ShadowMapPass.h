@@ -33,6 +33,7 @@ namespace volumeshOS::Internal
     private:
 
         void generate_cascade_textures();
+        void bind_for_writing(int cascade_level);
 
     private:
 

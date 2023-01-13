@@ -110,8 +110,8 @@ namespace volumeshOS::Internal
 
 
             // shadow maps
-            std::vector<unsigned int> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
-                                                  GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
+            std::vector<unsigned int> bindings = {GL_TEXTURE2, GL_TEXTURE3, GL_TEXTURE4, GL_TEXTURE5,
+                                                  GL_TEXTURE6, GL_TEXTURE7, GL_TEXTURE8, GL_TEXTURE9};
 
             auto s = renderer.passes.shadow_pass;
             for (int i = 0; i < s->max_cascades; i++)

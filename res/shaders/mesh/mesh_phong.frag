@@ -55,8 +55,6 @@ uniform bool u_is_bezier_mesh;
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
-uniform sampler2D u_transparent_shadow_texture;
-uniform sampler2D u_color_filter_texture;
 uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
 
 //uniform sampler2DArray u_shadow_texture;

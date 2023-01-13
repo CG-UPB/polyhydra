@@ -130,7 +130,6 @@ void main()
     vec3 position = a_pos;
     float alpha = u_object_color.a * a_color.a;
 
-    mat4 cam_space_mat = u_projection * view_transform;
     vec3 pos = a_center + (position - a_center) * u_cell_size;
 
     vec3 normal = a_normal;
