@@ -362,11 +362,18 @@ v_clipspace_z = screen_pos.z;
         v_tes_inner_tri = 0;
 
         v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
-        v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + + tc_FaceNormal[2] * z;
+
+        if (u_use_vertex_normals)
+        {
+            v_normal = tc_VertexNormal[0] * x + tc_VertexNormal[1] * y + tc_VertexNormal[2] * z;
+        }
+        else
+        {
+            v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
+        }
 
         if (u_rounding)
         {
-
 
             float r = min(u_rounding_size * u_average_cell_size * 0.3, u_rounding_size * tc_min_edge_length[1] * 0.3);
             r = u_rounding_size * (tc_min_edge_length[1] * 0.3);
@@ -376,14 +383,7 @@ v_clipspace_z = screen_pos.z;
                 // CORNER VERTICES
                 v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
                 vec4 rounding_center = tc_rounding_sphere_center[0] * x + tc_rounding_sphere_center[1] * y + tc_rounding_sphere_center[2] * z;
-                if (u_use_vertex_normals)
-                {
-                    v_normal = tc_VertexNormal[0] * x + tc_VertexNormal[1] * y + tc_VertexNormal[2] * z;
-                }
-                else
-                {
-                    v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
-                }
+
 
                 vec3 p_c = v_pos + r * rounding_center.xyz;
                 v_normal = normalize(v_pos - p_c);

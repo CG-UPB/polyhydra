@@ -179,6 +179,8 @@ void cell_select(const VMesh mesh, OpenVolumeMesh::CellHandle ch)
 
 int main(int argc, char* argv[])
 {
+    set_theme(Theme::Dark);
+
     // generate ovm mesh
     auto ovm_mesh = gen_mesh();
 
