@@ -12,6 +12,7 @@ flat in int v_Visible[];
 flat in int v_isTriangle[];
 flat in float v_VertexTypeRounded[];
 flat in int v_ovm_halfface_id[];
+in vec4 v_S_c[];
 
 out vec3 tc_Pos[];
 out vec3 tc_Normal[];
@@ -25,6 +26,7 @@ flat out int tc_Visible[];
 flat out int tc_isTriangle[];
 flat out float tc_VertexTypeRounded[];
 flat out int tc_ovm_halfface_id[];
+out vec4 tc_S_c[];
 
 uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
@@ -60,6 +62,7 @@ void main()
     tc_isTriangle[ID]      =      v_isTriangle[gl_InvocationID];
     tc_VertexTypeRounded[ID] =  v_VertexTypeRounded[gl_InvocationID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[gl_InvocationID];
+    tc_S_c[ID]              = v_S_c[gl_InvocationID];
 
     if (ID == 0) 
     {
@@ -84,7 +87,7 @@ void main()
         {
             if(u_rounding)
             {
-                gl_TessLevelInner[0] = 2;
+                gl_TessLevelInner[0] = 3;
                 gl_TessLevelOuter[0] = 3;
                 gl_TessLevelOuter[1] = 3;
                 gl_TessLevelOuter[2] = 3;

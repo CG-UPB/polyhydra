@@ -1,7 +1,7 @@
 #version 400 core
 #define PI 3.14159265359
 
-layout(triangles, fractional_odd_spacing, ccw) in;
+layout(triangles, equal_spacing, ccw) in;
 
 const int MAX_CASCADE_LEVEL = 8;
 
@@ -17,6 +17,7 @@ flat in int tc_Visible[];
 flat in int tc_isTriangle[];
 flat in float tc_VertexTypeRounded[];
 flat in int tc_ovm_halfface_id[];
+in vec4 tc_S_c[];
 
 out vec3 v_Pos;
 out vec3 v_Normal;
@@ -107,6 +108,11 @@ float get_shrink_factor(float angle, float dist) {
     return dist * (1.0 / cos(half_angle) - tan(half_angle));
 }
 
+int get_closest_corner_index(vec3 coords)
+{
+    return coords.x > coords.y ? coords.x > coords.z ? 0 : 2 : coords.y > coords.z ? 1 : 2;
+}
+
 void main()
 {
     // barycentric coordinates of current triangle
@@ -184,96 +190,45 @@ void main()
         v_LightSpacePos0  = tc_LightSpacePos0[0] *x + tc_LightSpacePos0[1] *y + tc_LightSpacePos0[2] *z;
         v_LightSpacePos1  = tc_LightSpacePos1[0] *x + tc_LightSpacePos1[1] *y + tc_LightSpacePos1[2] *z;
 
-        float edge_factor = 0.9;
-        float corner_factor = 0.9;
+        v_Pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+        v_Normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
 
-        float r = min(u_rounding_size * u_average_cell_size * 0.3, tc_min_edge_length[1] * 0.3);
-        vec3 face_center = tc_Pos[0] * (1.0/3.0) + tc_Pos[1] * (1.0/3.0) + tc_Pos[2] * (1.0/3.0);
-        float dihedral_angle = PI / 2.0;
-
-        if((x == 0.0 && y == 0.0) || (y == 0.0 && z == 0.0) || (x == 0.0 && z == 0.0))
+        float r = u_rounding_size * u_average_cell_size;//min(u_rounding_size, s_c.w * 0.3);
+        if (r > 0.0)
         {
-            // CORNER VERTICES
-            v_Pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
-            v_Normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
-            face_center = tc_center[1];
-            float dist = CORNER_FACTOR * r;
-            vec3 shrink_dir = normalize(face_center - v_Pos);
-            v_Pos += shrink_dir * get_shrink_factor(dihedral_angle, dist);
+            const ivec2[3] lookup = ivec2[](
+                ivec2(1, 2),
+                ivec2(0, 2),
+                ivec2(0, 1)
+            );
+            vec3 tri_normal = v_Normal;
 
-        }
-        else
-        {
-            // EDGE VERTICES
-            v_Pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
-            v_Normal = tc_Normal[0] * x + tc_Normal[1] * y + tc_Normal[2] * z;
+            int corner_index = get_closest_corner_index(gl_TessCoord.xyz);
+            vec3 corner_pos = tc_Pos[corner_index];
+            bool is_corner = corner_pos.x == v_Pos.x && corner_pos.y == v_Pos.y && corner_pos.z == v_Pos.z;
+            bool is_edge = gl_TessCoord.x == 0.0 || gl_TessCoord.y == 0.0 || gl_TessCoord.z == 0.0;
+            vec4 s_c = tc_S_c[corner_index];
 
-            float dist = EDGE_FACTOR * r;
+            vec3 p_c = corner_pos + r * s_c.xyz;
+            vec3 p = p_c + r * tri_normal;
+            float l = length(corner_pos - p);
 
-            if(x == 0.0)
+            vec3 opposite_of_corner = (tc_Pos[lookup[corner_index].x] + tc_Pos[lookup[corner_index].y]) * 0.5;
+            float denom = length(opposite_of_corner - corner_pos);
+            float scale = l / denom;
+
+            v_Pos += (corner_pos - v_Pos) * (1.0 - scale);
+            v_Normal = normalize(v_Pos - p_c);
+            // reproject inner vertices onto the original triangle, so the cell does not shrink
+            if (!is_edge && !is_corner)
             {
-                if(y > z)
-                {
-                    vec3 edge_dir = normalize(tc_Pos[2] - tc_Pos[1]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[1]);
-                    v_Pos = tc_Pos[1] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
-                }
-                else
-                {
-                    vec3 edge_dir = normalize(tc_Pos[1] - tc_Pos[2]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[2]);
-                    v_Pos = tc_Pos[2] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
-                }
-            }
-            else if(y == 0.0)
-            {
-                if(x > z)
-                {
-                    vec3 edge_dir = normalize(tc_Pos[2] - tc_Pos[0]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[0]);
-                    v_Pos = tc_Pos[0] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
-                }
-                else
-                {
-                    vec3 edge_dir = normalize(tc_Pos[0] - tc_Pos[2]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[2]);
-                    v_Pos = tc_Pos[2] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
-                }
-            }
-            else if(z == 0.0)
-            {
-                if(x > y)
-                {
-                    vec3 edge_dir = normalize(tc_Pos[1] - tc_Pos[0]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[0]);
-                    v_Pos = tc_Pos[0] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
-                }
-                else
-                {
-                    vec3 edge_dir = normalize(tc_Pos[0] - tc_Pos[1]);
-                    vec3 shrink_dir = normalize(face_center - tc_Pos[1]);
-                    v_Pos = tc_Pos[1] + edge_dir * dist + shrink_dir * get_shrink_factor(dihedral_angle, dist);
-                }
+                v_Normal = tri_normal;
             }
             else
             {
-                // FACE_VERTICES
-                if(x > y && x > z)
-                {
-                    v_Pos = tc_Pos[0] + normalize(face_center - tc_Pos[0]) * r;
-                }
-                else if(y > z)
-                {
-                    v_Pos = tc_Pos[1] + normalize(face_center - tc_Pos[1]) * r;
-                }
-                else
-                {
-                    v_Pos = tc_Pos[2] + normalize(face_center - tc_Pos[2]) * r;
-                }
-
+                v_Pos = p_c + r * (4.0 / 3.0) * v_Normal;
             }
         }
-
     }
 
     // in any case use the values of vertex shader for these values 

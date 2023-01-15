@@ -32,6 +32,7 @@ flat out int v_Visible;
 flat out int v_isTriangle;
 flat out float v_VertexTypeRounded;
 flat out int v_ovm_halfface_id;
+out vec4 v_S_c;
 
 uniform mat4 u_transform;
 uniform mat4 u_projection;
@@ -80,6 +81,7 @@ float get_shrink_factor(float angle, float dist) {
 void main()
 {
     v_center = a_center;
+    v_S_c = a_face_center_rounded;
 
     // Use a_is_triangle as the ovm halfface id for bézier meshes.
     if(u_is_bezier_mesh)
