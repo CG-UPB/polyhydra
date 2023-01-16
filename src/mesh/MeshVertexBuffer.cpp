@@ -592,7 +592,7 @@ namespace volumeshOS::Internal
 
                 auto corner_pos = VecUtil::pos_to_vec3(*mesh, corner);
                 auto to_pos = VecUtil::pos_to_vec3(*mesh, mesh->to_vertex_handle(current_halfedge));
-                auto n_c = glm::normalize(to_pos - corner_pos);
+                auto s_c = glm::vec3(0.0);
                 float a_c = 0.0;
                 int out_count = 1;
 
@@ -604,6 +604,7 @@ namespace volumeshOS::Internal
                 {
                     current_halfface = mesh->adjacent_halfface_in_cell(current_halfface, current_halfedge);
                     auto current_halfface_normal = halfface_normal_to_vec3(current_halfface.idx());
+                    s_c += current_halfface_normal;
                     a_c += PI - VecUtil::get_angle(current_halfface_normal, last_halfface_normal);
                     out_count++;
                     // exit condition, we have closed the loop
@@ -633,8 +634,6 @@ namespace volumeshOS::Internal
                         // we have found our halfedge
                         if (found)
                         {
-                            to_pos = VecUtil::pos_to_vec3(*mesh, mesh->to_vertex_handle(current_halfedge));
-                            n_c += glm::normalize(to_pos - corner_pos);
                             current_halfedge_length = mesh->length(current_halfedge);
                             if (current_halfedge_length < min_halfedge_len)
                             {
@@ -645,7 +644,7 @@ namespace volumeshOS::Internal
                     }
                     last_halfface_normal = current_halfface_normal;
                 } while (current_halfface != chf_it);
-                auto s_c = glm::normalize(n_c) / (float) glm::sin(a_c / (2.0 * out_count));
+                s_c = glm::normalize(s_c) / (float) glm::sin(a_c / (2.0 * out_count));
                 res[corner.idx()] = glm::vec4{s_c, min_halfedge_len};
             }
         }

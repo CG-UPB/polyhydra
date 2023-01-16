@@ -143,6 +143,8 @@ void setup_graphics()
     //Transparency
     use_transparency(false);
 
+    set_rendering_mode(RenderingMode::WIREFRAME);
+
     // Post Processing
     set_gamma(2.4);
     set_saturation(1.0);
