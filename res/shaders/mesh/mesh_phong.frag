@@ -260,10 +260,11 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
     int count = 0;
 
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture[cascade_idx], 0));
-    int range = int(light_size * radius);
+    int range = int(radius);
 
     range = range > 10 ? 10 : range;
     range = range <  1 ?  2 : range;
+
 
     for(int x = - range; x <= range; ++x)
     {
@@ -411,11 +412,6 @@ void main()
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
     if(u_two_sided_lighting && dot(n, l) < 0 )
-    {
-        n = -n;
-    }
-
-    if(u_is_bezier_mesh  && dot(n, v) < 0 )
     {
         n = -n;
     }

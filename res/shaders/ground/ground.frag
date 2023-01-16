@@ -165,7 +165,7 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
     vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture[cascade_idx], 0));
     int range = int(light_size * radius);
    // range = range > 40 ? 40 : range;
-    range = range <  1 ?  2 : range;
+    range = range <  1 ?  1 : range;
 
     for(int x = - range; x <= range; ++x)
     {

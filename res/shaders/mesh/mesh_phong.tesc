@@ -74,7 +74,7 @@ void main()
             {
                 // in wireframe mode inner triangles are not necessary
                 // and gl_TessLevelInner[0] = 1 sometimes yields incorrect outlines
-                gl_TessLevelInner[0] = 1;
+                gl_TessLevelInner[0] = 2;
             }
             else
             {
