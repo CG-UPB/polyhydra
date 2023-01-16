@@ -19,7 +19,6 @@ flat in int tc_Visible[];
 flat in int tc_isTriangle[];
 flat in float tc_VertexTypeRounded[];
 flat in int tc_ovm_halfface_id[];
-in vec4 tc_S_c[];
 
 out vec3 v_pos;
 out vec3 v_normal;
@@ -263,13 +262,13 @@ void main()
             ivec2(0, 2),
             ivec2(0, 1)
             );
-            vec3 tri_normal = v_Normal;
+            vec3 tri_normal = v_normal;
 
             int corner_index = get_closest_corner_index(gl_TessCoord.xyz);
             vec3 corner_pos = tc_Pos[corner_index];
-            bool is_corner = corner_pos.x == v_Pos.x && corner_pos.y == v_Pos.y && corner_pos.z == v_Pos.z;
+            bool is_corner = corner_pos.x == v_pos.x && corner_pos.y == v_pos.y && corner_pos.z == v_pos.z;
             bool is_edge = gl_TessCoord.x == 0.0 || gl_TessCoord.y == 0.0 || gl_TessCoord.z == 0.0;
-            vec4 s_c = tc_S_c[corner_index];
+            vec4 s_c = tc_rounding_sphere_center[corner_index];
 
             vec3 p_c = corner_pos + r * s_c.xyz;
             vec3 p = p_c + r * tri_normal;
@@ -279,8 +278,8 @@ void main()
             float denom = length(opposite_of_corner - corner_pos);
             float scale = l / denom;
 
-            v_pos += (corner_pos - v_Pos) * (1.0 - scale);
-            v_normal = normalize(v_Pos - p_c);
+            v_pos += (corner_pos - v_pos) * (1.0 - scale);
+            v_normal = normalize(v_pos - p_c);
             // reproject inner vertices onto the original triangle, so the cell does not shrink
             if (!is_edge && !is_corner)
             {
@@ -288,9 +287,70 @@ void main()
             }
             else
             {
-                v_Pos = p_c + r * (4.0 / 3.0) * v_Normal;
+                v_pos = p_c + r * (4.0 / 3.0) * v_normal;
             }
+        }
 
+        vec4 screen_pos = u_projection * u_view * vec4(v_pos, 1.0);
+        gl_Position = screen_pos;
+        v_clipspace_z = screen_pos.z;
+    }
+
+    if (u_draw_wireframe)
+    {
+
+        vec3 pos0 = tc_Pos[0];
+        vec3 pos1 = tc_Pos[1];
+        vec3 pos2 = tc_Pos[2];
+
+        vec4 screen_pos0 = u_projection * u_view * vec4(pos0, 1.0);
+        vec4 screen_pos1 = u_projection * u_view * vec4(pos1, 1.0);
+        vec4 screen_pos2 = u_projection * u_view * vec4(pos2, 1.0);
+
+        vec3 ndc_pos[3] = vec3[](
+        vec3(screen_pos0.xyz / screen_pos0.w),
+        vec3(screen_pos1.xyz / screen_pos1.w),
+        vec3(screen_pos2.xyz / screen_pos2.w)
+        );
+
+        int lookup_case = 4 * int(ndc_pos[0].z > 0) + 2 * int(ndc_pos[1].z > 0) + int(ndc_pos[2].z > 0);
+        ivec4 ndc_index = lookup[lookup_case];
+        if (ndc_index.x < 3)
+        {
+            vec2 a_p = ndc_pos[ndc_index.x].xy;
+            vec2 b_p = ndc_pos[ndc_index.y].xy;
+            vec2 aa_p = ndc_pos[ndc_index.z].xy;
+            vec2 bb_p = ndc_pos[ndc_index.w].xy;
+
+            vec2 a_v = a_p.xy * 0.5 + 0.5;
+            vec2 b_v = b_p.xy * 0.5 + 0.5;
+            vec2 a_dir = normalize(a_v - ((a_p + (aa_p - a_p)) * 0.5 + 0.5));
+            vec2 b_dir = normalize(b_v - ((b_p + (bb_p - b_p)) * 0.5 + 0.5));
+
+            v_a_adir = vec4(a_v, a_dir);
+            v_b_bdir = vec4(b_v, b_dir);
+            v_use_lookup_path = 1;
+        }
+        else
+        {
+            v_use_lookup_path = 0;
+        }
+
+        float dist = 0.0;
+        if (x > 0.0)
+        {
+            dist = dist_to_edge(ndc_pos[1], ndc_pos[2], ndc_pos[0]);
+            v_tri_dist = vec3(0.0, dist, 0.0);
+        }
+        else if (y > 0.0)
+        {
+            dist = dist_to_edge(ndc_pos[0], ndc_pos[2], ndc_pos[1]);
+            v_tri_dist = vec3(0.0, 0.0, dist);
+        }
+        else if (z > 0.0)
+        {
+            dist = dist_to_edge(ndc_pos[0], ndc_pos[1], ndc_pos[2]);
+            v_tri_dist = vec3(dist, 0.0, 0.0);
         }
 
     }

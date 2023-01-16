@@ -18,7 +18,6 @@ flat in int v_Visible[];
 flat in int v_isTriangle[];
 flat in float v_VertexTypeRounded[];
 flat in int v_ovm_halfface_id[];
-in vec4 v_S_c[];
 
 out vec3 tc_Pos[];
 out vec3 tc_FaceNormal[];
@@ -34,13 +33,11 @@ flat out int tc_Visible[];
 flat out int tc_isTriangle[];
 flat out float tc_VertexTypeRounded[];
 flat out int tc_ovm_halfface_id[];
-out vec4 tc_S_c[];
 
 uniform bool u_rounding;
 uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
 uniform int u_bezier_tessellation_level;
-uniform bool u_rounding;
 
 #if u_rounding
 layout(vertices = 3) out;
@@ -73,7 +70,6 @@ void main()
     tc_isTriangle[ID]      =      v_isTriangle[sourceID];
     tc_VertexTypeRounded[ID] =  v_VertexTypeRounded[sourceID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[sourceID];
-    tc_S_c[ID]              = v_S_c[sourceID];
 
     if (ID == 0) 
     {
