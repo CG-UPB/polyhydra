@@ -86,13 +86,18 @@ float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 lin
     return sqrt(dot(af, af) - dot(line_dir, af));
 }
 
+float linearize_depth(float d,float zNear,float zFar)
+{
+    return zNear * zFar / (zFar + d * (zNear - zFar));
+}
+
 void draw_wireframe(vec2 uv)
 {
     if (v_visible == 0)
     {
         discard;
     }
-    if(u_is_bezier_mesh && v_tes_inner_tri == 1)
+    if (u_is_bezier_mesh && v_tes_inner_tri == 1)
     {
         // Discard all inner triangles of a tessellated triangle.
         discard;
@@ -130,16 +135,16 @@ void draw_wireframe(vec2 uv)
     }
     else
     {
-        float min_dist_to_edge;
-        if(!u_is_bezier_mesh)
-        {
-            min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
-        }
-        else
-        {
-            // For Bézier meshes, draw an outline only for outer edges.
-            min_dist_to_edge = v_tri_dist.y;
-        }
+        float min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);;
+//        if(!u_is_bezier_mesh)
+//        {
+//            min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+//        }
+//        else
+//        {
+//            // For Bézier meshes, draw an outline only for outer edges.
+//            min_dist_to_edge = v_tri_dist.y;
+//        }
 
         if (min_dist_to_edge > size_factor)
         {

@@ -166,6 +166,15 @@ int get_closest_corner_index(vec3 coords)
     return coords.x > coords.y ? coords.x > coords.z ? 0 : 2 : coords.y > coords.z ? 1 : 2;
 }
 
+float get_area(vec3 a, vec3 b, vec3 c)
+{
+    float l_a = length(a - c);
+    float l_b = length(a - b);
+    float l_c = length(b - c);
+    float s = (l_a + l_b + l_c) * 0.5;
+    return sqrt(s * (s - l_a) * (s - l_b) * (s - l_c));
+}
+
 void main()
 {
     // barycentric coordinates of current triangle
@@ -210,7 +219,7 @@ void main()
         // Perform Cell sizing.
         vec3 pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
 
-        v_pos = (u_view * u_transform * vec4(v_pos, 1.0)).xyz;
+        v_pos = (u_view * u_transform * vec4(pos, 1.0)).xyz;
         vec4 screen_pos = u_projection * vec4(v_pos, 1.0);
         gl_Position = screen_pos;
         v_clipspace_z = screen_pos.z;
@@ -308,9 +317,9 @@ void main()
         vec4 screen_pos2 = u_projection * u_view * vec4(pos2, 1.0);
 
         vec3 ndc_pos[3] = vec3[](
-        vec3(screen_pos0.xyz / screen_pos0.w),
-        vec3(screen_pos1.xyz / screen_pos1.w),
-        vec3(screen_pos2.xyz / screen_pos2.w)
+            vec3(screen_pos0.xyz / screen_pos0.w),
+            vec3(screen_pos1.xyz / screen_pos1.w),
+            vec3(screen_pos2.xyz / screen_pos2.w)
         );
 
         int lookup_case = 4 * int(ndc_pos[0].z > 0) + 2 * int(ndc_pos[1].z > 0) + int(ndc_pos[2].z > 0);
@@ -336,28 +345,21 @@ void main()
             v_use_lookup_path = 0;
         }
 
-        float dist = 0.0;
-        if (x > 0.0)
-        {
-            dist = dist_to_edge(ndc_pos[1], ndc_pos[2], ndc_pos[0]);
-            v_tri_dist = vec3(0.0, dist, 0.0);
-        }
-        else if (y > 0.0)
-        {
-            dist = dist_to_edge(ndc_pos[0], ndc_pos[2], ndc_pos[1]);
-            v_tri_dist = vec3(0.0, 0.0, dist);
-        }
-        else if (z > 0.0)
-        {
-            dist = dist_to_edge(ndc_pos[0], ndc_pos[1], ndc_pos[2]);
-            v_tri_dist = vec3(dist, 0.0, 0.0);
-        }
+        vec4 tesselated_screen_pos = u_projection * u_view * vec4(tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z, 1.0);
+        vec3 tesselated_ndc = tesselated_screen_pos.xyz / tesselated_screen_pos.w;
 
+        float distX = dist_to_edge(ndc_pos[0], ndc_pos[1], tesselated_ndc);
+        float distY = dist_to_edge(ndc_pos[1], ndc_pos[2], tesselated_ndc);
+        float distZ = dist_to_edge(ndc_pos[0], ndc_pos[2], tesselated_ndc);
+
+        float area = max(0.001, get_area(ndc_pos[0], ndc_pos[1], ndc_pos[2])) * 10.0;
+
+        v_tri_dist = vec3(distX, distY, distZ) / area;
     }
 
     // in any case use the values of vertex shader for these values 
     v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
-    v_visible         = tc_Visible[1];// flat
-    v_is_triangle      = tc_isTriangle[1];// flat
+    v_visible         = tc_Visible[1];  // flat
+    v_is_triangle      = tc_isTriangle[1];  // flat
     v_VertexTypeRounded=tc_VertexTypeRounded[0] * x + tc_VertexTypeRounded[1] * y + tc_VertexTypeRounded[2] * z;
 }
