@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 #include "pbr.glsl"
 #include "phong.glsl"
@@ -92,12 +92,8 @@ void draw_wireframe(vec2 uv)
     {
         discard;
     }
-    if(u_is_bezier_mesh && v_tes_inner_tri == 1)
-    {
-        // Discard all inner triangles of a tessellated triangle.
-        discard;
-    }
-    float size_factor = 0.0015 * u_wireframe_size;
+
+    float size_factor = 0.0015 * u_wireframe_size ;
     if (v_use_lookup_path == 1)
     {
         // these triangles are very likely not visible, since we don't draw 2/3rds of those anyway
@@ -131,15 +127,8 @@ void draw_wireframe(vec2 uv)
     else
     {
         float min_dist_to_edge;
-        if(!u_is_bezier_mesh)
-        {
-            min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
-        }
-        else
-        {
-            // For Bézier meshes, draw an outline only for outer edges.
-            min_dist_to_edge = v_tri_dist.y;
-        }
+
+        min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
 
         if (min_dist_to_edge > size_factor)
         {
@@ -263,7 +252,7 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
     int range = int(radius);
 
     range = range > 10 ? 10 : range;
-    range = range <  1 ?  2 : range;
+    range = range <  1 ?  1 : range;
 
 
     for(int x = - range; x <= range; ++x)
@@ -294,7 +283,7 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
         return 0.0;
     }
 
-//    //Step 1: Blocker search
+    //Step 1: Blocker search
 //    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
 //    if(blocker_distance == -1.0)
 //        return 0.0;
@@ -306,7 +295,7 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
 
     //Step 3: Filtering
     float radius = 1.0;
-    // radius = light_size;
+    //radius = light_size;
 
     float shadow = percentage_closer_filtering(shadow_coords, light_size, radius, bias, cascade_idx);
 

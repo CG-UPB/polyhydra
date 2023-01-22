@@ -143,7 +143,7 @@ void setup_graphics()
     //Transparency
     use_transparency(false);
 
-    set_rendering_mode(RenderingMode::WIREFRAME);
+    //set_rendering_mode(RenderingMode::WIREFRAME);
 
     // Post Processing
     set_gamma(2.4);

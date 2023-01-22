@@ -101,7 +101,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_far", cam->far);
 
 
-            m_bias_min = 0.000001f;
+            m_bias_min = 0.00000001f;
             m_bias_max = 0.003f;
 
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);

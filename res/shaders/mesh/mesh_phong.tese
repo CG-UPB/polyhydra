@@ -84,6 +84,9 @@ ivec4(3, 3, 3, 3)// [1][1][1]
 
 #define CP_2D_INDEX_TO_1D(i2, i1, m) (((m)+1)*((m)+2)/2 - ((m)-(i2)+1)*((m)-(i2)+2)/2 + (i1))
 
+vec3 control_points[MAX_CPS_PER_TRI];
+
+
 int cp_2d_index_to_1d(int i2, int i1, int m)
 {
     return (((m)+1)*((m)+2)/2 - ((m)-(i2)+1)*((m)-(i2)+2)/2 + (i1));
@@ -143,22 +146,19 @@ float get_shrink_factor(float angle, float dist) {
     return dist * (1.0 / cos(half_angle) - tan(half_angle));
 }
 
-float dist_to_edge(vec3 e0, vec3 e1, vec3 p)
+float dist_to_edge(vec3 a, vec3 b, vec3 p)
 {
-    return length(cross(p - e0, p - e1)) / length(e1 - e0);
+    float h = min(1.0, max(0.0, dot(p-a, b-a) / dot(b-a, b-a)));
+    return length(p-a-(b-a)*h);
 }
 
-mat3 get_edge_triangle(int corner_idx, float l)
+float get_area(vec3 a, vec3 b, vec3 c)
 {
-    vec3 a, b, c = vec3(0.0);
-
-    return mat3(a, b, c);
-}
-
-vec3 get_sphere_point_of_contact(int corner_idx)
-{
-
-    return vec3(0.0);
+    float l_a = length(a - c);
+    float l_b = length(a - b);
+    float l_c = length(b - c);
+    float s = (l_a + l_b + l_c) * 0.5;
+    return sqrt(s * (s - l_a) * (s - l_b) * (s - l_c));
 }
 
 int get_closest_corner_index(vec3 coords)
@@ -172,6 +172,7 @@ void main()
     float x = gl_TessCoord.x;
     float y = gl_TessCoord.y;
     float z = gl_TessCoord.z;
+    //vec3 control_points[MAX_CPS_PER_TRI];
 
     if (u_is_bezier_mesh)
     {
@@ -183,7 +184,6 @@ void main()
         int m = u_bezier_degree;
         int ovm_hf_id = tc_ovm_halfface_id[0];
         int control_points_offset = (ovm_hf_id/2)*(m+2)*(m+1)/2;
-        vec3 control_points[MAX_CPS_PER_TRI];
 
         // copy control points from texture buffer into local array
         // so that it can be modified by the de casteljau algorithm
@@ -210,7 +210,7 @@ void main()
         // Perform Cell sizing.
         vec3 pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
 
-        v_pos = (u_view * u_transform * vec4(v_pos, 1.0)).xyz;
+        v_pos = (u_view * u_transform * vec4(pos, 1.0)).xyz;
         vec4 screen_pos = u_projection * vec4(v_pos, 1.0);
         gl_Position = screen_pos;
         v_clipspace_z = screen_pos.z;
@@ -329,31 +329,57 @@ void main()
 
             v_a_adir = vec4(a_v, a_dir);
             v_b_bdir = vec4(b_v, b_dir);
-            v_use_lookup_path = 1;
+            v_use_lookup_path = 0;
         }
         else
         {
             v_use_lookup_path = 0;
         }
 
-        float dist = 0.0;
-        if (x > 0.0)
-        {
-            dist = dist_to_edge(ndc_pos[1], ndc_pos[2], ndc_pos[0]);
-            v_tri_dist = vec3(0.0, dist, 0.0);
-        }
-        else if (y > 0.0)
-        {
-            dist = dist_to_edge(ndc_pos[0], ndc_pos[2], ndc_pos[1]);
-            v_tri_dist = vec3(0.0, 0.0, dist);
-        }
-        else if (z > 0.0)
-        {
-            dist = dist_to_edge(ndc_pos[0], ndc_pos[1], ndc_pos[2]);
-            v_tri_dist = vec3(dist, 0.0, 0.0);
-        }
+        vec4 tesselated_screen_pos = u_projection * u_view * vec4(tc_Pos[0] * x + tc_Pos[1] * y + tc_Pos[2] * z, 1.0);
+        vec3 tesselated_ndc = tesselated_screen_pos.xyz / tesselated_screen_pos.w;
+
+        float distX = dist_to_edge(ndc_pos[0], ndc_pos[1], tesselated_ndc);
+        float distY = dist_to_edge(ndc_pos[1], ndc_pos[2], tesselated_ndc);
+        float distZ = dist_to_edge(ndc_pos[0], ndc_pos[2], tesselated_ndc);
+
+        float area = max(0.001, get_area(ndc_pos[0], ndc_pos[1], ndc_pos[2])) * 10.0;
+
+        v_tri_dist = vec3(distX, distY, distZ) / area;
+
+
+//        if (x > y && x > z)
+//        {
+//            dist = dist_to_edge(ndc_pos[1], ndc_pos[2], act_ndc_pos);
+//            v_tri_dist = vec3(0.0, dist, 0.0);
+//        }
+//        else if (y > x && y > z)
+//        {
+//            dist = dist_to_edge(ndc_pos[0], ndc_pos[2], act_ndc_pos);
+//            v_tri_dist = vec3(0.0, 0.0, dist);
+//        }
+//        else
+//        {
+//            dist = dist_to_edge(ndc_pos[0], ndc_pos[1], act_ndc_pos);
+//            v_tri_dist = vec3(dist, 0.0, 0.0);
+//        }
 
     }
+
+    if(x > 0.0)
+    {
+        set_light_space_pos(0);
+    }
+    else if(y > 0.0)
+    {
+        set_light_space_pos(1);
+
+    }
+    else if(z > 0.0)
+    {
+        set_light_space_pos(2);
+    }
+
 
     // in any case use the values of vertex shader for these values 
     v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;

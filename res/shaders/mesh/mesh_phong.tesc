@@ -76,16 +76,9 @@ void main()
         // only do tessellation for bezier meshes
         if(u_is_bezier_mesh) 
         {
-            if(u_draw_wireframe)
-            {
-                // in wireframe mode inner triangles are not necessary
-                // and gl_TessLevelInner[0] = 1 sometimes yields incorrect outlines
-                gl_TessLevelInner[0] = 2;
-            }
-            else
-            {
-                gl_TessLevelInner[0] = u_bezier_tessellation_level;
-            }
+
+            gl_TessLevelInner[0] = u_bezier_tessellation_level;
+
             gl_TessLevelOuter[0] = u_bezier_tessellation_level;
             gl_TessLevelOuter[1] = u_bezier_tessellation_level;
             gl_TessLevelOuter[2] = u_bezier_tessellation_level;
