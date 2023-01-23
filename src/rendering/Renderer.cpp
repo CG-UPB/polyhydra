@@ -183,8 +183,15 @@ namespace volumeshOS::Internal
 
             passes.mesh_pass->render(*this);
 
+            // render shapes
+            if (settings.shapes_active && data.render_shapes)
+            {
+                shapes->render(*this);
+            }
+
             FrameBufferObject::copy(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
                                     buffers.target_framebuffer);
+
 
             // Render transparent objects
             if (settings.transparency_active)
@@ -210,11 +217,6 @@ namespace volumeshOS::Internal
             }
         }
 
-        // render shapes
-        if (settings.shapes_active && data.render_shapes)
-        {
-            shapes->render(*this);
-        }
 
         //passes.outline_pass->render(*this);
 

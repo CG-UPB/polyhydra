@@ -780,7 +780,7 @@ namespace volumeshOS::Internal
             {
                 ImGuiUtil::menu_item_filled("Passes", [&]
                 {
-                    ImGui::SliderInt("##Passes", &settings.num_depth_peeling_passes, 0, 50);
+                    ImGui::SliderInt("##Passes", &settings.num_depth_peeling_passes, 0, 100);
                 });
             }
             ImGuiUtil::menu_item_filled("Weighted Blended", [&]
