@@ -29,6 +29,7 @@ out float v_clipspace_z;
 flat out int v_visible;
 flat out float v_VertexTypeRounded;
 flat out int v_tes_inner_tri;
+out float v_edge_factor;
 
 out vec3 v_tri_dist;
 flat out int v_is_triangle;
@@ -345,24 +346,18 @@ void main()
 
         float area = max(0.001, get_area(ndc_pos[0], ndc_pos[1], ndc_pos[2])) * 10.0;
 
-        v_tri_dist = vec3(distX, distY, distZ) / area;
+        v_tri_dist = vec3(distX, distY, distZ);
 
+        if(u_is_bezier_mesh || u_rounding)
+        {
+            v_tri_dist = v_tri_dist / area;
+        }
 
-//        if (x > y && x > z)
-//        {
-//            dist = dist_to_edge(ndc_pos[1], ndc_pos[2], act_ndc_pos);
-//            v_tri_dist = vec3(0.0, dist, 0.0);
-//        }
-//        else if (y > x && y > z)
-//        {
-//            dist = dist_to_edge(ndc_pos[0], ndc_pos[2], act_ndc_pos);
-//            v_tri_dist = vec3(0.0, 0.0, dist);
-//        }
-//        else
-//        {
-//            dist = dist_to_edge(ndc_pos[0], ndc_pos[1], act_ndc_pos);
-//            v_tri_dist = vec3(dist, 0.0, 0.0);
-//        }
+        v_edge_factor = 0.0;
+        if(x == 0.0 || y == 0.0 || z == 0.0)
+        {
+            v_edge_factor = 1.0;
+        }
 
     }
 

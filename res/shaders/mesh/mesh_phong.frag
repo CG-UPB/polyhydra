@@ -17,6 +17,7 @@ flat in vec4 v_a_adir;
 flat in vec4 v_b_bdir;
 flat in int v_use_lookup_path;
 flat in int v_tes_inner_tri;
+in float v_edge_factor;
 
 uniform bool u_draw_wireframe;
 uniform bool u_draw_shadows;
@@ -52,6 +53,7 @@ uniform float u_bias_modifier;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
+uniform bool u_rounding;
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
@@ -93,6 +95,18 @@ void draw_wireframe(vec2 uv)
         discard;
     }
 
+    if(u_is_bezier_mesh )
+    {
+        float dist = 0.05 * u_wireframe_size;
+        if (v_is_triangle == 0 || v_edge_factor <= 1.0 - dist)
+        {
+            discard;
+        }
+
+        FragColor = vec4(u_object_color.rgb, 1.0);
+        return;
+    }
+
     float size_factor = 0.0015 * u_wireframe_size ;
     if (v_use_lookup_path == 1)
     {
@@ -130,10 +144,12 @@ void draw_wireframe(vec2 uv)
 
         min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
 
+
         if (min_dist_to_edge > size_factor)
         {
             discard;
         }
+
         // here, we discard 2 of our 3 edges that we added in our triangulation, since only want to draw the original edges
         if (v_is_triangle == 0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z) && v_tri_dist.y > size_factor)
         {
@@ -400,7 +416,7 @@ void main()
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
-    if(u_two_sided_lighting && dot(n, l) < 0 )
+    if(u_two_sided_lighting && dot(n, v) < 0 )
     {
         n = -n;
     }
