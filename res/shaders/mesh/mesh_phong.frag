@@ -88,6 +88,11 @@ float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 lin
     return sqrt(dot(af, af) - dot(line_dir, af));
 }
 
+float linearize_depth(float d,float zNear,float zFar)
+{
+    return zNear * zFar / (zFar + d * (zNear - zFar));
+}
+
 void draw_wireframe(vec2 uv)
 {
     if (v_visible == 0)
@@ -299,7 +304,7 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
         return 0.0;
     }
 
-    //Step 1: Blocker search
+//    //Step 1: Blocker search
 //    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
 //    if(blocker_distance == -1.0)
 //        return 0.0;
@@ -311,7 +316,7 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
 
     //Step 3: Filtering
     float radius = 1.0;
-    //radius = light_size;
+    // radius = light_size;
 
     float shadow = percentage_closer_filtering(shadow_coords, light_size, radius, bias, cascade_idx);
 

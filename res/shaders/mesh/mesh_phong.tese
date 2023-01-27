@@ -173,7 +173,6 @@ void main()
     float x = gl_TessCoord.x;
     float y = gl_TessCoord.y;
     float z = gl_TessCoord.z;
-    //vec3 control_points[MAX_CPS_PER_TRI];
 
     if (u_is_bezier_mesh)
     {
@@ -309,9 +308,9 @@ void main()
         vec4 screen_pos2 = u_projection * u_view * vec4(pos2, 1.0);
 
         vec3 ndc_pos[3] = vec3[](
-        vec3(screen_pos0.xyz / screen_pos0.w),
-        vec3(screen_pos1.xyz / screen_pos1.w),
-        vec3(screen_pos2.xyz / screen_pos2.w)
+            vec3(screen_pos0.xyz / screen_pos0.w),
+            vec3(screen_pos1.xyz / screen_pos1.w),
+            vec3(screen_pos2.xyz / screen_pos2.w)
         );
 
         int lookup_case = 4 * int(ndc_pos[0].z > 0) + 2 * int(ndc_pos[1].z > 0) + int(ndc_pos[2].z > 0);
@@ -330,7 +329,7 @@ void main()
 
             v_a_adir = vec4(a_v, a_dir);
             v_b_bdir = vec4(b_v, b_dir);
-            v_use_lookup_path = 0;
+            v_use_lookup_path = 1;
         }
         else
         {
