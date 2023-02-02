@@ -47,7 +47,7 @@ namespace volumeshOS::Internal
         float slice_level           = 0.0f;
         float cell_size             = 1.0f;
         bool slice_locked           = false;
-        float rounding_size         = -1.0f;
+        float rounding_size         = 0.0f;
         int tessellation_level      = 20;
 
         // Transform Variables

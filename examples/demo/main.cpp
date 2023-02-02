@@ -143,7 +143,7 @@ void setup_graphics()
     //Transparency
     use_transparency(false);
 
-    set_rendering_mode(RenderingMode::WIREFRAME);
+    //set_rendering_mode(RenderingMode::WIREFRAME);
 
     // Post Processing
     set_gamma(2.4);
@@ -161,7 +161,6 @@ void setup_graphics()
     use_grid(true);
     use_ground(true);
     set_ground_height(-5.0f);
-
 
 }
 
