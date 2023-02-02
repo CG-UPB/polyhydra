@@ -355,6 +355,7 @@ namespace volumeshOS::Internal
         OpenVolumeMesh::CellIter m_current_loading_cell_it;
         std::chrono::steady_clock::time_point m_loading_start;
 
+
         // vertex arrays
         struct
         {

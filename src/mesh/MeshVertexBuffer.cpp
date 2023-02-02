@@ -15,7 +15,7 @@ namespace volumeshOS::Internal
 
     AttributeDefinitions::AttributeDefinitions()
     {
-        auto mesh_vaos = {VAO::MESH_FACE};
+        auto mesh_vaos = {VAO::MESH_FACE, VAO::MESH_ROUNDED};
         define_attribute(Attribute::POSITION, {0, 3, false}, mesh_vaos);
         define_attribute(Attribute::FACE_NORMAL, {1, 3, false}, mesh_vaos);
         define_attribute(Attribute::CELL_CENTER, {2, 3, false}, mesh_vaos);
@@ -24,10 +24,10 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::COLOR, {5, 4, false}, mesh_vaos);
         define_attribute(Attribute::IS_ISOLATED, {6, 1, false}, mesh_vaos);
         define_attribute(Attribute::IS_TRIANGLE, {7, 1, false}, mesh_vaos);
-        define_attribute(Attribute::VERTEX_TYPE, {8, 1, false}, mesh_vaos); //
-        define_attribute(Attribute::FACE_CENTER, {9, 4, false}, mesh_vaos); //
-        define_attribute(Attribute::TO_VERTEX, {10, 3, false}, mesh_vaos);  //
-        define_attribute(Attribute::DIHEDRAL_ANGLE, {11, 1, false}, mesh_vaos); //
+        define_attribute(Attribute::VERTEX_TYPE, {8, 1, false}, mesh_vaos);
+        define_attribute(Attribute::FACE_CENTER, {9, 3, false}, mesh_vaos);
+        define_attribute(Attribute::TO_VERTEX, {10, 3, false}, mesh_vaos);
+        define_attribute(Attribute::DIHEDRAL_ANGLE, {11, 1, false}, mesh_vaos);
         define_attribute(Attribute::SELECTION, {12, 1, false}, mesh_vaos);
         define_attribute(Attribute::HOVERED, {13, 1, false}, mesh_vaos);
         define_attribute(Attribute::VERTEX_NORMAL, {14, 3, false}, mesh_vaos);
@@ -68,9 +68,11 @@ namespace volumeshOS::Internal
         m_vao.face = std::make_shared<VertexArrayObject>(positions_by_face, m_indices_face);
         add_vao_attributes(m_vao.face, VAO::MESH_FACE);
 
-//        auto& positions_rounded = get_attrib_array(VAO::MESH_ROUNDED, Attribute::POSITION);
-//        m_vao.rounded = std::make_shared<VertexArrayObject>(positions_rounded, m_indices_rounded);
-//        add_vao_attributes(m_vao.rounded, VAO::MESH_ROUNDED);
+
+        auto& positions_rounded = get_attrib_array(VAO::MESH_ROUNDED, Attribute::POSITION);
+        m_vao.rounded = std::make_shared<VertexArrayObject>(positions_rounded, m_indices_rounded);
+        add_vao_attributes(m_vao.rounded, VAO::MESH_ROUNDED);
+
 
         m_vao.selection_sphere = std::make_shared<VertexArrayObject>(CommonMeshes::Sphere::selection_sphere().vertices(),
                                                        CommonMeshes::Sphere::selection_sphere().indices());
@@ -152,7 +154,9 @@ namespace volumeshOS::Internal
         if (m_current_loading_cell_it->is_valid() && m_current_loading_cell_it != m_mesh->cells_end())
         {
             add_cell_by_faces(m_mesh, *m_current_loading_cell_it);
-            //add_cell_rounded(m_mesh, *m_current_loading_cell_it);
+            add_cell_rounded(m_mesh, *m_current_loading_cell_it);
+
+
             m_current_loading_cell_it++;
             m_num_loaded_cells++;
         }
@@ -167,6 +171,7 @@ namespace volumeshOS::Internal
             Log::info("Loading mesh took " + std::to_string((float) duration / 1000.0f) + " seconds");
         }
     }
+
 
     bool MeshVertexBuffer::is_loading_finished() const
     {
@@ -189,10 +194,6 @@ namespace volumeshOS::Internal
         halffaces.clear();
         static std::vector<glm::vec3> vertices;
         vertices.clear();
-
-        static std::unordered_map<int, glm::vec4> data_by_vertex_id;
-        data_by_vertex_id.clear();
-        add_cell(mesh, cell, data_by_vertex_id);
 
         // add every vertex only once for the selection, no need to render them twice
         int num_selection_vertices = 0;
@@ -347,8 +348,6 @@ namespace volumeshOS::Internal
             halfface_vertices.clear();
             static std::vector<glm::vec3> vertex_normals;
             vertex_normals.clear();
-            static std::vector<int> vertex_ids;
-            vertex_ids.clear();
             for (auto hfhe_it: mesh->halfface_halfedges(chf_it))
             {
                 // get the corresponding edge vertex
@@ -358,7 +357,6 @@ namespace volumeshOS::Internal
                 glm::vec3 vertex_normal = is_boundary ? vertex_normal_to_vec3(vertex.idx()) : -normal;
                 vertex_normals.push_back(vertex_normal);
                 halfface_vertices.push_back(VecUtil::pos_to_vec3(*mesh, vertex));
-                vertex_ids.push_back(vertex.idx());
             }
 
             // If it's 3 vertices, its a simple triangle, and we do not need to triangulate it further
@@ -371,7 +369,6 @@ namespace volumeshOS::Internal
                     auto vertex_pos = halfface_vertices[i];
                     // get geometry data
                     VertexData v_data;
-                    v_data.id = vertex_ids[i];
                     v_data.position = vertex_pos;
                     barycenter += vertex_pos;
                     v_data.halfface_normal = -normal;
@@ -440,7 +437,6 @@ namespace volumeshOS::Internal
                 {
                     auto vertex_pos = halfface_vertices[i];
                     VertexData v_data;
-                    v_data.id = vertex_ids[i];
                     v_data.position = vertex_pos;
                     v_data.halfface_normal = hf_normal;
                     v_data.vertex_normal = vertex_normals[i];
@@ -472,11 +468,6 @@ namespace volumeshOS::Internal
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::VERTEX_NORMAL), vertex.vertex_normal);
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::CELL_CENTER), cell_center);
                 VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
-                get_attrib_array(VAO::MESH_FACE, Attribute::VERTEX_TYPE).push_back(0.0f);
-                get_attrib_array(VAO::MESH_FACE, Attribute::DIHEDRAL_ANGLE).push_back(0.0f);
-                VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::TO_VERTEX), glm::vec3{});
-                auto vertex_rounding_data = data_by_vertex_id[vertex.id];
-                VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::FACE_CENTER), vertex_rounding_data);
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(0.0f);
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(0.0f);
@@ -571,83 +562,6 @@ namespace volumeshOS::Internal
         data.indices.push_back(m_current_rounded_index + i0);
         data.indices.push_back(m_current_rounded_index + i2);
         data.indices.push_back(m_current_rounded_index + i1);
-    }
-
-    void MeshVertexBuffer::add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell, std::unordered_map<int, glm::vec4>& res)
-    {
-        // iterate over all vertices of the cell and calculate S_c
-        for (auto chf_it: mesh->cell_halffaces(cell))
-        {
-            for (auto hfhe_it: mesh->halfface_halfedges(chf_it))
-            {
-                // this is the corner vertex we are currently looking at
-                auto corner = mesh->from_vertex_handle(hfhe_it);
-                // since we are iterating over the halfedges, we can get vertices twice, so just check the next one
-                if (res.contains(corner.idx()))
-                {
-                    continue;
-                }
-                auto current_halfedge = hfhe_it;
-                auto current_halfface = chf_it;
-
-                auto corner_pos = VecUtil::pos_to_vec3(*mesh, corner);
-                auto to_pos = VecUtil::pos_to_vec3(*mesh, mesh->to_vertex_handle(current_halfedge));
-                auto s_c = glm::vec3(0.0);
-                float a_c = 0.0;
-                int out_count = 1;
-
-                auto last_halfface_normal = halfface_normal_to_vec3(chf_it.idx());
-
-                auto current_halfedge_length = mesh->length(hfhe_it);
-                auto min_halfedge_len = current_halfedge_length;
-                do
-                {
-                    current_halfface = mesh->adjacent_halfface_in_cell(current_halfface, current_halfedge);
-                    auto current_halfface_normal = halfface_normal_to_vec3(current_halfface.idx());
-                    s_c += current_halfface_normal;
-                    a_c += PI - VecUtil::get_angle(current_halfface_normal, last_halfface_normal);
-                    out_count++;
-                    // exit condition, we have closed the loop
-                    if (current_halfface == chf_it)
-                    {
-                        break;
-                    }
-                    // now that we have our next halfface, we need to find the associated halfedge that starts at
-                    // the corner vertex within the halfface
-                    for (auto chfe_it: mesh->halfface_edges(current_halfface))
-                    {
-                        auto hes = mesh->edge_halfedges(chfe_it);
-                        auto from0 = mesh->from_vertex_handle(hes[0]);
-                        auto from1 = mesh->from_vertex_handle(hes[1]);
-                        auto found = false;
-                        if (from0 == corner && current_halfedge != hes[0])
-                        {
-                            // we have found our halfedge
-                            current_halfedge = hes[0];
-                            found = true;
-                        }
-                        else if (from1 == corner && current_halfedge != hes[1])
-                        {
-                            current_halfedge = hes[1];
-                            found = true;
-                        }
-                        // we have found our halfedge
-                        if (found)
-                        {
-                            current_halfedge_length = mesh->length(current_halfedge);
-                            if (current_halfedge_length < min_halfedge_len)
-                            {
-                                min_halfedge_len = current_halfedge_length;
-                            }
-                            break;
-                        }
-                    }
-                    last_halfface_normal = current_halfface_normal;
-                } while (current_halfface != chf_it);
-                s_c = glm::normalize(s_c) / (float) glm::sin(a_c / (2.0 * out_count));
-                res[corner.idx()] = glm::vec4{s_c, min_halfedge_len};
-            }
-        }
     }
 
     void MeshVertexBuffer::add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell)
@@ -1057,7 +971,7 @@ namespace volumeshOS::Internal
     std::shared_ptr<VertexArrayObject> MeshVertexBuffer::get_vao_rounded()
     {
         update_vertex_arrays();
-        return m_vao.face;
+        return m_vao.rounded;
     }
 
     int MeshVertexBuffer::to_vertex_id(int value)

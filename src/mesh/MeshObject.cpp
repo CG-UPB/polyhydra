@@ -58,13 +58,15 @@ namespace volumeshOS::Internal
 
     void MeshObject::update_vertex_buffer()
     {
+        bool load_roundings = m_data.rounding_size >= 0.0f;
         if (m_mvb != nullptr && !m_mvb->is_loading_finished())
         {
-            int load_cells_per_frame = 10000;
+            int load_cells_per_frame = 100000;
             for (size_t i = 0; i < load_cells_per_frame; i++)
             {
                 m_mvb->load_next_cell();
             }
+
         }
     }
 

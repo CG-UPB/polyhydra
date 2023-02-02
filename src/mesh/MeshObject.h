@@ -47,7 +47,7 @@ namespace volumeshOS::Internal
         float slice_level           = 0.0f;
         float cell_size             = 1.0f;
         bool slice_locked           = false;
-        float rounding_size         = 0.0f;
+        float rounding_size         = -1.0f;
         int tessellation_level      = 20;
 
         // Transform Variables
@@ -173,7 +173,8 @@ namespace volumeshOS::Internal
         void reset_rotation();
 
     public:
-        bool just_locked = false;
+        bool just_locked    = false;
+        bool roundings_loaded = false;
 
     private:
         /**

@@ -121,7 +121,7 @@ VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, con
     // set cell size; moves cell vertices to its center
     mesh.set_cell_size(1.0f);
     // rounds the edges of a cell
-    mesh.set_cell_rounding(0.0f);
+    //mesh.set_cell_rounding(0.0f);
 
     // set tessellation level (1-64) for bezier meshes:
     mesh.set_tessellation_level(1);

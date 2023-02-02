@@ -85,20 +85,25 @@ void main()
         }
         else
         {
-            if(u_rounding)
-            {
-                gl_TessLevelInner[0] = 3;
-                gl_TessLevelOuter[0] = 3;
-                gl_TessLevelOuter[1] = 3;
-                gl_TessLevelOuter[2] = 3;
-            }
-            else
-            {
-                gl_TessLevelInner[0] = 1;
-                gl_TessLevelOuter[0] = 1;
-                gl_TessLevelOuter[1] = 1;
-                gl_TessLevelOuter[2] = 1;
-            }
+//            if(u_rounding)
+//            {
+//                gl_TessLevelInner[0] = 3;
+//                gl_TessLevelOuter[0] = 3;
+//                gl_TessLevelOuter[1] = 3;
+//                gl_TessLevelOuter[2] = 3;
+//            }
+//            else
+//            {
+//                gl_TessLevelInner[0] = 1;
+//                gl_TessLevelOuter[0] = 1;
+//                gl_TessLevelOuter[1] = 1;
+//                gl_TessLevelOuter[2] = 1;
+//            }
+
+            gl_TessLevelInner[0] = 1;
+            gl_TessLevelOuter[0] = 1;
+            gl_TessLevelOuter[1] = 1;
+            gl_TessLevelOuter[2] = 1;
         }
     }
 }

@@ -12,7 +12,7 @@ layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
 layout (location = 7) in float a_is_triangle;
 layout (location = 8) in float a_vertex_type_rounded;
-layout (location = 9) in vec4 a_face_center_rounded;
+layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
 layout (location = 12) in float a_is_selected;
@@ -130,6 +130,33 @@ void main()
     vec3 position = a_pos;
     float alpha = u_object_color.a * a_color.a;
 
+    if (u_rounding)
+    {
+        float type = a_vertex_type_rounded;
+        float r = min(u_rounding_size * u_average_cell_size * 0.3, a_min_edge_length * 0.3);
+        // this vertex lies on the inner triangle
+        if (type == ROUNDED_VERTEX_TYPE_FACE)
+        {
+            position += normalize(a_face_center_rounded - position) * r;
+        }
+        // this vertex lies on an edge
+        else if (type == ROUNDED_VERTEX_TYPE_EDGE)
+        {
+            float dist = EDGE_FACTOR * r;
+            vec3 edge_dir = normalize(a_to_vertex_rounded - position);
+            vec3 shrink_dir = normalize(a_face_center_rounded - position);
+            position += edge_dir * dist + shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
+        }
+        // this is a corner vertex
+        else if (type == ROUNDED_VERTEX_TYPE_CORNER)
+        {
+            float dist = CORNER_FACTOR * r;
+            vec3 shrink_dir = normalize(a_face_center_rounded - position);
+            position += shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
+        }
+        v_VertexTypeRounded = type;
+    }
+
     vec3 pos = a_center + (position - a_center) * u_cell_size;
 
     vec3 normal = a_normal;
@@ -164,7 +191,6 @@ void main()
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
     v_min_edge_length =  a_min_edge_length;
     v_center = a_center;
-    v_rounding_sphere_center = a_face_center_rounded;
 
     float peel_alpha = (u_peel_depth - peel_depth);
     if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
