@@ -115,6 +115,7 @@ namespace volumeshOS::Internal
             float vertex_size                       = 0.4f;
             bool use_global_pbr                     = true;
             bool block_input                        = false;
+            bool multisampling                      = true;
         } settings;
 
         static void restore_default_settings()

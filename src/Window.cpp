@@ -89,17 +89,22 @@ namespace volumeshOS::Internal
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 #elif defined(__APPLE__)
-        // GL 3.2 + GLSL 150
-        m_glslVersion = "#version 150";
+        // GL 4.1 + GLSL 410
+        m_glslVersion = "#version 410";
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+
+        //deactivate multisampling for MAC
+        AppState::settings.multisampling = false;
+
+
 #else
         // GL 3.0 + GLSL 130
-        m_glslVersion = "#version 330 core";
+        m_glslVersion = "#version 410 core";
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
         //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
@@ -129,7 +134,10 @@ namespace volumeshOS::Internal
             print_error("Failed to initialize OpenGL context");
             return;
         }
-
+        if(AppState::settings.multisampling)
+        {
+            glEnable(GL_MULTISAMPLE);
+        }
         glEnable(GL_MULTISAMPLE);
 
     }

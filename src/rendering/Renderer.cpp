@@ -18,8 +18,17 @@ namespace volumeshOS::Internal
         frame.width = width;
         frame.height = height;
 
-        buffers.target_framebuffer_ms = std::make_shared<FrameBufferObject>(width, height,
-                                                                            FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        if(AppState::settings.multisampling)
+        {
+            buffers.target_framebuffer_ms = std::make_shared<FrameBufferObject>(width, height,
+                                                                                FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
+        }
+        else
+        {
+            buffers.target_framebuffer_ms = std::make_shared<FrameBufferObject>(width, height,
+                                                                                FrameBufferObject::RGBA_AND_DEPTH);
+        }
+
         buffers.target_framebuffer = std::make_shared<FrameBufferObject>(width, height,
                                                                          FrameBufferObject::RGBA_AND_DEPTH);
         buffers.post_framebuffer = std::make_shared<FrameBufferObject>(width, height,
