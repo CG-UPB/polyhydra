@@ -120,6 +120,7 @@ namespace volumeshOS::Internal
 
     bool Input::mouse_double_clicked()
     {
+
         return ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
     }
 

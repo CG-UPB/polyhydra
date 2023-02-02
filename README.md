@@ -2,18 +2,8 @@
 
 **volumeshOS** is a modern and lightweight framework to visualize volumetric mesh data. 
 With ease of use in mind, **volumeshOS** has been created thoroughly to support the development
-of algorithms for volumetric mesh *generation*, *manipulation* or *visualization*. It offers
-many useful features like:
-- **Selection:** Use either the API or graphical interface to visualize data of 
-                         *vertices*, *edges*, *halffaces* and *cells*.
-- ****
+of algorithms for volumetric mesh *generation*, *manipulation* or *visualization*.
 
-
-
-
-ImGui          : https://github.com/ocornut/imgui 
-
-OpenVolumeMesh : https://www.graphics.rwth-aachen.de/software/openvolumemesh/
 
 ## Content
 - [How to Install](#how-to-install)
@@ -77,13 +67,14 @@ When active, selecting a cell turns every other cell invisible.
 In addition to the listed mesh related features there are some ways to stress three-dimensionality.
 
 #### Shadows
+![Alt text](./res/readme_res/nut_transparent.png)  ![Alt text](./res/readme_res/node_shadowed.png)
 Shadows adds more depth to the scene. 
 
 #### Ambient Occlusion
 For even more realistic shadows ambient occlusion can be applied. Especially the combination with rounded cells gives a nice look.
 
 #### Transparency
-VolumeshOS provides two ways to portray transparency. [Depth peeling](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.18.9286&rep=rep1&type=pdf) gives a way more realistic and correct transparency, but less performant. A better performing but not that realistc approach is [WBOIT](http://casual-effects.blogspot.com/2014/03/weighted-blended-order-independent.html).
+VolumeshOS provides two ways to portray transparency. [Depth peeling](https://developer.download.nvidia.com/assets/gamedev/docs/OrderIndependentTransparency.pdf) gives a way more realistic and correct transparency, but less performant. A better performing but not that realistc approach is [WBOIT](http://casual-effects.blogspot.com/2014/03/weighted-blended-order-independent.html).
 
 ### Other
 
@@ -123,6 +114,10 @@ int main()
 
 
 ## **Credits**
+
+ImGui          : https://github.com/ocornut/imgui
+
+OpenVolumeMesh : https://www.graphics.rwth-aachen.de/software/openvolumemesh/
 
 
 ## **License**

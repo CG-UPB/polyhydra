@@ -92,6 +92,8 @@ namespace volumeshOS::Internal
          */
         void update_vertex_buffer();
 
+        void update_texture_buffer();
+
         /**
          * converts selection id of vertices to OVM id
          * @param value id value
@@ -171,7 +173,8 @@ namespace volumeshOS::Internal
         void reset_rotation();
 
     public:
-        bool just_locked = false;
+        bool just_locked    = false;
+        bool roundings_loaded = false;
 
     private:
         /**

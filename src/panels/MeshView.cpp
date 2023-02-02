@@ -248,18 +248,26 @@ namespace volumeshOS::Internal
 
         const float progress_bar_width = 150.0f;
         const float progress_bar_height = 30.0f;
+
+        if(read_data)
+        {
+            read_data = false;
+            auto text = "Reading data from file ...";
+            ImVec2 text_size = ImGui::CalcTextSize(text);
+            float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
+            ImGui::SetCursorPos({middle_x - text_size.x / 2.0f, topLeft.y});
+            ImGui::Text("%s", text);
+        }
+
         if (mesh != nullptr)
         {
             const auto mvb = mesh->get_mvb();
+
             if (mvb != nullptr && !mvb->is_loading_finished())
             {
                 ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
                 float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
                 ImGui::SetCursorPos({middle_x - progress_bar_width / 2.0f, topLeft.y});
-//                ImGui::Text(
-//                        "%s",
-//                        std::string("Loading: " + std::to_string((int) mvb->get_loading_percentage()) + "%").c_str()
-//                );
                 ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
                 ImGui::ProgressBar(mvb->get_loading_percentage() / 100.0f, ImVec2(progress_bar_width, progress_bar_height));
                 ImGui::PopStyleColor();
@@ -372,7 +380,7 @@ namespace volumeshOS::Internal
             case TRANSPARENCY_REVEAL:
                 return renderer->passes.transparency_pass_wb->get_reveal_texture();
             case SHADOW_MAP:
-                return renderer->passes.shadow_pass->get_debug_texture(*renderer, m_shadow_map_cascade_level_debug);
+                return renderer->passes.shadow_pass->shadow_maps[m_shadow_map_cascade_level_debug];
         }
         return -1;
     }

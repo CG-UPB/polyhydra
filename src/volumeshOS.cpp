@@ -76,8 +76,8 @@ namespace volumeshOS
         // render loop
         while (!window->should_close())
         {
-            execute_commands();
             window->render();
+            execute_commands();
         }
 
         // clean up resources
@@ -120,6 +120,7 @@ namespace volumeshOS
     {
         int id = next_mesh_id();
         VMesh vmesh(id);
+        window->panels.mesh_view->read_data = true;
         commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
             if (name != nullptr)
@@ -142,6 +143,7 @@ namespace volumeshOS
     {
         int id = next_mesh_id();
         VMesh vmesh(id);
+        window->panels.mesh_view->read_data = true;
         commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
             if (name != nullptr)

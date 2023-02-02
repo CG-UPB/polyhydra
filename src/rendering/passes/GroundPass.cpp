@@ -140,24 +140,18 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_float("u_near", cam->near);
         m_ground_shader->set_uniform_float("u_far", cam->far);
 
-        float bias_min = 0.000;
-        float bias_max = 0.000;
+//        float bias_min = 0.000;
+//        float bias_max = 0.000;
+//        float bias_modifier = 0.1;
+
+        float bias_min = 0.0000001f;
+        float bias_max = 0.003f;
         float bias_modifier = 0.1;
+
 
         m_ground_shader->set_uniform_float("u_bias_min", bias_min);
         m_ground_shader->set_uniform_float("u_bias_max", bias_max);
         m_ground_shader->set_uniform_float("u_bias_modifier", bias_modifier);
-
-
-        // shadow maps
-        auto s = renderer.passes.shadow_pass;
-        for (int i = 0; i < s->max_cascades; i++)
-        {
-            m_ground_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) + "]",
-                                             s->cascade_projections[i]);
-            m_ground_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", s->cascade_views[i]);
-            m_ground_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
-        }
 
         m_ground_shader->set_uniform_mat4f("u_light_transform", l_transform);
         m_ground_shader->set_uniform_float("u_light_size", settings.shadow.penumbra_scale);
@@ -175,18 +169,23 @@ namespace volumeshOS::Internal
         m_ground_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,
                                              renderer.passes.ssao_pass->get_blur_texture());
 
-//        // bind cascaded shadow map
-//        std::vector<uint32_t> bindings = {GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
-//                                              GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11};
-//        for (int i = 0; i < s->max_cascades; i++)
-//        {
-//            m_ground_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],
-//                                                 s->shadow_maps[i]);
-//        }
 
-        m_ground_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
+        // shadow maps
+        std::vector<unsigned int> bindings = {GL_TEXTURE2, GL_TEXTURE3, GL_TEXTURE4, GL_TEXTURE5,
+                                              GL_TEXTURE6, GL_TEXTURE7, GL_TEXTURE8, GL_TEXTURE9};
 
-        m_vao->draw();
+        auto s = renderer.passes.shadow_pass;
+        for (int i = 0; i < s->max_cascades; i++)
+        {
+            m_ground_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) + "]",
+                                             s->cascade_projections[i]);
+            m_ground_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", s->cascade_views[i]);
+            m_ground_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
+            m_ground_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],s->shadow_maps[i]);
+
+        }
+
+        m_vao->draw_patches();
 
         m_ground_shader->unbind();
         renderer.buffers.target_framebuffer_ms->unbind();

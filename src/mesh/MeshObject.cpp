@@ -30,18 +30,43 @@ namespace volumeshOS::Internal
         scale(glm::vec3(1.0f));
 
         m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
-        m_mtb = std::make_shared<MeshTextureBuffer>(m_mesh);
+        m_mtb = std::make_shared<MeshTextureBuffer>(m_mesh, GL_TEXTURE12);
+        update_texture_buffer();
+    }
+
+    void MeshObject::update_texture_buffer()
+    {
+        if(*m_mesh->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER)->begin())
+        {
+            OpenVolumeMesh::FacePropertyT<std::vector<double>> controlPointProp =
+                    m_mesh->request_face_property<std::vector<double>>(MeshProperties::PROP_BEZIER_FACE_CONTROL_POINTS);
+
+            std::vector<float> bezier_control_points_array;
+            // iterate over values and copy them into m_bezier_control_points_array
+            int i = 0;
+            for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin(); f_it != m_mesh->faces_end(); ++f_it)
+            {
+                for (double cp_coord: controlPointProp[*f_it])
+                {
+                    bezier_control_points_array.push_back((float) cp_coord);
+                    i++;
+                }
+            }
+            m_mtb->update_buffer(sizeof(float)*controlPointProp.size()*(controlPointProp.begin()->size()), bezier_control_points_array);
+        }
     }
 
     void MeshObject::update_vertex_buffer()
     {
+        bool load_roundings = m_data.rounding_size >= 0.0f;
         if (m_mvb != nullptr && !m_mvb->is_loading_finished())
         {
-            int load_cells_per_frame = 10000;
+            int load_cells_per_frame = 100000;
             for (size_t i = 0; i < load_cells_per_frame; i++)
             {
                 m_mvb->load_next_cell();
             }
+
         }
     }
 
@@ -247,6 +272,7 @@ namespace volumeshOS::Internal
         std::vector<float> vertices;
         for (auto v_it: m_mesh->vertices())
         {
+
             auto v_pos = m_mesh->vertex(v_it);
             glm::vec4 vec(v_pos[0], v_pos[1], v_pos[2], 1.0);
             // apply transformation matrix
@@ -255,6 +281,8 @@ namespace volumeshOS::Internal
             vertices.push_back(vec[0]);
             vertices.push_back(vec[1]);
             vertices.push_back(vec[2]);
+
+
         }
 
         glm::vec4 min(vertices[0], vertices[1], vertices[2], 1.0);

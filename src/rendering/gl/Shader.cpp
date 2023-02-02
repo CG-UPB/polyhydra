@@ -74,24 +74,24 @@ namespace volumeshOS::Internal
 
         // setup geometry shader, if it exists
         uint32_t geometryID = -1;
-        if (!geometryPath.empty())
-        {
-            std::string geometrySource = get_shader_source(geometryPath);
-
-            geometryID = glCreateShader(GL_GEOMETRY_SHADER);
-
-            const GLchar* geomBuf = geometrySource.c_str();
-            glShaderSource(geometryID, 1, &geomBuf, nullptr);
-            glCompileShader(geometryID);
-            glGetShaderiv(geometryID, GL_COMPILE_STATUS, &success);
-            if (!success)
-            {
-                glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
-                std::cout << "Error while compiling " << geometryPath << " -> " << infoLog << std::endl;
-            }
-
-            glAttachShader(m_shaderID, geometryID);
-        }
+//        if (!geometryPath.empty())
+//        {
+//            std::string geometrySource = get_shader_source(geometryPath);
+//
+//            geometryID = glCreateShader(GL_GEOMETRY_SHADER);
+//
+//            const GLchar* geomBuf = geometrySource.c_str();
+//            glShaderSource(geometryID, 1, &geomBuf, nullptr);
+//            glCompileShader(geometryID);
+//            glGetShaderiv(geometryID, GL_COMPILE_STATUS, &success);
+//            if (!success)
+//            {
+//                glGetShaderInfoLog(geometryID, 512, nullptr, infoLog);
+//                std::cout << "Error while compiling " << geometryPath << " -> " << infoLog << std::endl;
+//            }
+//
+//            glAttachShader(m_shaderID, geometryID);
+//        }
 
         // setup tessellation control and evaluation shader, if they exists
         unsigned int tessellationControlID = -1;
@@ -207,6 +207,13 @@ namespace volumeshOS::Internal
     {
         glActiveTexture(binding);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_id);
+        this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
+    }
+
+    void Shader::set_uniform_texbuffer(const std::string& name, uint32_t binding, uint32_t texture_id)
+    {
+        glActiveTexture(binding);
+        glBindTexture(GL_TEXTURE_BUFFER, texture_id);
         this->set_uniform_int(name, (int) binding - GL_TEXTURE0);
     }
 
@@ -372,14 +379,14 @@ namespace volumeshOS::Internal
         s_shaders["transparency_wb"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 transparency_path / "transparency_wb.frag",
-                pre_mesh_phong_path / "mesh_phong.geom",
+                pre_mesh_phong_path / "",
                 pre_mesh_phong_path / "mesh_phong.tesc",
                 pre_mesh_phong_path / "mesh_phong.tese" 
         ));
         s_shaders["transparency_dp"] = std::shared_ptr<Shader>(new Shader(
                 pre_mesh_phong_path / "mesh_phong.vert",
                 transparency_path / "transparency_dp.frag",
-                pre_mesh_phong_path / "mesh_phong.geom",
+                pre_mesh_phong_path / "",
                 pre_mesh_phong_path / "mesh_phong.tesc",
                 pre_mesh_phong_path / "mesh_phong.tese" 
         ));

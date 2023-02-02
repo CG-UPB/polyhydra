@@ -66,7 +66,7 @@ OpenVolumeMesh::GeometricPolyhedralMeshV3d gen_mesh()
     return mesh;
 }
 
-VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, std::string name = "")
+VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, const std::string& name = "")
 {
     // Note: None of these settings needs to be set before opening the viewer
     //       Most of these examples just set the default value for demonstration
@@ -121,7 +121,7 @@ VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, std
     // set cell size; moves cell vertices to its center
     mesh.set_cell_size(1.0f);
     // rounds the edges of a cell
-    mesh.set_cell_rounding(0.0f);
+    //mesh.set_cell_rounding(0.0f);
 
     // set tessellation level (1-64) for bezier meshes:
     mesh.set_tessellation_level(1);
@@ -143,6 +143,8 @@ void setup_graphics()
     //Transparency
     use_transparency(false);
 
+    //set_rendering_mode(RenderingMode::WIREFRAME);
+
     // Post Processing
     set_gamma(2.4);
     set_saturation(1.0);
@@ -159,7 +161,6 @@ void setup_graphics()
     use_grid(true);
     use_ground(true);
     set_ground_height(-5.0f);
-
 
 }
 
@@ -179,6 +180,8 @@ void cell_select(const VMesh mesh, OpenVolumeMesh::CellHandle ch)
 
 int main(int argc, char* argv[])
 {
+    set_theme(Theme::Dark);
+
     // generate ovm mesh
     auto ovm_mesh = gen_mesh();
 

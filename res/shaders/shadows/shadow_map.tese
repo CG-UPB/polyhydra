@@ -2,22 +2,40 @@
 
 layout(triangles, equal_spacing, ccw) in;
 
-in vec4 tc_Pos[];
-flat in int tc_Visible[];
-flat in int tc_ovm_halfface_id[];
-flat in vec3 tc_center[];
+in vec3 tc_Pos[];
 
-flat out int v_Visible;
+flat in float tc_min_edge_length[];
+in vec4 tc_rounding_sphere_center[];
+in vec3 tc_center[];
+
+flat in int tc_Visible[];
+flat in int tc_isTriangle[];
+flat in float tc_VertexTypeRounded[];
+flat in int tc_ovm_halfface_id[];
+
+out vec3 v_pos;
+
+flat out int v_visible;
+flat out float v_VertexTypeRounded;
+flat out int v_tes_inner_tri;
+
+out vec3 v_tri_dist;
+flat out vec4 v_a_adir;
+flat out vec4 v_b_bdir;
+flat out int v_use_lookup_path;
 
 // necessary for calculating bezier mesh face normals
-uniform mat4 u_light_space_matrices[16];
+uniform mat4 u_light_view;
 uniform mat4 u_light_projection;
 uniform mat4 u_transform;
-uniform float u_cell_size;
-// uniform mat4 u_view;
-// uniform vec3 u_cam_pos;
 
-// uniform bool u_draw_wireframe;
+
+uniform float u_cell_size;
+uniform bool u_draw_wireframe;
+uniform bool u_rounding;
+uniform float u_rounding_size;
+uniform float u_average_cell_size;
+uniform bool u_use_vertex_normals;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
@@ -26,6 +44,20 @@ uniform int u_bezier_degree;
 // use texture buffer for control points
 uniform samplerBuffer u_control_points_tb;
 
+const float EDGE_FACTOR = 1.0 / sqrt(2.0);
+const float CORNER_FACTOR = sqrt(2.0);
+
+const ivec4 lookup[8] = ivec4[](
+ivec4(3, 3, 3, 3), // [0][0][0]
+ivec4(2, 2, 0, 1), // [0][0][1]
+ivec4(1, 1, 0, 2), // [0][1][0]
+ivec4(1, 2, 0, 0), // [0][1][1]
+ivec4(0, 0, 1, 2), // [1][0][0]
+ivec4(0, 2, 1, 1), // [1][0][1]
+ivec4(0, 1, 2, 2), // [1][1][0]
+ivec4(3, 3, 3, 3)// [1][1][1]
+);
+
 // a maximum bezier degree needs to be set because the De Casteljau algorithm 
 // needs an array and GLSL only supports local arrays with static sizes
 #define MAX_BEZIER_DEGREE 7
@@ -33,26 +65,31 @@ uniform samplerBuffer u_control_points_tb;
 
 #define CP_2D_INDEX_TO_1D(i2, i1, m) (((m)+1)*((m)+2)/2 - ((m)-(i2)+1)*((m)-(i2)+2)/2 + (i1))
 
+int cp_2d_index_to_1d(int i2, int i1, int m)
+{
+    return (((m)+1)*((m)+2)/2 - ((m)-(i2)+1)*((m)-(i2)+2)/2 + (i1));
+}
+
 void de_casteljau_2(inout vec3 control_points[MAX_CPS_PER_TRI], int m, float x, float y, float z, int steps)
 {
     // Analogous to the De Casteljau algorithm for bezier curves evaluate the 
     // bezier triangle of the current face.
     int cur_m = m;
-    for(int s = m; s > m-steps; s--) 
+    for (int s = m; s > m-steps; s--)
     {
-        for(int i2 = 0; i2 < cur_m; i2++) 
+        for (int i2 = 0; i2 < cur_m; i2++)
         {
-            for(int i1 = 0; i1 < cur_m-i2; i1++) 
+            for (int i1 = 0; i1 < cur_m-i2; i1++)
             {
                 int next_i = CP_2D_INDEX_TO_1D(i2, i1, cur_m-1);
 
-                int i_1D = CP_2D_INDEX_TO_1D(i2,   i1,   cur_m);
+                int i_1D = CP_2D_INDEX_TO_1D(i2, i1, cur_m);
                 control_points[next_i] =  x*control_points[i_1D];
 
-                i_1D = CP_2D_INDEX_TO_1D(i2+1,   i1,   cur_m);
+                i_1D = CP_2D_INDEX_TO_1D(i2+1, i1, cur_m);
                 control_points[next_i] += y*control_points[i_1D];
 
-                i_1D = CP_2D_INDEX_TO_1D(i2,   i1+1,   cur_m);
+                i_1D = CP_2D_INDEX_TO_1D(i2, i1+1, cur_m);
                 control_points[next_i] += z*control_points[i_1D];
             }
         }
@@ -65,9 +102,32 @@ void copy_control_points(inout vec3 dest[MAX_CPS_PER_TRI], int control_points_of
     // Copy control points into dest which holds the temporary values for the
     // de Casteljau algorithm.
     int num_tri_cps = (m+2)*(m+1)/2;
-    for(int i = 0; i < num_tri_cps; i++) {
+    for (int i = 0; i < num_tri_cps; i++) {
         dest[i] = texelFetch(u_control_points_tb, control_points_offset + i).xyz;
     }
+}
+
+float get_shrink_factor(float angle, float dist) {
+    float half_angle = angle * 0.5;
+    return dist * (1.0 / cos(half_angle) - tan(half_angle));
+}
+
+float dist_to_edge(vec3 e0, vec3 e1, vec3 p)
+{
+    return length(cross(p - e0, p - e1)) / length(e1 - e0);
+}
+
+mat3 get_edge_triangle(int corner_idx, float l)
+{
+    vec3 a, b, c = vec3(0.0);
+
+    return mat3(a, b, c);
+}
+
+vec3 get_sphere_point_of_contact(int corner_idx)
+{
+
+    return vec3(0.0);
 }
 
 void main()
@@ -77,36 +137,171 @@ void main()
     float y = gl_TessCoord.y;
     float z = gl_TessCoord.z;
 
-    if(u_is_bezier_mesh)
+    if (u_is_bezier_mesh)
     {
         // if the mesh is a bezier mesh evaluate the bezier triangle of the
         // current face for the given barycentric coordinates (x, y, z)
-        
+
 
         // m is the bezier mesh degree (often used in papers)
         int m = u_bezier_degree;
         int ovm_hf_id = tc_ovm_halfface_id[0];
         int control_points_offset = (ovm_hf_id/2)*(m+2)*(m+1)/2;
         vec3 control_points[MAX_CPS_PER_TRI];
-        
+
         // copy control points from texture buffer into local array 
         // so that it can be modified by the de casteljau algorithm
         copy_control_points(control_points, control_points_offset, m);
 
-        // execute the de casteljau algorithm
-        de_casteljau_2(control_points, m, x, y, z, m);
-        
-        // mat4 view_transform = inverse(u_light_projection) * u_light_space_matrices[0] * u_transform;
+        // execute m-1 steps of the de casteljau algorithm
+        de_casteljau_2(control_points, m, x, y, z, m-1);
+
+        // Calculate normal of point on bézier triangle.
+        // The three points generated by the decasteljau algorithm are the
+        // tangent of the point of the bézier triangle at (x,y,z).
+        // The normal of this tangent triangle is the normal of the point.
+        vec3 a = control_points[cp_2d_index_to_1d(0, 0, 1)];
+        vec3 b = control_points[cp_2d_index_to_1d(0, 1, 1)];
+        vec3 c = control_points[cp_2d_index_to_1d(1, 0, 1)];
+
+        // Obtain the final position by doing the last step of linear interpolation
+        // of the de casteljau algorithm.
+        v_pos  = control_points[cp_2d_index_to_1d(0, 0, 1)]*x;
+        v_pos += control_points[cp_2d_index_to_1d(1, 0, 1)]*y;
+        v_pos += control_points[cp_2d_index_to_1d(0, 1, 1)]*z;
+
         // Perform Cell sizing.
-        control_points[0] = tc_center[0] + (control_points[0] - tc_center[0]) * u_cell_size;
-        
-        gl_Position = u_transform * vec4(control_points[0], 1.0);
+        vec3 pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
+
+
+        v_pos = (u_light_view * u_transform * vec4(v_pos, 1.0)).xyz;
+        vec4 screen_pos = u_light_projection * vec4(v_pos, 1.0);
+        gl_Position = screen_pos;
+
+        //v_pos = vec3(u_transform * vec4(pos, 1.0));
+
+        // Do not render inner tessellated triangled in wireframe mode.
+        // For a inner triangle no barycentric coordinate is 0.
+        v_tes_inner_tri = int(ceil(min(min(x, y), z)));
+
     }
     else
     {
-        gl_Position   = tc_Pos[0]            *x + tc_Pos[1]            *y + tc_Pos[2]            *z;
+        v_tes_inner_tri = 0;
+
+        v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+
+        if (u_rounding)
+        {
+//
+//            float r = min(u_rounding_size * u_average_cell_size * 0.3, u_rounding_size * tc_min_edge_length[1] * 0.3);
+//            r = u_rounding_size * (tc_min_edge_length[1] * 0.3);
+//
+//            if ((x == 0.0 && y == 0.0) || (y == 0.0 && z == 0.0) || (x == 0.0 && z == 0.0))
+//            {
+//                // CORNER VERTICES
+//                v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+//                vec4 rounding_center = tc_rounding_sphere_center[0] * x + tc_rounding_sphere_center[1] * y + tc_rounding_sphere_center[2] * z;
+//                if (u_use_vertex_normals)
+//                {
+//                    v_normal = tc_VertexNormal[0] * x + tc_VertexNormal[1] * y + tc_VertexNormal[2] * z;
+//                }
+//                else
+//                {
+//                    v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
+//                }
+//
+//                vec3 p_c = v_pos + r * rounding_center.xyz;
+//                v_normal = normalize(v_pos - p_c);
+//                v_pos = p_c + r * v_normal;
+//            }
+//            else if (x != 0.0 && y != 0.0 && z != 0.0)
+//            {
+//                v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+//                // FACE_VERTICES
+//                if (x > y && x > z)
+//                {
+//                    vec4 rounding_center = tc_rounding_sphere_center[0];
+//                    vec3 p_c = v_pos + r * rounding_center.xyz;
+//                    v_normal = normalize(v_pos - p_c);
+//                    v_pos = p_c + r * v_normal;
+//                }
+//                else if (y > z)
+//                {
+//                    vec4 rounding_center = tc_rounding_sphere_center[1];
+//                    vec3 p_c = v_pos + r * rounding_center.xyz;
+//                    v_normal = normalize(v_pos - p_c);
+//                    v_pos = p_c + r * v_normal;
+//                }
+//                else
+//                {
+//                    vec4 rounding_center = tc_rounding_sphere_center[2];
+//                    vec3 p_c = v_pos + r * rounding_center.xyz;
+//                    v_normal = normalize(v_pos - p_c);
+//                    v_pos = p_c + r * v_normal;
+//                }
+//            }
+//            else
+//            {
+//                // EDGE VERTICES
+//                v_pos    = tc_Pos[0]    * x + tc_Pos[1]    * y + tc_Pos[2]    * z;
+//
+//                float dist = EDGE_FACTOR * r;
+//
+//                int from_idx = -1;
+//                int to_idx = -1;
+//
+//                if (x == 0.0)
+//                {
+//                    if (y > z)
+//                    {
+//                        to_idx = 2;
+//                        from_idx = 1;
+//                    }
+//                    else
+//                    {
+//                        to_idx = 1;
+//                        from_idx = 2;
+//                    }
+//                }
+//                else if (y == 0.0)
+//                {
+//                    if (x > z)
+//                    {
+//                        to_idx = 2;
+//                        from_idx = 0;
+//                    }
+//                    else
+//                    {
+//                        to_idx = 0;
+//                        from_idx = 2;
+//                    }
+//                }
+//                else if (z == 0.0)
+//                {
+//                    if (x > y)
+//                    {
+//                        to_idx = 1;
+//                        from_idx = 0;
+//                    }
+//                    else
+//                    {
+//                        to_idx = 0;
+//                        from_idx = 1;
+//                    }
+//
+//                }
+//                vec4 rounding_center = tc_rounding_sphere_center[from_idx];
+//                vec3 p_c = v_pos + r * rounding_center.xyz;
+//                v_pos = p_c + r * (v_pos - p_c);
+//
+//            }
+        }
+        vec4 screen_pos = u_light_projection * u_light_view * vec4(v_pos, 1.0);
+        gl_Position = screen_pos;
     }
 
-    // in any case use the values of vertex shader for these values 
-    v_Visible         = tc_Visible[1]        ; // flat
+    // in any case use the values of vertex shader for these values
+    v_visible         = tc_Visible[1];// flat
+    v_VertexTypeRounded=tc_VertexTypeRounded[0] * x + tc_VertexTypeRounded[1] * y + tc_VertexTypeRounded[2] * z;
 }

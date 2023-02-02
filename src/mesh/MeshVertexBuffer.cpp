@@ -68,9 +68,11 @@ namespace volumeshOS::Internal
         m_vao.face = std::make_shared<VertexArrayObject>(positions_by_face, m_indices_face);
         add_vao_attributes(m_vao.face, VAO::MESH_FACE);
 
+
         auto& positions_rounded = get_attrib_array(VAO::MESH_ROUNDED, Attribute::POSITION);
         m_vao.rounded = std::make_shared<VertexArrayObject>(positions_rounded, m_indices_rounded);
         add_vao_attributes(m_vao.rounded, VAO::MESH_ROUNDED);
+
 
         m_vao.selection_sphere = std::make_shared<VertexArrayObject>(CommonMeshes::Sphere::selection_sphere().vertices(),
                                                        CommonMeshes::Sphere::selection_sphere().indices());
@@ -153,6 +155,8 @@ namespace volumeshOS::Internal
         {
             add_cell_by_faces(m_mesh, *m_current_loading_cell_it);
             add_cell_rounded(m_mesh, *m_current_loading_cell_it);
+
+
             m_current_loading_cell_it++;
             m_num_loaded_cells++;
         }
@@ -167,6 +171,7 @@ namespace volumeshOS::Internal
             Log::info("Loading mesh took " + std::to_string((float) duration / 1000.0f) + " seconds");
         }
     }
+
 
     bool MeshVertexBuffer::is_loading_finished() const
     {

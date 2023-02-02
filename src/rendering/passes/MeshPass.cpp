@@ -21,6 +21,11 @@ namespace volumeshOS::Internal
             if (draw_wireframe || is_bezier_mesh || !mesh->get_data().use_back_face_culling)
             {
                 glDisable(GL_CULL_FACE);
+//                if(draw_wireframe)
+//                {
+//                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//                    glLineWidth(settings.wireframe_size);
+//                }
             }
             else
             {
@@ -96,7 +101,7 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_far", cam->far);
 
 
-            m_bias_min = 0.0000001f;
+            m_bias_min = 0.00000001f;
             m_bias_max = 0.003f;
 
             m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
@@ -105,6 +110,9 @@ namespace volumeshOS::Internal
 
 
             // shadow maps
+            std::vector<unsigned int> bindings = {GL_TEXTURE2, GL_TEXTURE3, GL_TEXTURE4, GL_TEXTURE5,
+                                                  GL_TEXTURE6, GL_TEXTURE7, GL_TEXTURE8, GL_TEXTURE9};
+
             auto s = renderer.passes.shadow_pass;
             for (int i = 0; i < s->max_cascades; i++)
             {
@@ -112,7 +120,11 @@ namespace volumeshOS::Internal
                                                  s->cascade_projections[i]);
                 m_mesh_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", s->cascade_views[i]);
                 m_mesh_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
+                m_mesh_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],s->shadow_maps[i]);
+
             }
+
+
             m_mesh_shader->set_uniform_mat4f("u_light_transform", data.light_transform);
             m_mesh_shader->set_uniform_float("u_light_size", settings.shadow.penumbra_scale);
 
@@ -130,17 +142,17 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,
                                                  renderer.passes.ssao_pass->get_blur_texture());
 
-            m_mesh_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
+           // m_mesh_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
 
             m_mesh_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
             if(is_bezier_mesh)
             {
-                mesh->get_mtb()->bind();
+                auto mtb = mesh->get_mtb();
                 // Use Bezier Mesh Property to set uniform.
                 m_mesh_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
 
                 // GL_TEXTURE12 is used for control points storage.
-                m_mesh_shader->set_uniform_int("u_control_points_tb", 12);
+                m_mesh_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
                 // Use tessellation level value from toolbar.
                 m_mesh_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
             }

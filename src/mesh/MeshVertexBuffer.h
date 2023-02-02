@@ -9,6 +9,7 @@ namespace volumeshOS::Internal
 
     struct VertexData
     {
+        int id;
         glm::vec3 position{};
         glm::vec3 halfface_normal{};
         glm::vec3 vertex_normal{};
@@ -268,6 +269,9 @@ namespace volumeshOS::Internal
 
         void add_cell_rounded(const std::shared_ptr<OVMesh>& mesh, OVMCell cell);
 
+
+        void add_cell(const std::shared_ptr<OVMesh>& mesh, OVMCell cell, std::unordered_map<int, glm::vec4>& res);
+
         uint32_t add_vertex_data_to_cell_data(
                 RoundedCellData& data,
                 float type,
@@ -350,6 +354,7 @@ namespace volumeshOS::Internal
         bool m_is_loading_finished = false;
         OpenVolumeMesh::CellIter m_current_loading_cell_it;
         std::chrono::steady_clock::time_point m_loading_start;
+
 
         // vertex arrays
         struct

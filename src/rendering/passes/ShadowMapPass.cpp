@@ -4,51 +4,61 @@
 
 namespace volumeshOS::Internal
 {
-    ShadowMapPass::ShadowMapPass(int width, int height) : m_width(width), m_height(height)
+    ShadowMapPass::ShadowMapPass(int width, int height) :
+    m_width(width), m_height(height)
     {
         m_shadow_shader = Shader::get("shadow_map");
         m_debug_shader = Shader::get("shadow_debug");
         m_debug_framebuffer = std::make_shared<FrameBufferObject>(width, height, FrameBufferObject::RGBA_AND_DEPTH);
-        generate_cascade_textures(width, height);
+        generate_cascade_textures();
     }
 
-    void ShadowMapPass::generate_cascade_textures(int width, int height)
+    void ShadowMapPass::generate_cascade_textures()
     {
-        glGenFramebuffers(1, &m_shadow_framebuffer);
 
-        glGenTextures(1, &m_depth_texture);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, m_depth_texture);
-        glTexImage3D(
-                GL_TEXTURE_2D_ARRAY,
-                0,
-                GL_DEPTH_COMPONENT32F,
-                width,
-                height,
-                max_cascades + 1,
-                0,
-                GL_DEPTH_COMPONENT,
-                GL_FLOAT,
-                nullptr);
+        std::vector<FrameBufferAttachment> attachments =
+                {
+                        FrameBufferAttachment{
+                                .internal_format    = GL_RGBA,
+                                .format             = GL_RGBA,
+                                .type               = GL_UNSIGNED_BYTE,
+                                .attachment         = GL_COLOR_ATTACHMENT0,
+                                .texture_filter     = GL_LINEAR,
+                                .texture_wrap       = GL_CLAMP_TO_EDGE
+                        }
+                };
+        m_shadow_framebuffer = std::make_shared<FrameBufferObject>(m_width, m_height, attachments);;
+        unsigned int shadow_buffer = m_shadow_framebuffer->get_id();
 
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        for(unsigned int i = 0; i < max_cascades; i++)
+        {
+            unsigned int tex;
+            glGenTextures(1, &tex);
+            glBindTexture(GL_TEXTURE_2D, tex);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
-        glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
+            constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+            shadow_maps[i] = tex;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_framebuffer);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_texture, 0);
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[0], 0);
 
-        int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE)
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        if(status != GL_FRAMEBUFFER_COMPLETE)
         {
             std::cout << "Error: " << status << std::endl;
             exit(1);
         }
+
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -70,75 +80,85 @@ namespace volumeshOS::Internal
 
         m_shadow_shader->bind();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_framebuffer);
-
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
-        glViewport(0, 0, m_width, m_height);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glCullFace(GL_BACK);  // peter panning
+        m_shadow_framebuffer->bind();
 
 
-        for (const auto& mesh: renderer.render_list)
+
+        for(int i = 0; i < m_current_cascade_level; i++)
         {
-            const auto& data = renderer.pass_data_list.at(mesh->get_id());
+            bind_for_writing(i);
 
-            bool is_bezier_mesh = mesh->is_bezier_mesh();
-            // Currently, cells sometimes appear hollow if CULL_FACE is not 
-            // disabled for Bézier meshes
-            if (is_bezier_mesh)
-            {
-                glDisable(GL_CULL_FACE);
-            }
-            else
-            {
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CCW);
-                glCullFace(GL_BACK);
-            }
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
+            glViewport(0, 0, m_width, m_height);
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            glCullFace(GL_BACK);  // peter panning
 
-            // Shader uniforms
-            m_shadow_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
-            m_shadow_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-            m_shadow_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
-            m_shadow_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
-            m_shadow_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
-            m_shadow_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
-            m_shadow_shader->set_uniform_vec3f("u_min", data.bb_min);
-            m_shadow_shader->set_uniform_vec3f("u_max", data.bb_max);
-            m_shadow_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
-            m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            // Do not use rounding on Bézier meshes.
-            m_shadow_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
-            m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
-            m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-
-            for (int i = 0; i < max_cascades; i++)
+            for (const auto& mesh: renderer.render_list)
             {
-                auto light_space_mat = cascade_projections[i] * cascade_views[i];
-                m_shadow_shader->set_uniform_mat4f("u_light_space_matrices[" + std::to_string(i) + "]" , light_space_mat);
-            }
-            m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[0]);
-            m_shadow_shader->set_uniform_mat4f("u_transform", data.transform);
 
-            m_shadow_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
-            if(is_bezier_mesh)
-            {
-                mesh->get_mtb()->bind();
-                // Use Bezier Mesh Property to set uniform.
-                m_shadow_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
-                
-                // GL_TEXTURE12 is used for control points storage.
-                m_shadow_shader->set_uniform_int("u_control_points_tb", 12);
-                // Use tessellation level value from toolbar.
-                m_shadow_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
-            }
+                const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
-            auto vao = mesh->get_vao();
-            if (mesh->get_data().rounding_size > 0.0f && !is_bezier_mesh)
-            {
-                vao = mesh->get_mvb()->get_vao_rounded();
+                bool is_bezier_mesh = mesh->is_bezier_mesh();
+                // Currently, cells sometimes appear hollow if CULL_FACE is not
+                // disabled for Bézier meshes
+                if (is_bezier_mesh)
+                {
+                    glDisable(GL_CULL_FACE);
+                }
+                else
+                {
+                    glEnable(GL_CULL_FACE);
+                    glFrontFace(GL_CCW);
+                    glCullFace(GL_BACK);
+                }
+
+                // Shader uniforms
+                m_shadow_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
+                m_shadow_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+                m_shadow_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+                m_shadow_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
+                m_shadow_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
+                m_shadow_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+                m_shadow_shader->set_uniform_vec3f("u_min", data.bb_min);
+                m_shadow_shader->set_uniform_vec3f("u_max", data.bb_max);
+                m_shadow_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
+                m_shadow_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+                // Do not use rounding on Bézier meshes.
+                m_shadow_shader->set_uniform_bool("u_rounding",
+                                                  (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
+                m_shadow_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
+                m_shadow_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+                m_shadow_shader->set_uniform_mat4f("u_transform", data.transform);
+                m_shadow_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+                if (is_bezier_mesh)
+                {
+                    auto mtb = mesh->get_mtb();
+                    // Use Bezier Mesh Property to set uniform.
+                    m_shadow_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(
+                            MeshProperties::PROP_BEZIER_DEGREE).begin());
+
+                    // GL_TEXTURE12 is used for control points storage.
+                    m_shadow_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(),
+                                                           mtb->get_texture());
+                    // Use tessellation level value from toolbar.
+                    m_shadow_shader->set_uniform_int("u_bezier_tessellation_level",
+                                                     mesh->get_data().tessellation_level);
+                }
+
+                // render every cascade for each mesh
+
+                m_shadow_shader->set_uniform_mat4f("u_light_view", cascade_views[i]);
+                m_shadow_shader->set_uniform_mat4f("u_light_projection", cascade_projections[i]);
+
+
+                auto vao = mesh->get_vao();
+                if (mesh->get_data().rounding_size > 0.0f && !is_bezier_mesh)
+                {
+                    vao = mesh->get_mvb()->get_vao_rounded();
+                }
+                vao->draw_patches();
+
             }
-            vao->draw_patches();
         }
 
         glCullFace(GL_BACK);
@@ -151,10 +171,11 @@ namespace volumeshOS::Internal
     {
         m_width = width;
         m_height = height;
-        glDeleteTextures(1, &m_depth_texture);
-        glDeleteFramebuffers(1, &m_shadow_framebuffer);
+        glDeleteTextures((int) max_cascades, &shadow_maps[0]);
+        m_shadow_framebuffer->resize(width, height);
         m_debug_framebuffer->resize(width, height);
-        generate_cascade_textures(width, height);
+
+        generate_cascade_textures();
     }
 
     void ShadowMapPass::calculate_cascades(const Renderer& renderer)
@@ -279,25 +300,12 @@ namespace volumeshOS::Internal
 
     uint32_t ShadowMapPass::get_debug_texture(const Renderer& renderer, int cascade_level)
     {
-        m_debug_shader->bind();
-        m_debug_framebuffer->bind();
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_debug_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE0, m_depth_texture);
-        m_debug_shader->set_uniform_sampler2D("u_depth", GL_TEXTURE1, renderer.passes.pre_pass->get_framebuffer()->get_depth_texture());
-        m_debug_shader->set_uniform_int("u_cascade_level", cascade_level);
-        for (int i = 0; i < max_cascades; i++)
-        {
-            m_debug_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) + "]",
-                                             cascade_projections[i]);
-            m_debug_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", cascade_views[i]);
-        }
-        m_debug_shader->set_uniform_mat4f("u_inv_projection", glm::inverse(renderer.camera->projection));
-        m_debug_shader->set_uniform_float("u_near", renderer.camera->near);
-        m_debug_shader->set_uniform_float("u_far", renderer.camera->far);
-        VertexArrayObject::draw_screen_quad();
-        m_debug_framebuffer->unbind();
-        m_debug_shader->unbind();
-        return m_debug_framebuffer->get_texture(GL_COLOR_ATTACHMENT0);
+        return shadow_maps[cascade_level];
+
+    }
+
+    void ShadowMapPass::bind_for_writing(int cascade_level)
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_maps[cascade_level],0);
     }
 }

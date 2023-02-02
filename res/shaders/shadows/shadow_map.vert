@@ -1,6 +1,8 @@
 #version 400 core
 
+
 layout (location = 0) in vec3 a_pos;
+layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
 layout (location = 4) in float a_is_digged;
@@ -11,13 +13,20 @@ layout (location = 8) in float a_vertex_type_rounded;
 layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
+layout (location = 12) in float a_is_selected;
+layout (location = 13) in float a_hovered;
+layout (location = 14) in vec3 a_vertex_normal;
 layout (location = 15) in float a_min_edge_length;
 
-out vec4 v_Pos;
+out vec3 v_Pos;
+flat out float v_min_edge_length;
+out vec4 v_rounding_sphere_center;
+out vec3 v_center;
+
 flat out int v_Visible;
-flat out vec4 v_Color;
+flat out int v_isTriangle;
+flat out float v_VertexTypeRounded;
 flat out int v_ovm_halfface_id;
-flat out vec3 v_center;
 
 uniform vec4 u_object_color;
 uniform bool u_rounding;
@@ -32,6 +41,7 @@ uniform vec3 u_max;
 uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 uniform float u_average_cell_size;
+uniform int u_cascade_level;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
@@ -44,7 +54,7 @@ const float ROUNDED_VERTEX_TYPE_CENTER  = 3.0;
 const float EDGE_FACTOR                 = 1.0 / sqrt(2.0);
 const float CORNER_FACTOR               = sqrt(2.0);
 
-uniform mat4 u_light_space_matrices[16];
+uniform mat4 u_light_view;
 uniform mat4 u_light_projection;
 uniform mat4 u_transform;
 
@@ -68,9 +78,8 @@ void main()
     }
 
     v_Visible = 1;
-    v_Color = a_color;
 
-    mat4 view_transform = inverse(u_light_projection) * u_light_space_matrices[0] * u_transform;
+    mat4 view_transform = u_light_view * u_transform;
 
     vec3 min_slice = vec3(view_transform * vec4(u_min, 1.0));
     vec3 max_slice = vec3(view_transform * vec4(u_max, 1.0));
@@ -90,8 +99,16 @@ void main()
 
     if (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0 || u_object_color.a != 1.0)
     {
+        v_Pos = vec3(0.0, 0.0, 0.0);
+        v_min_edge_length = 0.0;
         v_Visible = 0;
+        v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
+        return;
     }
+
+    v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
+    v_min_edge_length =  a_min_edge_length;
+    v_center = a_center;
 
     vec3 position = a_pos;
     if (u_rounding)
@@ -118,8 +135,10 @@ void main()
             vec3 shrink_dir = normalize(a_face_center_rounded - position);
             position += shrink_dir * get_shrink_factor(a_dihedral_angle_rounded, dist);
         }
+        v_VertexTypeRounded = type;
     }
 
+
     vec3 pos = a_center + (position - a_center) * u_cell_size;
-    v_Pos = u_transform * vec4(pos, 1.0);
+    v_Pos = vec3(u_transform * vec4(pos, 1.0));
 }

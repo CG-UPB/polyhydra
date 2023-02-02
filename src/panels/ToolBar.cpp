@@ -661,7 +661,7 @@ namespace volumeshOS::Internal
             ImGuiUtil::menu_item_filled("Penumbra", [&]
             {
                 float penumbra = settings.shadow.penumbra_scale;
-                if (ImGui::DragFloat("##LightSize", &penumbra, 0.1f, 0.0f, 100.0f))
+                if (ImGui::DragFloat("##LightSize", &penumbra, 0.1f, 1.0f, 100.0f))
                 {
                     settings.shadow.penumbra_scale = penumbra;
                 }
@@ -780,7 +780,7 @@ namespace volumeshOS::Internal
             {
                 ImGuiUtil::menu_item_filled("Passes", [&]
                 {
-                    ImGui::SliderInt("##Passes", &settings.num_depth_peeling_passes, 0, 50);
+                    ImGui::SliderInt("##Passes", &settings.num_depth_peeling_passes, 0, 100);
                 });
             }
             ImGuiUtil::menu_item_filled("Weighted Blended", [&]

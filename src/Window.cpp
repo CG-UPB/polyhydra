@@ -131,6 +131,7 @@ namespace volumeshOS::Internal
         }
 
         glEnable(GL_MULTISAMPLE);
+
     }
 
     void Window::init_imgui()
@@ -257,13 +258,12 @@ namespace volumeshOS::Internal
         ImGui::BeginDisabled(volumeshOS::is_input_blocked());
 
         panels.mesh_layer_view->show();
+        AppState::callbacks.on_gui_render();
         panels.mesh_view->show();
         //panels.quality_settings->show();
         panels.toolbar->show(panels.mesh_view->renderer->camera);
 
         ImGui::EndDisabled();
-
-        AppState::callbacks.on_gui_render();
 
         post_render_step();
     }

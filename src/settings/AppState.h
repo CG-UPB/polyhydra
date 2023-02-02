@@ -111,7 +111,7 @@ namespace volumeshOS::Internal
             bool digging_active                     = false;
             int num_depth_peeling_passes            = 15;
             int num_shadow_cascades                 = 8;
-            float wireframe_size                    = 0.35f;
+            float wireframe_size                    = 1.2f;
             float vertex_size                       = 0.4f;
             bool use_global_pbr                     = true;
             bool block_input                        = false;

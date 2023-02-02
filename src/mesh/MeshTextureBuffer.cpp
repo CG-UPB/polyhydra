@@ -1,64 +1,54 @@
 #include "MeshTextureBuffer.h"
+
+#include <utility>
 #include "mesh/MeshProperties.h"
 
 
 namespace volumeshOS::Internal
 {
 
-    MeshTextureBuffer::MeshTextureBuffer(const std::shared_ptr<Mesh>& mesh)
-    : m_mesh(mesh)
+    MeshTextureBuffer::MeshTextureBuffer(std::shared_ptr<Mesh>  mesh, uint32_t binding)
+            : m_mesh(std::move(mesh))
     {
-        // Create Texture Buffer
-        glGenBuffers(1, &m_bezier_control_points_texture_buffer);
-        // Create Texture
-        glGenTextures(1, &m_bezier_control_points_texture);
+        m_binding = binding;
 
-        glBindBuffer(GL_TEXTURE_BUFFER, m_bezier_control_points_texture_buffer);
+        // Create Texture Buffer
+        glGenBuffers(1, &m_texture_buffer);
+        // Create Texture
+        glGenTextures(1, &m_texture);
+
+        glBindBuffer(GL_TEXTURE_BUFFER, m_texture_buffer);
         glBindBuffer(GL_TEXTURE_BUFFER, 0);
 
-        glActiveTexture(GL_TEXTURE12);
-        glBindTexture(GL_TEXTURE_BUFFER, m_bezier_control_points_texture);
-        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, m_bezier_control_points_texture_buffer);
+        glActiveTexture(m_binding);
+        glBindTexture(GL_TEXTURE_BUFFER, m_texture);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, m_texture_buffer);
         glBindTexture(GL_TEXTURE_BUFFER, 0);
 
-        update_buffer();    
     }
 
     MeshTextureBuffer::~MeshTextureBuffer()
     {
-        glDeleteBuffers(1, &m_bezier_control_points_texture_buffer);
-        glDeleteTextures(1, &m_bezier_control_points_texture);
+        glDeleteBuffers(1, &m_texture_buffer);
+        glDeleteTextures(1, &m_texture);
     }
 
-    void MeshTextureBuffer::update_buffer()
+
+    void MeshTextureBuffer::update_buffer(uint32_t size, const std::vector<float>& data) const
     {
-        if(*m_mesh->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER)->begin())
-        {
-            OpenVolumeMesh::FacePropertyT<std::vector<double>> controlPointProp =
-            m_mesh->request_face_property<std::vector<double>>(MeshProperties::PROP_BEZIER_FACE_CONTROL_POINTS);
-
-            float* bezier_control_points_array = new float[controlPointProp.size()*(controlPointProp.begin()->size())];
-            // iterate over values and copy them into m_bezier_control_points_array
-            int i = 0;
-            for (OpenVolumeMesh::FaceIter f_it = m_mesh->faces_begin(); f_it != m_mesh->faces_end(); ++f_it)
-            {
-                for(double cp_coord : controlPointProp[*f_it]) {
-                    bezier_control_points_array[i] = (float)cp_coord;
-                    i++;
-                }
-            }
-
-            glBindBuffer(GL_TEXTURE_BUFFER, m_bezier_control_points_texture_buffer);
-            glBufferData(GL_TEXTURE_BUFFER, sizeof(float)*controlPointProp.size()*(controlPointProp.begin()->size()), bezier_control_points_array, GL_STATIC_DRAW);
-            glBindBuffer(GL_TEXTURE_BUFFER, 0);
-
-        }
+        glBindBuffer(GL_TEXTURE_BUFFER, m_texture_buffer);
+        glBufferData(GL_TEXTURE_BUFFER, size, data.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_TEXTURE_BUFFER, 0);
     }
 
-    void MeshTextureBuffer::bind() const
+    uint32_t MeshTextureBuffer::get_binding() const
     {
-        glActiveTexture(GL_TEXTURE12);
-        glBindTexture(GL_TEXTURE_BUFFER, m_bezier_control_points_texture);
+        return m_binding;
+    }
+
+    uint32_t MeshTextureBuffer::get_texture() const
+    {
+        return m_texture;
     }
 
 }

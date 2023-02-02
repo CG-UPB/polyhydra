@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 #include "pbr.glsl"
 #include "phong.glsl"
@@ -17,6 +17,7 @@ flat in vec4 v_a_adir;
 flat in vec4 v_b_bdir;
 flat in int v_use_lookup_path;
 flat in int v_tes_inner_tri;
+in float v_edge_factor;
 
 uniform bool u_draw_wireframe;
 uniform bool u_draw_shadows;
@@ -52,12 +53,13 @@ uniform float u_bias_modifier;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
+uniform bool u_rounding;
 
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_ssao_texture;
-uniform sampler2D u_transparent_shadow_texture;
-uniform sampler2D u_color_filter_texture;
-uniform sampler2DArray u_shadow_texture;
+uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
+
+//uniform sampler2DArray u_shadow_texture;
 
 out vec4 FragColor;
 
@@ -86,18 +88,31 @@ float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 lin
     return sqrt(dot(af, af) - dot(line_dir, af));
 }
 
+float linearize_depth(float d,float zNear,float zFar)
+{
+    return zNear * zFar / (zFar + d * (zNear - zFar));
+}
+
 void draw_wireframe(vec2 uv)
 {
     if (v_visible == 0)
     {
         discard;
     }
-    if(u_is_bezier_mesh && v_tes_inner_tri == 1)
+
+    if(u_is_bezier_mesh )
     {
-        // Discard all inner triangles of a tessellated triangle.
-        discard;
+        float dist = 0.05 * u_wireframe_size;
+        if (v_is_triangle == 0 || v_edge_factor <= 1.0 - dist)
+        {
+            discard;
+        }
+
+        FragColor = vec4(u_object_color.rgb, 1.0);
+        return;
     }
-    float size_factor = 0.0015 * u_wireframe_size;
+
+    float size_factor = 0.0015 * u_wireframe_size ;
     if (v_use_lookup_path == 1)
     {
         // these triangles are very likely not visible, since we don't draw 2/3rds of those anyway
@@ -131,20 +146,15 @@ void draw_wireframe(vec2 uv)
     else
     {
         float min_dist_to_edge;
-        if(!u_is_bezier_mesh)
-        {
-            min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
-        }
-        else
-        {
-            // For Bézier meshes, draw an outline only for outer edges.
-            min_dist_to_edge = v_tri_dist.y;
-        }
+
+        min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+
 
         if (min_dist_to_edge > size_factor)
         {
             discard;
         }
+
         // here, we discard 2 of our 3 edges that we added in our triangulation, since only want to draw the original edges
         if (v_is_triangle == 0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z) && v_tri_dist.y > size_factor)
         {
@@ -217,7 +227,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 {
     int blockers = 0;
     float avg_blocker_distance = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
+    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture[cascade_idx], 0));
 
     float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
 
@@ -234,7 +244,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
         for (int y = -samples; y <= samples; y++)
         {
             vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
-            float z = texture(u_shadow_texture, vec3(shadow_coords.xy + (vec2(x, y) + shift) * texelSize, float(cascade_idx))).r;
+            float z = texture(u_shadow_texture[cascade_idx], vec2(shadow_coords.xy + (vec2(x, y) + shift) * texelSize)).r;
             if(z < (shadow_coords.z - bias))
             {
                 blockers++;
@@ -259,11 +269,12 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
     float sum = 0;
     int count = 0;
 
-    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture, 0));
-    int range = int(light_size * radius);
+    vec2 texelSize = 1.0 / vec2(textureSize(u_shadow_texture[cascade_idx], 0));
+    int range = int(radius);
 
     range = range > 10 ? 10 : range;
-    range = range <  1 ?  2 : range;
+    range = range <  1 ?  1 : range;
+
 
     for(int x = - range; x <= range; ++x)
     {
@@ -272,8 +283,7 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
         {
             //int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
             //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
-            float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + vec2(x , y) * texelSize, float(cascade_idx))).r;
-
+            float depth = texture(u_shadow_texture[cascade_idx], vec2(shadow_coords.xy + vec2(x , y) * texelSize)).r;
             sum += depth < shadow_coords.z - bias? 1.0 : 0.0;
         }
     }
@@ -325,7 +335,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     proj_coords = proj_coords * 0.5 + 0.5;
 
     float current_depth = proj_coords.z - bias;
-    float closest_depth = texture(u_shadow_texture, vec3(proj_coords.xy, float(cascade_idx))).r;
+    float closest_depth = texture(u_shadow_texture[cascade_idx], vec2(proj_coords.xy)).r;
 
     if (current_depth > 1.0)
     {
@@ -335,7 +345,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     for(int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
-        float depth = texture(u_shadow_texture, vec3(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4, float(cascade_idx))).r;
+        float depth = texture(u_shadow_texture[cascade_idx], vec2(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4)).r;
         if(depth < current_depth)
         {
             shadow += 0.25;
@@ -388,9 +398,6 @@ float get_shadow(vec3 normal, vec3 light_dir)
 
 void main()
 {
-    float depth = texelFetch(u_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
-
-
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
     if (u_draw_wireframe)
     {
@@ -406,20 +413,15 @@ void main()
         discard;
     }
 
-#if 0 // show wireframe on top of the mesh, comment out the other wireframe stuff on top or this won't work
-    draw_wireframe_ontop(uv);
-    //return;
-#endif
+//#if 0 // show wireframe on top of the mesh, comment out the other wireframe stuff on top or this won't work
+//    draw_wireframe_ontop(uv);
+//    return;
+//#endif
 
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
-    if(u_two_sided_lighting && dot(n, l) < 0 )
-    {
-        n = -n;
-    }
-
-    if(u_is_bezier_mesh  && dot(n, v) < 0 )
+    if(u_two_sided_lighting && dot(n, v) < 0 )
     {
         n = -n;
     }
