@@ -5,7 +5,6 @@
 #include "MeshProperties.h"
 #include "OpenVolumeMesh/Geometry/Vector11T.hh"
 #include "glm/fwd.hpp"
-#include <cmath>
 #include <string>
 #include <vector>
 

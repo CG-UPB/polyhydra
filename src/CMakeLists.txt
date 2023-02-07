@@ -108,6 +108,12 @@ set(volumeshOS_core_SOURCES
         rendering/shapes/ShapeRenderer.h
         rendering/shapes/ShapeRenderer.cpp rendering/shapes/Shapes.h rendering/shapes/Shapes.cpp rendering/meshes/ArrowMesh.h rendering/meshes/ArrowMesh.cpp rendering/meshes/ConeMesh.h rendering/meshes/ConeMesh.cpp rendering/passes/PostProcessingPass.h rendering/passes/PostProcessingPass.cpp rendering/passes/OutlinePass.h rendering/passes/OutlinePass.cpp)
 
+if (MSVC)
+        set(VOS_RESOURCE_BASE_PATH "..\\\\res\\\\")
+else()
+        set(VOS_RESOURCE_BASE_PATH "./res")
+endif()
+
 add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
 
 find_package(Filesystem REQUIRED Experimental Final)
@@ -116,4 +122,5 @@ target_precompile_headers(volumeshOS_core PUBLIC vospch.h)
 target_include_directories(volumeshOS_core PUBLIC ${VOLUMESHOS_SRC})
 
 target_link_libraries(volumeshOS_core PUBLIC ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
-target_compile_definitions(volumeshOS_core PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
+
+target_compile_definitions(volumeshOS_core PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE} VOS_RESOURCE_BASE_PATH="${VOS_RESOURCE_BASE_PATH}")

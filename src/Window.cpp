@@ -119,8 +119,9 @@ namespace volumeshOS::Internal
             return;
         }
 
+        FS_NAMESPACE::path iconPath = FileManager::get_resource_path() / "icons" / "logo.png";
         GLFWimage images[1];
-        images[0].pixels = stbi_load("./res/icons/logo.png", &images[0].width, &images[0].height, 0, 4);
+        images[0].pixels = stbi_load(iconPath.generic_string().c_str(), &images[0].width, &images[0].height, 0, 4);
         glfwSetWindowIcon(m_window, 1, images);
         stbi_image_free(images[0].pixels);
 
