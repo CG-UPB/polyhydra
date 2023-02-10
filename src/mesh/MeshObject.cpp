@@ -4,6 +4,9 @@
 #include "../panels/LogWindow.h"
 #include "MeshProperties.h"
 #include "mesh/MeshTextureBuffer.h"
+#include<glm/glm.hpp>
+#include<glm/gtc/quaternion.hpp>
+#include<glm/common.hpp>
 
 namespace volumeshOS::Internal
 {
@@ -428,6 +431,17 @@ namespace volumeshOS::Internal
     void MeshObject::rotate(float angle, const glm::vec3& axis)
     {
         m_data.rotation = glm::rotate(m_data.rotation, angle, glm::normalize(axis));
+        m_data.update_transform();
+    }
+
+    void MeshObject::rotate_axis(float x, float y, float z)
+    {
+        glm::quat x_rot = glm::angleAxis(x, glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::quat y_rot = glm::angleAxis(y, glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::quat z_rot = glm::angleAxis(z, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        auto rot = x_rot * y_rot * z_rot;
+        m_data.rotation = mat4_cast(rot);
         m_data.update_transform();
     }
 

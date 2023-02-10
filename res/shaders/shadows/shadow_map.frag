@@ -8,7 +8,7 @@ void main()
 {
     if (v_visible == 0 )
     {
-        //discard;
+        discard;
     }
     FragColor = vec4(vec3(0.5), 1.0);
 }

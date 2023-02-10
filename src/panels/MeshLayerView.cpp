@@ -324,20 +324,17 @@ namespace volumeshOS::Internal
                     });
 
                     //TODO Fix Object Rotation
-                    ImGui::BeginDisabled(true);
+                    ImGui::BeginDisabled(false);
                     ImGuiUtil::menu_item("Rotation", "icon_rotate.png", width, [&]
                     {
                         if (ImGui::DragFloat3("##Rotation", m_mesh_rotation, 1.0f, -180.0f, 180.0f, "%.1f"))
                         {
-                            auto x = (m_mesh_rotation[0] + 180.0f) - glm::degrees(rot[0]) + 180.0f;
-                            auto y = (m_mesh_rotation[1] + 180.0f) - glm::degrees(rot[1]) + 180.0f;
-                            auto z = (m_mesh_rotation[2] + 180.0f) - glm::degrees(rot[2]) + 180.0f;
-                            auto epsilon = 0.01;
+                            auto x = (m_mesh_rotation[0] - 180.0f);// - glm::degrees(rot[0]) + 180.0f;
+                            auto y = (m_mesh_rotation[1] - 180.0f);// - glm::degrees(rot[1]) + 180.0f;
+                            auto z = (m_mesh_rotation[2] - 180.0f);// - glm::degrees(rot[2]) + 180.0f;
 
-                            if (x >= epsilon || y >= epsilon || z >= epsilon)
-                            {
-                                mesh.set_rotation(glm::radians(x), glm::radians(y), glm::radians(z));
-                            }
+                            mesh.set_rotation(glm::radians(x), glm::radians(z), glm::radians(y));
+
                         }
                         ImGui::SameLine();
                         if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))

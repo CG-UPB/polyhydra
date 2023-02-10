@@ -210,8 +210,8 @@ void main()
         // Perform Cell sizing.
         vec3 pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
 
-        v_pos = (u_view * u_transform * vec4(pos, 1.0)).xyz;
-        vec4 screen_pos = u_projection * vec4(v_pos, 1.0);
+        v_pos = (u_transform * vec4(pos, 1.0)).xyz;
+        vec4 screen_pos = u_projection * u_view * vec4(v_pos, 1.0);
         gl_Position = screen_pos;
         v_clipspace_z = screen_pos.z;
 

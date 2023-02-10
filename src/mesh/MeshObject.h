@@ -170,6 +170,8 @@ namespace volumeshOS::Internal
 
         void rotate(float angle, const glm::vec3& axis);
 
+        void rotate_axis(float x, float y, float z);
+
         void reset_rotation();
 
     public:
