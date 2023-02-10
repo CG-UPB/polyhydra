@@ -47,6 +47,6 @@ namespace volumeshOS::Internal
         uint32_t m_width;
         uint32_t m_height;
         uint32_t m_num_buffers;
-        std::unique_ptr<uint32_t> m_pbo_ids;
+        std::unique_ptr<uint32_t[]> m_pbo_ids;
     };
 }

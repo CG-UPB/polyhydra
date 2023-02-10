@@ -89,6 +89,9 @@ set(IMGUI_INCLUDE_DIR  ${CMAKE_CURRENT_LIST_DIR}/imgui ${CMAKE_CURRENT_LIST_DIR}
 target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})
 
 target_link_libraries(imgui PUBLIC glad glfw)
+if (MINGW)
+    target_link_libraries(imgui PUBLIC imm32)
+endif()
 
 ###########################
 # stb

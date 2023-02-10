@@ -8,7 +8,7 @@ namespace volumeshOS::Internal
         m_width(width),
         m_height(height)
     {
-        m_pbo_ids = std::make_unique<uint32_t>(num_buffers);
+        m_pbo_ids = std::make_unique<uint32_t[]>(num_buffers);
         glGenBuffers((int) num_buffers, m_pbo_ids.get());
         for (int i = 0; i < num_buffers; i++)
         {

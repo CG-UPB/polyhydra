@@ -20,7 +20,7 @@ namespace volumeshOS::Internal
 
     FS_NAMESPACE::path& FileManager::get_resource_path()
     {
-        static FS_NAMESPACE::path s_resourcePath("./res");
+        static FS_NAMESPACE::path s_resourcePath(VOS_RESOURCE_BASE_PATH);
         return s_resourcePath;
     }
 }
