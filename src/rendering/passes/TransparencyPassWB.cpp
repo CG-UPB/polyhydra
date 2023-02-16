@@ -69,14 +69,21 @@ namespace volumeshOS::Internal
 
         for (const auto& mesh: renderer.render_list)
         {
+            // We don't want to render transparent points or lines
+            auto rendering_mode = mesh->get_data().rendering_mode;
+            if (rendering_mode != RenderingMode::CELLS)
+            {
+                continue;
+            }
+
             m_transparency_shader->bind();
 
             const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
             auto& settings = AppState::settings;
-            bool draw_wireframe = settings.rendering_mode == RenderingMode::WIREFRAME;
-            float wireframe_size = settings.wireframe_size;
-            bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
+            bool draw_wireframe = rendering_mode == RenderingMode::LINES;
+            float wireframe_size = mesh->get_data().line_width;
+            bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
 
             bool is_bezier_mesh = mesh->is_bezier_mesh();
             // Currently, cells sometimes appear hollow if CULL_FACE is not 

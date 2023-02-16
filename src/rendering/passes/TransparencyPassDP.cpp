@@ -65,6 +65,8 @@ namespace volumeshOS::Internal
         auto& settings = AppState::settings;
         int num_passes = settings.num_depth_peeling_passes;
 
+        // TODO: Refactor this pass so that textures are not allocated every frame. Rather check if something changed
+        //       and then update allocations
         std::vector<uint32_t> textures;
         for(int i = 0; i < num_passes; i++)
         {
@@ -149,6 +151,11 @@ namespace volumeshOS::Internal
 
     void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer)
     {
+        // We don't need transparent points or lines
+        if (mesh->get_data().rendering_mode != RenderingMode::CELLS)
+        {
+            return;
+        }
 
         if(!mesh->get_data().use_back_face_culling)
         {
@@ -161,7 +168,7 @@ namespace volumeshOS::Internal
         auto light = AppState::settings.light;
 
 
-        bool use_vertex_normals = AppState::settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
+        bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
         
         bool is_bezier_mesh = mesh->is_bezier_mesh();
         // Currently, cells sometimes appear hollow if CULL_FACE is not 

@@ -44,9 +44,8 @@ namespace volumeshOS::Internal
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().WindowPadding.y * 0.5f);
 
 
-        show_general_menu();
-        show_selection_menu();
         show_camera_menu();
+        show_selection_menu();
         show_sky_menu();
         show_light_menu();
         show_shapes_menu();
@@ -110,72 +109,6 @@ namespace volumeshOS::Internal
         {
             m_export_options.width = volumeshOS::get_viewport_width();
             m_export_options.height = volumeshOS::get_viewport_height();
-        }
-    }
-
-    void ToolBar::show_general_menu()
-    {
-        auto& settings = AppState::settings;
-        auto x = ImGui::GetCursorScreenPos().x;
-        if (!render_icon_header("General", "icon_globe.png"))
-        {
-            return;
-        }
-
-        ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
-        bool wireframe_or_vertices = settings.rendering_mode == RenderingMode::ONLY_VERTICES || settings.rendering_mode == RenderingMode::WIREFRAME;
-        if (ImGuiUtil::begin_menu_with_background("rendering modes", wireframe_or_vertices? 3 : 2))
-        {
-            ImGuiUtil::menu_item_filled("Lighting Model", [&]
-            {
-                int lighting_model = static_cast<int>(AppState::settings.use_global_pbr);
-                constexpr const char* lighting_model_options[] =
-                        {
-                                "Phong",
-                                "PBR"
-                        };
-                if (ImGui::Combo("##Lighting Model", &lighting_model, lighting_model_options,
-                                 IM_ARRAYSIZE(lighting_model_options), IM_ARRAYSIZE(lighting_model_options)))
-                {
-                    bool use_pbr = static_cast<bool>(lighting_model);
-                    AppState::settings.ground.use_pbr = use_pbr;
-                    for (const auto mesh: volumeshOS::get_meshes())
-                    {
-                        mesh.set_lighting_mode(static_cast<LightingMode>(use_pbr));
-                    }
-                    AppState::settings.use_global_pbr = use_pbr;
-                }
-            });
-            ImGuiUtil::menu_item_filled("Mode", [&]
-            {
-                int rendering_mode = static_cast<int>(AppState::settings.rendering_mode);
-                constexpr const char* element_mode_types[] =
-                        {
-                                "Lines",
-                                "Points",
-                                "Flat",
-                                "Phong"
-                        };
-                ImGui::Combo("##Manual Mode RenderingMode:", &rendering_mode, element_mode_types,
-                             IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
-                AppState::settings.rendering_mode = static_cast<RenderingMode>(rendering_mode);
-            });
-            if(settings.rendering_mode == RenderingMode::ONLY_VERTICES)
-            {
-                ImGuiUtil::menu_item_filled("Vertex Size", [&]
-                {
-                    ImGui::DragFloat("##Vertex Size", &settings.vertex_size, 0.01f, 0.0f, 5.0f, "%.01f");
-                });
-            }
-            else if(settings.rendering_mode == RenderingMode::WIREFRAME)
-            {
-                ImGuiUtil::menu_item_filled("Wireframe Size", [&]
-                {
-                    ImGui::DragFloat("##Wireframe Size", &settings.wireframe_size, 0.01f, 0.0f, 5.0f, "%.01f");
-
-                });
-            }
-            ImGuiUtil::end_menu();
         }
     }
 
@@ -796,7 +729,7 @@ namespace volumeshOS::Internal
 
     void ToolBar::shift_right(float x)
     {
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (float)x);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x);
     }
 
     bool ToolBar::render_icon_header(const std::string& name, const std::string& icon)

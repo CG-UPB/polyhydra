@@ -156,74 +156,64 @@ namespace volumeshOS::Internal
         // Checks for double click to orbit camera around clicked point and zooms in
         handle_zoom();
 
-        if (settings.rendering_mode == RenderingMode::ONLY_VERTICES)
+        if (settings.ssao_active)
         {
-            if (data.render_bg)
-            {
-                passes.background_pass->render(*this);
-            }
-            if (data.render_ground)
-            {
-                passes.ground_pass->render(*this);
-            }
-            passes.vertex_only_pass->render(*this);
+            passes.ssao_pass->render(*this);
         }
-        else
+
+        if (settings.shadows_active)
         {
-            if (settings.ssao_active)
+            passes.shadow_pass->render(*this);
+        }
+
+        if (data.render_bg)
+        {
+            passes.background_pass->render(*this);
+        }
+
+        if (data.render_ground)
+        {
+            passes.ground_pass->render(*this);
+        }
+        passes.vertex_only_pass->render(*this);
+        passes.mesh_pass->render(*this);
+
+        // render shapes
+        if (settings.shapes_active && data.render_shapes)
+        {
+            shapes->render(*this);
+        }
+
+        FrameBufferObject::copy(
+                GL_DEPTH_STENCIL_ATTACHMENT,
+                GL_DEPTH_ATTACHMENT,
+                GL_DEPTH_BUFFER_BIT,
+                buffers.target_framebuffer_ms,
+                buffers.target_framebuffer
+        );
+
+
+        // Render transparent objects
+        if (settings.transparency_active)
+        {
+            switch (settings.transparency_mode)
             {
-                passes.ssao_pass->render(*this);
+                case TransparencyMode::DEPTH_PEELING:
+                    passes.transparency_pass_dp->render(*this);
+                    break;
+                case TransparencyMode::WEIGHTED_BLENDED:
+                    passes.transparency_pass_wb->render(*this);
+                    break;
+                default:
+                    return;
             }
+        }
 
-            if (settings.shadows_active)
-            {
-                passes.shadow_pass->render(*this);
-            }
-
-            if (data.render_bg)
-            {
-                passes.background_pass->render(*this);
-            }
-
-            if (data.render_ground)
-            {
-                passes.ground_pass->render(*this);
-            }
-
-            passes.mesh_pass->render(*this);
-
-            // render shapes
-            if (settings.shapes_active && data.render_shapes)
-            {
-                shapes->render(*this);
-            }
-
-            FrameBufferObject::copy(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms,
-                                    buffers.target_framebuffer);
-
-
-            // Render transparent objects
-            if (settings.transparency_active)
-            {
-                switch (settings.transparency_mode)
-                {
-                    case TransparencyMode::DEPTH_PEELING:
-                        passes.transparency_pass_dp->render(*this);
-                        break;
-                    case TransparencyMode::WEIGHTED_BLENDED:
-                        passes.transparency_pass_wb->render(*this);
-                        break;
-                    default:
-                        return;
-                }
-            }
-
-            // Render SelectionMode
-            if (settings.selection_active)
-            {
-                passes.selection_pass->render(*this);
-                passes.selection_hover_pass->render(*this);
-            }
+        // Render SelectionMode
+        if (settings.selection_active)
+        {
+            passes.selection_pass->render(*this);
+            passes.selection_hover_pass->render(*this);
         }
 
 

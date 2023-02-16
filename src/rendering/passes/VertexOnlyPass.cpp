@@ -24,11 +24,17 @@ namespace volumeshOS::Internal
 
         for (const auto& mesh: renderer.render_list)
         {
+            // We only render points here
+            if (mesh->get_data().rendering_mode != RenderingMode::POINTS)
+            {
+                continue;
+            }
+
             const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
             m_vertex_only_shader->bind();
 
-            float size = AppState::settings.vertex_size;
+            float size = mesh->get_data().point_size;
 
             m_vertex_only_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
             m_vertex_only_shader->set_uniform_mat4f("u_projection", cam->projection);

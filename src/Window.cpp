@@ -44,7 +44,6 @@ namespace volumeshOS::Internal
         // create ui panels
         panels.mesh_layer_view      = std::make_shared<MeshLayerView>();
         panels.mesh_view            = std::make_shared<MeshView>(m_width, m_height);
-        panels.quality_settings     = std::make_shared<QualityPanel>();
         panels.toolbar              = std::make_shared<ToolBar>();
 
         m_open = true;
@@ -55,7 +54,6 @@ namespace volumeshOS::Internal
         // clean up ui panels
         panels.mesh_layer_view      = nullptr;
         panels.mesh_view            = nullptr;
-        panels.quality_settings     = nullptr;
         panels.toolbar              = nullptr;
 
         // clean up
@@ -267,7 +265,6 @@ namespace volumeshOS::Internal
         panels.mesh_layer_view->show();
         AppState::callbacks.on_gui_render();
         panels.mesh_view->show();
-        //panels.quality_settings->show();
         panels.toolbar->show(panels.mesh_view->renderer->camera);
 
         ImGui::EndDisabled();

@@ -325,6 +325,37 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
+    void MeshList::set_rendering_mode(MeshID id, RenderingMode mode)
+    {
+        auto f = [mode](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().rendering_mode = mode;
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::set_point_size(MeshID id, float size)
+    {
+        auto f = [size](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().point_size = size;
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::set_line_width(MeshID id, float width)
+    {
+        auto f = [width](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().line_width = width;
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::set_shading_mode(MeshID id, ShadingMode mode)
+    {
+        auto f = [mode](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().shading_mode = mode;
+        };
+        execute_for_mesh(f, id);
+    }
 
     void MeshList::set_color(const glm::vec4& color)
     {
@@ -427,6 +458,26 @@ namespace volumeshOS::Internal
             }
         };
         execute_for_mesh(f, m_id);
+    }
+
+    RenderingMode MeshList::get_rendering_mode(MeshID id)
+    {
+        return get_mesh(id)->get_data().rendering_mode;
+    }
+
+    float MeshList::get_point_size(MeshID id)
+    {
+        return get_mesh(id)->get_data().point_size;
+    }
+
+    float MeshList::get_line_width(MeshID id)
+    {
+        return get_mesh(id)->get_data().line_width;
+    }
+
+    ShadingMode MeshList::get_shading_mode(MeshID id)
+    {
+        return get_mesh(id)->get_data().shading_mode;
     }
 
     float MeshList::get_ambient(const MeshID id)

@@ -24,6 +24,12 @@ namespace volumeshOS::Internal
 
         for (const auto& mesh : renderer.render_list)
         {
+            // We don't need to render the pre-pass if the mesh is set to points or lines
+            if (mesh->get_data().rendering_mode != RenderingMode::CELLS)
+            {
+                continue;
+            }
+
             bool is_bezier_mesh = mesh->is_bezier_mesh();
             // Currently, cells sometimes appear hollow if CULL_FACE is not
             // disabled for Bézier meshes

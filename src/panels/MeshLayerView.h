@@ -25,7 +25,14 @@ namespace volumeshOS::Internal
         void show() override;
 
     private:
-        void render_mesh_setting(const VMesh& mesh);
+
+        void render_popup(const VMesh& mesh);
+
+        void render_mesh_options(const VMesh& mesh);
+
+        void render_mesh_settings(const VMesh& mesh);
+
+        static bool render_header(const VMesh& mesh);
 
         float m_slider_slicer                       = 0.0f;
         bool m_slicer_locked                        = false;

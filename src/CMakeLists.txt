@@ -30,8 +30,6 @@ set(volumeshOS_core_SOURCES
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.h
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.h
         ${VOLUMESHOS_SRC}/panels/MeshLayerView.h
-        ${VOLUMESHOS_SRC}/panels/QualityPanel.cpp
-        ${VOLUMESHOS_SRC}/panels/QualityPanel.h
 
 
         ${VOLUMESHOS_SRC}/rendering/Light.cpp

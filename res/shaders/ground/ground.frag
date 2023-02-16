@@ -18,8 +18,6 @@ uniform vec3 u_grid_color;
 uniform float u_height;
 uniform int u_tile_count;
 uniform bool u_shadow_only;
-uniform bool u_wireframe;
-uniform bool u_vertices;
 
 uniform vec3 u_light_pos;
 uniform float u_light_size = 1.0;
@@ -274,9 +272,8 @@ void main()
     vec3 l = normalize(u_light_pos);
 
     float shadow = 0.0;
-    bool no_shadows = u_wireframe || u_vertices;
 
-    if (u_draw_shadows && !no_shadows)
+    if (u_draw_shadows)
     {
         // shadow calculation
         // calculate cascade level
@@ -326,7 +323,7 @@ void main()
     }
 
     float ao_factor = 1.0;
-    if(u_draw_ao && !no_shadows)
+    if(u_draw_ao)
     {
         ao_factor = texture(u_ssao_texture, uv).r;
     }
@@ -337,15 +334,8 @@ void main()
         {
             discard;
         }
-        vec3 out_color = vec3(0.25, 0.25, 0.25);
-        if (shadow != 0.0)
-        {
-            FragColor = vec4(out_color * ao_factor, shadow * 0.25);
-        }
-        else
-        {
-            FragColor = vec4(out_color, 1.0 - ao_factor);
-        }
+        // Take the average of ambient occlusion and shadow as alpha value, weigh the ao-factor a bit more
+        FragColor = vec4(0.0, 0.0, 0.0, ((1.0 - ao_factor) * 2.0 + shadow) * 0.5);
         return;
     }
 
@@ -360,7 +350,7 @@ void main()
     float col = min(line, 1.0);
     col = pow(col, 1.0 / 1.2);
 
-    if(dot((u_cam_pos - v_pos), v_normal) <= 0.0 )
+    if(dot((u_cam_pos - v_pos), v_normal) <= 0.0)
     {
         shadow = 0.0;
         ao_factor = 1.0;
@@ -399,7 +389,8 @@ void main()
     }
     else
     {
-        result *= 1.0 - shadow * 0.5;
+        // Shadow should never be completely black
+        result *= 1.0 - shadow * 0.8;
     }
     result = mix(result, u_light_color, linearize_depth(gl_FragCoord.z) / u_far - 0.5);
     result *= ao_factor;

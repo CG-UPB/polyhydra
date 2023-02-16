@@ -6,6 +6,7 @@
 #include "MeshVertexBuffer.h"
 #include "MeshTextureBuffer.h"
 #include "../util/VecUtil.h"
+#include "../util/Enums.h"
 
 #include<glm/glm.hpp>
 #include<glm/gtc/quaternion.hpp>
@@ -32,6 +33,11 @@ namespace volumeshOS::Internal
         glm::quat rot               = glm::angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 0.0f));
 
         // Rendering Variables
+        RenderingMode rendering_mode    = RenderingMode::CELLS;
+        ShadingMode shading_mode        = ShadingMode::FLAT;
+        float line_width                = 1.2f;
+        float point_size                = 0.4f;
+
         glm::vec4 color             = {1.0f, 1.0f, 1.0f, 1.0f};
         glm::vec4 selection_color   = {1.0f, 1.0f, 1.0f, 0.0f};
 

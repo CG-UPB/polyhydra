@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 #include "panels/MeshLayerView.h"
 #include "panels/MeshView.h"
-#include "panels/QualityPanel.h"
 #include "panels/ToolBar.h"
 
 namespace volumeshOS::Internal
@@ -52,7 +51,6 @@ namespace volumeshOS::Internal
         {
             std::shared_ptr<MeshLayerView> mesh_layer_view  = nullptr;
             std::shared_ptr<MeshView> mesh_view             = nullptr;
-            std::shared_ptr<QualityPanel> quality_settings  = nullptr;
             std::shared_ptr<ToolBar> toolbar                = nullptr;
         } panels;
 

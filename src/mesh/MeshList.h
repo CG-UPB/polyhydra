@@ -56,8 +56,18 @@ namespace volumeshOS::Internal
 
         /* Mesh Setting */
 
-        // set the position in world coordinate system
-        void set_position();
+        // Set rendering mode of a mesh
+        void set_rendering_mode(MeshID id, RenderingMode mode);
+
+        // Set point size of a mesh
+        void set_point_size(MeshID id, float size);
+
+        // Set line width of a mesh
+        void set_line_width(MeshID id, float width);
+
+        // Set shading mode of a mesh
+        void set_shading_mode(MeshID id, ShadingMode mode);
+
 
         // Set color for all meshes (all cells and halffaces)
         void set_color(const glm::vec4& color);
@@ -155,6 +165,18 @@ namespace volumeshOS::Internal
 
 
         /* Getter */
+
+        // Returns the rendering mode of a mesh
+        RenderingMode get_rendering_mode(MeshID id);
+
+        // Returns the point size of a mesh
+        float get_point_size(MeshID id);
+
+        // Returns the line width of a mesh
+        float get_line_width(MeshID id);
+
+        // Returns the shading mode of a mesh
+        ShadingMode get_shading_mode(MeshID id);
 
         // Returns the ambient term for the phong lighting model of a mesh
         float get_ambient(MeshID id);

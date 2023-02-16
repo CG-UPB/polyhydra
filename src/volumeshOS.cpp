@@ -202,16 +202,52 @@ namespace volumeshOS
         return mesh_list->get_name(mesh.get_id());
     }
 
-    void set_rendering_mode(RenderingMode mode)
+    void set_rendering_mode(const VMesh& mesh, RenderingMode mode)
     {
-        commands.emplace_back([mode]{
-            Internal::AppState::settings.rendering_mode = mode;
+        commands.emplace_back([mesh, mode]{
+            mesh_list->set_rendering_mode(mesh.get_id(), mode);
         });
     }
 
-    RenderingMode get_rendering_mode()
+    RenderingMode get_rendering_mode(const VMesh& mesh)
     {
-        return Internal::AppState::settings.rendering_mode;
+        return mesh_list->get_rendering_mode(mesh.get_id());
+    }
+
+    void set_point_size(const VMesh& mesh, float size)
+    {
+        commands.emplace_back([mesh, size]{
+            mesh_list->set_point_size(mesh.get_id(), size);
+        });
+    }
+
+    float get_point_size(const VMesh& mesh)
+    {
+        return mesh_list->get_point_size(mesh.get_id());
+    }
+
+    void set_line_width(const VMesh& mesh, float width)
+    {
+        commands.emplace_back([mesh, width]{
+            mesh_list->set_line_width(mesh.get_id(), width);
+        });
+    }
+
+    float get_line_width(const VMesh& mesh)
+    {
+        return mesh_list->get_line_width(mesh.get_id());
+    }
+
+    void set_shading_mode(const VMesh& mesh, ShadingMode mode)
+    {
+        commands.emplace_back([mesh, mode]{
+            mesh_list->set_shading_mode(mesh.get_id(), mode);
+        });
+    }
+
+    ShadingMode get_shading_mode(const VMesh& mesh)
+    {
+        return mesh_list->get_shading_mode(mesh.get_id());
     }
 
     template<typename Vec3T>
