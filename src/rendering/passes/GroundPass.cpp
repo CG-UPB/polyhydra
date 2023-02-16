@@ -102,8 +102,6 @@ namespace volumeshOS::Internal
 
 
         // Shader uniforms
-        m_ground_shader->set_uniform_bool("u_wireframe", settings.rendering_mode == RenderingMode::WIREFRAME);
-        m_ground_shader->set_uniform_bool("u_vertices", settings.rendering_mode == RenderingMode::ONLY_VERTICES);
         m_ground_shader->set_uniform_bool("u_visible", ground_options.solid || ground_options.grid);
         m_ground_shader->set_uniform_bool("u_solid", ground_options.solid);
         m_ground_shader->set_uniform_vec3f("u_solid_color", ground_options.solid_color);

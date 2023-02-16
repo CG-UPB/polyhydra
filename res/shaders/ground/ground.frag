@@ -18,8 +18,6 @@ uniform vec3 u_grid_color;
 uniform float u_height;
 uniform int u_tile_count;
 uniform bool u_shadow_only;
-uniform bool u_wireframe;
-uniform bool u_vertices;
 
 uniform vec3 u_light_pos;
 uniform float u_light_size = 1.0;
@@ -274,9 +272,8 @@ void main()
     vec3 l = normalize(u_light_pos);
 
     float shadow = 0.0;
-    bool no_shadows = u_wireframe || u_vertices;
 
-    if (u_draw_shadows && !no_shadows)
+    if (u_draw_shadows)
     {
         // shadow calculation
         // calculate cascade level
@@ -326,7 +323,7 @@ void main()
     }
 
     float ao_factor = 1.0;
-    if(u_draw_ao && !no_shadows)
+    if(u_draw_ao)
     {
         ao_factor = texture(u_ssao_texture, uv).r;
     }

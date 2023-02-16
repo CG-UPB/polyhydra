@@ -89,7 +89,6 @@ namespace volumeshOS::Internal
     {
         static struct AppSettings
         {
-            RenderingMode rendering_mode            = RenderingMode::PHONG_FACE_NORMALS;
             TransparencyMode transparency_mode      = TransparencyMode::DEPTH_PEELING;
             SelectionMode selection_mode            = SelectionMode::OFF;
             SSAOMode ssao_mode                      = SSAOMode::QUALITY;
@@ -111,8 +110,6 @@ namespace volumeshOS::Internal
             bool digging_active                     = false;
             int num_depth_peeling_passes            = 15;
             int num_shadow_cascades                 = 8;
-            float wireframe_size                    = 1.2f;
-            float vertex_size                       = 0.4f;
             bool use_global_pbr                     = true;
             bool block_input                        = false;
             bool multisampling                      = true;

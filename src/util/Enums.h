@@ -10,10 +10,15 @@ namespace volumeshOS
 
     enum class RenderingMode
     {
-        WIREFRAME,
-        ONLY_VERTICES,
-        PHONG_FACE_NORMALS,
-        PHONG_VERTEX_NORMALS,
+        POINTS,
+        LINES,
+        CELLS,
+    };
+
+    enum class ShadingMode
+    {
+        FLAT,
+        PHONG,
     };
 
     enum class TransparencyMode

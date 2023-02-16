@@ -97,27 +97,72 @@ namespace volumeshOS
     const std::string& get_name(const VMesh& mesh);
 
 
-    /* GENEREAL */
+    /* GENERAL */
 
     /**
      * Set Rendering Mode.
+     * @param mesh
      * @param mode
-     * Phong: Rendering using phong shading \n
-     * Flat : Rendering using flat shading \n
-     * Lines: Rendering edges aka wireframe \n
      * Points: Rendering vertices aka points \n
+     * Lines: Rendering edges aka wireframe \n
+     * Cells : Rendering cells (standard) \n
      */
-    void set_rendering_mode(RenderingMode mode);
+    void set_rendering_mode(const VMesh& mesh, RenderingMode mode);
 
     /**
     * Get Rendering Mode.
-    * Phong: Rendering using phong shading \n
-    * Flat : Rendering using flat shading \n
-    * Lines: Rendering edges aka wireframe \n
-    * Points: Rendering vertices aka points \n
+     * @param mesh
      * @return
+     * Points: Rendering vertices aka points \n
+     * Lines: Rendering edges aka wireframe \n
+     * Cells : Rendering cells (standard) \n
      */
-    RenderingMode get_rendering_mode();
+    RenderingMode get_rendering_mode(const VMesh& mesh);
+
+    /**
+     * Set Point Size. Determines the size of rendered points when using ::RenderingMode = Points.
+     * @param mesh
+     * @param size point size
+     */
+    void set_point_size(const VMesh& mesh, float size);
+
+    /**
+     * Get Point Size.
+     * @param mesh
+     */
+    float get_point_size(const VMesh& mesh);
+
+
+    /**
+     * Set Line Width. Determines the width of the rendered lines when using ::RenderingMode = Lines.
+     * @param mesh
+     * @param width line width
+     */
+    void set_line_width(const VMesh& mesh, float width);
+
+    /**
+     * Get Line Width.
+     * @param mesh
+     */
+    float get_line_width(const VMesh& mesh);
+
+    /**
+     * Set Shading Mode.
+     * @param mesh
+     * @param mode
+     * Flat: Rendering mesh using flat shading \n
+     * Phong: Rendering mesh using phong shading \n
+     */
+    void set_shading_mode(const VMesh& mesh, ShadingMode mode);
+
+    /**
+     * Get Shading Mode.
+     * @param mesh
+     * @return
+     * Flat: Rendering mesh using flat shading \n
+     * Phong: Rendering mesh using phong shading \n
+     */
+    ShadingMode get_shading_mode(const VMesh& mesh);
 
     /**
      * Set Sky color
@@ -1697,6 +1742,88 @@ namespace volumeshOS
         }
 
         /**
+         * Set Rendering Mode of this mesh.
+         * @param mode
+         * Points: Rendering vertices aka points \n
+         * Lines: Rendering edges aka wireframe \n
+         * Cells : Rendering cells (standard) \n
+         */
+        inline void set_rendering_mode(const RenderingMode mode) const
+        {
+            volumeshOS::set_rendering_mode(*this, mode);
+        }
+
+        /**
+        * Get Rendering Mode of this mesh.
+         * @return
+         * Points: Rendering vertices aka points \n
+         * Lines: Rendering edges aka wireframe \n
+         * Cells : Rendering cells (standard) \n
+         */
+        [[nodiscard]] inline RenderingMode get_rendering_mode() const
+        {
+            return volumeshOS::get_rendering_mode(*this);
+        }
+
+        /**
+         * Set Point Size of this mesh. Determines the size of rendered points when using ::RenderingMode = Points.
+         * @param size point size
+         */
+        inline void set_point_size(const float size) const
+        {
+            volumeshOS::set_point_size(*this, size);
+        }
+
+        /**
+         * Get Point Size of this mesh.
+         * @return
+         */
+        [[nodiscard]] inline float get_point_size() const
+        {
+            return volumeshOS::get_point_size(*this);
+        }
+
+        /**
+         * Set Line Width of this mesh. Determines the width of the rendered lines when using ::RenderingMode = Lines.
+         * @param width line width
+         */
+        inline void set_line_width(const float width) const
+        {
+            volumeshOS::set_line_width(*this, width);
+        }
+
+        /**
+         * Get Line Width of this mesh.
+         * @return
+         */
+        [[nodiscard]] inline float get_line_width() const
+        {
+            return volumeshOS::get_line_width(*this);
+        }
+
+        /**
+         * Set Shading Mode of this mesh.
+         * @param mode
+         * Flat: Rendering mesh using flat shading \n
+         * Phong: Rendering mesh using phong shading \n
+         */
+        inline void set_shading_mode(const ShadingMode mode) const
+        {
+            volumeshOS::set_shading_mode(*this, mode);
+        }
+
+        /**
+         * Get Shading Mode of this mesh.
+         * @return
+         * Flat: Rendering mesh using flat shading \n
+         * Phong: Rendering mesh using phong shading \n
+         */
+        [[nodiscard]] inline ShadingMode get_shading_mode() const
+        {
+            return volumeshOS::get_shading_mode(*this);
+        }
+
+        /**
          * Enable/Disable backface culling for a mesh. In special cases some faces wants to be seen from behind.
          * @param culling
          */
@@ -2317,9 +2444,19 @@ namespace volumeshOS
          * Get given mesh into focus. Some operations only occur on the focused mesh.
          * @return
          */
-        inline void set_focused_mesh() const
+        inline void set_focused() const
         {
             volumeshOS::set_focused_mesh(*this);
+        }
+
+        /**
+         * Check if this mesh is currently in focus.
+         *
+         * @return true if focused, else false
+         */
+        [[nodiscard]] inline bool is_focused() const
+        {
+            return volumeshOS::get_focused_mesh().m_id == m_id;
         }
 
         /**

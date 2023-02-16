@@ -34,12 +34,10 @@ namespace volumeshOS::Internal
     private:
         void show_screenshot_menu();
 
-        static void show_general_menu();
         void show_selection_menu();
         void show_camera_menu();
         static void show_light_menu();
         static void show_post_processing_menu();
-        static void show_bezier_mesh_menu();
         static void show_sky_menu();
 
         static void show_shapes_menu();

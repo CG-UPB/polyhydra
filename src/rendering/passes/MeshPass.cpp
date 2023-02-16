@@ -10,10 +10,17 @@ namespace volumeshOS::Internal
         renderer.buffers.target_framebuffer_ms->bind();
         for (const auto& mesh : renderer.render_list)
         {
+            // We only render cells and lines in this pass
+            auto rendering_mode = mesh->get_data().rendering_mode;
+            if (!(rendering_mode == RenderingMode::CELLS || rendering_mode == RenderingMode::LINES))
+            {
+                continue;
+            }
+
             auto& settings = AppState::settings;
-            bool draw_wireframe = settings.rendering_mode == RenderingMode::WIREFRAME;
-            float wireframe_size = settings.wireframe_size;
-            bool use_vertex_normals = settings.rendering_mode == RenderingMode::PHONG_VERTEX_NORMALS;
+            bool draw_wireframe = rendering_mode == RenderingMode::LINES;
+            float wireframe_size = mesh->get_data().line_width;
+            bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
 
             bool is_bezier_mesh = mesh->is_bezier_mesh();
             // Currently, cells sometimes appear hollow if CULL_FACE is not
@@ -87,7 +94,7 @@ namespace volumeshOS::Internal
 
 
             // Do not use rounding on Bézier meshes.
-            m_mesh_shader->set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
+            m_mesh_shader->set_uniform_bool("u_rounding", !(is_bezier_mesh) && mesh->get_data().rounding_size > 0.0f);
             m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);
             m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
