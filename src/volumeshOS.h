@@ -899,16 +899,27 @@ namespace volumeshOS
      * Set the rotation of a mesh.
      * @tparam Vec3T 3D vector type
      * @param mesh
-     * @param rotation vector in range [0,1]
+     * @param rotation vector of angles in radians
      */
     template<typename Vec3T>
     void set_rotation(const VMesh& mesh, const Vec3T& rotation);
+
+
+    /**
+     * Set the rotation of a mesh.
+     * @tparam Vec3T 3D vector type
+     * @param mesh
+     * @param angle angle in
+     * @param axis rotation axis
+     */
+    template<typename Vec3T>
+    void set_rotation(const VMesh& mesh, float angle, const Vec3T& axis);
 
     /**
      * Get the rotation of a mesh.
      * @tparam Vec3T 3D vector type
      * @param mesh
-     * @return rotation vector in range [0,1]
+     * @return rotation vector in radians
      */
     template<typename Vec3T>
     Vec3T get_rotation(const VMesh& mesh);
@@ -2136,12 +2147,24 @@ namespace volumeshOS
         /**
          * Set the rotation of a mesh.
          * @tparam Vec3T 3D vector type
-         * @param rotation vector in range [0,1]
+         * @param rotation vector of angles in radians
          */
         template<typename Vec3T>
         inline void set_rotation(const Vec3T& rotation) const
         {
             volumeshOS::set_rotation<Vec3T>(*this, rotation);
+        }
+
+        /**
+        * Set the rotation of a mesh.
+        * @tparam Vec3T 3D vector type
+        * @param angle angle in radians
+        * @param axis rotation axis
+        */
+        template<typename Vec3T>
+        inline void set_rotation(float angle, const Vec3T& axis) const
+        {
+            volumeshOS::set_rotation<Vec3T>(*this, angle, axis);
         }
 
         /**

@@ -104,6 +104,9 @@ namespace volumeshOS::Internal
         // Set the rotation of a mesh using euler angles
         void set_rotation(MeshID id, float x, float y, float z);
 
+        // Set the rotation of a mesh with angle and axis
+        void set_rotation(MeshID id, float angle, glm::vec3& axis);
+
         // Resets rotation
         void reset_rotation(MeshID id);
 

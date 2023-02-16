@@ -7,6 +7,11 @@
 #include "MeshTextureBuffer.h"
 #include "../util/VecUtil.h"
 
+#include<glm/glm.hpp>
+#include<glm/gtc/quaternion.hpp>
+#include<glm/common.hpp>
+
+
 
 namespace volumeshOS::Internal
 {
@@ -24,6 +29,7 @@ namespace volumeshOS::Internal
 
         glm::mat4 rotation          = glm::mat4(1.0f);
         glm::mat4 transformation    = glm::mat4(1.0f);
+        glm::quat rot               = glm::angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 0.0f));
 
         // Rendering Variables
         glm::vec4 color             = {1.0f, 1.0f, 1.0f, 1.0f};

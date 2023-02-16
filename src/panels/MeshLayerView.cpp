@@ -23,7 +23,7 @@ namespace volumeshOS::Internal
         int active_mesh_id = active_mesh.get_id();
         for (const auto& mesh: volumeshOS::get_meshes())
         {
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().FramePadding.x);
+            //ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().FramePadding.x);
 
             int id = mesh.get_id();
             ImGui::PushID(id);
@@ -327,13 +327,19 @@ namespace volumeshOS::Internal
                     ImGui::BeginDisabled(false);
                     ImGuiUtil::menu_item("Rotation", "icon_rotate.png", width, [&]
                     {
-                        if (ImGui::DragFloat3("##Rotation", m_mesh_rotation, 1.0f, -180.0f, 180.0f, "%.1f"))
+                        float angles[3] = {m_mesh_rotation[0], m_mesh_rotation[1], m_mesh_rotation[2]};
+                        if (ImGui::DragFloat3("##Rotation", angles, 1.0f, -179.0f, 179.0f, "%.1f"))
                         {
-                            auto x = (m_mesh_rotation[0] - 180.0f);// - glm::degrees(rot[0]) + 180.0f;
-                            auto y = (m_mesh_rotation[1] - 180.0f);// - glm::degrees(rot[1]) + 180.0f;
-                            auto z = (m_mesh_rotation[2] - 180.0f);// - glm::degrees(rot[2]) + 180.0f;
 
-                            mesh.set_rotation(glm::radians(x), glm::radians(z), glm::radians(y));
+                            angles[0] = std::clamp(angles[0], -179.0f, 179.0f);
+                            angles[1] = std::clamp(angles[1], -89.0f, 89.0f);
+                            angles[2] = std::clamp(angles[2], -179.0f, 179.0f);
+
+                            m_mesh_rotation[0] = angles[0];
+                            m_mesh_rotation[1] = angles[1];
+                            m_mesh_rotation[2] = angles[2];
+
+                            mesh.set_rotation(glm::radians(angles[0]), glm::radians(angles[1]), glm::radians(angles[2]));
 
                         }
                         ImGui::SameLine();

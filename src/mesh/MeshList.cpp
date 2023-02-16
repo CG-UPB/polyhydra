@@ -181,10 +181,17 @@ namespace volumeshOS::Internal
         auto f = [this, &x, &y, &z, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
 
             auto m = get_mesh(id);
-//            m->rotate(x, glm::vec3(1.0f, 0.0f, 0.0f));
-//            m->rotate(y, glm::vec3(0.0f, 0.0f, -1.0f));
-//            m->rotate(z, glm::vec3(0.0f, 1.0f, 0.0f));
             m->rotate_axis(x,y,z);
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::set_rotation(MeshID id, float angle, glm::vec3& axis)
+    {
+        auto f = [this, &angle, &axis, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
+
+            auto m = get_mesh(id);
+            m->rotate(angle, axis);
         };
         execute_for_mesh(f, id);
     }
@@ -457,32 +464,9 @@ namespace volumeshOS::Internal
         auto mat = get_mesh(id)->get_data().transformation;
         auto r   = get_mesh(id)->get_data().rotation;
 
-        float yaw, pitch, roll = 0.0f;
+        glm::vec3 angles = glm::eulerAngles(get_mesh(id)->get_data().rot);
 
-        if(r[0][0] == 1.0f)
-        {
-            yaw = atan2f(r[0][2], r[2][3]);
-            pitch = 0.0f;
-            roll = 0.0f;
-        }
-        else if(r[0][0] == -1.0f)
-        {
-            yaw = atan2f(r[0][2], r[2][3]);
-            pitch = 0.0f;
-            roll = 0.0f;
-        }
-        else
-        {
-            yaw = atan2f(mat[1][2], mat[2][2]);
-            roll = atan2f(-mat[0][2], sqrtf(mat[1][2] * mat[1][2] + mat[2][2] * mat[2][2]));
-            pitch = atan2f(mat[0][1], mat[0][0]);
-
-        }
-
-        std::cout << "Yaw: " << glm::degrees(yaw) << " , Roll: " << glm::degrees(roll) << " , Pitch: "<< glm::degrees(pitch) <<std::endl;
-        
-        auto m = get_mesh(id);
-        return glm::vec3{yaw, roll, pitch};
+        return angles;
     }
 
     float MeshList::get_slice_factor(const MeshID id)

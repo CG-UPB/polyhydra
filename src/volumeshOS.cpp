@@ -949,6 +949,15 @@ namespace volumeshOS
     }
 
     template<typename Vec3T>
+    void set_rotation(const VMesh& mesh, float angle, const Vec3T& axis)
+    {
+        commands.emplace_back([mesh, angle, axis]{
+            auto ax = Internal::to_glm_vec3(axis);
+            mesh_list->set_rotation(mesh.get_id(), angle, ax);
+        });
+    }
+
+    template<typename Vec3T>
     Vec3T get_rotation(const VMesh& mesh)
     {
         assert(mesh.is_valid());
@@ -1560,6 +1569,12 @@ namespace volumeshOS
     template void set_rotation<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
     template void set_rotation<std::array<double, 3>>(const VMesh&, const std::array<double, 3>&);
     template void set_rotation<std::array<float, 3>>(const VMesh&, const std::array<float, 3>&);
+
+    template void set_rotation<glm::vec3>(const VMesh&, float , const glm::vec3&);
+    template void set_rotation<OpenVolumeMesh::Vec3d>(const VMesh&, float , const OpenVolumeMesh::Vec3d&);
+    template void set_rotation<OpenVolumeMesh::Vec3f>(const VMesh&, float , const OpenVolumeMesh::Vec3f&);
+    template void set_rotation<std::array<double, 3>>(const VMesh&, float , const std::array<double, 3>&);
+    template void set_rotation<std::array<float, 3>>(const VMesh&, float , const std::array<float, 3>&);
 
     template glm::vec3 get_position<glm::vec3>(const VMesh&);
     template OpenVolumeMesh::Vec3d get_position<OpenVolumeMesh::Vec3d>(const VMesh&);
