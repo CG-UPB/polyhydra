@@ -56,7 +56,7 @@ void main()
 
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
-    if(u_two_sided_lighting && dot(n, l) <= 0 )
+    if(u_two_sided_lighting && dot(n, v) <= 0 )
     {
         n = -n;
     }

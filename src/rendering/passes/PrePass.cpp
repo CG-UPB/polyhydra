@@ -68,9 +68,11 @@ namespace volumeshOS::Internal
             shader.set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
             shader.set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
             shader.set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
+            shader.set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
 
 
             pre_phong_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+            pre_phong_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
             if(is_bezier_mesh)
             {
                 auto mtb = mesh->get_mtb();

@@ -44,6 +44,8 @@ uniform bool u_rounding;
 uniform float u_rounding_size;
 uniform bool u_use_vertex_normals;
 
+uniform bool  u_use_base_color;
+
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
 
@@ -63,7 +65,7 @@ float get_shrink_factor(float angle, float dist) {
 void main()
 {
     v_center = a_center;
-    
+
     // Use a_is_triangle as the ovm halfface id for bézier meshes.
     if(u_is_bezier_mesh)
     {
@@ -101,7 +103,7 @@ void main()
 
     // Roundings
     vec3 position = a_pos;
-    float alpha = u_object_color.a * a_color.a;
+    float alpha = u_use_base_color ? u_object_color.a : a_color.a;
     if (u_rounding)
     {
         float type = a_vertex_type_rounded;
