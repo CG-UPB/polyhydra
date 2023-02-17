@@ -19,6 +19,7 @@ flat out float tc_min_edge_length[];
 out vec4 tc_rounding_sphere_center[];
 out vec3 tc_center[];
 
+flat out int tc_isTriangle[];
 flat out int tc_Visible[];
 flat out float tc_VertexTypeRounded[];
 flat out int tc_ovm_halfface_id[];
@@ -38,8 +39,8 @@ void main()
         sourceID = (sourceID+1)%3;
     }
 
-    tc_Pos[ID]             =             v_Pos[sourceID];
-
+    tc_Pos[ID]             =  v_Pos[sourceID];
+    tc_isTriangle[ID]      =  v_isTriangle[sourceID];
     tc_min_edge_length[ID] =  v_min_edge_length[sourceID];
     tc_rounding_sphere_center[ID] = v_rounding_sphere_center[sourceID];
     tc_center[ID]          =  v_center[sourceID];

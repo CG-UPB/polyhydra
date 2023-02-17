@@ -2,14 +2,17 @@
 
 layout(vertices = 3) out;
 
-in vec4 v_Pos[];
-in vec3 v_normal[];
+in vec3 v_Pos[];
+in vec3 v_FaceNormal[];
+in vec3 v_VertexNormal[];
 flat in int v_visible[];
 flat in int v_ovm_halfface_id[];
 flat in vec3 v_center[];
 
-out vec4 tc_Pos[];
-out vec3 tc_normal[];
+out vec3 tc_Pos[];
+out vec3 tc_FaceNormal[];
+out vec3 tc_VertexNormal[];
+
 flat out int tc_visible[];
 flat out int tc_ovm_halfface_id[];
 flat out vec3 tc_center[];
@@ -22,7 +25,8 @@ uniform int u_bezier_tessellation_level;
 void main()
 {
     tc_Pos[ID]             =             v_Pos[ID];
-    tc_normal[ID]          =          v_normal[ID];
+    tc_FaceNormal[ID]      =          v_FaceNormal[ID];
+    tc_VertexNormal[ID]    =          v_VertexNormal[ID];
     tc_visible[ID]         =         v_visible[ID];
     tc_ovm_halfface_id[ID] = v_ovm_halfface_id[ID];
     tc_center[ID]          =          v_center[ID];

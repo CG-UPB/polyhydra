@@ -158,13 +158,6 @@ void main()
     }
 
     vec3 pos = a_center + (position - a_center) * u_cell_size;
-
-    vec3 normal = a_normal;
-    if (u_use_vertex_normals)
-    {
-        normal = a_vertex_normal;
-    }
-
     v_Pos = vec3(u_transform * vec4(pos, 1.0));
 
     v_FaceNormal = mat3(transpose(inverse(u_transform))) * a_normal;
@@ -198,6 +191,7 @@ void main()
         alpha = (1.0 - (u_peel_depth - peel_depth)) * alpha;
     }
 
+    v_rounding_sphere_center = vec4(0.0, 0.0, 0.0, 1.0);
     v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
 
     if (a_hovered != 0.0)

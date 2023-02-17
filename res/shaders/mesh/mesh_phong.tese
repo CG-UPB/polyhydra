@@ -52,10 +52,6 @@ uniform bool u_rounding;
 uniform float u_rounding_size;
 uniform float u_average_cell_size;
 uniform bool u_use_vertex_normals;
-// uniform mat4 u_view;
-// uniform vec3 u_cam_pos;
-
-// uniform bool u_draw_wireframe;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
@@ -360,18 +356,21 @@ void main()
 
     }
 
-    if(x > 0.0)
+    if(!u_is_bezier_mesh)
     {
-        set_light_space_pos(0);
-    }
-    else if(y > 0.0)
-    {
-        set_light_space_pos(1);
+        if(x > 0.0)
+        {
+            set_light_space_pos(0);
+        }
+        else if(y > 0.0)
+        {
+            set_light_space_pos(1);
 
-    }
-    else if(z > 0.0)
-    {
-        set_light_space_pos(2);
+        }
+        else if(z > 0.0)
+        {
+            set_light_space_pos(2);
+        }
     }
 
 

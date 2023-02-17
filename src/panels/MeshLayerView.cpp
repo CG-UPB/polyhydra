@@ -122,8 +122,6 @@ namespace volumeshOS::Internal
 
             ImGuiUtil::menu_item("Rotation", "icon_rotate.png", width, [&]
             {
-                ImGuiUtil::menu_item("Rotation", "icon_rotate.png", width, [&]
-                {
                     float angles[3] = {m_mesh_rotation[0], m_mesh_rotation[1], m_mesh_rotation[2]};
                     if (ImGui::DragFloat3("##Rotation", angles, 1.0f, -179.0f, 179.0f, "%.1f"))
                     {

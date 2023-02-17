@@ -31,6 +31,7 @@ namespace volumeshOS::Internal
             }
 
             bool is_bezier_mesh = mesh->is_bezier_mesh();
+            bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
             // Currently, cells sometimes appear hollow if CULL_FACE is not
             // disabled for Bézier meshes
             if ( is_bezier_mesh || mesh->get_data().use_two_sided_lighting)
@@ -65,6 +66,9 @@ namespace volumeshOS::Internal
             shader.set_uniform_bool("u_rounding", (is_bezier_mesh) ? false : mesh->get_data().rounding_size > 0.0f);
             shader.set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
             shader.set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+            shader.set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
+            shader.set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
+
 
             pre_phong_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
             if(is_bezier_mesh)

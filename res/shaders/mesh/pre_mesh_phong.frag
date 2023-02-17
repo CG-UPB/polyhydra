@@ -8,6 +8,7 @@ uniform vec3 u_cam_pos;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
+uniform bool u_two_sided_lighting;
 
 layout (location = 0) out vec3 normal;
 
@@ -18,12 +19,19 @@ void main()
         discard;
     }
 
-    if(u_is_bezier_mesh && dot(v_normal, normalize(u_cam_pos -  v_pos)) < 0)
+    vec3 n = normalize(v_normal);
+    vec3 v = normalize(u_cam_pos - v_pos);
+
+    if(u_is_bezier_mesh && dot(n, v) < 0)
     {
-        normal = -v_normal;
+        n = -n;
+    }
+    else if(u_two_sided_lighting && dot(n, v) < 0 )
+    {
+        n = -n;
     }
     else
     {
-        normal = v_normal;
+        normal = n;
     }
 }

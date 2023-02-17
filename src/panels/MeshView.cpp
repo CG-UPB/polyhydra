@@ -252,7 +252,7 @@ namespace volumeshOS::Internal
         if(read_data)
         {
             read_data = false;
-            auto text = "Reading data from file ...";
+            auto text = "Reading file...";
             ImVec2 text_size = ImGui::CalcTextSize(text);
             float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
             ImGui::SetCursorPos({middle_x - text_size.x / 2.0f, topLeft.y});

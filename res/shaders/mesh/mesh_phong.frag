@@ -426,12 +426,11 @@ void main()
     {
         n = -n;
     }
-    else if(u_two_sided_lighting && dot(n, v) < 0 )
+    else
+    if(u_two_sided_lighting && dot(n, v) < 0 )
     {
         n = -n;
     }
-
-
 
 
     float shadow = 0.0;

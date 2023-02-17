@@ -39,11 +39,6 @@ uniform bool u_draw_wireframe;
 uniform bool u_is_bezier_mesh;
 uniform int u_bezier_tessellation_level;
 
-#if u_rounding
-layout(vertices = 3) out;
-#else
-layout(vertices = 3) out;
-#endif
 
 #define ID gl_InvocationID
 

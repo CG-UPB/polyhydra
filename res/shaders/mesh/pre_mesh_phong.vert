@@ -12,10 +12,14 @@ layout (location = 8) in float a_vertex_type_rounded;
 layout (location = 9) in vec3 a_face_center_rounded;
 layout (location = 10) in vec3 a_to_vertex_rounded;
 layout (location = 11) in float a_dihedral_angle_rounded;
+layout (location = 12) in float a_is_selected;
+layout (location = 13) in float a_hovered;
+layout (location = 14) in vec3 a_vertex_normal;
 layout (location = 15) in float a_min_edge_length;
 
-out vec4 v_Pos;
-out vec3 v_normal;
+out vec3 v_Pos;
+out vec3 v_FaceNormal;
+out vec3 v_VertexNormal;
 flat out int v_visible;
 flat out int v_ovm_halfface_id;
 flat out vec3 v_center;
@@ -38,6 +42,7 @@ uniform vec3 u_slice_direction;
 uniform bool u_slice_locked;
 uniform bool u_rounding;
 uniform float u_rounding_size;
+uniform bool u_use_vertex_normals;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
@@ -123,7 +128,8 @@ void main()
         }
     }
 
-    v_normal = mat3(transpose(inverse(view_transform))) * a_normal;
+    v_FaceNormal = mat3(transpose(inverse(u_transform))) * a_normal;
+    v_VertexNormal = mat3(transpose(inverse(u_transform))) * a_vertex_normal;
 
     float peel_alpha = (u_peel_depth - peel_depth);
     if(v_visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
@@ -135,5 +141,5 @@ void main()
         v_visible = 0;
     }
     vec3 pos = a_center + (position - a_center) * u_cell_size;
-    v_Pos = u_projection * u_view * u_transform * vec4(pos, 1.0);
+    v_Pos = vec3(u_transform * vec4(pos, 1.0));
 }

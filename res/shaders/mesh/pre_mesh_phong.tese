@@ -2,8 +2,9 @@
 
 layout(triangles, equal_spacing, ccw) in;
 
-in vec4 tc_Pos[];
-in vec3 tc_normal[];
+in vec3 tc_Pos[];
+in vec3 tc_FaceNormal[];
+in vec3 tc_VertexNormal[];
 flat in int tc_visible[];
 flat in int tc_ovm_halfface_id[];
 flat in vec3 tc_center[];
@@ -17,9 +18,8 @@ uniform mat4 u_transform;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform float u_cell_size;
-// uniform vec3 u_cam_pos;
+uniform bool u_use_vertex_normals;
 
-// uniform bool u_draw_wireframe;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
@@ -34,6 +34,8 @@ uniform samplerBuffer u_control_points_tb;
 #define MAX_CPS_PER_TRI (MAX_BEZIER_DEGREE+1)*(MAX_BEZIER_DEGREE+2)/2
 
 #define CP_2D_INDEX_TO_1D(i2, i1, m) (((m)+1)*((m)+2)/2 - ((m)-(i2)+1)*((m)-(i2)+2)/2 + (i1))
+
+vec3 control_points[MAX_CPS_PER_TRI];
 
 int cp_2d_index_to_1d(int i2, int i1, int m)
 {
@@ -94,7 +96,7 @@ void main()
         int m = u_bezier_degree;
         int ovm_hf_id = tc_ovm_halfface_id[0];
         int control_points_offset = (ovm_hf_id/2)*(m+2)*(m+1)/2;
-        vec3 control_points[MAX_CPS_PER_TRI];
+
         
         // copy control points from texture buffer into local array 
         // so that it can be modified by the de casteljau algorithm
@@ -110,7 +112,7 @@ void main()
         vec3 a = control_points[cp_2d_index_to_1d(0, 0, 1)];
         vec3 b = control_points[cp_2d_index_to_1d(0, 1, 1)];
         vec3 c = control_points[cp_2d_index_to_1d(1, 0, 1)];
-        v_normal = mat3(transpose(inverse(u_view * u_transform))) * cross(c - a, b - a);
+        v_normal = mat3(transpose(inverse(u_transform))) * cross(c - a, b - a);
 
         // Obtain the final position by doing the last step of linear interpolation
         // of the de casteljau algorithm.
@@ -119,16 +121,25 @@ void main()
         v_pos      += control_points[cp_2d_index_to_1d(0, 1, 1)]*z;
         
         // Perform Cell sizing.
-        v_pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
+        vec3 pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
 
-        v_pos = (u_view * u_transform * vec4(v_pos, 1.0)).xyz;
-        gl_Position = u_projection * vec4(v_pos, 1.0);
+        v_pos = (u_view * u_transform * vec4(pos, 1.0)).xyz;
+        vec4 screen_pos = u_projection * vec4(v_pos, 1.0);
+        gl_Position = screen_pos;
     }
     else
     {
-        gl_Position   = tc_Pos[0]            *x + tc_Pos[1]            *y + tc_Pos[2]            *z;
-        v_normal      = tc_normal[0]         *x + tc_normal[1]         *y + tc_normal[2]         *z;
-        v_pos         = vec3(0.);
+        if (u_use_vertex_normals)
+        {
+            v_normal = tc_VertexNormal[0] * x + tc_VertexNormal[1] * y + tc_VertexNormal[2] * z;
+        }
+        else
+        {
+            v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
+        }
+
+        v_pos = tc_Pos[0] * x + tc_Pos[1] * y + tc_Pos[2] * z;
+        gl_Position = u_projection * u_view *  vec4(v_pos, 1.0);
     }
 
     // in any case use the values of vertex shader for these values 
