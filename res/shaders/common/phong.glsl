@@ -19,7 +19,6 @@ vec3 calculate_phong_lighting(vec3 color, vec3 n, vec3 l, vec3 v, float ao, floa
     float spec = pow(max(0.0, dot(h, n)), u_spec_exponent);
     vec3 specular = u_spec_strength * spec * light_color;
 
-    float norm = u_ambient_strength + u_diffuse_strength + u_spec_strength;
-    vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) / norm * color;
+    vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
     return result;
 }
