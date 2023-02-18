@@ -62,6 +62,7 @@ uniform float u_rounding_size;
 uniform bool u_use_vertex_normals;
 uniform int u_cascade_level;
 
+uniform bool u_use_base_color;
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
 
@@ -125,10 +126,10 @@ void main()
         v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
         return;
     }
-    
+
     // Roundings
     vec3 position = a_pos;
-    float alpha = u_object_color.a * a_color.a;
+    float alpha = u_use_base_color ? u_object_color.a : a_color.a;
 
     if (u_rounding)
     {
@@ -192,7 +193,7 @@ void main()
     }
 
     v_rounding_sphere_center = vec4(0.0, 0.0, 0.0, 1.0);
-    v_Color = vec4(mix(u_object_color.rgb, a_color.rgb, a_color.a), alpha);
+    v_Color = vec4(u_use_base_color ? u_object_color.rgb : a_color.rgb, alpha);
 
     if (a_hovered != 0.0)
     {
