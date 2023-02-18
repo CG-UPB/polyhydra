@@ -4,6 +4,7 @@ in vec3 v_normal;
 flat in int v_visible;
 in vec3 v_pos;
 
+uniform vec3 u_light_pos;
 uniform vec3 u_cam_pos;
 
 // uniforms for bezier meshes
@@ -19,19 +20,6 @@ void main()
         discard;
     }
 
-    vec3 n = normalize(v_normal);
-    vec3 v = normalize(u_cam_pos - v_pos);
+    normal = normalize(v_normal);
 
-    if(u_is_bezier_mesh && dot(n, v) < 0)
-    {
-        n = -n;
-    }
-    else if(u_two_sided_lighting && dot(n, v) < 0 )
-    {
-        n = -n;
-    }
-    else
-    {
-        normal = n;
-    }
 }

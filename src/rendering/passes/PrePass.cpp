@@ -53,6 +53,7 @@ namespace volumeshOS::Internal
             shader.set_uniform_mat4f("u_projection", data.projection);
             shader.set_uniform_mat4f("u_view", data.view);
             shader.set_uniform_vec3f("u_cam_pos", data.cam_pos);
+            shader.set_uniform_vec3f("u_light_pos", data.light_pos);
             shader.set_uniform_float("u_cell_size", mesh->get_data().cell_size);
             shader.set_uniform_vec4f("u_object_color", mesh->get_data().color);
             shader.set_uniform_float("u_peel_depth", mesh->get_data().peel_level);

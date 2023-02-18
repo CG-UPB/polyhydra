@@ -112,7 +112,7 @@ void main()
         vec3 a = control_points[cp_2d_index_to_1d(0, 0, 1)];
         vec3 b = control_points[cp_2d_index_to_1d(0, 1, 1)];
         vec3 c = control_points[cp_2d_index_to_1d(1, 0, 1)];
-        v_normal = mat3(transpose(inverse(u_transform))) * cross(c - a, b - a);
+        v_normal = mat3(transpose(inverse(u_view * u_transform))) * cross(c - a, b - a);
 
         // Obtain the final position by doing the last step of linear interpolation
         // of the de casteljau algorithm.
@@ -123,8 +123,8 @@ void main()
         // Perform Cell sizing.
         vec3 pos = tc_center[0] + (v_pos - tc_center[0]) * u_cell_size;
 
-        v_pos = (u_view * u_transform * vec4(pos, 1.0)).xyz;
-        vec4 screen_pos = u_projection * vec4(v_pos, 1.0);
+        vec4 screen_pos = u_projection * u_view * u_transform * vec4(pos, 1.0);
+        v_pos = vec3(u_transform * vec4(pos, 1.0));
         gl_Position = screen_pos;
     }
     else

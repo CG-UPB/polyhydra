@@ -128,8 +128,8 @@ void main()
         }
     }
 
-    v_FaceNormal = mat3(transpose(inverse(u_transform))) * a_normal;
-    v_VertexNormal = mat3(transpose(inverse(u_transform))) * a_vertex_normal;
+    v_FaceNormal = mat3(transpose(inverse(u_view * u_transform))) * a_normal;
+    v_VertexNormal = mat3(transpose(inverse(u_view * u_transform))) * a_vertex_normal;
 
     float peel_alpha = (u_peel_depth - peel_depth);
     if(v_visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)

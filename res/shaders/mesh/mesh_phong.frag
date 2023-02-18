@@ -421,6 +421,7 @@ void main()
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
+    //v = vec3(transpose(inverse(u_view * u_transform)) * v);
 
     if(u_is_bezier_mesh && dot(n, v) < 0)
     {
