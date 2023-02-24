@@ -45,13 +45,13 @@ mat4 get_rotation_matrix(vec3 axis, float angle)
 
 mat4 look_at(vec3 direction, vec3 up)
 {
-    if(dot(direction, up) == 1.0)
+    if(abs(dot(direction, up)) == 1.0)
     {
-        float tmp = direction.x;
-        if(direction.y >= tmp)
-            tmp = direction.x;
+        float tmp = abs(direction.x);
+        if(abs(direction.y) >= tmp)
+            tmp = abs(direction.x);
         if(direction.z >= tmp)
-            tmp = direction.z;
+            tmp = abs(direction.z);
 
         direction.x += 0.000001 * tmp;
         direction.y += 0.000001 * tmp;
