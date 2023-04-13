@@ -103,42 +103,80 @@ const vec2 Poisson25[25] = vec2[](
     vec2(0.991882, -0.657338));
 
 
-sampler2D get_shadow_texture(int index)
+float tex(int index, vec2 coords)
 {
     //prevent variable texture indexing
     if(index == 0)
     {
-        return u_shadow_texture[0];
+        return texture(u_shadow_texture[0], coords).r;
     }
     if(index == 1)
     {
-        return u_shadow_texture[1];
+        return texture(u_shadow_texture[1], coords).r;
     }
     if(index == 2)
     {
-        return u_shadow_texture[2];
+        return texture(u_shadow_texture[2], coords).r;
     }
     if(index == 3)
     {
-        return u_shadow_texture[3];
+        return texture(u_shadow_texture[3], coords).r;
     }
     if(index == 4)
     {
-        return u_shadow_texture[4];
+        return texture(u_shadow_texture[4], coords).r;
     }
     if(index == 5)
     {
-        return u_shadow_texture[5];
+        return texture(u_shadow_texture[5], coords).r;
     }
     if(index == 6)
     {
-        return u_shadow_texture[6];
+        return texture(u_shadow_texture[6], coords).r;
     }
     if(index == 7)
     {
-        return u_shadow_texture[7];
+        return texture(u_shadow_texture[7], coords).r;
     }
-    return u_shadow_texture[0];
+    return texture(u_shadow_texture[0], coords).r;
+}
+
+vec2 texSize(int index)
+{
+    //prevent variable texture indexing
+    if(index == 0)
+    {
+        return vec2(textureSize(u_shadow_texture[0], 0));
+    }
+    if(index == 1)
+    {
+        return vec2(textureSize(u_shadow_texture[1], 0));
+    }
+    if(index == 2)
+    {
+        return vec2(textureSize(u_shadow_texture[1], 0));
+    }
+    if(index == 3)
+    {
+        return vec2(textureSize(u_shadow_texture[3], 0));
+    }
+    if(index == 4)
+    {
+        return vec2(textureSize(u_shadow_texture[4], 0));
+    }
+    if(index == 5)
+    {
+        return vec2(textureSize(u_shadow_texture[5], 0));
+    }
+    if(index == 6)
+    {
+        return vec2(textureSize(u_shadow_texture[6], 0));
+    }
+    if(index == 7)
+    {
+        return vec2(textureSize(u_shadow_texture[7], 0));
+    }
+    return vec2(textureSize(u_shadow_texture[0], 0));
 }
 
 float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 line_dir)
@@ -157,7 +195,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
 {
     int blockers = 0;
     float avg_blocker_distance = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(get_shadow_texture(cascade_idx), 0));
+    vec2 texelSize = 1.0 / texSize(cascade_idx);
 
     float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
 
@@ -174,7 +212,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
         for (int y = -samples; y <= samples; y++)
         {
             vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
-            float z = texture(get_shadow_texture(cascade_idx), vec2(shadow_coords.xy + (vec2(x, y) + shift) * texelSize)).r;
+            float z = tex(cascade_idx, vec2(shadow_coords.xy + (vec2(x, y) + shift) * texelSize));
             if(z < (shadow_coords.z - bias))
             {
                 blockers++;
@@ -199,7 +237,7 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
     float sum = 0;
     int count = 0;
 
-    vec2 texelSize = 1.0 / vec2(textureSize(get_shadow_texture(cascade_idx), 0));
+    vec2 texelSize = 1.0 / texSize(cascade_idx);
     int range = int(light_size * radius);
    // range = range > 40 ? 40 : range;
     range = range <  1 ?  1 : range;
@@ -211,7 +249,7 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
         {
             //int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
             //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
-            float depth = texture(get_shadow_texture(cascade_idx), vec2(shadow_coords.xy + vec2(x , y) * texelSize)).r;
+            float depth = tex(cascade_idx, vec2(shadow_coords.xy + vec2(x , y) * texelSize));
 
             sum += depth < shadow_coords.z ? 1.0 : 0.0;
         }
@@ -277,7 +315,7 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
     proj_coords = proj_coords * 0.5 + 0.5;
 
     float current_depth = proj_coords.z;
-    float closest_depth = texture(get_shadow_texture(cascade_idx), vec2(proj_coords.xy)).r;
+    float closest_depth = tex(cascade_idx, vec2(proj_coords.xy));
 
     if (current_depth > 1.0)
     {
