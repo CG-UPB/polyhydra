@@ -39,7 +39,7 @@ namespace volumeshOS::Internal
         float width = ImGui::GetFontSize() * aspect_ratio + 2 * ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().WindowPadding.x;
 
         auto additional_menus = (mesh.get_rendering_mode() != RenderingMode::CELLS) ? 1 : 0;
-        ImGuiUtil::add_background_rect(11 + additional_menus);
+        ImGuiUtil::add_background_rect(13 + additional_menus);
         ImGui::BeginGroup();
         if (ImGui::BeginTable("mesh", 3, ImGuiTableFlags_SizingFixedFit))
         {
@@ -63,12 +63,59 @@ namespace volumeshOS::Internal
 
             ImGuiUtil::menu_item("Rendering Mode", "icon_eye.png", width, [&]
             {
-                int rendering_mode = static_cast<int>(mesh.get_rendering_mode());
-                constexpr const char* element_mode_types[] = { "Points", "Lines", "Cells" };
-                ImGui::Combo("##RenderingMode:", &rendering_mode, element_mode_types,
-                             IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
-                mesh.set_rendering_mode(static_cast<RenderingMode>(rendering_mode));
+//                int rendering_mode = static_cast<int>(mesh.get_rendering_mode());
+//                constexpr const char* element_mode_types[] = { "Points", "Lines", "Cells" };
+//                ImGui::Combo("##RenderingMode:", &rendering_mode, element_mode_types,
+//                             IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
+//                mesh.set_rendering_mode(static_cast<RenderingMode>(rendering_mode));
+                //ImGui::SameLine();
+                bool cells = volumeshOS::is_rendering_cells(mesh);
+                if(ImGui::Checkbox("  Cells", &cells))
+                {
+                    volumeshOS::render_cells(mesh, cells);
+                }
+                ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
+                if(ImGuiUtil::icon_button("icon_gear.png"))
+                {
+                    ImGui::OpenPopup("Settings for Cells");
+                    ImGui::SameLine();
+                }
+                render_cells_popup(mesh);
             });
+
+            ImGuiUtil::menu_item("", width, [&]
+            {
+                bool lines = volumeshOS::is_rendering_lines(mesh);
+                if(ImGui::Checkbox("  Lines", &lines))
+                {
+                    volumeshOS::render_lines(mesh, lines);
+                }
+                ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
+                if(ImGuiUtil::icon_button("icon_gear.png"))
+                {
+                    ImGui::OpenPopup("Settings for Lines");
+                    ImGui::SameLine();
+                }
+                render_lines_popup(mesh);
+            });
+
+            ImGuiUtil::menu_item(" ", width, [&]
+            {
+                bool points = volumeshOS::is_rendering_points(mesh);
+                if(ImGui::Checkbox("  Points", &points))
+                {
+                    volumeshOS::render_points(mesh, points);
+                }
+                ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
+                if(ImGuiUtil::icon_button("icon_gear.png"))
+                {
+                    ImGui::OpenPopup("Settings for Points");
+                    ImGui::SameLine();
+                }
+                render_points_popup(mesh);
+            });
+
+
             if (mesh.get_rendering_mode() == RenderingMode::POINTS)
             {
                 ImGuiUtil::menu_item("Point Size", "icon_eye.png", width, [&]
@@ -492,5 +539,71 @@ namespace volumeshOS::Internal
         }
         return open;
     }
+
+    void MeshLayerView::render_cells_popup(const VMesh &mesh)
+    {
+        if (ImGui::BeginPopup("Settings for Cells"))
+        {
+            ImGui::Text("Cells Settings");
+            ImGui::Separator();
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+
+            float new_color[4] = {0.5, 0.5, 0.5, 1.0};
+            if (ImGui::ColorEdit4("Cell Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+            {
+
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    void MeshLayerView::render_lines_popup(const VMesh &mesh)
+    {
+        if (ImGui::BeginPopup("Settings for Lines"))
+        {
+            ImGui::Text("Lines Settings");
+            ImGui::Separator();
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+
+            float line_width = mesh.get_line_width();
+            ImGui::SliderFloat("##Line Width", &line_width, 0.0f, 5.0f, "%.01f");
+            mesh.set_line_width(line_width);
+
+            ImGui::SameLine();
+
+            float new_color[4] = {0.5, 0.5, 0.5, 1.0};
+            if (ImGui::ColorEdit4("Line Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+            {
+
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
+    void MeshLayerView::render_points_popup(const VMesh &mesh)
+    {
+        if (ImGui::BeginPopup("Settings for Points"))
+        {
+            ImGui::Text("Points Settings");
+            ImGui::Separator();
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+
+            float point_size = mesh.get_point_size();
+            ImGui::SliderFloat("##Point Size", &point_size, 0.0f, 5.0f, "%.01f");
+            mesh.set_point_size(point_size);
+
+            ImGui::SameLine();
+
+            float new_color[4] = {0.5, 0.5, 0.5, 1.0};
+            if (ImGui::ColorEdit4("Point Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+            {
+
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
 
 } // namespace volumeshOS

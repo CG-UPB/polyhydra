@@ -28,6 +28,12 @@ namespace volumeshOS::Internal
 
         void render_popup(const VMesh& mesh);
 
+        void render_cells_popup(const VMesh& mesh);
+
+        void render_lines_popup(const VMesh& mesh);
+
+        void render_points_popup(const VMesh& mesh);
+
         void render_mesh_options(const VMesh& mesh);
 
         void render_mesh_settings(const VMesh& mesh);

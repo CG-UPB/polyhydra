@@ -59,6 +59,12 @@ namespace volumeshOS::Internal
         // Set rendering mode of a mesh
         void set_rendering_mode(MeshID id, RenderingMode mode);
 
+        void render_cells(MeshID id, bool cells);
+
+        void render_lines(MeshID id, bool lines);
+
+        void render_points(MeshID id, bool points);
+
         // Set point size of a mesh
         void set_point_size(MeshID id, float size);
 
@@ -168,6 +174,12 @@ namespace volumeshOS::Internal
 
         // Returns the rendering mode of a mesh
         RenderingMode get_rendering_mode(MeshID id);
+
+        bool is_rendering_cells(MeshID id);
+
+        bool is_rendering_lines(MeshID id);
+
+        bool is_rendering_points(MeshID id);
 
         // Returns the point size of a mesh
         float get_point_size(MeshID id);

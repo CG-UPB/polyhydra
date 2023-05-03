@@ -34,6 +34,13 @@ namespace volumeshOS::Internal
 
         // Rendering Variables
         RenderingMode rendering_mode    = RenderingMode::CELLS;
+        bool points                     = false;
+        bool lines                      = false;
+        bool cells                      = true;
+
+        glm::vec4 point_color = {0.8f, 0.8f, 0.8f, 0.8f};
+        glm::vec4 line_color = {0.8f, 0.8f, 0.8f, 0.8f};
+
         ShadingMode shading_mode        = ShadingMode::FLAT;
         float line_width                = 1.2f;
         float point_size                = 0.4f;

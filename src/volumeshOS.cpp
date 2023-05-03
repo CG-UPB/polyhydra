@@ -209,9 +209,45 @@ namespace volumeshOS
         });
     }
 
+    void render_cells(const VMesh& mesh, bool cells)
+    {
+        commands.emplace_back([mesh, cells]{
+            mesh_list->render_cells(mesh.get_id(), cells);
+        });
+    }
+
+    void render_lines(const VMesh& mesh, bool lines)
+    {
+        commands.emplace_back([mesh, lines]{
+            mesh_list->render_lines(mesh.get_id(), lines);
+        });
+    }
+
+    void render_points(const VMesh& mesh, bool points)
+    {
+        commands.emplace_back([mesh, points]{
+            mesh_list->render_points(mesh.get_id(), points);
+        });
+    }
+
     RenderingMode get_rendering_mode(const VMesh& mesh)
     {
         return mesh_list->get_rendering_mode(mesh.get_id());
+    }
+
+    bool is_rendering_cells(const VMesh& mesh)
+    {
+        return mesh_list->is_rendering_cells(mesh.get_id());
+    }
+
+    bool is_rendering_lines(const VMesh& mesh)
+    {
+        return mesh_list->is_rendering_lines(mesh.get_id());
+    }
+
+    bool is_rendering_points(const VMesh& mesh)
+    {
+        return mesh_list->is_rendering_points(mesh.get_id());
     }
 
     void set_point_size(const VMesh& mesh, float size)

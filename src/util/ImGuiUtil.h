@@ -145,9 +145,11 @@ namespace volumeshOS::Internal
             ImGui::PushID(name.c_str());
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
+            ImGui::InvisibleButton("", ImVec2(ImGui::GetFontSize() * 1.4f, 0.1f));
+            ImGui::TableSetColumnIndex(1);
             ImGui::AlignTextToFramePadding();
             ImGui::Text("%s", name.c_str());
-            ImGui::TableSetColumnIndex(1);
+            ImGui::TableSetColumnIndex(2);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - width);
             item();
             ImGui::PopID();

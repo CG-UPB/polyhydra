@@ -19,10 +19,13 @@ flat in int v_use_lookup_path;
 flat in int v_tes_inner_tri;
 in float v_edge_factor;
 
-uniform bool u_draw_wireframe;
+
+uniform bool u_draw_cells;
+uniform bool u_draw_lines;
+uniform vec4 u_line_color;
 uniform bool u_draw_shadows;
 uniform bool u_draw_ao;
-uniform float u_wireframe_size;
+uniform float u_line_size;
 
 uniform vec3 u_light_pos;
 uniform float u_light_size = 1.0;
@@ -64,28 +67,28 @@ uniform sampler2D u_shadow_texture[MAX_CASCADE_LEVEL];
 out vec4 FragColor;
 
 vec2 poisson_disk[16] = vec2[](
-    vec2( -0.94201624, -0.39906216 ),
-    vec2( 0.94558609, -0.76890725 ),
-    vec2( -0.094184101, -0.92938870 ),
-    vec2( 0.34495938, 0.29387760 ),
-    vec2( -0.91588581, 0.45771432 ),
-    vec2( -0.81544232, -0.87912464 ),
-    vec2( -0.38277543, 0.27676845 ),
-    vec2( 0.97484398, 0.75648379 ),
-    vec2( 0.44323325, -0.97511554 ),
-    vec2( 0.53742981, -0.47373420 ),
-    vec2( -0.26496911, -0.41893023 ),
-    vec2( 0.79197514, 0.19090188 ),
-    vec2( -0.24188840, 0.99706507 ),
-    vec2( -0.81409955, 0.91437590 ),
-    vec2( 0.19984126, 0.78641367 ),
-    vec2( 0.14383161, -0.14100790 )
+vec2(-0.94201624, -0.39906216),
+vec2(0.94558609, -0.76890725),
+vec2(-0.094184101, -0.92938870),
+vec2(0.34495938, 0.29387760),
+vec2(-0.91588581, 0.45771432),
+vec2(-0.81544232, -0.87912464),
+vec2(-0.38277543, 0.27676845),
+vec2(0.97484398, 0.75648379),
+vec2(0.44323325, -0.97511554),
+vec2(0.53742981, -0.47373420),
+vec2(-0.26496911, -0.41893023),
+vec2(0.79197514, 0.19090188),
+vec2(-0.24188840, 0.99706507),
+vec2(-0.81409955, 0.91437590),
+vec2(0.19984126, 0.78641367),
+vec2(0.14383161, -0.14100790)
 );
 
 float tex(int index, vec2 coords)
 {
     //prevent variable texture indexing
-    switch(index)
+    switch (index)
     {
         case 0:
         return texture(u_shadow_texture[0], coords).r;
@@ -103,7 +106,7 @@ float tex(int index, vec2 coords)
         return texture(u_shadow_texture[6], coords).r;
         case 7:
         return texture(u_shadow_texture[7], coords).r;
-        default:
+        default :
         return texture(u_shadow_texture[0], coords).r;
     }
 }
@@ -111,7 +114,7 @@ float tex(int index, vec2 coords)
 vec2 texSize(int index)
 {
     //prevent variable texture indexing
-    switch(index)
+    switch (index)
     {
         case 0:
         return vec2(textureSize(u_shadow_texture[0], 0));
@@ -129,7 +132,7 @@ vec2 texSize(int index)
         return vec2(textureSize(u_shadow_texture[6], 0));
         case 7:
         return vec2(textureSize(u_shadow_texture[7], 0));
-        default:
+        default :
         return vec2(textureSize(u_shadow_texture[0], 0));
     }
 }
@@ -140,7 +143,7 @@ float frag_distance_to_screenspace_line(vec2 frag_pos, vec2 line_start, vec2 lin
     return sqrt(dot(af, af) - dot(line_dir, af));
 }
 
-float linearize_depth(float d,float zNear,float zFar)
+float linearize_depth(float d, float zNear, float zFar)
 {
     return zNear * zFar / (zFar + d * (zNear - zFar));
 }
@@ -152,19 +155,19 @@ void draw_wireframe(vec2 uv)
         discard;
     }
 
-    if(u_is_bezier_mesh )
+    if (u_is_bezier_mesh)
     {
-        float dist = 0.05 * u_wireframe_size;
+        float dist = 0.05 * u_line_size;
         if (v_is_triangle == 0 || v_edge_factor <= 1.0 - dist)
         {
             discard;
         }
-
-        FragColor = vec4(u_object_color.rgb, 1.0);
+        FragColor = vec4(u_line_color.rgb, 1.0);
         return;
     }
 
-    float size_factor = 0.0015 * u_wireframe_size ;
+
+    float size_factor = 0.0015 * u_line_size;
     if (v_use_lookup_path == 1)
     {
         // these triangles are very likely not visible, since we don't draw 2/3rds of those anyway
@@ -213,19 +216,32 @@ void draw_wireframe(vec2 uv)
             discard;
         }
     }
-    FragColor = vec4(u_object_color.rgb, 1.0);
+    FragColor = vec4(u_line_color.rgb, 1.0);
 }
 
 void draw_wireframe_ontop(vec2 uv)
 {
     bool fragment_in_wireframe = true;
-    float size_factor = 0.0015 * u_wireframe_size;
+
+    if (u_is_bezier_mesh)
+    {
+        float dist = 0.05 * u_line_size;
+        if (v_is_triangle == 0 || v_edge_factor <= 1.0 - dist)
+        {
+            discard;
+        }
+
+        FragColor = vec4(u_object_color.rgb * 0.5, 1.0);
+        return;
+    }
+
+    float size_factor = 0.0015 * u_line_size;
     if (v_use_lookup_path == 1)
     {
         // these triangles are very likely not visible, since we don't draw 2/3rds of those anyway
         if (v_is_triangle == 0)
         {
-            fragment_in_wireframe = false;
+            return;
         }
         else
         {
@@ -237,7 +253,7 @@ void draw_wireframe_ontop(vec2 uv)
                 float min_dist_to_edge = min(min(dist0, dist1), dist2);
                 if (min_dist_to_edge > size_factor)
                 {
-                    fragment_in_wireframe = false;
+                    return;
                 }
             }
             else
@@ -245,33 +261,37 @@ void draw_wireframe_ontop(vec2 uv)
                 float min_dist_to_edge = min(dist0, dist1);
                 if (min_dist_to_edge > size_factor)
                 {
-                    fragment_in_wireframe = false;
+                    return;
                 }
             }
         }
     }
     else
     {
-        float min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+        float min_dist_to_edge;
+
+        min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
+
+
         if (min_dist_to_edge > size_factor)
         {
-            fragment_in_wireframe = false;
+            return;
         }
+
         // here, we discard 2 of our 3 edges that we added in our triangulation, since only want to draw the original edges
         if (v_is_triangle == 0 && (min_dist_to_edge == v_tri_dist.x || min_dist_to_edge == v_tri_dist.z) && v_tri_dist.y > size_factor)
         {
-            fragment_in_wireframe = false;
+            return;
         }
     }
-    if (fragment_in_wireframe)
-    {
-        FragColor = vec4(u_object_color.rgb * 0.5, 1.0);
-    }
+
+    FragColor = vec4(u_line_color.rgb, 1.0);
+
 }
 
 float random(vec3 seed, int i){
-    vec4 seed4 = vec4(seed,i);
-    float dot_product = dot(seed4, vec4(12.9898,78.233,45.164,94.673));
+    vec4 seed4 = vec4(seed, i);
+    float dot_product = dot(seed4, vec4(12.9898, 78.233, 45.164, 94.673));
     return fract(sin(dot_product) * 43758.5453);
 }
 
@@ -284,20 +304,20 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
     float search_width = light_size * (shadow_coords.z - 0.1) / shadow_coords.z;
 
 
-    if(search_width < 0)
+    if (search_width < 0)
     {
         return 0.0;
     }
 
     int range = int(search_width);
     int samples = 4;
-    for(int x = -samples; x <= samples; ++x)
+    for (int x = -samples; x <= samples; ++x)
     {
         for (int y = -samples; y <= samples; y++)
         {
             vec2 shift = vec2(x * 2.0  * range / samples, y * 2.0 * range / samples);
             float z = tex(cascade_idx, vec2(shadow_coords.xy + (vec2(x, y) + shift) * texelSize));
-            if(z < (shadow_coords.z - bias))
+            if (z < (shadow_coords.z - bias))
             {
                 blockers++;
                 avg_blocker_distance += z;
@@ -305,7 +325,7 @@ float get_blocker_distance(vec3 shadow_coords, float bias, float light_size, int
         }
     }
 
-    if(blockers > 0)
+    if (blockers > 0)
     {
         return avg_blocker_distance / blockers;
     }
@@ -328,14 +348,14 @@ float percentage_closer_filtering(vec3 shadow_coords, float light_size, float ra
     range = range <  1 ?  1 : range;
 
 
-    for(int x = - range; x <= range; ++x)
+    for (int x = - range; x <= range; ++x)
     {
         count++;
         for (int y = -range; y <= range; ++y)
         {
             //int index = int(25.0 * random(gl_FragCoord.xyy, x)) % 25;
             //float depth = texture(u_shadow_texture, vec3(shadow_coords.xy + u_softness * vec2(x , y) * Poisson25[index]* texelSize, float(cascade_idx))).r;
-            float depth = tex(cascade_idx, vec2(shadow_coords.xy + vec2(x , y) * texelSize));
+            float depth = tex(cascade_idx, vec2(shadow_coords.xy + vec2(x, y) * texelSize));
             sum += depth < shadow_coords.z - bias? 1.0 : 0.0;
         }
     }
@@ -351,20 +371,20 @@ float pcss_shadow_calculation(vec4 pos_ls, float light_size, float bias, int cas
     shadow_coords = shadow_coords * 0.5 + 0.5;
 
 
-    if(shadow_coords.z > 1.0)
+    if (shadow_coords.z > 1.0)
     {
         return 0.0;
     }
 
-//    //Step 1: Blocker search
-//    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
-//    if(blocker_distance == -1.0)
-//        return 0.0;
-//
-//    //Step 2: Penumbra estimation
-//    float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
-//    if(penumbra_width == 0.0)
-//        return 1.0;
+    //    //Step 1: Blocker search
+    //    float blocker_distance = get_blocker_distance(shadow_coords, bias, light_size, cascade_idx);
+    //    if(blocker_distance == -1.0)
+    //        return 0.0;
+    //
+    //    //Step 2: Penumbra estimation
+    //    float penumbra_width = light_size * ((shadow_coords.z - blocker_distance) / blocker_distance);
+    //    if(penumbra_width == 0.0)
+    //        return 1.0;
 
     //Step 3: Filtering
     float radius = 1.0;
@@ -394,11 +414,11 @@ float shadow_calculation(vec4 pos_ls, float bias, int cascade_idx)
         return 0.0;
     }
 
-    for(int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
         int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
         float depth = tex(cascade_idx, vec2(proj_coords.xy + (poisson_disk[i] / 1000.0) * 0.4));
-        if(depth < current_depth)
+        if (depth < current_depth)
         {
             shadow += 0.25;
         }
@@ -413,7 +433,7 @@ float get_shadow(vec3 normal, vec3 light_dir)
     // calculate cascade level
     int cascade_idx = -1;
     int cascade_level = 1;
-    if(u_cascade_level < MAX_CASCADE_LEVEL)
+    if (u_cascade_level < MAX_CASCADE_LEVEL)
     {
         cascade_level = u_cascade_level;
     }
@@ -421,16 +441,16 @@ float get_shadow(vec3 normal, vec3 light_dir)
     {
         cascade_level = MAX_CASCADE_LEVEL;
     }
-    for(int i = 0; i < cascade_level ; ++i)
+    for (int i = 0; i < cascade_level; ++i)
     {
-        if(v_clipspace_z <= u_cascade_ends[i])
+        if (v_clipspace_z <= u_cascade_ends[i])
         {
             cascade_idx = i;
             i = cascade_level;
             break;
         }
     }
-    if(cascade_idx == -1)
+    if (cascade_idx == -1)
     {
         cascade_idx = u_cascade_level;
     }
@@ -451,7 +471,8 @@ float get_shadow(vec3 normal, vec3 light_dir)
 void main()
 {
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
-    if (u_draw_wireframe)
+
+    if (u_draw_lines && !u_draw_cells)
     {
         draw_wireframe(uv);
         return;
@@ -460,27 +481,23 @@ void main()
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
     float alpha = v_color.a;
-    if (v_visible == 0 || alpha < 1.0 - 0.00001)
+    if (v_visible == 0 || alpha < 1.0 - 0.00001  || alpha == 0.0)
     {
         discard;
     }
 
-//#if 0 // show wireframe on top of the mesh, comment out the other wireframe stuff on top or this won't work
-//    draw_wireframe_ontop(uv);
-//    return;
-//#endif
 
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
     //v = vec3(transpose(inverse(u_view * u_transform)) * v);
 
-//    if(u_is_bezier_mesh && dot(n, v) < 0)
-//    {
-//        n = -n;
-//    }
-//    else
-    if(u_two_sided_lighting && dot(n, v) < 0 )
+    //    if(u_is_bezier_mesh && dot(n, v) < 0)
+    //    {
+    //        n = -n;
+    //    }
+    //    else
+    if (u_two_sided_lighting && dot(n, v) < 0)
     {
         n = -n;
     }
@@ -513,5 +530,12 @@ void main()
     {
         result = calculate_phong_lighting(used_color.rgb, n, l, v, ao_factor, shadow, u_light_color);
     }
+
     FragColor = vec4(result, used_color.a);
+
+    if (u_draw_lines && u_draw_cells)
+    {
+        draw_wireframe_ontop(uv);
+    }
+
 }

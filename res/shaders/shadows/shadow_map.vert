@@ -97,7 +97,7 @@ void main()
         peel_depth = u_max_peel_depth - peel_depth;
     }
 
-    if (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0 || u_object_color.a != 1.0)
+    if (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0 || u_object_color.a != 1.0 || a_color.a == 0.0)
     {
         v_Pos = vec3(0.0, 0.0, 0.0);
         v_min_edge_length = 0.0;
@@ -109,6 +109,7 @@ void main()
     v_isTriangle = (a_is_triangle == 0.0) ? 0 : 1;
     v_min_edge_length =  a_min_edge_length;
     v_center = a_center;
+    v_rounding_sphere_center = vec4(0.0, 0.0, 0.0, 1.0);
 
     vec3 position = a_pos;
     if (u_rounding)

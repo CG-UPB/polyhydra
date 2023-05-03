@@ -109,6 +109,12 @@ namespace volumeshOS
      */
     void set_rendering_mode(const VMesh& mesh, RenderingMode mode);
 
+    void render_cells(const VMesh& mesh, bool cells);
+
+    void render_lines(const VMesh& mesh, bool lines);
+
+    void render_points(const VMesh& mesh, bool points);
+
     /**
     * Get Rendering Mode.
      * @param mesh
@@ -118,6 +124,12 @@ namespace volumeshOS
      * Cells : Rendering cells (standard) \n
      */
     RenderingMode get_rendering_mode(const VMesh& mesh);
+
+    bool is_rendering_cells(const VMesh& mesh);
+
+    bool is_rendering_lines(const VMesh& mesh);
+
+    bool is_rendering_points(const VMesh& mesh);
 
     /**
      * Set Point Size. Determines the size of rendered points when using ::RenderingMode = Points.
@@ -1764,6 +1776,23 @@ namespace volumeshOS
             volumeshOS::set_rendering_mode(*this, mode);
         }
 
+        inline void render_cells(bool cells)
+        {
+            volumeshOS::render_cells(*this, cells);
+        }
+
+        inline void render_lines(bool lines)
+        {
+            volumeshOS::render_lines(*this, lines);
+        }
+
+        inline void render_points(bool points)
+        {
+            volumeshOS::render_points(*this, points);
+        }
+
+
+
         /**
         * Get Rendering Mode of this mesh.
          * @return
@@ -1774,6 +1803,21 @@ namespace volumeshOS
         [[nodiscard]] inline RenderingMode get_rendering_mode() const
         {
             return volumeshOS::get_rendering_mode(*this);
+        }
+
+        inline bool is_rendering_cells() const
+        {
+            return volumeshOS::is_rendering_cells(*this);
+        }
+
+        inline bool is_rendering_lines() const
+        {
+            return volumeshOS::is_rendering_lines(*this);
+        }
+
+        inline bool is_rendering_points() const
+        {
+            return volumeshOS::is_rendering_points(*this);
         }
 
         /**

@@ -329,6 +329,42 @@ namespace volumeshOS::Internal
     {
         auto f = [mode](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->get_data().rendering_mode = mode;
+//            if(mode == RenderingMode::POINTS)
+//            {
+//                mesh->get_data().points = true;
+//            }
+//            else if(mode == RenderingMode::LINES)
+//            {
+//                mesh->get_data().lines = true;
+//            }
+//            else if(mode == RenderingMode::CELLS)
+//            {
+//                mesh->get_data().cells = true;
+//            }
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::render_cells(MeshID id, bool cells)
+    {
+        auto f = [cells](const std::shared_ptr<MeshObject>& mesh) -> void {
+            mesh->get_data().cells = cells;
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::render_lines(MeshID id, bool lines)
+    {
+        auto f = [lines](const std::shared_ptr<MeshObject>& mesh) -> void {
+            mesh->get_data().lines = lines;
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::render_points(MeshID id, bool points)
+    {
+        auto f = [points](const std::shared_ptr<MeshObject>& mesh) -> void {
+            mesh->get_data().points = points;
         };
         execute_for_mesh(f, id);
     }
@@ -464,6 +500,22 @@ namespace volumeshOS::Internal
     {
         return get_mesh(id)->get_data().rendering_mode;
     }
+
+    bool MeshList::is_rendering_cells(MeshID id)
+    {
+        return get_mesh(id)->get_data().cells;
+    }
+
+    bool MeshList::is_rendering_lines(MeshID id)
+    {
+        return get_mesh(id)->get_data().lines;
+    }
+
+    bool MeshList::is_rendering_points(MeshID id)
+    {
+        return get_mesh(id)->get_data().points;
+    }
+
 
     float MeshList::get_point_size(MeshID id)
     {

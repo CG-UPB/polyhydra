@@ -11,21 +11,22 @@ namespace volumeshOS::Internal
         for (const auto& mesh : renderer.render_list)
         {
             // We only render cells and lines in this pass
-            auto rendering_mode = mesh->get_data().rendering_mode;
-            if (!(rendering_mode == RenderingMode::CELLS || rendering_mode == RenderingMode::LINES))
+            bool draw_cells = mesh->get_data().cells;
+            bool draw_lines = mesh->get_data().lines;
+            if (!(draw_cells || draw_lines))
             {
                 continue;
             }
 
+
             auto& settings = AppState::settings;
-            bool draw_wireframe = rendering_mode == RenderingMode::LINES;
-            float wireframe_size = mesh->get_data().line_width;
+            float line_size = mesh->get_data().line_width;
             bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
 
             bool is_bezier_mesh = mesh->is_bezier_mesh();
             // Currently, cells sometimes appear hollow if CULL_FACE is not
             // disabled for Bézier meshes
-            if (draw_wireframe || is_bezier_mesh || !mesh->get_data().use_back_face_culling)
+            if (draw_lines || is_bezier_mesh || !mesh->get_data().use_back_face_culling)
             {
                 glDisable(GL_CULL_FACE);
 //                if(draw_wireframe)
@@ -100,6 +101,10 @@ namespace volumeshOS::Internal
             m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
             m_mesh_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
 
+            m_mesh_shader->set_uniform_bool("u_draw_cells", draw_cells);
+            m_mesh_shader->set_uniform_bool("u_draw_lines", draw_lines);
+            m_mesh_shader->set_uniform_float("u_line_size", line_size);
+            m_mesh_shader->set_uniform_vec4f("u_line_color", mesh->get_data().line_color);
 
             m_mesh_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
             m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
@@ -137,10 +142,8 @@ namespace volumeshOS::Internal
 
 
             // settings
-            m_mesh_shader->set_uniform_bool("u_draw_wireframe", draw_wireframe);
             m_mesh_shader->set_uniform_bool("u_draw_shadows", settings.shadows_active);
             m_mesh_shader->set_uniform_bool("u_draw_ao", settings.ssao_active);
-            m_mesh_shader->set_uniform_float("u_wireframe_size", wireframe_size);
             m_mesh_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
 
             // input textures
@@ -165,7 +168,7 @@ namespace volumeshOS::Internal
             }
 
             // wireframe mode should always be non-rounded
-            if (draw_wireframe)
+            if (draw_lines)
             {
                 mesh->get_mvb()->get_vao_by_face()->draw_patches();
             }

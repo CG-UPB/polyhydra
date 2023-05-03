@@ -61,7 +61,7 @@ void main()
         n = -n;
     }
 
-    if(v_color.a >= 1.0 - 0.01|| v_visible == 0)
+    if(v_color.a >= 1.0 - 0.01 || v_visible == 0  || v_color.a == 0.0)
     {
         discard;
     }
