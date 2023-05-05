@@ -115,6 +115,12 @@ namespace volumeshOS
 
     void render_points(const VMesh& mesh, bool points);
 
+    template<typename Vec3T>
+    void set_line_color(const VMesh& mesh, const Vec3T& color);
+
+    template<typename Vec3T>
+    void set_point_color(const VMesh& mesh, const Vec3T& color);
+
     /**
     * Get Rendering Mode.
      * @param mesh
@@ -130,6 +136,13 @@ namespace volumeshOS
     bool is_rendering_lines(const VMesh& mesh);
 
     bool is_rendering_points(const VMesh& mesh);
+
+    template<typename Vec3T>
+    Vec3T get_line_color(const VMesh& mesh);
+
+    template<typename Vec3T>
+    Vec3T get_point_color(const VMesh& mesh);
+
 
     /**
      * Set Point Size. Determines the size of rendered points when using ::RenderingMode = Points.
@@ -1791,6 +1804,17 @@ namespace volumeshOS
             volumeshOS::render_points(*this, points);
         }
 
+        template<typename Vec3T>
+        inline void set_line_color(Vec3T color) const
+        {
+            volumeshOS::set_line_color<Vec3T>(*this, color);
+        }
+
+        template<typename Vec3T>
+        inline void set_point_color(Vec3T color) const
+        {
+            volumeshOS::set_point_color<Vec3T>(*this, color);
+        }
 
 
         /**
@@ -1818,6 +1842,19 @@ namespace volumeshOS
         inline bool is_rendering_points() const
         {
             return volumeshOS::is_rendering_points(*this);
+        }
+
+        template<typename Vec3T>
+        [[nodiscard]] inline Vec3T get_line_color() const
+        {
+            return volumeshOS::get_line_color<Vec3T>(*this);
+        }
+
+
+        template<typename Vec3T>
+        [[nodiscard]] inline Vec3T get_point_color() const
+        {
+            return volumeshOS::get_point_color<Vec3T>(*this);
         }
 
         /**

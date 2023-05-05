@@ -230,6 +230,25 @@ namespace volumeshOS
         });
     }
 
+    template<typename Vec3T>
+    void set_line_color(const VMesh& mesh, const Vec3T& color)
+    {
+        commands.emplace_back([mesh, color]{
+            auto col = Internal::to_glm_vec3(color);
+            mesh_list->set_line_color(mesh.get_id(), col);
+        });
+    }
+
+
+    template<typename Vec3T>
+    void set_point_color(const VMesh& mesh, const Vec3T& color)
+    {
+        commands.emplace_back([mesh, color]{
+            auto col = Internal::to_glm_vec3(color);
+            mesh_list->set_point_color(mesh.get_id(), col);
+        });
+    }
+
     RenderingMode get_rendering_mode(const VMesh& mesh)
     {
         return mesh_list->get_rendering_mode(mesh.get_id());
@@ -248,6 +267,19 @@ namespace volumeshOS
     bool is_rendering_points(const VMesh& mesh)
     {
         return mesh_list->is_rendering_points(mesh.get_id());
+    }
+
+    template<typename Vec3T>
+    Vec3T get_line_color(const VMesh& mesh)
+    {
+        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_line_color(mesh.get_id()));
+    }
+
+    template<typename Vec3T>
+    Vec3T get_point_color(const VMesh& mesh)
+    {
+        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_point_color(mesh.get_id()));
+
     }
 
     void set_point_size(const VMesh& mesh, float size)
@@ -1581,6 +1613,19 @@ namespace volumeshOS
     template VMesh load<OpenVolumeMesh::TetrahedralMeshTopologyKernel>(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TetrahedralMeshTopologyKernel>*, const char*);
     template VMesh load<OpenVolumeMesh::HexahedralMeshTopologyKernel>(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::HexahedralMeshTopologyKernel>*, const char*);
 
+
+    template void set_line_color<glm::vec3>(const VMesh&, const glm::vec3&);
+    template void set_line_color<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
+    template void set_line_color<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
+    template void set_line_color<std::array<double, 3>>(const VMesh&, const std::array<double, 3>&);
+    template void set_line_color<std::array<float, 3>>(const VMesh&, const std::array<float, 3>&);
+
+    template void set_point_color<glm::vec3>(const VMesh&, const glm::vec3&);
+    template void set_point_color<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
+    template void set_point_color<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
+    template void set_point_color<std::array<double, 3>>(const VMesh&, const std::array<double, 3>&);
+    template void set_point_color<std::array<float, 3>>(const VMesh&, const std::array<float, 3>&);
+
     template void set_color<glm::vec4>(const glm::vec4&);
     template void set_color<OpenVolumeMesh::Vec4d>(const OpenVolumeMesh::Vec4d&);
     template void set_color<OpenVolumeMesh::Vec4f>(const OpenVolumeMesh::Vec4f&);
@@ -1629,6 +1674,18 @@ namespace volumeshOS
     template OpenVolumeMesh::Vec4f get_color<OpenVolumeMesh::Vec4f>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
     template std::array<double, 4> get_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
     template std::array<float, 4> get_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle);
+
+    template glm::vec3 get_line_color<glm::vec3>(const VMesh&);
+    template OpenVolumeMesh::Vec3d get_line_color<OpenVolumeMesh::Vec3d>(const VMesh&);
+    template OpenVolumeMesh::Vec3f get_line_color<OpenVolumeMesh::Vec3f>(const VMesh&);
+    template std::array<double, 3> get_line_color<std::array<double, 3>>(const VMesh&);
+    template std::array<float, 3> get_line_color<std::array<float, 3>>(const VMesh&);
+
+    template glm::vec3 get_point_color<glm::vec3>(const VMesh&);
+    template OpenVolumeMesh::Vec3d get_point_color<OpenVolumeMesh::Vec3d>(const VMesh&);
+    template OpenVolumeMesh::Vec3f get_point_color<OpenVolumeMesh::Vec3f>(const VMesh&);
+    template std::array<double, 3> get_point_color<std::array<double, 3>>(const VMesh&);
+    template std::array<float, 3> get_point_color<std::array<float, 3>>(const VMesh&);
 
     template void set_position<glm::vec3>(const VMesh&, const glm::vec3&);
     template void set_position<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
@@ -1750,4 +1807,5 @@ namespace volumeshOS
     template OpenVolumeMesh::Vec3f get_scale<OpenVolumeMesh::Vec3f>(const VShape&);
     template std::array<double, 3> get_scale<std::array<double, 3>>(const VShape&);
     template std::array<float, 3> get_scale<std::array<float, 3>>(const VShape&);
+
 }

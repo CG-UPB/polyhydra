@@ -47,7 +47,7 @@ uniform mat4 u_light_projection[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_view[MAX_CASCADE_LEVEL];
 uniform mat4 u_light_transform;
 uniform float u_cell_size;
-uniform bool u_draw_wireframe;
+uniform bool u_draw_lines;
 uniform bool u_rounding;
 uniform float u_rounding_size;
 uniform float u_average_cell_size;
@@ -292,7 +292,7 @@ void main()
         v_clipspace_z = screen_pos.z;
     }
 
-    if (u_draw_wireframe)
+    if (u_draw_lines)
     {
 
         vec3 pos0 = tc_Pos[0];

@@ -74,13 +74,13 @@ namespace volumeshOS::Internal
                 {
                     volumeshOS::render_cells(mesh, cells);
                 }
-                ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
-                if(ImGuiUtil::icon_button("icon_gear.png"))
-                {
-                    ImGui::OpenPopup("Settings for Cells");
-                    ImGui::SameLine();
-                }
-                render_cells_popup(mesh);
+//                ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
+//                if(ImGuiUtil::icon_button("icon_gear.png"))
+//                {
+//                    ImGui::OpenPopup("Settings for Cells");
+//                    ImGui::SameLine();
+//                }
+//                render_cells_popup(mesh);
             });
 
             ImGuiUtil::menu_item("", width, [&]
@@ -345,6 +345,10 @@ namespace volumeshOS::Internal
             ImGui::SameLine();
         }
         render_popup(mesh);
+        if(!mesh.get_visibility())
+        {
+            ImGui::SetNextTreeNodeOpen(false);
+        }
         if (!render_header(mesh))
         {
             ImGui::EndDisabled();
@@ -521,7 +525,8 @@ namespace volumeshOS::Internal
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyleColorVec4(ImGuiCol_Button));
         }
-        if (!ImGui::CollapsingHeader(mesh.get_name().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
+        auto flags = ImGuiTreeNodeFlags_AllowItemOverlap;
+        if (!ImGui::CollapsingHeader(mesh.get_name().c_str(), flags))
         {
             open = false;
         }
@@ -571,10 +576,11 @@ namespace volumeshOS::Internal
 
             ImGui::SameLine();
 
-            float new_color[4] = {0.5, 0.5, 0.5, 1.0};
-            if (ImGui::ColorEdit4("Line Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+            auto point_color = mesh.get_line_color<glm::vec3>();
+            float new_color[3] = { point_color.r, point_color.g, point_color.b};
+            if (ImGui::ColorEdit3("Line Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
             {
-
+                mesh.set_line_color(glm::vec3{ new_color[0], new_color[1], new_color[2]});
             }
 
             ImGui::EndPopup();
@@ -595,10 +601,12 @@ namespace volumeshOS::Internal
 
             ImGui::SameLine();
 
-            float new_color[4] = {0.5, 0.5, 0.5, 1.0};
-            if (ImGui::ColorEdit4("Point Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
-            {
+            auto line_color = mesh.get_point_color<glm::vec3>();
+            float new_color[3] = { line_color.r, line_color.g, line_color.b};
 
+            if (ImGui::ColorEdit3("Point Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+            {
+                mesh.set_point_color(glm::vec3{ new_color[0], new_color[1], new_color[2]});
             }
 
             ImGui::EndPopup();

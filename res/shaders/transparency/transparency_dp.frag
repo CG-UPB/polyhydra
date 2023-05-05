@@ -54,7 +54,7 @@ void main()
     float last_depth = texelFetch(last_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
     float max_depth = texelFetch(max_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
 
-    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || v_color.a >= 1.0 - 0.00001|| v_color.a == 0.0 || v_visible == 0)
+    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || v_color.a >= 1.0 - 0.00001 || v_color.a == 0.0 || v_visible == 0)
     {
         discard;
     }

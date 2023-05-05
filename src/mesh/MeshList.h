@@ -65,6 +65,10 @@ namespace volumeshOS::Internal
 
         void render_points(MeshID id, bool points);
 
+        void set_line_color(MeshID id, const glm::vec3& color);
+
+        void set_point_color(MeshID id, const glm::vec3& color);
+
         // Set point size of a mesh
         void set_point_size(MeshID id, float size);
 
@@ -180,6 +184,10 @@ namespace volumeshOS::Internal
         bool is_rendering_lines(MeshID id);
 
         bool is_rendering_points(MeshID id);
+
+        glm::vec3 get_line_color(MeshID id);
+
+        glm::vec3 get_point_color(MeshID id);
 
         // Returns the point size of a mesh
         float get_point_size(MeshID id);

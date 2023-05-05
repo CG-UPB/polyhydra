@@ -166,7 +166,6 @@ void draw_wireframe(vec2 uv)
         return;
     }
 
-
     float size_factor = 0.0015 * u_line_size;
     if (v_use_lookup_path == 1)
     {
@@ -204,7 +203,6 @@ void draw_wireframe(vec2 uv)
 
         min_dist_to_edge = min(min(v_tri_dist.x, v_tri_dist.y), v_tri_dist.z);
 
-
         if (min_dist_to_edge > size_factor)
         {
             discard;
@@ -228,10 +226,10 @@ void draw_wireframe_ontop(vec2 uv)
         float dist = 0.05 * u_line_size;
         if (v_is_triangle == 0 || v_edge_factor <= 1.0 - dist)
         {
-            discard;
+            return;
         }
 
-        FragColor = vec4(u_object_color.rgb * 0.5, 1.0);
+        FragColor = vec4(u_line_color.rgb, 1.0);
         return;
     }
 
@@ -472,7 +470,9 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
-    if (u_draw_lines && !u_draw_cells)
+    float alpha = v_color.a;
+
+    if (u_draw_lines && (!u_draw_cells || alpha < 1.0))
     {
         draw_wireframe(uv);
         return;
@@ -480,8 +480,8 @@ void main()
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
-    float alpha = v_color.a;
-    if (v_visible == 0 || alpha < 1.0 - 0.00001  || alpha == 0.0)
+
+    if (v_visible == 0 || alpha < 1.0 - 0.00001)
     {
         discard;
     }

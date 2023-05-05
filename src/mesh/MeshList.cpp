@@ -385,6 +385,22 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
+    void MeshList::set_line_color(MeshID id, const glm::vec3& color)
+    {
+        auto f = [color](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().line_color = glm::vec4{color.r, color.g, color.b, 1.0f};
+        };
+        execute_for_mesh(f, id);
+    }
+
+    void MeshList::set_point_color(MeshID id, const glm::vec3& color)
+    {
+        auto f = [color](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().point_color = glm::vec4{color.r, color.g, color.b, 1.0f};
+        };
+        execute_for_mesh(f, id);
+    }
+
     void MeshList::set_shading_mode(MeshID id, ShadingMode mode)
     {
         auto f = [mode](const std::shared_ptr<MeshObject>& mesh) -> void{
@@ -525,6 +541,18 @@ namespace volumeshOS::Internal
     float MeshList::get_line_width(MeshID id)
     {
         return get_mesh(id)->get_data().line_width;
+    }
+
+    glm::vec3 MeshList::get_line_color(MeshID id)
+    {
+        auto color = get_mesh(id)->get_data().line_color;
+        return glm::vec3{color.r, color.g, color.b} ;
+    }
+
+    glm::vec3 MeshList::get_point_color(MeshID id)
+    {
+        auto color = get_mesh(id)->get_data().point_color;
+        return glm::vec3{color.r, color.g, color.b} ;
     }
 
     ShadingMode MeshList::get_shading_mode(MeshID id)
