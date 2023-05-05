@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+
+
 namespace volumeshOS::Internal
 {
     AttributeDefinitions MeshVertexBuffer::s_attribute_definitions{};
@@ -59,6 +61,7 @@ namespace volumeshOS::Internal
         m_normals.update_vertex_normals();
         m_original_vertices = get_vertices(m_mesh);
         m_loading_start = std::chrono::steady_clock::now();
+        undo_dig_stack = boost::circular_buffer<int>(1000);
     }
 
     void MeshVertexBuffer::build_vertex_arrays()
@@ -1191,6 +1194,24 @@ namespace volumeshOS::Internal
             update_cell_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, cell.idx(), value);
             update_cell_attribute(VAO::SPHERE, Attribute::IS_DIGGED, cell.idx(), value);
             update_cell_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, cell.idx(), value);
+
+            if(digged)
+            {
+                undo_dig_stack.push_back(cell_id);
+            }
+        }
+    }
+
+    void MeshVertexBuffer::undo_digging(int count)
+    {
+        for(int i = 0; i < count; i++)
+        {
+            if(!undo_dig_stack.empty())
+            {
+                auto elem = undo_dig_stack.back();
+                set_cell_digged(elem, false);
+                undo_dig_stack.pop_back();
+            }
         }
     }
 
@@ -1201,6 +1222,8 @@ namespace volumeshOS::Internal
         update_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, value);
         update_attribute(VAO::SPHERE, Attribute::IS_DIGGED, value);
         update_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, value);
+
+        undo_dig_stack.clear();
     }
 
 

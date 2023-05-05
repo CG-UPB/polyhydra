@@ -332,6 +332,20 @@ namespace volumeshOS::Internal
                         mesh->rotate(angle, axis_in_trackball_coords);
                     }
                 }
+                auto undo_char = glfwGetKeyName(GLFW_KEY_Z, 0);
+                auto undo_key = GLFW_KEY_Y;
+                if (*undo_char == 'Z')
+                    undo_key = GLFW_KEY_Z;
+
+                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && ImGui::IsKeyPressed(undo_key))
+                {
+                    mesh->get_mvb()->undo_digging();
+                }
+                else if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && ImGui::IsKeyPressed(undo_key))
+                {
+                    mesh->get_mvb()->undo_digging(10);
+                }
+
             }
         }
     }

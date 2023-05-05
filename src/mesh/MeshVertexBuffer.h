@@ -3,6 +3,8 @@
 #include "vospch.h"
 
 #include "../rendering/gl/VertexArrayObject.h"
+#include <stack>
+#include <boost/circular_buffer.hpp>
 
 namespace volumeshOS::Internal
 {
@@ -228,6 +230,8 @@ namespace volumeshOS::Internal
 
         void set_cell_digged(int cell_id, bool digged);
 
+        void undo_digging(int count = 1);
+
         void set_cell_isolated(int cell_id);
 
         float get_cell_dig_value(int cell_id);
@@ -411,5 +415,9 @@ namespace volumeshOS::Internal
         std::map<int, glm::vec3> m_face_centers;
         glm::vec3 min_bounding_box;
         glm::vec3 max_bounding_box;
+
+        // undo stack
+        // std::stack<int> undo_dig_stack;
+        boost::circular_buffer<int> undo_dig_stack;
     };
 }
