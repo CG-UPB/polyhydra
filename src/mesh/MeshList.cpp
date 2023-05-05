@@ -328,19 +328,18 @@ namespace volumeshOS::Internal
     void MeshList::set_rendering_mode(MeshID id, RenderingMode mode)
     {
         auto f = [mode](const std::shared_ptr<MeshObject>& mesh) -> void{
-            mesh->get_data().rendering_mode = mode;
-//            if(mode == RenderingMode::POINTS)
-//            {
-//                mesh->get_data().points = true;
-//            }
-//            else if(mode == RenderingMode::LINES)
-//            {
-//                mesh->get_data().lines = true;
-//            }
-//            else if(mode == RenderingMode::CELLS)
-//            {
-//                mesh->get_data().cells = true;
-//            }
+            if(mode == RenderingMode::POINTS)
+            {
+                mesh->get_data().points = true;
+            }
+            else if(mode == RenderingMode::LINES)
+            {
+                mesh->get_data().lines = true;
+            }
+            else if(mode == RenderingMode::CELLS)
+            {
+                mesh->get_data().cells = true;
+            }
         };
         execute_for_mesh(f, id);
     }
@@ -510,11 +509,6 @@ namespace volumeshOS::Internal
             }
         };
         execute_for_mesh(f, m_id);
-    }
-
-    RenderingMode MeshList::get_rendering_mode(MeshID id)
-    {
-        return get_mesh(id)->get_data().rendering_mode;
     }
 
     bool MeshList::is_rendering_cells(MeshID id)

@@ -33,7 +33,6 @@ namespace volumeshOS::Internal
         glm::quat rot               = glm::angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 0.0f));
 
         // Rendering Variables
-        RenderingMode rendering_mode    = RenderingMode::CELLS;
         bool points                     = false;
         bool lines                      = false;
         bool cells                      = true;

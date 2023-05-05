@@ -121,16 +121,6 @@ namespace volumeshOS
     template<typename Vec3T>
     void set_point_color(const VMesh& mesh, const Vec3T& color);
 
-    /**
-    * Get Rendering Mode.
-     * @param mesh
-     * @return
-     * Points: Rendering vertices aka points \n
-     * Lines: Rendering edges aka wireframe \n
-     * Cells : Rendering cells (standard) \n
-     */
-    RenderingMode get_rendering_mode(const VMesh& mesh);
-
     bool is_rendering_cells(const VMesh& mesh);
 
     bool is_rendering_lines(const VMesh& mesh);
@@ -1814,19 +1804,6 @@ namespace volumeshOS
         inline void set_point_color(Vec3T color) const
         {
             volumeshOS::set_point_color<Vec3T>(*this, color);
-        }
-
-
-        /**
-        * Get Rendering Mode of this mesh.
-         * @return
-         * Points: Rendering vertices aka points \n
-         * Lines: Rendering edges aka wireframe \n
-         * Cells : Rendering cells (standard) \n
-         */
-        [[nodiscard]] inline RenderingMode get_rendering_mode() const
-        {
-            return volumeshOS::get_rendering_mode(*this);
         }
 
         inline bool is_rendering_cells() const

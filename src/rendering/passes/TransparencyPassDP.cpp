@@ -152,7 +152,7 @@ namespace volumeshOS::Internal
     void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer)
     {
         // We don't need transparent points or lines
-        if (mesh->get_data().rendering_mode != RenderingMode::CELLS)
+        if (!mesh->get_data().cells)
         {
             return;
         }
@@ -177,7 +177,7 @@ namespace volumeshOS::Internal
         {
             glDisable(GL_CULL_FACE);
         }
-        
+
         // set all of our uniforms
         m_transparency_shader->set_uniform_mat4f("u_transform", data.transform);
         m_transparency_shader->set_uniform_mat4f("u_projection", cam->projection);
@@ -215,6 +215,7 @@ namespace volumeshOS::Internal
         m_transparency_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
         m_transparency_shader->set_uniform_int("u_current_layer", layer);
 
+        m_transparency_shader->set_uniform_bool("u_draw_lines", mesh->get_data().lines);
         m_transparency_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
         m_transparency_shader->set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
 

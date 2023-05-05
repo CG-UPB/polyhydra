@@ -38,8 +38,7 @@ namespace volumeshOS::Internal
         float aspect_ratio = (float) icon_ref.get_width() / (float) icon_ref.get_height();
         float width = ImGui::GetFontSize() * aspect_ratio + 2 * ImGui::GetStyle().FramePadding.x + ImGui::GetStyle().WindowPadding.x;
 
-        auto additional_menus = (mesh.get_rendering_mode() != RenderingMode::CELLS) ? 1 : 0;
-        ImGuiUtil::add_background_rect(13 + additional_menus);
+        ImGuiUtil::add_background_rect(13 );
         ImGui::BeginGroup();
         if (ImGui::BeginTable("mesh", 3, ImGuiTableFlags_SizingFixedFit))
         {
@@ -115,25 +114,6 @@ namespace volumeshOS::Internal
                 render_points_popup(mesh);
             });
 
-
-            if (mesh.get_rendering_mode() == RenderingMode::POINTS)
-            {
-                ImGuiUtil::menu_item("Point Size", "icon_eye.png", width, [&]
-                {
-                    float point_size = mesh.get_point_size();
-                    ImGui::DragFloat("##Point Size", &point_size, 0.01f, 0.0f, 5.0f, "%.01f");
-                    mesh.set_point_size(point_size);
-                });
-            }
-            else if (mesh.get_rendering_mode() == RenderingMode::LINES)
-            {
-                ImGuiUtil::menu_item("Line Width", "icon_eye.png", width, [&]
-                {
-                    float line_width = mesh.get_line_width();
-                    ImGui::DragFloat("##Line Width", &line_width, 0.01f, 0.0f, 5.0f, "%.01f");
-                    mesh.set_line_width(line_width);
-                });
-            }
             ImGuiUtil::menu_item("Shading Mode", "icon_eye.png", width, [&]
             {
                 int shading_mode = static_cast<int>(mesh.get_shading_mode());

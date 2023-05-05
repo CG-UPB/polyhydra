@@ -25,7 +25,7 @@ namespace volumeshOS::Internal
         for (const auto& mesh : renderer.render_list)
         {
             // We don't need to render the pre-pass if the mesh is set to points or lines
-            if (mesh->get_data().rendering_mode != RenderingMode::CELLS)
+            if (!mesh->get_data().cells)
             {
                 continue;
             }

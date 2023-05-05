@@ -25,8 +25,8 @@ uniform float u_ordering_strenth;
 uniform float u_t_min;
 uniform float u_t_max;
 
-uniform bool  u_use_base_color;
-uniform bool  u_two_sided_lighting;
+uniform bool u_use_base_color;
+uniform bool u_two_sided_lighting;
 
 uniform int u_current_layer;
 
@@ -54,7 +54,9 @@ void main()
     float last_depth = texelFetch(last_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
     float max_depth = texelFetch(max_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
 
-    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || v_color.a >= 1.0 - 0.00001 || v_color.a == 0.0 || v_visible == 0)
+    float alpha = used_color.a;
+
+    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || alpha >= 1.0 - 0.00001 || v_visible == 0)
     {
         discard;
     }
@@ -68,5 +70,5 @@ void main()
         result = calculate_phong_lighting(used_color.rgb, n, l, v, 1.0f, 0.0f, u_light_color);
     }
 
-    FragColor = vec4(result.rgb, v_color.a);
+    FragColor = vec4(result.rgb, u_object_color.a);
 }

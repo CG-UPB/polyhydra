@@ -176,8 +176,6 @@ namespace volumeshOS::Internal
 
         /* Getter */
 
-        // Returns the rendering mode of a mesh
-        RenderingMode get_rendering_mode(MeshID id);
 
         bool is_rendering_cells(MeshID id);
 

@@ -138,7 +138,7 @@ void main()
     {
         alpha = (1.0 - (u_peel_depth - peel_depth)) * alpha;
     }
-    if (alpha < 1.0 - 0.01 || alpha == 0.0)
+    if (alpha < 1.0 - 0.01)
     {
         v_visible = 0;
     }

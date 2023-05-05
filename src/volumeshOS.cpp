@@ -249,11 +249,6 @@ namespace volumeshOS
         });
     }
 
-    RenderingMode get_rendering_mode(const VMesh& mesh)
-    {
-        return mesh_list->get_rendering_mode(mesh.get_id());
-    }
-
     bool is_rendering_cells(const VMesh& mesh)
     {
         return mesh_list->is_rendering_cells(mesh.get_id());

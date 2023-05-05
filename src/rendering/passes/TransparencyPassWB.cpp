@@ -70,8 +70,7 @@ namespace volumeshOS::Internal
         for (const auto& mesh: renderer.render_list)
         {
             // We don't want to render transparent points or lines
-            auto rendering_mode = mesh->get_data().rendering_mode;
-            if (rendering_mode != RenderingMode::CELLS)
+            if (!mesh->get_data().cells)
             {
                 continue;
             }
@@ -81,7 +80,7 @@ namespace volumeshOS::Internal
             const auto& data = renderer.pass_data_list.at(mesh->get_id());
 
             auto& settings = AppState::settings;
-            bool draw_wireframe = rendering_mode == RenderingMode::LINES;
+            bool draw_wireframe = mesh->get_data().lines;
             float wireframe_size = mesh->get_data().line_width;
             bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
 

@@ -19,13 +19,13 @@ flat in int v_use_lookup_path;
 flat in int v_tes_inner_tri;
 in float v_edge_factor;
 
-
 uniform bool u_draw_cells;
 uniform bool u_draw_lines;
 uniform vec4 u_line_color;
+uniform float u_line_size;
+
 uniform bool u_draw_shadows;
 uniform bool u_draw_ao;
-uniform float u_line_size;
 
 uniform vec3 u_light_pos;
 uniform float u_light_size = 1.0;
@@ -214,7 +214,9 @@ void draw_wireframe(vec2 uv)
             discard;
         }
     }
-    FragColor = vec4(u_line_color.rgb, 1.0);
+    vec3 color = u_line_color.rgb;
+
+    FragColor = vec4(color, 1.0);
 }
 
 void draw_wireframe_ontop(vec2 uv)
@@ -470,9 +472,12 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
+    vec4 used_color = vec4(1.0f);
+    used_color = u_use_base_color ? u_object_color : v_color;
+
     float alpha = v_color.a;
 
-    if (u_draw_lines && (!u_draw_cells || alpha < 1.0))
+    if (u_draw_lines && (!u_draw_cells || alpha < 1.0 ))
     {
         draw_wireframe(uv);
         return;
@@ -480,6 +485,9 @@ void main()
 
     // if face is not visible or transparent: Discard fragment
     // Transparency gets handled in another pass
+
+
+    // Phong Shading
 
     if (v_visible == 0 || alpha < 1.0 - 0.00001)
     {
@@ -510,9 +518,6 @@ void main()
         shadow = shadow * u_shadow_strength;
     }
 
-    // Phong Shading
-    vec4 used_color = vec4(1.0f);
-    used_color = u_use_base_color ? u_object_color : v_color;
 
     //ambient
     float ao_factor = 1.0;

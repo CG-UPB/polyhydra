@@ -96,7 +96,7 @@ namespace volumeshOS::Internal
             for (const auto& mesh: renderer.render_list)
             {
                 // We don't need shadows for meshes that are set to points or lines
-                if (mesh->get_data().rendering_mode != RenderingMode::CELLS)
+                if (!mesh->get_data().cells)
                 {
                     continue;
                 }
