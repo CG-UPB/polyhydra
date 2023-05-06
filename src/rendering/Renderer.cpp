@@ -341,7 +341,7 @@ namespace volumeshOS::Internal
                 {
                     mesh->get_mvb()->undo_digging();
                 }
-                else if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && ImGui::IsKeyPressed(undo_key))
+                else if(ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT) && ImGui::IsKeyPressed(undo_key))
                 {
                     mesh->get_mvb()->undo_digging(10);
                 }
