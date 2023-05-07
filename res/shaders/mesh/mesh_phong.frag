@@ -4,6 +4,7 @@
 #include "phong.glsl"
 
 const int MAX_CASCADE_LEVEL = 8;
+const float alpha_bias = 0.0001;
 
 in vec3 v_pos;
 in vec3 v_normal;
@@ -477,7 +478,7 @@ void main()
 
     float alpha = v_color.a;
 
-    if (u_draw_lines && (!u_draw_cells || alpha < 1.0 ))
+    if (u_draw_lines && (!u_draw_cells || alpha < 1.0 - alpha_bias))
     {
         draw_wireframe(uv);
         return;
@@ -489,7 +490,7 @@ void main()
 
     // Phong Shading
 
-    if (v_visible == 0 || alpha < 1.0 - 0.00001)
+    if (v_visible == 0 || alpha < 1.0 - alpha_bias)
     {
         discard;
     }

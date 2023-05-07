@@ -17,7 +17,8 @@ namespace volumeshOS::Internal
         {
             SWITCH_CAMERA_MODE = GLFW_KEY_M,
             ROTATE_MESH = GLFW_KEY_LEFT_ALT,
-            TRANSLATE_MESH = GLFW_KEY_LEFT_CONTROL
+            TRANSLATE_MESH = GLFW_KEY_LEFT_CONTROL,
+            FOCUS_CAMERA_ON_MESH = GLFW_KEY_F
         };
 
         /**

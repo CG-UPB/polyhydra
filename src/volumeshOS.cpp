@@ -135,6 +135,7 @@ namespace volumeshOS
             }
         });
         focus_camera_on_mesh(VMesh(id));
+
         vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
         return vmesh;
     }
@@ -156,9 +157,11 @@ namespace volumeshOS
                 auto file_name = file_path.stem().filename().string();
                 mesh_list->set_name(id, file_name);
             }
+
         });
         focus_camera_on_mesh(VMesh(id));
         vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
+
         return vmesh;
     }
 

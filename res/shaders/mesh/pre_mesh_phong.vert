@@ -48,6 +48,7 @@ uniform bool  u_use_base_color;
 
 // uniforms for bezier meshes
 uniform bool u_is_bezier_mesh;
+uniform bool u_draw_lines;
 
 const float ROUNDED_VERTEX_TYPE_FACE     = 0.0;
 const float ROUNDED_VERTEX_TYPE_EDGE     = 1.0;
@@ -104,7 +105,7 @@ void main()
     // Roundings
     vec3 position = a_pos;
     float alpha = u_use_base_color ? u_object_color.a : a_color.a;
-    if (u_rounding)
+    if (u_rounding && !u_draw_lines)
     {
         float type = a_vertex_type_rounded;
         float r = min(u_rounding_size * u_average_cell_size * 0.3, a_min_edge_length * 0.3);

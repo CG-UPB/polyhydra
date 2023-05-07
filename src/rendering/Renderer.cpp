@@ -308,7 +308,7 @@ namespace volumeshOS::Internal
                     float y_rotation = input.offset.y * delta_y;
 
                     auto pos = mesh->get_data().position;
-                    auto off = mesh->get_data().position_offset;
+                    auto off = mesh->get_data().origin;
 
 //                    auto x_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_up(), 0.0f);
 //                    auto y_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_right(), 0.0f);
@@ -331,6 +331,10 @@ namespace volumeshOS::Internal
 
                         mesh->rotate(angle, axis_in_trackball_coords);
                     }
+                }
+                else if(Input::key_down(Input::FOCUS_CAMERA_ON_MESH))
+                {
+                    camera->animated_look_at(mesh->get_data().position);
                 }
                 auto undo_char = glfwGetKeyName(GLFW_KEY_Z, 0);
                 auto undo_key = GLFW_KEY_Y;

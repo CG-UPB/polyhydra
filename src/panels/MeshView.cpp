@@ -192,7 +192,7 @@ namespace volumeshOS::Internal
             auto mesh = renderer->mesh_list->get_focused_mesh();
             if(mesh != nullptr)
             {
-                renderer->hover_position = mesh->get_data().position + mesh->get_data().position_offset;
+                renderer->hover_position = mesh->get_data().position + mesh->get_data().origin;
             }
             else
             {

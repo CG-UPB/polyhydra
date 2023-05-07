@@ -66,7 +66,8 @@ OpenVolumeMesh::GeometricPolyhedralMeshV3d gen_mesh()
     return mesh;
 }
 
-VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, const std::string& name = "")
+VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, const std::string& name = "",
+                 glm::vec3 position= {0.0,0.0,0.0})
 {
     // Note: None of these settings needs to be set before opening the viewer
     //       Most of these examples just set the default value for demonstration
@@ -85,8 +86,8 @@ VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, con
 
 
     // example usage of mesh related functions
-    mesh.set_position(0.0f, 0.0f, 0.0f);
-    mesh.set_scale(0.5f);
+    mesh.set_position(position);
+    mesh.set_scale(1.0f);
     //mesh.set_rotation(...);
 
     // if using base color set color as follows
@@ -184,9 +185,11 @@ int main(int argc, char* argv[])
 
     // generate ovm mesh
     auto ovm_mesh = gen_mesh();
-
     // load mesh into view; get VMesh object in return to operate on
     auto mesh = setup_mesh(ovm_mesh, "Cube");
+
+    //auto ovm_mesh2 = gen_mesh();
+    //auto mesh2 = setup_mesh(ovm_mesh2, "Cube2", glm::vec3{2.0, 0.0, 0.0});
 
     // graphic settings
     setup_graphics();

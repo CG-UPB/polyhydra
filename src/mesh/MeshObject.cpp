@@ -79,9 +79,9 @@ namespace volumeshOS::Internal
         }
         auto [min, max] = VecUtil::get_bounding_box(vertices);
         glm::vec3 diameter = max - min;
-        m_data.position_offset = min + (diameter * 0.5f);
+        m_data.origin = min + (diameter * 0.5f);
         // all meshes should have the same screen size, regardless of their actual size
-        m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
+        m_data.scale_normalization = 1.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
     }
 
     void MeshObject::calculate_peel_depth()
@@ -455,8 +455,8 @@ namespace volumeshOS::Internal
 
     void MeshData::update_transform()
     {
-        auto scaling = glm::scale(glm::mat4(1.0f), scale * scale_normalization);
-        auto translation = glm::translate(glm::mat4(1.0f),  position - position_offset);
+        auto scaling = glm::scale(glm::mat4(1.0f), scale);
+        auto translation = glm::translate(glm::mat4(1.0f), position - origin);
         glm::mat4 r = glm::translate(glm::mat4(1.0), position) * glm::mat4_cast(rot);
         glm::mat4 scl = scaling * glm::translate(glm::mat4(1.0), -position);
         transformation = r * scl * translation;

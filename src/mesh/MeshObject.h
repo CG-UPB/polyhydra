@@ -71,7 +71,7 @@ namespace volumeshOS::Internal
         // Transform Variables
         glm::vec3 position          = {0.0f, 0.0f, 0.0f};
         glm::vec3 scale             = {1.0f, 1.0f, 1.0f};
-        glm::vec3 position_offset   = {0.0f, 0.0f, 0.0f};
+        glm::vec3 origin            = {0.0f, 0.0f, 0.0f};
         float scale_normalization   = 1.0f;
 
         // Other

@@ -551,7 +551,7 @@ namespace volumeshOS::Internal
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
 
             float line_width = mesh.get_line_width();
-            ImGui::SliderFloat("##Line Width", &line_width, 0.0f, 5.0f, "%.01f");
+            ImGui::SliderFloat("##Line Width", &line_width, 0.0f, 10.0f, "%.01f");
             mesh.set_line_width(line_width);
 
             ImGui::SameLine();
@@ -576,7 +576,7 @@ namespace volumeshOS::Internal
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
 
             float point_size = mesh.get_point_size();
-            ImGui::SliderFloat("##Point Size", &point_size, 0.0f, 5.0f, "%.01f");
+            ImGui::SliderFloat("##Point Size", &point_size, 0.0f, 10.0f, "%.01f");
             mesh.set_point_size(point_size);
 
             ImGui::SameLine();
