@@ -181,6 +181,7 @@ namespace volumeshOS::Internal
         ;
         auto f = [use_scale_norm](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->get_data().use_scale_normalization = use_scale_norm;
+            mesh->get_data().update_transform();
         };
         execute_for_mesh(f, id);
     }

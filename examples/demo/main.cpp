@@ -88,6 +88,7 @@ VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, con
     // example usage of mesh related functions
     mesh.set_position(position);
     mesh.set_scale(1.0f);
+    mesh.use_scale_normalization(false);
     //mesh.set_rotation(...);
 
     // if using base color set color as follows
