@@ -176,6 +176,15 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
+    void MeshList::use_scale_normalization(const MeshID id, bool use_scale_norm)
+    {
+        ;
+        auto f = [use_scale_norm](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_data().use_scale_normalization = use_scale_norm;
+        };
+        execute_for_mesh(f, id);
+    }
+
     void MeshList::set_rotation(MeshID id, float x, float y, float z)
     {
         auto f = [this, &x, &y, &z, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
@@ -406,6 +415,14 @@ namespace volumeshOS::Internal
             mesh->get_data().shading_mode = mode;
         };
         execute_for_mesh(f, id);
+    }
+
+    void volumeshOS::Internal::MeshList::set_origin(volumeshOS::Internal::MeshID id, const glm::vec3 &origin)
+    {
+        auto f = [origin](MeshID id, const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->set_origin(origin);
+        };
+        iterate(f);
     }
 
     void MeshList::set_color(const glm::vec4& color)
@@ -687,6 +704,12 @@ namespace volumeshOS::Internal
         // return get_mesh(id)->get_mvb()->get_cell_color(cell.idx());
     }
 
+    glm::vec3 MeshList::get_origin(const MeshID id)
+    {
+        return get_mesh(id)->get_data().origin;
+    }
+
+
     void MeshList::execute_for_mesh(const std::function<void(std::shared_ptr<MeshObject>)>& func, MeshID id)
     {
         auto mesh = get_mesh(id);
@@ -729,5 +752,6 @@ namespace volumeshOS::Internal
     {
         return m_mesh_list.find(id) != m_mesh_list.end() ? m_mesh_list[id] : nullptr;
     }
+
 
 };

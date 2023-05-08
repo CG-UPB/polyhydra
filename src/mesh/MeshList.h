@@ -173,6 +173,8 @@ namespace volumeshOS::Internal
 
         int get_tesselation_level(MeshID id);
 
+        void set_origin(MeshID id, const glm::vec3& origin);
+
 
         /* Getter */
 
@@ -275,6 +277,10 @@ namespace volumeshOS::Internal
 
         // iterate over meshes and execute func for each mesh
         void iterate(const std::function<void(MeshID ,std::shared_ptr<MeshObject>)>& func);
+
+        glm::vec3 get_origin(MeshID id);
+
+        void use_scale_normalization(MeshID id, bool use_scale_norm);
 
 
     private:

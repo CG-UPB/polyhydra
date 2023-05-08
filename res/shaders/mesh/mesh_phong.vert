@@ -190,7 +190,7 @@ void main()
     float peel_alpha = (u_peel_depth - peel_depth);
     if(v_Visible == 1 && peel_alpha < 1.0 && peel_alpha > 0.0)
     {
-        alpha = (1.0 - (u_peel_depth - peel_depth)) * alpha;
+        alpha = (1.0 - peel_alpha) * alpha;
     }
 
     v_rounding_sphere_center = vec4(0.0, 0.0, 0.0, 1.0);

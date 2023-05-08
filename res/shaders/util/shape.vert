@@ -53,9 +53,9 @@ mat4 look_at(vec3 direction, vec3 up)
         if(direction.z >= tmp)
             tmp = abs(direction.z);
 
-        direction.x += 0.000001 * tmp;
-        direction.y += 0.000001 * tmp;
-        direction.z += 0.000001 * tmp;
+        direction.x += 0.00001 * tmp;
+        direction.y += 0.00001 * tmp;
+        direction.z += 0.00001 * tmp;
     }
 
     vec3 y_axis = normalize(direction);

@@ -904,6 +904,24 @@ namespace volumeshOS
      */
     float get_roughness(const VMesh& mesh);
 
+    /**
+     * Set origin of a mesh in world coordinates.
+     * @tparam Vec3T 3D vector type
+     * @param mesh
+     * @param origin coordinate vector
+     */
+    template<typename Vec3T>
+    void set_origin(const VMesh& mesh, const Vec3T& origin);
+
+    /**
+     * Get origin of a mesh in world coordinates.
+     * @tparam Vec3T 3D vector type
+     * @param mesh
+     * @return position coordinate vector
+     */
+    template<typename Vec3T>
+    Vec3T get_origin(const VMesh& mesh);
+
 
     /**
      * Set the position of a mesh in world coordinates.
@@ -945,6 +963,13 @@ namespace volumeshOS
      * @return scale
      */
     float get_scale(const VMesh& mesh);
+
+    /**
+     * Get scale_normalization of mesh
+     * @param mesh
+     * @return scale_normalization
+     */
+    void use_scale_normalization(const VMesh& mesh, bool use_scale_norm);
 
     /**
      * Set the rotation of a mesh using euler angles
@@ -2265,6 +2290,18 @@ namespace volumeshOS
             return volumeshOS::get_roughness(*this);
         }
 
+        template<typename Vec3T>
+        inline void set_origin(const Vec3T& origin) const
+        {
+            volumeshOS::set_origin<Vec3T>(*this, origin);
+        }
+
+        template<typename Vec3T>
+        inline Vec3T get_origin() const
+        {
+            return volumeshOS::get_origin<Vec3T>(*this);
+        }
+
         /**
          * Set the position of a mesh in world coordinates.
          * @param x X coordinate
@@ -2316,6 +2353,16 @@ namespace volumeshOS
         [[nodiscard]] inline float get_scale() const
         {
             return volumeshOS::get_scale(*this);
+        }
+
+        /**
+         * Get scale_normalization of mesh
+         * @param mesh
+         * @return scale_normalization
+         */
+        inline void use_scale_normalization(bool use_scale_norm) const
+        {
+            return volumeshOS::use_scale_normalization(*this, use_scale_norm);
         }
 
         /**

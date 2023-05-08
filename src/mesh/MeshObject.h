@@ -73,6 +73,7 @@ namespace volumeshOS::Internal
         glm::vec3 scale             = {1.0f, 1.0f, 1.0f};
         glm::vec3 origin            = {0.0f, 0.0f, 0.0f};
         float scale_normalization   = 1.0f;
+        bool use_scale_normalization= true;
 
         // Other
         bool visible                = true;
@@ -104,6 +105,8 @@ namespace volumeshOS::Internal
         void set_cell_color(int ovm_id, const glm::vec4& color);
 
         void set_mesh_color(const glm::vec4& color);
+
+        void set_origin(const glm::vec3& origin);
 
         /**
          * updates the vertex_buffer

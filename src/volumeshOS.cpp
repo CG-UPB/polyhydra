@@ -810,7 +810,6 @@ namespace volumeshOS
         });
     }
 
-
     template<typename Vec4T>
     Vec4T get_color(const VMesh& mesh)
     {
@@ -998,6 +997,22 @@ namespace volumeshOS
         return mesh_list->get_mesh(mesh.get_id())->get_data().roughness;
     }
 
+    template<typename Vec3T>
+    void set_origin(const VMesh& mesh, const Vec3T& origin)
+    {
+        commands.emplace_back([mesh, origin]{
+            auto pos = Internal::to_glm_vec3(origin);
+            mesh_list->set_origin(mesh.get_id(), pos);
+        });
+    }
+
+    template<typename Vec3T>
+    Vec3T get_origin(const VMesh& mesh)
+    {
+        assert(mesh.is_valid());
+        return Internal::glm_vec3_to<Vec3T>(mesh_list->get_origin(mesh.get_id()));
+    }
+
     void set_position(const VMesh& mesh, float x, float y, float z)
     {
         commands.emplace_back([mesh, x, y, z]{
@@ -1033,6 +1048,15 @@ namespace volumeshOS
         assert(mesh.is_valid());
         return mesh_list->get_scale(mesh.get_id());
     }
+
+    void use_scale_normalization(const VMesh& mesh, bool use_scale_norm)
+    {
+        assert(mesh.is_valid());
+        commands.emplace_back([mesh, use_scale_norm]{
+            mesh_list->use_scale_normalization(mesh.get_id(), use_scale_norm);
+        });
+    }
+
 
     void set_rotation(const VMesh& mesh, float x, float y, float z)
     {
@@ -1685,6 +1709,12 @@ namespace volumeshOS
     template std::array<double, 3> get_point_color<std::array<double, 3>>(const VMesh&);
     template std::array<float, 3> get_point_color<std::array<float, 3>>(const VMesh&);
 
+    template void set_origin<glm::vec3>(const VMesh&, const glm::vec3&);
+    template void set_origin<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
+    template void set_origin<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
+    template void set_origin<std::array<double, 3>>(const VMesh&, const std::array<double, 3>&);
+    template void set_origin<std::array<float, 3>>(const VMesh&, const std::array<float, 3>&);
+
     template void set_position<glm::vec3>(const VMesh&, const glm::vec3&);
     template void set_position<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
     template void set_position<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
@@ -1702,6 +1732,12 @@ namespace volumeshOS
     template void set_rotation<OpenVolumeMesh::Vec3f>(const VMesh&, float , const OpenVolumeMesh::Vec3f&);
     template void set_rotation<std::array<double, 3>>(const VMesh&, float , const std::array<double, 3>&);
     template void set_rotation<std::array<float, 3>>(const VMesh&, float , const std::array<float, 3>&);
+
+    template glm::vec3 get_origin<glm::vec3>(const VMesh&);
+    template OpenVolumeMesh::Vec3d get_origin<OpenVolumeMesh::Vec3d>(const VMesh&);
+    template OpenVolumeMesh::Vec3f get_origin<OpenVolumeMesh::Vec3f>(const VMesh&);
+    template std::array<double, 3> get_origin<std::array<double, 3>>(const VMesh&);
+    template std::array<float, 3> get_origin<std::array<float, 3>>(const VMesh&);
 
     template glm::vec3 get_position<glm::vec3>(const VMesh&);
     template OpenVolumeMesh::Vec3d get_position<OpenVolumeMesh::Vec3d>(const VMesh&);
