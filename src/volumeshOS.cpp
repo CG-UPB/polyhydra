@@ -1051,7 +1051,6 @@ namespace volumeshOS
 
     void use_scale_normalization(const VMesh& mesh, bool use_scale_norm)
     {
-        assert(mesh.is_valid());
         commands.emplace_back([mesh, use_scale_norm]{
             mesh_list->use_scale_normalization(mesh.get_id(), use_scale_norm);
         });
@@ -1248,6 +1247,13 @@ namespace volumeshOS
     {
         commands.emplace_back([mesh, cell]{
             mesh_list->hide(mesh.get_id(), cell);
+        });
+    }
+
+    void never_discard(const VMesh& mesh, OpenVolumeMesh::CellHandle cell)
+    {
+        commands.emplace_back([mesh, cell]{
+            mesh_list->never_discard(mesh.get_id(), cell);
         });
     }
 

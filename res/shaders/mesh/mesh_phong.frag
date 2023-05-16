@@ -4,7 +4,7 @@
 #include "phong.glsl"
 
 const int MAX_CASCADE_LEVEL = 8;
-const float alpha_bias = 0.0001;
+const float alpha_bias = 0.0;
 
 in vec3 v_pos;
 in vec3 v_normal;

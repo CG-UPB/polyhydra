@@ -230,11 +230,15 @@ namespace volumeshOS::Internal
 
         void set_cell_digged(int cell_id, bool digged);
 
+        void set_cell_never_discard(int cell_id, bool never_discard);
+
         void undo_digging(int count = 1);
 
         void set_cell_isolated(int cell_id);
 
         float get_cell_dig_value(int cell_id);
+
+        float get_cell_never_discard(int cell_id);
 
         float get_cell_isolate_value(int cell_id);
 

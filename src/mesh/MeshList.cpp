@@ -327,6 +327,14 @@ namespace volumeshOS::Internal
         execute_for_mesh(f, id);
     }
 
+    void MeshList::never_discard(MeshID id, OpenVolumeMesh::CellHandle cell)
+    {
+        auto f = [cell](const std::shared_ptr<MeshObject>& mesh) -> void{
+            mesh->get_mvb()->set_cell_never_discard(cell.idx(), true);
+        };
+        execute_for_mesh(f, id);
+    }
+
     void MeshList::set_name(MeshID id, const std::string& name)
     {
         auto f = [name](const std::shared_ptr<MeshObject>& mesh) -> void{

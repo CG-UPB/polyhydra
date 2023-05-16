@@ -5,7 +5,7 @@
 
 layout (location = 0) out vec4 FragColor;
 
-const float alpha_bias = 0.0001;
+const float alpha_bias = 0.0;
 
 in vec3 v_pos;
 in vec3 v_normal;

@@ -166,6 +166,9 @@ namespace volumeshOS::Internal
         // Hide a cell of a mesh
         void hide(MeshID id, OpenVolumeMesh::CellHandle cell);
 
+        // Set flag for cell to not hide a cell
+        void never_discard(MeshID id, OpenVolumeMesh::CellHandle cell);
+
         // Set the name of a mesh
         void set_name(MeshID id, const std::string& name);
 

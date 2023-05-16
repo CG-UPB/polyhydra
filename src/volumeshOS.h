@@ -1184,6 +1184,13 @@ namespace volumeshOS
     void dig(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
 
     /**
+     * Set flag for a cell to prevent it from getting digged or sliced.
+     * @param mesh
+     * @param cell OVM Cell handle
+     */
+    void never_discard(const VMesh& mesh, OpenVolumeMesh::CellHandle cell);
+
+    /**
      * Returns true if the mesh is a valid handle.
      * @param mesh
      * @return validity of VMesh
@@ -2649,6 +2656,15 @@ namespace volumeshOS
         inline void dig(OpenVolumeMesh::CellHandle cell) const
         {
             volumeshOS::dig(*this, cell);
+        }
+
+        /**
+         * Set flag for a cell to prevent it from getting digged or sliced.
+         * @param cell OVM Cell handle
+         */
+        inline void never_discard(OpenVolumeMesh::CellHandle cell) const
+        {
+            volumeshOS::never_discard(*this, cell);
         }
 
         /**
