@@ -92,12 +92,13 @@ VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, con
     //mesh.set_rotation(...);
 
     // if using base color set color as follows
-    mesh.set_color(std::array<float, 4>{0.0f, 1.0f, 0.0f, 0.5f});
+    mesh.set_color(std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
 
     // otherwise set color for each cell
     for(auto cit : ovm_mesh.cells())
     {
         mesh.set_color(cit, std::array<float, 4>{0.0f, 1.0f, 0.0f, 0.5f});
+        mesh.set_cell_size(0.97f);
     }
 
     // settings for phong lighting
@@ -187,7 +188,7 @@ int main(int argc, char* argv[])
     // generate ovm mesh
     auto ovm_mesh = gen_mesh();
     // load mesh into view; get VMesh object in return to operate on
-    // auto mesh = setup_mesh(ovm_mesh, "Cube");
+    auto mesh = setup_mesh(ovm_mesh, "Cube");
 
     //auto ovm_mesh2 = gen_mesh();
     //auto mesh2 = setup_mesh(ovm_mesh2, "Cube2", glm::vec3{2.0, 0.0, 0.0});

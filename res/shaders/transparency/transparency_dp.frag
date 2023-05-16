@@ -5,6 +5,8 @@
 
 layout (location = 0) out vec4 FragColor;
 
+const float alpha_bias = 0.0001;
+
 in vec3 v_pos;
 in vec3 v_normal;
 in vec4 v_color;
@@ -44,7 +46,7 @@ void main()
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
-    if((u_two_sided_lighting || u_is_bezier_mesh) && dot(n, v) <= 0 )
+    if(dot(n, v) <= 0 )
     {
         n = -n;
     }
@@ -56,7 +58,7 @@ void main()
 
     float alpha = used_color.a;
 
-    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || alpha == 1.0 )
+    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || alpha >= 1.0 - alpha_bias || v_visible == 0)
     {
         discard;
     }
