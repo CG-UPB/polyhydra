@@ -21,7 +21,7 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::FACE_NORMAL, {1, 3, false}, mesh_vaos);
         define_attribute(Attribute::CELL_CENTER, {2, 3, false}, mesh_vaos);
         define_attribute(Attribute::PEEL_DEPTH, {3, 1, false}, mesh_vaos);
-        define_attribute(Attribute::IS_DIGGED, {4, 2, false}, mesh_vaos);
+        define_attribute(Attribute::IS_DIGGED, {4, 1, false}, mesh_vaos);
         define_attribute(Attribute::COLOR, {5, 4, false}, mesh_vaos);
         define_attribute(Attribute::IS_ISOLATED, {6, 1, false}, mesh_vaos);
         define_attribute(Attribute::IS_TRIANGLE, {7, 1, false}, mesh_vaos);
@@ -40,7 +40,7 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::SELECTION_VERTEX_POSITION, {2, 3, true}, sphere_vaos);
         define_attribute(Attribute::CELL_CENTER, {3, 3, true}, sphere_vaos);
         define_attribute(Attribute::PEEL_DEPTH, {4, 1, true}, sphere_vaos);
-        define_attribute(Attribute::IS_DIGGED, {5, 2, true}, sphere_vaos);
+        define_attribute(Attribute::IS_DIGGED, {5, 1, true}, sphere_vaos);
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, sphere_vaos);
 
         auto cylinder_vaos = {VAO::CYLINDER};
@@ -49,7 +49,7 @@ namespace volumeshOS::Internal
         define_attribute(Attribute::SELECTION_TO_VERTEX, {2, 3, true}, cylinder_vaos);
         define_attribute(Attribute::CELL_CENTER, {3, 3, true}, cylinder_vaos);
         define_attribute(Attribute::PEEL_DEPTH, {4, 1, true}, cylinder_vaos);
-        define_attribute(Attribute::IS_DIGGED, {5, 2, true}, cylinder_vaos);
+        define_attribute(Attribute::IS_DIGGED, {5, 1, true}, cylinder_vaos);
         define_attribute(Attribute::IS_ISOLATED, {6, 1, true}, cylinder_vaos);
     }
 
@@ -61,7 +61,7 @@ namespace volumeshOS::Internal
         m_normals.update_vertex_normals();
         m_original_vertices = get_vertices(m_mesh);
         m_loading_start = std::chrono::steady_clock::now();
-        undo_dig_stack = boost::circular_buffer<int>(1000);
+        undo_dig_stack = RingBuffer(1000);
     }
 
     void MeshVertexBuffer::build_vertex_arrays()
@@ -303,7 +303,7 @@ namespace volumeshOS::Internal
         {
             VecUtil::push_vec3(get_attrib_array(VAO::SPHERE, Attribute::CELL_CENTER), cell_center);
             get_attrib_array(VAO::SPHERE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
-            VecUtil::push_vec2(get_attrib_array(VAO::SPHERE, Attribute::IS_DIGGED), glm::vec2(0.0f, 0.0f));
+            get_attrib_array(VAO::SPHERE, Attribute::IS_DIGGED).push_back(0.0f);
             get_attrib_array(VAO::SPHERE, Attribute::IS_ISOLATED).push_back(0.0f);
         }
         add_cell_index_and_count(VAO::SPHERE, cell.idx(), m_vertex_offset_sphere, num_selection_vertices);
@@ -324,7 +324,7 @@ namespace volumeshOS::Internal
             m_selection_map.edge_ids.push_back(ce_it.idx());
             VecUtil::push_vec3(get_attrib_array(VAO::CYLINDER, Attribute::CELL_CENTER), cell_center);
             get_attrib_array(VAO::CYLINDER, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
-            VecUtil::push_vec2(get_attrib_array(VAO::CYLINDER, Attribute::IS_DIGGED), glm::vec2(0.0f, 0.0f));
+            get_attrib_array(VAO::CYLINDER, Attribute::IS_DIGGED).push_back(0.0f);
             get_attrib_array(VAO::CYLINDER, Attribute::IS_ISOLATED).push_back(0.0f);
             num_selection_edges++;
         }
@@ -471,7 +471,7 @@ namespace volumeshOS::Internal
                 VecUtil::push_vec3(get_attrib_array(VAO::MESH_FACE, Attribute::CELL_CENTER), cell_center);
                 VecUtil::push_vec4(get_attrib_array(VAO::MESH_FACE, Attribute::COLOR), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
                 get_attrib_array(VAO::MESH_FACE, Attribute::PEEL_DEPTH).push_back((float) peel_depth);
-                VecUtil::push_vec2(get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED), glm::vec2(0.0f, 0.0f));
+                get_attrib_array(VAO::MESH_FACE, Attribute::IS_DIGGED).push_back(0.0f);
 
                 get_attrib_array(VAO::MESH_FACE, Attribute::IS_ISOLATED).push_back(0.0f);
                 // Use IS_TRIANGLE as the halfface id for Bézier meshes
@@ -548,7 +548,6 @@ namespace volumeshOS::Internal
         VecUtil::push_vec4(data.vertex_colors, col);
         data.vertex_peel_depths.push_back(peel_depth);
         data.vertex_is_triangle.push_back(1.0f);
-        data.vertex_is_digged.push_back(0.0f);
         data.vertex_is_digged.push_back(0.0f);
         data.vertex_is_isolated.push_back(0.0f);
         data.vertex_types.push_back(type);
@@ -1132,12 +1131,12 @@ namespace volumeshOS::Internal
 
     float MeshVertexBuffer::get_cell_dig_value(int cell_id)
     {
-        return get_cell_attribute<float>(VAO::MESH_FACE, Attribute::IS_DIGGED, 2*cell_id);
+        return get_cell_attribute<float>(VAO::MESH_FACE, Attribute::IS_DIGGED, cell_id);
     }
 
     float MeshVertexBuffer::get_cell_never_discard(int cell_id)
     {
-        return get_cell_attribute<float>(VAO::MESH_FACE, Attribute::IS_DIGGED, 2*cell_id + 1);
+        return 0.0f;
     }
 
     float MeshVertexBuffer::get_cell_isolate_value(int cell_id)
@@ -1199,10 +1198,10 @@ namespace volumeshOS::Internal
         float value = never_discard ? 1.0f : 0.0f;
         if (cell.is_valid())
         {
-            update_cell_attribute(VAO::MESH_FACE, Attribute::IS_DIGGED, 2 * cell.idx() + 1, value);
-            update_cell_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, 2 * cell.idx() + 1, value);
-            update_cell_attribute(VAO::SPHERE, Attribute::IS_DIGGED, 2 * cell.idx() + 1, value);
-            update_cell_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, 2 * cell.idx() + 1, value);
+            update_cell_attribute(VAO::MESH_FACE, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::SPHERE, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, cell.idx(), value);
         }
     }
 
@@ -1212,14 +1211,14 @@ namespace volumeshOS::Internal
         float value = digged ? 1.0f : 0.0f;
         if (cell.is_valid())
         {
-            update_cell_attribute(VAO::MESH_FACE, Attribute::IS_DIGGED, 2 * cell.idx(), value);
-            update_cell_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, 2 * cell.idx(), value);
-            update_cell_attribute(VAO::SPHERE, Attribute::IS_DIGGED, 2 * cell.idx(), value);
-            update_cell_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, 2 * cell.idx(), value);
+            update_cell_attribute(VAO::MESH_FACE, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::MESH_ROUNDED, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::SPHERE, Attribute::IS_DIGGED, cell.idx(), value);
+            update_cell_attribute(VAO::CYLINDER, Attribute::IS_DIGGED, cell.idx(), value);
 
             if(digged)
             {
-                undo_dig_stack.push_back(cell_id);
+                undo_dig_stack.push(cell_id);
             }
         }
     }
@@ -1228,11 +1227,11 @@ namespace volumeshOS::Internal
     {
         for(int i = 0; i < count; i++)
         {
-            if(!undo_dig_stack.empty())
+            if(!undo_dig_stack.is_empty())
             {
-                auto elem = undo_dig_stack.back();
+                auto elem = undo_dig_stack.get_latest();
                 set_cell_digged(elem, false);
-                undo_dig_stack.pop_back();
+                undo_dig_stack.pop();
             }
         }
     }

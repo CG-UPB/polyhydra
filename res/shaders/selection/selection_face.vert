@@ -4,7 +4,7 @@ layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
-layout (location = 4) in vec2 a_is_digged;
+layout (location = 4) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
 // a_is_triangle holds the halfface id for Bézier meshes
 layout (location = 7) in float a_is_triangle;
@@ -48,9 +48,8 @@ void main()
     ////////////////////////////////////////////////////////
     v_visible = 1;
 
-    float is_digged = a_is_digged[0];
-    float never_discarad = a_is_digged[1];
-    if (is_digged == 1.0 || a_is_isolated == 1.0)
+
+    if (a_is_digged == 1.0 || a_is_isolated == 1.0)
     {
         v_visible = 0;
     }

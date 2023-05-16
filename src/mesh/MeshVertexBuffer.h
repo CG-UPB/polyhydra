@@ -4,7 +4,7 @@
 
 #include "../rendering/gl/VertexArrayObject.h"
 #include <stack>
-#include <boost/circular_buffer.hpp>
+#include "util/RingBuffer.h"
 
 namespace volumeshOS::Internal
 {
@@ -422,6 +422,6 @@ namespace volumeshOS::Internal
 
         // undo stack
         // std::stack<int> undo_dig_stack;
-        boost::circular_buffer<int> undo_dig_stack;
+        RingBuffer undo_dig_stack;
     };
 }

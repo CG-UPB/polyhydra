@@ -7,7 +7,7 @@ layout (location = 1) in vec3 a_from_vertex;
 layout (location = 2) in vec3 a_to_vertex;
 layout (location = 3) in vec3 a_center;
 layout (location = 4) in float a_peel_depth;
-layout (location = 5) in vec2 a_is_digged;
+layout (location = 5) in float a_is_digged;
 layout (location = 6) in float a_is_isolated;
 
 uniform mat4 u_mesh_transform;
@@ -44,9 +44,8 @@ void main()
     ////////////////////////////////////////////////////////
     v_visible = 1;
 
-    float is_digged = a_is_digged[0];
-    float never_discarad = a_is_digged[1];
-    if (never_discarad != 1.0 &&(is_digged == 1.0 || a_is_isolated == 1.0))
+
+    if (a_is_digged == 1.0 || a_is_isolated == 1.0)
     {
         v_visible = 0;
     }

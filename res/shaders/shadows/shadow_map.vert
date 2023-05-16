@@ -5,7 +5,7 @@ layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
-layout (location = 4) in vec2 a_is_digged;
+layout (location = 4) in float a_is_digged;
 layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
 layout (location = 7) in float a_is_triangle;
@@ -98,9 +98,7 @@ void main()
         peel_depth = u_max_peel_depth - peel_depth;
     }
 
-    float is_digged = a_is_digged[0];
-    float never_discarad = a_is_digged[1];
-    if (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || u_object_color.a != 1.0 || a_color.a == 0.0)
+    if (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || a_is_digged == 1.0 || u_object_color.a != 1.0 || a_color.a == 0.0)
     {
         v_Pos = vec3(0.0, 0.0, 0.0);
         v_min_edge_length = 0.0;
