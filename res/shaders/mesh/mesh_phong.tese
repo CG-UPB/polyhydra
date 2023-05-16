@@ -249,44 +249,6 @@ void main()
             v_normal = tc_FaceNormal[0] * x + tc_FaceNormal[1] * y + tc_FaceNormal[2] * z;
         }
 
-//        if (u_rounding)
-//        {
-//            float r = u_rounding_size * u_average_cell_size;//min(u_rounding_size, s_c.w * 0.3);
-//
-//            const ivec2[3] lookup = ivec2[](
-//            ivec2(1, 2),
-//            ivec2(0, 2),
-//            ivec2(0, 1)
-//            );
-//            vec3 tri_normal = v_normal;
-//
-//            int corner_index = get_closest_corner_index(gl_TessCoord.xyz);
-//            vec3 corner_pos = tc_Pos[corner_index];
-//            bool is_corner = corner_pos.x == v_pos.x && corner_pos.y == v_pos.y && corner_pos.z == v_pos.z;
-//            bool is_edge = gl_TessCoord.x == 0.0 || gl_TessCoord.y == 0.0 || gl_TessCoord.z == 0.0;
-//            vec4 s_c = tc_rounding_sphere_center[corner_index];
-//
-//            vec3 p_c = corner_pos + r * s_c.xyz;
-//            vec3 p = p_c + r * tri_normal;
-//            float l = length(corner_pos - p);
-//
-//            vec3 opposite_of_corner = (tc_Pos[lookup[corner_index].x] + tc_Pos[lookup[corner_index].y]) * 0.5;
-//            float denom = length(opposite_of_corner - corner_pos);
-//            float scale = l / denom;
-//
-//            v_pos += (corner_pos - v_pos) * (1.0 - scale);
-//            v_normal = normalize(v_pos - p_c);
-//            // reproject inner vertices onto the original triangle, so the cell does not shrink
-//            if (!is_edge && !is_corner)
-//            {
-//                v_normal = tri_normal;
-//            }
-//            else
-//            {
-//                v_pos = p_c + r * (4.0 / 3.0) * v_normal;
-//            }
-//        }
-
         vec4 screen_pos = u_projection * u_view * vec4(v_pos, 1.0);
         gl_Position = screen_pos;
         v_clipspace_z = screen_pos.z;
@@ -304,9 +266,9 @@ void main()
         vec4 screen_pos2 = u_projection * u_view * vec4(pos2, 1.0);
 
         vec3 ndc_pos[3] = vec3[](
-            vec3(screen_pos0.xyz / screen_pos0.w),
-            vec3(screen_pos1.xyz / screen_pos1.w),
-            vec3(screen_pos2.xyz / screen_pos2.w)
+        vec3(screen_pos0.xyz / screen_pos0.w),
+        vec3(screen_pos1.xyz / screen_pos1.w),
+        vec3(screen_pos2.xyz / screen_pos2.w)
         );
 
         int lookup_case = 4 * int(ndc_pos[0].z > 0) + 2 * int(ndc_pos[1].z > 0) + int(ndc_pos[2].z > 0);
@@ -343,31 +305,31 @@ void main()
 
         v_tri_dist = vec3(distX, distY, distZ);
 
-        if(u_is_bezier_mesh || u_rounding)
+        if (u_is_bezier_mesh || u_rounding)
         {
             v_tri_dist = v_tri_dist / area;
         }
 
         v_edge_factor = 0.0;
-        if(x == 0.0 || y == 0.0 || z == 0.0)
+        if (x == 0.0 || y == 0.0 || z == 0.0)
         {
             v_edge_factor = 1.0;
         }
 
     }
 
-    if(!u_is_bezier_mesh)
+    if (!u_is_bezier_mesh)
     {
-        if(x > 0.0)
+        if (x > 0.0)
         {
             set_light_space_pos(0);
         }
-        else if(y > 0.0)
+        else if (y > 0.0)
         {
             set_light_space_pos(1);
 
         }
-        else if(z > 0.0)
+        else if (z > 0.0)
         {
             set_light_space_pos(2);
         }
@@ -375,7 +337,7 @@ void main()
 
 
     // in any case use the values of vertex shader for these values 
-    v_color           = tc_Color[0]          *x + tc_Color[1]          *y + tc_Color[2]          *z;
+    v_color           = tc_Color[0] * x + tc_Color[1] * y + tc_Color[2] * z;
     v_visible         = tc_Visible[1];// flat
     v_is_triangle      = tc_isTriangle[1];// flat
     v_VertexTypeRounded=tc_VertexTypeRounded[0] * x + tc_VertexTypeRounded[1] * y + tc_VertexTypeRounded[2] * z;

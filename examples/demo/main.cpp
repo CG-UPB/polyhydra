@@ -82,7 +82,7 @@ VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, con
 
     // if true there is one color that can be set inside the viewer.
     // otherwise each cell/face has an own color value
-    mesh.use_base_color(false);
+    mesh.use_base_color(true);
 
 
     // example usage of mesh related functions
@@ -92,12 +92,12 @@ VMesh setup_mesh(const OpenVolumeMesh::GeometricPolyhedralMeshV3d& ovm_mesh, con
     //mesh.set_rotation(...);
 
     // if using base color set color as follows
-    mesh.set_color(std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
+    mesh.set_color(std::array<float, 4>{0.0f, 1.0f, 0.0f, 0.5f});
 
     // otherwise set color for each cell
     for(auto cit : ovm_mesh.cells())
     {
-        mesh.set_color(cit, std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
+        mesh.set_color(cit, std::array<float, 4>{0.0f, 1.0f, 0.0f, 0.5f});
     }
 
     // settings for phong lighting
@@ -143,7 +143,7 @@ void setup_graphics()
     use_ambient_occlusion(false);
 
     //Transparency
-    use_transparency(false);
+    use_transparency(true);
 
     //set_rendering_mode(RenderingMode::LINES);
 

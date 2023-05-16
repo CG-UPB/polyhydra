@@ -18,7 +18,6 @@ layout (location = 13) in float a_hovered;
 layout (location = 14) in vec3 a_vertex_normal;
 layout (location = 15) in float a_min_edge_length;
 
-const float alpha_bias  = 0.0001;
 
 out vec3 v_Pos;
 flat out float v_min_edge_length;
@@ -101,7 +100,7 @@ void main()
 
     float is_digged = a_is_digged[0];
     float never_discarad = a_is_digged[1];
-    if (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || u_object_color.a != 1.0 - alpha_bias || a_color.a == 0.0)
+    if (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || u_object_color.a != 1.0 || a_color.a == 0.0)
     {
         v_Pos = vec3(0.0, 0.0, 0.0);
         v_min_edge_length = 0.0;

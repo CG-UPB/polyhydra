@@ -626,13 +626,13 @@ namespace volumeshOS
     void use_ambient_occlusion( bool ssao)
     {
         commands.emplace_back([ssao]{
-            Internal::AppState::settings.shadows_active = ssao;
+            Internal::AppState::settings.ssao_active = ssao;
         });
     }
 
     bool is_using_ambient_occlusion()
     {
-        return Internal::AppState::settings.shadows_active;
+        return Internal::AppState::settings.ssao_active;
     }
 
     void use_transparency( bool transparency)

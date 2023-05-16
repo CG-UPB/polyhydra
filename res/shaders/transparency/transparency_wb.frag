@@ -7,8 +7,6 @@ layout (location = 0) out vec4 accum;
 layout (location = 1) out float reveal;
 layout (location = 2) out vec3 modulate;
 
-const float alpha_bias = 0.0001;
-
 in vec3 v_pos;
 in vec3 v_normal;
 in vec4 v_color;
@@ -63,7 +61,7 @@ void main()
         n = -n;
     }
 
-    if(v_color.a >= 1.0 - alpha_bias || v_visible == 0  || v_color.a == 0.0)
+    if(used_color.a >= 1.0 || v_visible == 0  || used_color.a == 0.0)
     {
         discard;
     }
