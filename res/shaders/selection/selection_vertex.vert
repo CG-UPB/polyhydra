@@ -35,7 +35,7 @@ void main()
 
     float is_digged = a_is_digged[0];
     float never_discarad = a_is_digged[1];
-    if (is_digged == 1.0 || a_is_isolated == 1.0)
+    if (never_discarad != 1.0 && (is_digged == 1.0 || a_is_isolated == 1.0))
     {
         v_visible = 0;
     }

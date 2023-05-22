@@ -7,7 +7,7 @@ layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec3 a_center;
 layout (location = 3) in float a_peel_depth;
-layout (location = 4) in float a_is_digged;
+layout (location = 4) in vec2 a_is_digged;
 layout (location = 5) in vec4 a_color;
 layout (location = 6) in float a_is_isolated;
 layout (location = 7) in float a_is_triangle;
@@ -117,7 +117,9 @@ void main()
     // criteria for beeing invisible:
     // peeled, sliced, isolated or digged
 
-    if (peel_depth + 1.0 <= u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || a_is_digged == 1.0)
+    float is_digged = a_is_digged[0];
+    float never_discard = a_is_digged[1];
+    if (never_discard != 1.0 && (peel_depth + 1.0 <= u_peel_depth || angle > 0.0 || a_is_isolated == 1.0 || is_digged == 1.0))
     {
         v_Pos = vec3(0.0, 0.0, 0.0);
         v_FaceNormal = vec3(0.0, 0.0, 0.0);

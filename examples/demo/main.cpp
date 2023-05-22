@@ -204,7 +204,6 @@ int main(int argc, char* argv[])
         {
             // open a file manager to select an ovm file
             auto mesh = load_from_dialog("Select OVM file");
-            mesh.never_discard(OpenVolumeMesh::CellHandle(0));
         }
         ImGui::End();
     });
