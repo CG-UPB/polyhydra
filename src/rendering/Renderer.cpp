@@ -66,19 +66,20 @@ namespace volumeshOS::Internal
     {
         frame.width = width;
         frame.height = height;
-        buffers.target_framebuffer_ms->resize(frame.width, frame.height);
-        buffers.target_framebuffer->resize(frame.width, frame.height);
-        buffers.post_framebuffer->resize(frame.width, frame.height);
-        passes.transparency_pass_wb->resize_buffers(*this, frame.width, frame.height);
-        passes.transparency_pass_dp->resize_buffers(frame.width, frame.height);
-        passes.pre_pass->resize_buffers(frame.width, frame.height);
-        passes.ssao_pass->resize_buffers(frame.width, frame.height);
-        passes.shadow_pass->resize_buffers(frame.width, frame.height);
-        buffers.selection_frame_buffer->resize(frame.width / 2, frame.height / 2);
-        buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, frame.width / 2, frame.height / 2);
+        buffers.target_framebuffer_ms->resize(width, height);
+        buffers.target_framebuffer->resize(width, height);
+        buffers.post_framebuffer->resize(width, height);
+        passes.transparency_pass_wb->resize_buffers(*this, width, height);
+        passes.transparency_pass_dp->resize_buffers(width, height);
+        passes.pre_pass->resize_buffers(width, height);
+        passes.ssao_pass->resize_buffers(width, height);
+        passes.shadow_pass->resize_buffers(width, height);
+        buffers.selection_frame_buffer->resize(width / 2, height / 2);
+        buffers.pixel_buffer = std::make_shared<PixelBufferObject>(2, width / 2, height / 2);
         input.last.x = (float) width / 2.0f;
         input.last.y = (float) height / 2.0f;
         camera->set_viewport_size((float) width, (float) height);
+        camera->update();
     }
 
     bool Renderer::should_render_mesh(const std::shared_ptr<MeshObject>& mesh)
@@ -132,6 +133,9 @@ namespace volumeshOS::Internal
         {
             handle_input();
         }
+
+        std::cout << "Width " << frame.width << std::endl;
+        std::cout << "Height " << frame.height << std::endl;
 
         render_list.clear();
         mesh_list->iterate([&](auto id, auto mesh)
@@ -409,6 +413,10 @@ namespace volumeshOS::Internal
         // we need to do this since some passes need the current width and height for rendering
         frame.width = export_width;
         frame.height = export_height;
+
+        std::cout << "Width " << export_width << std::endl;
+        std::cout << "Height " << export_height << std::endl;
+
 
         auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,
                                                                          FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);
