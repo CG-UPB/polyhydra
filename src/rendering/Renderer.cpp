@@ -134,8 +134,8 @@ namespace volumeshOS::Internal
             handle_input();
         }
 
-        std::cout << "Width " << frame.width << std::endl;
-        std::cout << "Height " << frame.height << std::endl;
+        // std::cout << "Width " << frame.width << std::endl;
+        // std::cout << "Height " << frame.height << std::endl;
 
         render_list.clear();
         mesh_list->iterate([&](auto id, auto mesh)
@@ -414,8 +414,8 @@ namespace volumeshOS::Internal
         frame.width = export_width;
         frame.height = export_height;
 
-        std::cout << "Width " << export_width << std::endl;
-        std::cout << "Height " << export_height << std::endl;
+        // std::cout << "Width " << export_width << std::endl;
+        // std::cout << "Height " << export_height << std::endl;
 
 
         auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,
