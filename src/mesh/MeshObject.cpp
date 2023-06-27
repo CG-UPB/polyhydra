@@ -435,9 +435,6 @@ namespace volumeshOS::Internal
 
     void MeshObject::rotate_axis(float x, float y, float z)
     {
-//        m_data.rot = glm::quat(glm::vec3(z, y, x));
-//        m_data.update_transform();
-
         auto rot_x = glm::angleAxis(x, glm::vec3(1.0f, 0.0f, 0.0f));
         auto rot_y = glm::angleAxis(y, glm::vec3(0.0f, 1.0f, 0.0f));
         auto rot_z = glm::angleAxis(z, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -446,6 +443,14 @@ namespace volumeshOS::Internal
         m_data.update_transform();
 
     }
+
+    void MeshObject::rotate_axis_delta(float delta_x, float delta_y, float delta_z)
+    {
+        glm::quat delta_quaternion = glm::quat(glm::vec3(glm::radians(delta_x), glm::radians(delta_y), glm::radians(delta_z)));
+        m_data.rot = m_data.rot * delta_quaternion;
+        m_data.update_transform();
+    }
+
 
     void MeshObject::reset_rotation()
     {

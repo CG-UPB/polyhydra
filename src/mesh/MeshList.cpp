@@ -191,7 +191,7 @@ namespace volumeshOS::Internal
         auto f = [this, &x, &y, &z, &id](const std::shared_ptr<MeshObject>& mesh) -> void{
 
             auto m = get_mesh(id);
-            m->rotate_axis(x,y,z);
+            m->rotate_axis_delta(x,y,z);
         };
         execute_for_mesh(f, id);
     }
@@ -203,6 +203,7 @@ namespace volumeshOS::Internal
             auto m = get_mesh(id);
             m->rotate(angle, axis);
         };
+        AppState::settings.rotated = true;
         execute_for_mesh(f, id);
     }
 
@@ -612,12 +613,7 @@ namespace volumeshOS::Internal
 
     glm::vec3 MeshList::get_rotation(const MeshID id)
     {
-        auto mat = get_mesh(id)->get_data().transformation;
-        auto r   = get_mesh(id)->get_data().rotation;
-
-        glm::vec3 angles = glm::eulerAngles(get_mesh(id)->get_data().rot);
-
-        return angles;
+        return glm::eulerAngles(get_mesh(id)->get_data().rot);
     }
 
     float MeshList::get_slice_factor(const MeshID id)

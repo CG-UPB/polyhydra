@@ -19,7 +19,7 @@ namespace volumeshOS::Internal
 
         // Iterate backwards, so the last added meshes are at the bottom
         const auto meshes = volumeshOS::get_meshes();
-        for (auto mesh = meshes.rbegin(); mesh != meshes.rend(); mesh++)
+        for(auto mesh = meshes.rbegin(); mesh != meshes.rend(); mesh++)
         {
             if (mesh->is_valid())
             {
@@ -54,9 +54,6 @@ namespace volumeshOS::Internal
             m_mesh_position[1] = pos[1];
             m_mesh_position[2] = pos[2];
             m_mesh_scale = scl;
-            m_mesh_rotation[0] = glm::degrees(rot[0]);
-            m_mesh_rotation[1] = glm::degrees(rot[1]);
-            m_mesh_rotation[2] = glm::degrees(rot[2]);
 
             ImGui::BeginDisabled(!mesh.get_visibility());
 
@@ -149,24 +146,39 @@ namespace volumeshOS::Internal
 
             ImGuiUtil::menu_item("Rotation", "icon_rotate.png", width, [&]
             {
+                    // update GUI when mesh was rotation by anything else than the GUI
+                    if(AppState::settings.rotated)
+                    {
+                        auto euler_angles = mesh.get_rotation<glm::vec3>();
+                        m_mesh_rotation[0] = glm::degrees(euler_angles[0]);
+                        m_mesh_rotation[1] = glm::degrees(euler_angles[1]);
+                        m_mesh_rotation[2] = glm::degrees(euler_angles[2]);
+
+                        AppState::settings.rotated = false;
+                    }
+
                     float angles[3] = {m_mesh_rotation[0], m_mesh_rotation[1], m_mesh_rotation[2]};
-                    if (ImGui::DragFloat3("##Rotation", angles, 1.0f, -179.0f, 179.0f, "%.1f"))
+                    if (ImGui::DragFloat3("##Rotation", angles, 1.0f, -360.0f, 360.0f, "%.1f"))
                     {
 
-                        angles[0] = std::clamp(angles[0], -179.0f, 179.0f);
-                        angles[1] = std::clamp(angles[1], -89.0f, 89.0f);
-                        angles[2] = std::clamp(angles[2], -179.0f, 179.0f);
+                        auto delta_x = angles[0] - m_mesh_rotation[0];
+                        auto delta_y = angles[1] - m_mesh_rotation[1];
+                        auto delta_z = angles[2] - m_mesh_rotation[2];
 
                         m_mesh_rotation[0] = angles[0];
                         m_mesh_rotation[1] = angles[1];
                         m_mesh_rotation[2] = angles[2];
 
-                        mesh.set_rotation(glm::radians(angles[0]), glm::radians(angles[1]), glm::radians(angles[2]));
+
+                        mesh.set_rotation(delta_x, delta_y, delta_z);
 
                     }
                     ImGui::SameLine();
                     if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                     {
+                        m_mesh_rotation[0] = 0.0f;
+                        m_mesh_rotation[1] = 0.0f;
+                        m_mesh_rotation[2] = 0.0f;
                         mesh.reset_rotation();
                     }
 

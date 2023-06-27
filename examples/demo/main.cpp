@@ -205,15 +205,6 @@ int main(int argc, char* argv[])
             // open a file manager to select an ovm file
             auto mesh = load_from_dialog("Select OVM file");
         }
-        if (ImGui::Button("Screenshot"))
-        {
-            // open a file manager to select an ovm file
-            volumeshOS::ExportOptions options;
-            options.width = 1920;
-            options.height = 1080;
-            volumeshOS::export_image("/home/lukas/Documents/screenshot.png", options);
-            std::cout << "SCREENSHOT" << std::endl;
-        }
         ImGui::End();
     });
 

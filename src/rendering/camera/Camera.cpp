@@ -38,6 +38,7 @@ namespace volumeshOS::Internal
         m_screen_height = height;
         last_x = m_screen_width / 2.0f;
         last_y = m_screen_height / 2.0f;
+        update();
 
     }
 

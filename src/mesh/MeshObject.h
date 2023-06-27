@@ -8,9 +8,10 @@
 #include "../util/VecUtil.h"
 #include "../util/Enums.h"
 
-#include<glm/glm.hpp>
-#include<glm/gtc/quaternion.hpp>
-#include<glm/common.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/common.hpp>
 
 
 
@@ -192,6 +193,8 @@ namespace volumeshOS::Internal
         void rotate(float angle, const glm::vec3& axis);
 
         void rotate_axis(float x, float y, float z);
+
+        void rotate_axis_delta(float delta_x, float delta_y, float delta_z);
 
         void reset_rotation();
 

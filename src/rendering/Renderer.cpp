@@ -134,9 +134,6 @@ namespace volumeshOS::Internal
             handle_input();
         }
 
-        // std::cout << "Width " << frame.width << std::endl;
-        // std::cout << "Height " << frame.height << std::endl;
-
         render_list.clear();
         mesh_list->iterate([&](auto id, auto mesh)
                            {
@@ -314,12 +311,6 @@ namespace volumeshOS::Internal
                     auto pos = mesh->get_data().position;
                     auto off = mesh->get_data().origin;
 
-//                    auto x_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_up(), 0.0f);
-//                    auto y_axis = glm::inverse(mesh->get_data().get_transform()) * glm::vec4(cam.get_right(), 0.0f);
-//
-//                    mesh->rotate(x_rotation, x_axis);
-//                    mesh->rotate(-y_rotation, y_axis);
-
                     if (Input::mouse_pressed() && (input.last.x != input.pos.x || input.last.y != input.pos.y))
                     {
                         auto axis = TrackBall::get_rotation_axis({input.last.x, input.last.y},
@@ -333,7 +324,8 @@ namespace volumeshOS::Internal
                                 glm::inverse(camera->view * mesh->get_data().get_transform()) * glm::vec4(axis, 0.0f);
 
 
-                        mesh->rotate(angle, axis_in_trackball_coords);
+                        //mesh->rotate(angle, axis_in_trackball_coords);
+                        mesh_list->set_rotation(mesh->get_id(), angle, axis_in_trackball_coords);
                     }
                 }
                 else if(Input::key_down(Input::FOCUS_CAMERA_ON_MESH))
@@ -413,10 +405,6 @@ namespace volumeshOS::Internal
         // we need to do this since some passes need the current width and height for rendering
         frame.width = export_width;
         frame.height = export_height;
-
-        // std::cout << "Width " << export_width << std::endl;
-        // std::cout << "Height " << export_height << std::endl;
-
 
         auto export_framebuffer_ms = std::make_shared<FrameBufferObject>(export_width, export_height,
                                                                          FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE);

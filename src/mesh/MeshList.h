@@ -3,6 +3,7 @@
 #include "vospch.h"
 #include "MeshObject.h"
 #include "../util/Types.h"
+#include "../settings/AppState.h"
 
 namespace volumeshOS::Internal
 {

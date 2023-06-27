@@ -113,6 +113,7 @@ namespace volumeshOS::Internal
             bool use_global_pbr                     = true;
             bool block_input                        = false;
             bool multisampling                      = true;
+            bool rotated                            = false;
         } settings;
 
         static void restore_default_settings()
