@@ -35,7 +35,9 @@ namespace volumeshOS::Internal
 
         for(auto mesh = meshes.rbegin(); mesh != meshes.rend(); mesh++)
         {
+            ImGui::PushID(*mesh);
             render_mesh_settings(*mesh);
+            ImGui::PopID();
         }
         ImGui::PopStyleColor();
         ImGui::End();
@@ -90,7 +92,7 @@ namespace volumeshOS::Internal
 
             ImGuiUtil::menu_item("", width, [&]
             {
-                bool lines = m_mesh_list->is_rendering_cells(id);
+                bool lines = m_mesh_list->is_rendering_lines(id);
                 if(ImGui::Checkbox("  Lines", &lines))
                 {
                     m_mesh_list->render_lines(id, lines);
@@ -343,6 +345,7 @@ namespace volumeshOS::Internal
             if (ImGuiUtil::icon_button("icon_gear.png"))
             {
                 ImGui::OpenPopup("Advanced Settings Popup");
+
             }
             ImGui::SameLine();
         }
@@ -424,10 +427,10 @@ namespace volumeshOS::Internal
                 m_mesh_list->get_mesh(id)->get_data().use_back_face_culling = culling;
             }
 
-            auto ts_lighting = m_mesh_list->get_mesh(id)->get_data().use_back_face_culling;
+            auto ts_lighting = m_mesh_list->get_mesh(id)->get_data().use_two_sided_lighting;
             if(ImGui::Checkbox("Two-Sided Lighting", &ts_lighting))
             {
-                m_mesh_list->get_mesh(id)->get_data().use_back_face_culling = ts_lighting;
+                m_mesh_list->get_mesh(id)->get_data().use_two_sided_lighting = ts_lighting;
             }
 
 
