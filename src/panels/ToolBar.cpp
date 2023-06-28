@@ -4,16 +4,15 @@
 #include "../util/Tooltips.h"
 #include "../util/ImGuiUtil.h"
 #include "volumeshOS.h"
-#include "../rendering/Renderer.h"
 
 #define RECT_BG = IM_COL32(80, 80, 80, 25)
 
 namespace volumeshOS::Internal
 {
 
-    void ToolBar::show(const std::shared_ptr<Internal::Camera>& cam)
+    void ToolBar::show(const std::shared_ptr<Internal::Camera>& camera)
     {
-        m_camera = cam;
+        m_camera = camera;
         show();
     }
 
@@ -196,13 +195,14 @@ namespace volumeshOS::Internal
         ImGui::SetCursorScreenPos({x - ImGui::GetStyle().FramePadding.x + 1, ImGui::GetCursorScreenPos().y});
         if (ImGuiUtil::begin_menu_with_background("camera", 3))
         {
+            auto camera = m_camera;
             ImGuiUtil::menu_item_filled("Mode", [&]
             {
                 constexpr const char* camera_modes[] =
                         {
                                 "ORBIT", "FLY"
                         };
-                int camera_mode = static_cast<int>(m_camera->get_mode());
+                int camera_mode = static_cast<int>(camera->get_mode());
                 if (ImGui::Combo(
                         "##CameraMode",
                         &camera_mode,
@@ -211,29 +211,29 @@ namespace volumeshOS::Internal
                         IM_ARRAYSIZE(camera_modes)
                 ))
                 {
-                    glm::vec3 new_target = m_camera->target;
+                    glm::vec3 new_target = camera->target;
                     if (auto mesh = volumeshOS::get_focused_mesh().is_valid())
                     {
                         new_target = volumeshOS::get_focused_mesh().get_position<glm::vec3>();
                     }
 
-                    if(m_camera->get_mode() == CameraMode::ORBIT)
+                    if(camera->get_mode() == CameraMode::ORBIT)
                     {
-                        m_camera->set_mode(CameraMode::FLY);
+                        camera->set_mode(CameraMode::FLY);
                     }
-                    else if(m_camera->get_mode() == CameraMode::FLY)
+                    else if(camera->get_mode() == CameraMode::FLY)
                     {
-                        m_camera->animated_look_at(new_target);
-                        m_camera->set_mode(CameraMode::ORBIT);
+                        camera->animated_look_at(new_target);
+                        camera->set_mode(CameraMode::ORBIT);
                     }
                 }
             });
             ImGuiUtil::menu_item_filled("Position", [&]
             {
-                if(m_camera->last_frame == 0.0f)
+                if(camera->last_frame == 0.0f)
                     return;
-                auto camera_position = m_camera->position;
-                auto camera_target = m_camera->target;
+                auto camera_position = camera->position;
+                auto camera_target = camera->target;
                 auto camera_dir = (camera_target - camera_position);
                 float position[4];
                 position[0] = camera_position.r;
@@ -242,22 +242,22 @@ namespace volumeshOS::Internal
                 if (ImGui::DragFloat3("##CameraPosition", position, 0.1f, -100.0f, 100.0f, "%.1f"))
                 {
                     auto pos = glm::vec3(position[0], position[1], position[2]);
-                    if (m_camera->get_mode() == CameraMode::FLY)
+                    if (camera->get_mode() == CameraMode::FLY)
                     {
                         camera_target = pos + camera_dir;
-                        m_camera->look_at(camera_target);
+                        camera->look_at(camera_target);
                     }
                     camera_position = pos;
-                    m_camera->set_position(camera_position);
+                    camera->set_position(camera_position);
                 }
             });
 
             ImGuiUtil::menu_item_filled("FOV", [&]
             {
-                float fov = m_camera->zoom;
+                float fov = camera->zoom;
                 if (ImGui::DragFloat("##CameraFOV", &fov, 1.0f, 1.0f, 90.0f))
                 {
-                    m_camera->zoom = fov;
+                    camera->zoom = fov;
                 }
             });
             ImGuiUtil::end_menu();

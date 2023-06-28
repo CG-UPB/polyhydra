@@ -4,6 +4,7 @@
 
 #include "WindowPanel.h"
 #include "../settings/AppState.h"
+#include "../mesh/MeshList.h"
 
 namespace volumeshOS::Internal
 {
@@ -23,22 +24,26 @@ namespace volumeshOS::Internal
          * the color of the mesh and a combo sets the rendering mode.
          */
         void show() override;
+        void show(const std::shared_ptr<Internal::MeshList>&);
 
     private:
 
-        void render_popup(const VMesh& mesh);
+        void render_popup(MeshID id);
 
-        void render_cells_popup(const VMesh& mesh);
+        void render_cells_popup(MeshID id);
 
-        void render_lines_popup(const VMesh& mesh);
+        void render_lines_popup(MeshID id);
 
-        void render_points_popup(const VMesh& mesh);
+        void render_points_popup(MeshID id);
 
-        void render_mesh_options(const VMesh& mesh);
+        void render_mesh_options(MeshID id);
 
-        void render_mesh_settings(const VMesh& mesh);
+        void render_mesh_settings(MeshID id);
 
-        static bool render_header(const VMesh& mesh);
+        bool render_header(MeshID id);
+
+        std::shared_ptr<Internal::MeshList> m_mesh_list = nullptr;
+
 
         float m_slider_slicer                       = 0.0f;
         bool m_slicer_locked                        = false;

@@ -1372,7 +1372,8 @@ namespace volumeshOS::Internal
                     for (size_t i = 0; i < count; i++)
                     {
                         size_t index = (offset + i) * attrib_definition.element_count;
-                        set_attribute_buffer(attrib_array, index, data.value_size, data.value);
+                        if(!attrib_array.empty())
+                            set_attribute_buffer(attrib_array, index, data.value_size, data.value);
                     }
                     vao->update_attribute(attrib_array, attrib_definition.location, buffer_index, size);
                 }

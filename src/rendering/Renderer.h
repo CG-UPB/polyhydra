@@ -3,6 +3,8 @@
 #include "vospch.h"
 
 #include "gl/FrameBufferObject.h"
+#include "../mesh/MeshList.h"
+#include "../settings/AppState.h"
 #include "../rendering/gl/PixelBufferObject.h"
 #include "../rendering/gl/PrePassFrameBufferObject.h"
 #include "../rendering/passes/MeshPass.h"
@@ -19,7 +21,6 @@
 #include "../rendering/passes/PostProcessingPass.h"
 #include "../rendering/passes/OutlinePass.h"
 #include "../rendering/shapes/ShapeRenderer.h"
-#include "../mesh/MeshList.h"
 #include "camera/Camera.h"
 #include "Light.h"
 

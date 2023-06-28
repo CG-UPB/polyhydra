@@ -8,6 +8,12 @@
 
 namespace volumeshOS::Internal
 {
+    void MeshLayerView::show(const std::shared_ptr<Internal::MeshList>& mesh_list)
+    {
+        m_mesh_list = mesh_list;
+        show();
+    }
+
     void MeshLayerView::show()
     {
         if (!ImGui::Begin("Meshes"))
@@ -17,22 +23,25 @@ namespace volumeshOS::Internal
         }
         ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
+
+        //static std::shared_ptr<Internal::MeshList> m_mesh_list   = window->panels.mesh_view->renderer->m_mesh_list;
+
         // Iterate backwards, so the last added meshes are at the bottom
-        const auto meshes = volumeshOS::get_meshes();
+
+        std::vector<MeshID> meshes;
+        m_mesh_list->iterate([&meshes](auto id, auto mesh){
+            meshes.push_back(id);
+        });
+
         for(auto mesh = meshes.rbegin(); mesh != meshes.rend(); mesh++)
         {
-            if (mesh->is_valid())
-            {
-                ImGui::PushID(mesh->get_id());
-                render_mesh_settings(*mesh);
-                ImGui::PopID();
-            }
+            render_mesh_settings(*mesh);
         }
         ImGui::PopStyleColor();
         ImGui::End();
     }
 
-    void MeshLayerView::render_mesh_options(const VMesh& mesh)
+    void MeshLayerView::render_mesh_options(MeshID id)
     {
         auto& icon_ref = *UIUtil::get_icon("reset.png");
         float aspect_ratio = (float) icon_ref.get_width() / (float) icon_ref.get_height();
@@ -47,15 +56,15 @@ namespace volumeshOS::Internal
             ImGui::TableSetupColumn("Three", ImGuiTableColumnFlags_WidthStretch, 0.6f);
 
             // Mesh transformations, such as position and scale
-            auto pos = mesh.get_position<glm::vec3>();
-            auto scl = mesh.get_scale();
-            auto rot = mesh.get_rotation<glm::vec3>();
+            auto pos = m_mesh_list->get_position(id);
+            auto scl = m_mesh_list->get_scale(id);
+            auto rot = m_mesh_list->get_rotation(id);
             m_mesh_position[0] = pos[0];
             m_mesh_position[1] = pos[1];
             m_mesh_position[2] = pos[2];
             m_mesh_scale = scl;
 
-            ImGui::BeginDisabled(!mesh.get_visibility());
+            ImGui::BeginDisabled(!m_mesh_list->get_visibility(id));
 
             ImGuiUtil::menu_item("Rendering Mode", "icon_eye.png", width, [&]
             {
@@ -65,10 +74,10 @@ namespace volumeshOS::Internal
 //                             IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
 //                mesh.set_rendering_mode(static_cast<RenderingMode>(rendering_mode));
                 //ImGui::SameLine();
-                bool cells = volumeshOS::is_rendering_cells(mesh);
+                bool cells = m_mesh_list->is_rendering_cells(id);
                 if(ImGui::Checkbox("  Cells", &cells))
                 {
-                    volumeshOS::render_cells(mesh, cells);
+                    m_mesh_list->render_cells(id, cells);
                 }
 //                ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
 //                if(ImGuiUtil::icon_button("icon_gear.png"))
@@ -81,10 +90,10 @@ namespace volumeshOS::Internal
 
             ImGuiUtil::menu_item("", width, [&]
             {
-                bool lines = volumeshOS::is_rendering_lines(mesh);
+                bool lines = m_mesh_list->is_rendering_cells(id);
                 if(ImGui::Checkbox("  Lines", &lines))
                 {
-                    volumeshOS::render_lines(mesh, lines);
+                    m_mesh_list->render_lines(id, lines);
                 }
                 ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
                 if(ImGuiUtil::icon_button("icon_gear.png"))
@@ -92,15 +101,15 @@ namespace volumeshOS::Internal
                     ImGui::OpenPopup("Settings for Lines");
                     ImGui::SameLine();
                 }
-                render_lines_popup(mesh);
+                render_lines_popup(id);
             });
 
             ImGuiUtil::menu_item(" ", width, [&]
             {
-                bool points = volumeshOS::is_rendering_points(mesh);
+                bool points = m_mesh_list->is_rendering_points(id);
                 if(ImGui::Checkbox("  Points", &points))
                 {
-                    volumeshOS::render_points(mesh, points);
+                    m_mesh_list->render_points(id, points);
                 }
                 ImGui::SameLine(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize() - 2 * ImGui::GetStyle().FramePadding.x - 6.0f);
                 if(ImGuiUtil::icon_button("icon_gear.png"))
@@ -108,39 +117,39 @@ namespace volumeshOS::Internal
                     ImGui::OpenPopup("Settings for Points");
                     ImGui::SameLine();
                 }
-                render_points_popup(mesh);
+                render_points_popup(id);
             });
 
             ImGuiUtil::menu_item("Shading Mode", "icon_eye.png", width, [&]
             {
-                int shading_mode = static_cast<int>(mesh.get_shading_mode());
+                int shading_mode = static_cast<int>(m_mesh_list->get_shading_mode(id));
                 constexpr const char* element_mode_types[] = { "Flat", "Phong" };
                 ImGui::Combo("##ShadingMode:", &shading_mode, element_mode_types,
                              IM_ARRAYSIZE(element_mode_types), IM_ARRAYSIZE(element_mode_types));
-                mesh.set_shading_mode(static_cast<ShadingMode>(shading_mode));
+                m_mesh_list->set_shading_mode(id, static_cast<ShadingMode>(shading_mode));
             });
             ImGuiUtil::menu_item("Position", "icon_move.png", width, [&]
             {
                 if (ImGui::DragFloat3("##Position", m_mesh_position, 0.1f, -100.0f, 100.0f, "%.1f"))
                 {
-                    mesh.set_position(m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
+                    m_mesh_list->set_position(id, m_mesh_position[0], m_mesh_position[1], m_mesh_position[2]);
                 }
                 ImGui::SameLine();
                 if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                 {
-                    mesh.set_position(0.0f, 0.0f, 0.0f);
+                    m_mesh_list->set_position(id, 0.0f, 0.0f, 0.0f);
                 }
             });
             ImGuiUtil::menu_item("Scale", "icon_scale.png", width, [&]
             {
                 if (ImGui::DragFloat("##Scale", &m_mesh_scale, 0.01f, 0.0f, 10.0f, "%.2f"))
                 {
-                    mesh.set_scale(m_mesh_scale);
+                    m_mesh_list->set_scale(id, m_mesh_scale);
                 }
                 ImGui::SameLine();
                 if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                 {
-                    mesh.set_scale(1.0f);
+                    m_mesh_list->set_scale(id, 1.0f);
                 }
             });
 
@@ -149,7 +158,7 @@ namespace volumeshOS::Internal
                     // update GUI when mesh was rotation by anything else than the GUI
                     if(AppState::settings.rotated)
                     {
-                        auto euler_angles = mesh.get_rotation<glm::vec3>();
+                        auto euler_angles = m_mesh_list->get_rotation(id);
                         m_mesh_rotation[0] = glm::degrees(euler_angles[0]);
                         m_mesh_rotation[1] = glm::degrees(euler_angles[1]);
                         m_mesh_rotation[2] = glm::degrees(euler_angles[2]);
@@ -170,7 +179,7 @@ namespace volumeshOS::Internal
                         m_mesh_rotation[2] = angles[2];
 
 
-                        mesh.set_rotation(delta_x, delta_y, delta_z);
+                        m_mesh_list->set_rotation(id, delta_x, delta_y, delta_z);
 
                     }
                     ImGui::SameLine();
@@ -179,31 +188,31 @@ namespace volumeshOS::Internal
                         m_mesh_rotation[0] = 0.0f;
                         m_mesh_rotation[1] = 0.0f;
                         m_mesh_rotation[2] = 0.0f;
-                        mesh.reset_rotation();
+                        m_mesh_list->reset_rotation(id);
                     }
 
             });
 
             ImGuiUtil::menu_item("Slicer", "icon_slice.png", width, [&]
             {
-                m_slider_slicer = mesh.get_slice_factor();
-                m_slicer_locked = mesh.get_slice_lock();
+                m_slider_slicer = m_mesh_list->get_slice_factor(id);
+                m_slicer_locked = m_mesh_list->get_slice_lock(id);
                 if (ImGui::SliderFloat("##Slice", &m_slider_slicer, 0.0f, 1.0f))
                 {
-                    mesh.set_slice_factor(m_slider_slicer);
+                    m_mesh_list->set_slice_factor(id, m_slider_slicer);
                 }
                 ImGui::SameLine();
                 if (ImGuiUtil::icon_button(m_slicer_locked ? "icon_locked.png" : "icon_unlocked.png", ImGui::GetFontSize()))
                 {
                     m_slicer_locked = !m_slicer_locked;
-                    mesh.set_slice_locked(m_slicer_locked);
+                    m_mesh_list->set_slice_lock(id, m_slicer_locked);
                 }
             });
             ImGuiUtil::menu_item("Peel", "icon_peel.png", width, [&]
             {
 
-                m_slider_peel = mesh.get_peel_level();
-                float peel_max = (float) mesh.get_max_peel_depth() + 1.0f;
+                m_slider_peel = m_mesh_list->get_peel_level(id);
+                float peel_max = (float) m_mesh_list->get_max_peel_depth(id) + 1.0f;
 
                 // make it easier to get the slider onto an Integer
                 // thats helpful for peeling with transparent transition
@@ -215,31 +224,31 @@ namespace volumeshOS::Internal
                     {
                         m_slider_peel = (float) (int) (m_slider_peel + tolerance);
                     }
-                    mesh.set_peel_level(m_slider_peel);
+                    m_mesh_list->set_peel_level(id, m_slider_peel);
                 }
                 ImGui::SameLine();
-                auto reverse_peeling = mesh.is_using_reverse_peeling();
+                auto reverse_peeling = m_mesh_list->get_reverse_peeling(id);
                 if (ImGuiUtil::icon_button(reverse_peeling ? "icon_peel_inner.png" : "icon_peel_outer.png", ImGui::GetFontSize()))
                 {
-                    mesh.use_reverse_peeling(!reverse_peeling);
+                    m_mesh_list->set_reverse_peeling(id, !reverse_peeling);
                 }
             });
             ImGuiUtil::menu_item("Cell Size", "icon_cell_size.png", width, [&]
             {
-                m_cell_size = mesh.get_cell_size();
+                m_cell_size = m_mesh_list->get_cell_size(id);
                 if (ImGui::SliderFloat("##CellSize", &m_cell_size, 0.0f, 1.0f))
                 {
-                    mesh.set_cell_size(m_cell_size);
+                    m_mesh_list->set_cell_size(id, m_cell_size);
                 }
             });
-            if(mesh.is_bezier_mesh())
+            if(m_mesh_list->is_bezier_mesh(id))
             {
                 ImGuiUtil::menu_item("Tessellation", "icon_roundings.png", width, [&]
                 {
-                    int tesselation_level = mesh.get_tessellation_level();
+                    int tesselation_level = m_mesh_list->get_tessellation_level(id);
                     if (ImGui::SliderInt("", &tesselation_level, 1, 64))
                     {
-                        mesh.set_tessellation_level(tesselation_level);
+                        m_mesh_list->set_tessellation_level(id, tesselation_level);
                     }
                 });
             }
@@ -247,10 +256,10 @@ namespace volumeshOS::Internal
             {
                 ImGuiUtil::menu_item("Roundings", "icon_roundings.png", width, [&]
                 {
-                    float actual_rounding_size = mesh.get_cell_rounding();
+                    float actual_rounding_size = m_mesh_list->get_cell_rounding(id);
                     if (ImGui::SliderFloat("", &actual_rounding_size, 0.0f, 1.0f, "%.3f"))
                     {
-                        mesh.set_cell_rounding(actual_rounding_size);
+                        m_mesh_list->set_cell_rounding(id, actual_rounding_size);
                     }
                 });
             }
@@ -275,7 +284,7 @@ namespace volumeshOS::Internal
                 ImGui::SameLine();
                 if (ImGuiUtil::icon_button("reset.png", ImGui::GetFontSize(), true))
                 {
-                    mesh.reset_visibility();
+                    m_mesh_list->reset_visibility(id);
                 }
             });
             ImGuiUtil::menu_item_filled("Isolation", "icon_isolate.png", [&]
@@ -293,7 +302,8 @@ namespace volumeshOS::Internal
                     else
                     {
                         m_isolation_started = false;
-                        mesh.reset_visibility();
+                        //m_mesh_list->reset_visibility(id);
+                        volumeshOS::reset_visibility(VMesh(id));
                     }
                     AppState::settings.isolation_active = m_isolation_started;
                 }
@@ -303,27 +313,27 @@ namespace volumeshOS::Internal
         }
     }
 
-    void MeshLayerView::render_mesh_settings(const VMesh& mesh)
+    void MeshLayerView::render_mesh_settings(MeshID id)
     {
         // Visibility
         {
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().FramePadding.x);
-            auto mesh_visible = mesh.get_visibility();
+            auto mesh_visible = m_mesh_list->get_visibility(id);
             if (ImGui::Checkbox("###Visible", &mesh_visible))
             {
-                mesh.set_visibility(mesh_visible);
+                m_mesh_list->set_visibility(id, mesh_visible);
             }
             ImGui::SameLine();
         }
-        ImGui::BeginDisabled(!mesh.get_visibility());
+        ImGui::BeginDisabled(!m_mesh_list->get_visibility(id));
         // Color
         {
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().FramePadding.x);
-            auto mesh_color = mesh.get_color<glm::vec4>();
+            auto mesh_color = m_mesh_list->get_color(id);
             float new_color[4] = { mesh_color.r, mesh_color.g, mesh_color.b, mesh_color.a };
             if (ImGui::ColorEdit4("Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
             {
-                mesh.set_color(glm::vec4{ new_color[0], new_color[1], new_color[2], new_color[3] });
+                m_mesh_list->set_color(id, glm::vec4{new_color[0], new_color[1], new_color[2], new_color[3] });
             }
             ImGui::SameLine();
         }
@@ -336,12 +346,12 @@ namespace volumeshOS::Internal
             }
             ImGui::SameLine();
         }
-        render_popup(mesh);
-        if(!mesh.get_visibility())
+        render_popup(id);
+        if(!m_mesh_list->get_visibility(id))
         {
             ImGui::SetNextTreeNodeOpen(false);
         }
-        if (!render_header(mesh))
+        if (!render_header(id))
         {
             ImGui::EndDisabled();
             return;
@@ -349,13 +359,13 @@ namespace volumeshOS::Internal
         ImGui::InvisibleButton("invisible button shadow", ImVec2(2, 2));
         ImGui::SetCursorPosX(ImGui::GetCursorPos().x - ImGui::GetStyle().FramePadding.x);
         ImGui::EndDisabled();
-        render_mesh_options(mesh);
+        render_mesh_options(id);
 
         // some space to the next item
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 2));
     }
 
-    void MeshLayerView::render_popup(const VMesh& mesh)
+    void MeshLayerView::render_popup(MeshID id)
     {
         ImGui::SetNextWindowSize({400.0f, 0.0f});
         if (ImGui::BeginPopup("Advanced Settings Popup"))
@@ -377,7 +387,7 @@ namespace volumeshOS::Internal
 
                 if (filename != nullptr)
                 {
-                    mesh.save_configuration(filename);
+                    volumeshOS::save_configuration(VMesh(id), filename);
                 }
             }
             ImGui::SameLine();
@@ -391,7 +401,7 @@ namespace volumeshOS::Internal
                 filename = file_dialog.load_mesh_settings("Save Mesh Settings File");
                 if (filename != nullptr)
                 {
-                    mesh.load_configuration(filename);
+                    volumeshOS::load_configuration(VMesh(id), filename);
                 }
             }
 
@@ -402,22 +412,22 @@ namespace volumeshOS::Internal
             ImGui::Text("Lighting");
             ImGui::PopFont();
 
-            auto base_color = mesh.is_using_base_color();
+            auto base_color = m_mesh_list->get_mesh(id)->get_data().use_base_color;
             if(ImGui::Checkbox("Base Color", &base_color))
             {
-                use_base_color(mesh, base_color);
+                m_mesh_list->get_mesh(id)->get_data().use_base_color = base_color;
             }
 
-            auto culling = mesh.is_using_backface_culling();
+            auto culling = m_mesh_list->get_mesh(id)->get_data().use_back_face_culling;
             if(ImGui::Checkbox("Backface Culling", &culling))
             {
-                use_backface_culling(mesh, culling);
+                m_mesh_list->get_mesh(id)->get_data().use_back_face_culling = culling;
             }
 
-            auto ts_lighting = mesh.is_using_two_sided_lighting();
+            auto ts_lighting = m_mesh_list->get_mesh(id)->get_data().use_back_face_culling;
             if(ImGui::Checkbox("Two-Sided Lighting", &ts_lighting))
             {
-                use_two_sided_lighting(mesh, ts_lighting);
+                m_mesh_list->get_mesh(id)->get_data().use_back_face_culling = ts_lighting;
             }
 
 
@@ -435,90 +445,90 @@ namespace volumeshOS::Internal
             ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
 
             constexpr const char* lighting_options[] = { "Phong", "PBR" };
-            int lighting_model = static_cast<int>(mesh.get_lighting_mode());
+            int lighting_model = static_cast<int>(m_mesh_list->get_mesh(id)->get_data().use_pbr ? LightingMode::PBR : LightingMode::PHONG);
             ImGui::Combo("##Manual Mode SelectionMode:", &lighting_model, lighting_options,
                          IM_ARRAYSIZE(lighting_options), IM_ARRAYSIZE(lighting_options));
             auto mode = static_cast<LightingMode>(lighting_model);
-            mesh.set_lighting_mode(mode);
+            m_mesh_list->get_mesh(id)->get_data().use_pbr = mode == LightingMode::PBR;;
 
             ImGuiUtil::add_padding_y(0.5f);
 
             if (mode == LightingMode::PBR)
             {
                 ImGui::Text("Metallic:");
-                float metallic_value = mesh.get_metallic();
+                float metallic_value = m_mesh_list->get_mesh(id)->get_data().metallic;
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::SliderFloat("##Metallic", &metallic_value, 0.04f, 1.0f))
                 {
-                    mesh.set_metallic(metallic_value);
+                    m_mesh_list->get_mesh(id)->get_data().metallic = metallic_value;
                 }
 
                 ImGui::Text("Roughness:");
-                float roughness_value = mesh.get_roughness();
+                float roughness_value = m_mesh_list->get_mesh(id)->get_data().roughness;
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::SliderFloat("##Roughness", &roughness_value, 0.04f, 1.0f))
                 {
-                    mesh.set_roughness(roughness_value);
+                    m_mesh_list->get_mesh(id)->get_data().roughness = roughness_value;
                 }
             }
             else
             {
                 // Ambient
                 ImGui::Text("Ambient:");
-                float ambient_value = mesh.get_ambient();
+                float ambient_value = m_mesh_list->get_mesh(id)->get_data().ambient_strength;
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::SliderFloat("##Ambient", &ambient_value, 0.0f, 1.0f))
                 {
-                    mesh.set_ambient(ambient_value);
+                    m_mesh_list->get_mesh(id)->get_data().ambient_strength = ambient_value;
                 }
 
                 // Diffuse
                 ImGui::Text("Diffuse:");
-                float diffuse_value = mesh.get_diffuse();
+                float diffuse_value = m_mesh_list->get_mesh(id)->get_data().diffuse_strength;
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::SliderFloat("##Diffuse", &diffuse_value, 0.0f, 1.0f))
                 {
-                    mesh.set_diffuse(diffuse_value);
+                    m_mesh_list->get_mesh(id)->get_data().diffuse_strength = diffuse_value;
                 }
 
                 // Specular
                 ImGui::Text("Specular:");
-                float specular_value = mesh.get_specular();
+                float specular_value = m_mesh_list->get_mesh(id)->get_data().specular_strength;
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::SliderFloat("##Specular", &specular_value, 0.0f, 1.0f))
                 {
-                    mesh.set_specular(specular_value);
+                    m_mesh_list->get_mesh(id)->get_data().specular_strength = specular_value;
                 }
 
                 // Specular Exponent
                 ImGui::Text("Specular Exponent:");
-                float specular_exp = mesh.get_specular_coefficient();
+                float specular_exp = m_mesh_list->get_mesh(id)->get_data().specular_exponent;
                 ImGui::SetNextItemWidth(slider_width);
                 ImGui::SameLine(ImGui::GetWindowWidth() - slider_width - padding_right);
                 if (ImGui::SliderFloat("##Specular Exponent", &specular_exp, 0.0f, 10.0f))
                 {
-                    mesh.set_specular_coefficient(specular_exp);
+                    m_mesh_list->get_mesh(id)->get_data().specular_exponent = specular_exp;
                 }
             }
             ImGui::EndPopup();
         }
     }
 
-    bool MeshLayerView::render_header(const VMesh& mesh)
+    bool MeshLayerView::render_header(MeshID id)
     {
         bool open = true;
-        auto focused = mesh.is_focused();
+        auto focused = m_mesh_list->get_focused_mesh()->get_id() == id;
         if (focused)
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyleColorVec4(ImGuiCol_Button));
         }
         auto flags = ImGuiTreeNodeFlags_AllowItemOverlap;
-        if (!ImGui::CollapsingHeader(mesh.get_name().c_str(), flags))
+        if (!ImGui::CollapsingHeader(m_mesh_list->get_name(id).c_str(), flags))
         {
             open = false;
         }
@@ -531,13 +541,13 @@ namespace volumeshOS::Internal
         {
             if (focused)
             {
-                mesh.set_focused();
+                m_mesh_list->set_focused_mesh(id);
             }
         }
         return open;
     }
 
-    void MeshLayerView::render_cells_popup(const VMesh &mesh)
+    void MeshLayerView::render_cells_popup(MeshID id)
     {
         if (ImGui::BeginPopup("Settings for Cells"))
         {
@@ -554,7 +564,7 @@ namespace volumeshOS::Internal
         }
     }
 
-    void MeshLayerView::render_lines_popup(const VMesh &mesh)
+    void MeshLayerView::render_lines_popup(MeshID id)
     {
         if (ImGui::BeginPopup("Settings for Lines"))
         {
@@ -562,24 +572,24 @@ namespace volumeshOS::Internal
             ImGui::Separator();
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
 
-            float line_width = mesh.get_line_width();
+            float line_width = m_mesh_list->get_line_width(id);
             ImGui::SliderFloat("##Line Width", &line_width, 0.0f, 10.0f, "%.01f");
-            mesh.set_line_width(line_width);
+            m_mesh_list->set_line_width(id, line_width);
 
             ImGui::SameLine();
 
-            auto point_color = mesh.get_line_color<glm::vec3>();
+            auto point_color = m_mesh_list->get_line_color(id);
             float new_color[3] = { point_color.r, point_color.g, point_color.b};
             if (ImGui::ColorEdit3("Line Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
             {
-                mesh.set_line_color(glm::vec3{ new_color[0], new_color[1], new_color[2]});
+                m_mesh_list->set_line_color(id, glm::vec3{new_color[0], new_color[1], new_color[2]});
             }
 
             ImGui::EndPopup();
         }
     }
 
-    void MeshLayerView::render_points_popup(const VMesh &mesh)
+    void MeshLayerView::render_points_popup(MeshID id)
     {
         if (ImGui::BeginPopup("Settings for Points"))
         {
@@ -587,23 +597,24 @@ namespace volumeshOS::Internal
             ImGui::Separator();
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
 
-            float point_size = mesh.get_point_size();
+            float point_size = m_mesh_list->get_point_size(id);
             ImGui::SliderFloat("##Point Size", &point_size, 0.0f, 10.0f, "%.01f");
-            mesh.set_point_size(point_size);
+            m_mesh_list->set_point_size(id, point_size);
 
             ImGui::SameLine();
 
-            auto line_color = mesh.get_point_color<glm::vec3>();
+            auto line_color = m_mesh_list->get_point_color(id);
             float new_color[3] = { line_color.r, line_color.g, line_color.b};
 
             if (ImGui::ColorEdit3("Point Color", new_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
             {
-                mesh.set_point_color(glm::vec3{ new_color[0], new_color[1], new_color[2]});
+                m_mesh_list->set_point_color(id, glm::vec3{new_color[0], new_color[1], new_color[2]});
             }
 
             ImGui::EndPopup();
         }
     }
+
 
 
 } // namespace volumeshOS

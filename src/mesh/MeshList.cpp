@@ -631,7 +631,7 @@ namespace volumeshOS::Internal
         return get_mesh(id)->get_data().peel_level;
     }
 
-    float MeshList::get_reverse_peeling(const MeshID id)
+    bool MeshList::get_reverse_peeling(const MeshID id)
     {
         return get_mesh(id)->get_data().reverse_peeling;
     }
@@ -712,6 +712,11 @@ namespace volumeshOS::Internal
     glm::vec3 MeshList::get_origin(const MeshID id)
     {
         return get_mesh(id)->get_data().origin;
+    }
+
+    bool MeshList::is_bezier_mesh(volumeshOS::Internal::MeshID id)
+    {
+        return get_mesh(id)->is_bezier_mesh();
     }
 
 

@@ -262,7 +262,7 @@ namespace volumeshOS::Internal
 
         ImGui::BeginDisabled(volumeshOS::is_input_blocked());
 
-        panels.mesh_layer_view->show();
+        panels.mesh_layer_view->show(panels.mesh_view->renderer->mesh_list);
         AppState::callbacks.on_gui_render();
         panels.mesh_view->show();
         panels.toolbar->show(panels.mesh_view->renderer->camera);

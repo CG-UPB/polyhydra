@@ -233,7 +233,7 @@ namespace volumeshOS::Internal
         float get_peel_level(MeshID id);
 
         // Returns if reverse peeling is active
-        float get_reverse_peeling(MeshID id);
+        bool get_reverse_peeling(MeshID id);
 
         // Returns the number of cell depth layers of the mesh
         int get_max_peel_depth(MeshID id);
@@ -285,6 +285,8 @@ namespace volumeshOS::Internal
         glm::vec3 get_origin(MeshID id);
 
         void use_scale_normalization(MeshID id, bool use_scale_norm);
+
+        bool is_bezier_mesh(MeshID id);
 
 
     private:
