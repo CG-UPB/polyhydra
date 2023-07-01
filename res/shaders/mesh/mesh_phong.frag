@@ -474,9 +474,7 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / vec2(u_viewport_width, u_viewport_height);
 
-    vec4 used_color = vec4(1.0f);
-    used_color = u_use_base_color ? u_object_color : v_color;
-
+    vec4 used_color = v_color;
     float alpha = v_color.a;
 
     if (u_draw_lines && (!u_draw_cells || alpha <= 1.0 - alpha_bias))
@@ -531,14 +529,14 @@ void main()
     vec3 result;
     if (u_use_pbr)
     {
-        result = calculate_pbr_lighting(used_color.rgb, n, l, v, ao_factor, shadow, u_light_color);
+        result = calculate_pbr_lighting(v_color.rgb, n, l, v, ao_factor, shadow, u_light_color);
     }
     else
     {
-        result = calculate_phong_lighting(used_color.rgb, n, l, v, ao_factor, shadow, u_light_color);
+        result = calculate_phong_lighting(v_color.rgb, n, l, v, ao_factor, shadow, u_light_color);
     }
 
-    FragColor = vec4(result, used_color.a);
+    FragColor = vec4(result, alpha);
 
     if (u_draw_lines && u_draw_cells)
     {

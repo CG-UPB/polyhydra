@@ -203,7 +203,6 @@ namespace volumeshOS::Internal
             auto m = get_mesh(id);
             m->rotate(angle, axis);
         };
-        AppState::settings.rotated = true;
         execute_for_mesh(f, id);
     }
 
@@ -613,7 +612,7 @@ namespace volumeshOS::Internal
 
     glm::vec3 MeshList::get_rotation(const MeshID id)
     {
-        return glm::eulerAngles(get_mesh(id)->get_data().rot);
+        return get_mesh(id)->get_data().rotation_angles;
     }
 
     float MeshList::get_slice_factor(const MeshID id)

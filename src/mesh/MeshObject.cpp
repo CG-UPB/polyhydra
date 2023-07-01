@@ -431,23 +431,14 @@ namespace volumeshOS::Internal
         //m_data.rotation = glm::rotate(m_data.rotation, angle, glm::normalize(axis));
         m_data.rot = m_data.rot * glm::angleAxis(angle, glm::normalize(axis));
         m_data.update_transform();
-    }
-
-    void MeshObject::rotate_axis(float x, float y, float z)
-    {
-        auto rot_x = glm::angleAxis(x, glm::vec3(1.0f, 0.0f, 0.0f));
-        auto rot_y = glm::angleAxis(y, glm::vec3(0.0f, 1.0f, 0.0f));
-        auto rot_z = glm::angleAxis(z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-        m_data.rot = rot_z * rot_y * rot_x;
-        m_data.update_transform();
-
+        m_data.rotation_angles = glm::degrees(glm::eulerAngles(m_data.rot));
     }
 
     void MeshObject::rotate_axis_delta(float delta_x, float delta_y, float delta_z)
     {
         glm::quat delta_quaternion = glm::quat(glm::vec3(glm::radians(delta_x), glm::radians(delta_y), glm::radians(delta_z)));
         m_data.rot = m_data.rot * delta_quaternion;
+        m_data.rotation_angles += glm::vec3(delta_x, delta_y, delta_z);
         m_data.update_transform();
     }
 
@@ -456,6 +447,7 @@ namespace volumeshOS::Internal
     {
         m_data.rotation = glm::mat4(1.0f);
         m_data.rot = glm::angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 0.0f));
+        m_data.rotation_angles = glm::vec3(0.0f);
         m_data.update_transform();
     }
 

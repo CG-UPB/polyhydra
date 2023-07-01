@@ -40,9 +40,6 @@ uniform sampler2D max_depth_texture;
 
 void main()
 {
-    vec4 used_color = vec4(1.0f);
-    used_color = u_use_base_color ? u_object_color : v_color;
-
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
@@ -56,7 +53,7 @@ void main()
     float last_depth = texelFetch(last_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
     float max_depth = texelFetch(max_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
 
-    float alpha = used_color.a;
+    float alpha = v_color.a;
 
     if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || alpha >= 1.0 - alpha_bias || v_visible == 0 || alpha == 0)
     {
@@ -65,11 +62,11 @@ void main()
     vec3 result;
     if (u_use_pbr)
     {
-        result = calculate_pbr_lighting(used_color.rgb, n, l, v, 1.0f, 0.0f, u_light_color);
+        result = calculate_pbr_lighting(v_color.rgb, n, l, v, 1.0f, 0.0f, u_light_color);
     }
     else
     {
-        result = calculate_phong_lighting(used_color.rgb, n, l, v, 1.0f, 0.0f, u_light_color);
+        result = calculate_phong_lighting(v_color.rgb, n, l, v, 1.0f, 0.0f, u_light_color);
     }
 
     FragColor = vec4(result.rgb, alpha);

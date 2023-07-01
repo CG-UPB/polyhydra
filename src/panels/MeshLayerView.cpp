@@ -60,7 +60,6 @@ namespace volumeshOS::Internal
             // Mesh transformations, such as position and scale
             auto pos = m_mesh_list->get_position(id);
             auto scl = m_mesh_list->get_scale(id);
-            auto rot = m_mesh_list->get_rotation(id);
             m_mesh_position[0] = pos[0];
             m_mesh_position[1] = pos[1];
             m_mesh_position[2] = pos[2];
@@ -158,15 +157,14 @@ namespace volumeshOS::Internal
             ImGuiUtil::menu_item("Rotation", "icon_rotate.png", width, [&]
             {
                     // update GUI when mesh was rotation by anything else than the GUI
-                    if(AppState::settings.rotated)
-                    {
-                        auto euler_angles = m_mesh_list->get_rotation(id);
-                        m_mesh_rotation[0] = glm::degrees(euler_angles[0]);
-                        m_mesh_rotation[1] = glm::degrees(euler_angles[1]);
-                        m_mesh_rotation[2] = glm::degrees(euler_angles[2]);
 
-                        AppState::settings.rotated = false;
-                    }
+                    auto euler_angles = m_mesh_list->get_rotation(id);
+                    m_mesh_rotation[0] = euler_angles[0];
+                    m_mesh_rotation[1] = euler_angles[1];
+                    m_mesh_rotation[2] = euler_angles[2];
+
+                    AppState::settings.rotated = false;
+
 
                     float angles[3] = {m_mesh_rotation[0], m_mesh_rotation[1], m_mesh_rotation[2]};
                     if (ImGui::DragFloat3("##Rotation", angles, 1.0f, -360.0f, 360.0f, "%.1f"))

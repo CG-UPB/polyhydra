@@ -75,6 +75,7 @@ namespace volumeshOS::Internal
         glm::vec3 origin            = {0.0f, 0.0f, 0.0f};
         float scale_normalization   = 1.0f;
         bool use_scale_normalization= true;
+        glm::vec3 rotation_angles   = {0.0f, 0.0f, 0.f};
 
         // Other
         bool visible                = true;
