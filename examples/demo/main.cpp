@@ -143,10 +143,10 @@ void setup_graphics()
     // Ambient Occlusion
     use_ambient_occlusion(false);
 
-    //Transparency
+    // Transparency
     use_transparency(false);
 
-    //set_rendering_mode(RenderingMode::LINES);
+    // set_rendering_mode(RenderingMode::LINES);
 
     // Post Processing
     set_gamma(2.4);

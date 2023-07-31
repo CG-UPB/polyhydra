@@ -6,6 +6,7 @@ of algorithms for volumetric mesh *generation*, *manipulation* or *visualization
 
 
 ## Content
+- [Table of Contents](res/readme/TableOfContents.md)
 - [How to Install](#how-to-install)
 - [Features](#features)
 - [How to Use](#how-to-use)
