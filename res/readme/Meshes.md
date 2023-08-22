@@ -2,6 +2,6 @@
 
 ## Add a Mesh
 
-## Setup
+## Mesh Setup
 
 ## Load/Save Configuration
