@@ -6,11 +6,19 @@
   * [Cmake](Installation.md#cmake)
 
 * [Your First Programm](YourFirstProgram.md)
-  * [Minimal Example](YourFirstProgram.md#minimal-example)
 
 * [Meshes](Meshes.md)
   * [Add a Mesh](Meshes.md#add-a-mesh)
   * [Mesh Setup](Meshes.md#setup)
+    * [Load and Name](Meshes.md#load-and-name)
+    * [Color](Meshes.md#color)
+    * [Transformation](Meshes.md#transformation)
+    * [Lighting](Meshes.md#lighting)
+    * [Cells](Meshes.md#cells)
+    * [Lines and Points](Meshes.md#lines-and-points)
+    * [Extras](Meshes.md#extras)
+
+  * [Load/Save Configuration](Meshes.md#loadsave-configuration)
 
 * [Graphics](Graphics.md)
   * [Shadows](Graphics.md#shadows)

@@ -118,6 +118,18 @@ mesh.set_cell_rounding(0.0f);
 ```
 To get an insight of the meshes there are some functions to use. It is recommended to test its functionality inside the viewer.
 
+#### Lines and Points
+```cpp
+mesh.render_cells(true);
+
+mesh.render_lines(true);
+mesh.set_line_width(1.5);
+
+mesh.render_points(true);
+mesh.set_point_size(0.5);
+```
+Cells, Lines and Points can be rendered in any combination.
+
 #### Extras
 ```cpp
 mesh.use_backface_culling(true);
@@ -141,4 +153,4 @@ mesh.load_configuration("path/to/saved/configuration");
 mesh.save_configuration("path/to/configuration");
 ```
 It is possible to save the settings of a mesh in a file and load it to any other mesh.
-This enables finetuning inside the viewer and load it in code afterwards.
+This enables fine-tuning inside the viewer and load it in code afterward.

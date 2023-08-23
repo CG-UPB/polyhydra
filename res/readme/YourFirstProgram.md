@@ -12,7 +12,3 @@ int main()
     open();
 }
 ```
-
-**[load]**
-
-[OpenVolumeMesh](https://www.graphics.rwth-aachen.de/software/openvolumemesh)
