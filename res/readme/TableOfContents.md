@@ -9,7 +9,8 @@
 
 * [Meshes](Meshes.md)
   * [Add a Mesh](Meshes.md#add-a-mesh)
-  * [Mesh Setup](Meshes.md#setup)
+  * [VMesh](Meshes.md#vmesh)
+  * [Mesh Setup](Meshes.md#mesh-setup)
     * [Load and Name](Meshes.md#load-and-name)
     * [Color](Meshes.md#color)
     * [Transformation](Meshes.md#transformation)
@@ -35,7 +36,7 @@
 
 * [Shapes](Shapes.md)
 
-* [Ground](Graphics.md)
+* [Ground](Ground.md)
 
 * [Screenshots](Screenshots.md)
 
