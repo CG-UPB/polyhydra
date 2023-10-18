@@ -5,7 +5,7 @@
   * [Dependencies](Installation.md#dependencies)
   * [Cmake](Installation.md#cmake)
 
-* [Your First Programm](YourFirstProgram.md)
+* [Your First Program](YourFirstProgram.md)
 
 * [Meshes](Meshes.md)
   * [Add a Mesh](Meshes.md#add-a-mesh)

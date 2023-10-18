@@ -114,6 +114,7 @@ namespace volumeshOS::Internal
             bool block_input                        = false;
             bool multisampling                      = true;
             bool rotated                            = false;
+            bool reading_file                       = true;
         } settings;
 
         static void restore_default_settings()

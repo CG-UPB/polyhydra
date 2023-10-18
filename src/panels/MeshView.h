@@ -32,7 +32,6 @@ namespace volumeshOS::Internal
 
         std::shared_ptr<Renderer> renderer = nullptr;
         std::shared_ptr<LogWindow> log_window = nullptr;
-        bool read_data = false;
 
     private:
 

@@ -8,7 +8,7 @@ There are several ways to load a mesh:
 - with a saved ```.ovm``` file
 
 ```cpp
-std:string path = "path_to_ovm_file"
+std:string path = "path/to/ovm_file.ovm"
 auto mesh_a = load(path);
 ```
 
@@ -23,9 +23,9 @@ auto mesh_b = load(mesh)
 ```cpp
 auto mesh_c = load_from_dialog("Title");
 ```
-
+    
 ## VMesh
-After callaing the `load` function we get a so called `VMesh`.
+After calling the `load` function we get a so called `VMesh`.
 We can use this to call functions directly on the mesh.
 So these two calls are identical:
 
@@ -33,7 +33,7 @@ So these two calls are identical:
 VMesh mesh = load("path");
 
 mesh.set_name("name");
-set_name(mesh, "name")
+set_name(mesh, "name");
 ```
 
 ## Mesh Setup
@@ -79,7 +79,7 @@ mesh.set_rotation(90.0, 30.0, 10.0);
 // mesh.set_rotation(anlge, axis_vector);
 mesh.reset_rotation();
 ```
-By default a mesh or rather ist point of gravity is placed in the worlds center and scaled to fit in front of the camera. 
+By default a mesh or rather its point of gravity is placed in the worlds center and scaled to fit in front of the camera. 
 The `origin` position can set multiple meshes in the same system (e.g a mesh splitted into two different files). Rotation and scaling is also done around the origin.
 When setting `scale_normalization = false`  the mesh stays in its original size and is not scaled to fit in front of the camera.
 

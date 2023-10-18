@@ -188,7 +188,8 @@ int main(int argc, char* argv[])
     // generate ovm mesh
     auto ovm_mesh = gen_mesh();
     // load mesh into view; get VMesh object in return to operate on
-    auto mesh = setup_mesh(ovm_mesh, "Cube");
+    //auto mesh = setup_mesh(ovm_mesh, "Cube");
+    auto mesh = load_from_dialog("");
 
     //auto ovm_mesh2 = gen_mesh();
     //auto mesh2 = setup_mesh(ovm_mesh2, "Cube2", glm::vec3{2.0, 0.0, 0.0});

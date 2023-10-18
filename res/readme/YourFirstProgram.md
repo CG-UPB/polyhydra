@@ -1,6 +1,6 @@
 # Your First Program
 
-The simplest case looks like this:
+The simplest volumeshOS program looks like this:
 ```c
 #include "volumeshOS.h"
 
@@ -12,3 +12,4 @@ int main()
     open();
 }
 ```
+First include `volumeshOS.h`. Then load a mesh and open the viewer. 

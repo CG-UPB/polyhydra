@@ -1432,8 +1432,8 @@ namespace volumeshOS
 
     struct ExportOptions
     {
-        int width               = -1;       // viewport width by default
-        int height              = -1;       // viewport height by default
+        int width               = 1080 ;       // viewport width by default
+        int height              = 720;       // viewport height by default
         bool include_background = true;     // include background in image
         bool include_shapes     = true;     // include shapes in image
         bool include_ground     = true;     // include ground in image

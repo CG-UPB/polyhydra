@@ -120,7 +120,7 @@ namespace volumeshOS
     {
         int id = next_mesh_id();
         VMesh vmesh(id);
-        window->panels.mesh_view->read_data = true;
+        Internal::AppState::settings.reading_file = true;
         commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
             if (name != nullptr)
@@ -144,7 +144,7 @@ namespace volumeshOS
     {
         int id = next_mesh_id();
         VMesh vmesh(id);
-        window->panels.mesh_view->read_data = true;
+        Internal::AppState::settings.reading_file = true;
         commands.emplace_back([id, path, name]{
             mesh_list->add_mesh(id, path);
             if (name != nullptr)
@@ -167,6 +167,7 @@ namespace volumeshOS
 
     VMesh load_from_dialog(const std::string& title, const char* name)
     {
+
         if (auto file = volumeshOS::file_dialog(title))
         {
             return volumeshOS::load(file, name);

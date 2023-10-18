@@ -249,9 +249,9 @@ namespace volumeshOS::Internal
         const float progress_bar_width = 150.0f;
         const float progress_bar_height = 30.0f;
 
-        if(read_data)
+        if(AppState::settings.reading_file)
         {
-            read_data = false;
+            AppState::settings.reading_file = false;
             auto text = "Reading file...";
             ImVec2 text_size = ImGui::CalcTextSize(text);
             float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
