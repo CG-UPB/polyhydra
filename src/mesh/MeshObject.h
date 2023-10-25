@@ -108,6 +108,8 @@ namespace volumeshOS::Internal
 
         void set_origin(const glm::vec3& origin);
 
+        void serialize(const std::string& filename) { m_mvb->serialize(filename); }
+
         /**
          * updates the vertex_buffer
          */

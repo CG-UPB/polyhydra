@@ -102,30 +102,37 @@ namespace volumeshOS
         int id = next_mesh_id();
         VMesh vmesh(id);
         auto mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
-        mesh->assign(instance);
+        *mesh = *instance;
 
-        commands.emplace_back([id, mesh, name]{
+        std::string strname;
+        if (name != nullptr)
+            strname = name;
+
+        commands.emplace_back([id, mesh, strname]{
             mesh_list->add_mesh(id, mesh);
-            if (name != nullptr)
+            if (!strname.empty())
             {
-                mesh_list->set_name(id, name);
+                mesh_list->set_name(id, strname);
             }
         });
-        focus_camera_on_mesh(VMesh(id));
+        // focus_camera_on_mesh(VMesh(id));
         vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
         return vmesh;
     }
 
     VMesh load(const std::string& path, const char* name)
     {
+        std::string strname;
+        if (name != nullptr)
+            strname = name;
         int id = next_mesh_id();
         VMesh vmesh(id);
-        window->panels.mesh_view->read_data = true;
-        commands.emplace_back([id, path, name]{
+        commands.emplace_back([id, path, strname]{
+            window->panels.mesh_view->read_data = true;
             mesh_list->add_mesh(id, path);
-            if (name != nullptr)
+            if (!strname.empty())
             {
-                mesh_list->set_name(id, name);
+                mesh_list->set_name(id, strname);
             }
             else
             {
@@ -134,7 +141,7 @@ namespace volumeshOS
                 mesh_list->set_name(id, file_name);
             }
         });
-        focus_camera_on_mesh(VMesh(id));
+        // focus_camera_on_mesh(VMesh(id));
 
         vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
         return vmesh;
@@ -142,14 +149,17 @@ namespace volumeshOS
 
     VMesh load(const char* path, const char* name)
     {
+        std::string strname;
+        if (name != nullptr)
+            strname = name;
         int id = next_mesh_id();
         VMesh vmesh(id);
-        window->panels.mesh_view->read_data = true;
-        commands.emplace_back([id, path, name]{
+        commands.emplace_back([id, path, strname]{
+            window->panels.mesh_view->read_data = true;
             mesh_list->add_mesh(id, path);
-            if (name != nullptr)
+            if (!strname.empty())
             {
-                mesh_list->set_name(id, name);
+                mesh_list->set_name(id, strname);
             }
             else
             {
@@ -159,7 +169,7 @@ namespace volumeshOS
             }
 
         });
-        focus_camera_on_mesh(VMesh(id));
+        // focus_camera_on_mesh(VMesh(id));
         vmesh.set_lighting_mode(static_cast<LightingMode>(Internal::AppState::settings.use_global_pbr));
 
         return vmesh;
@@ -647,10 +657,11 @@ namespace volumeshOS
         return Internal::AppState::settings.transparency_active;
     }
 
-    void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)
+    template<typename KernelType>
+    void update(const VMesh& mesh, const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, KernelType>* instance)
     {
         auto ovm = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
-        ovm->assign(instance);
+        *ovm = *instance;
         commands.emplace_back([mesh, ovm]{
             mesh_list->set_mesh(mesh.get_id(), ovm);
         });
@@ -667,6 +678,13 @@ namespace volumeshOS
     {
         commands.emplace_back([mesh, path]{
             mesh_list->set_mesh(mesh.get_id(), path);
+        });
+    }
+
+    void serialize(const VMesh& mesh, const std::string& filename)
+    {
+        commands.emplace_back([mesh, filename] {
+            mesh_list->execute_for_mesh([mesh, filename](const std::shared_ptr<Internal::MeshObject>& m) { m->serialize(filename); }, mesh.get_id());
         });
     }
 
@@ -1433,8 +1451,9 @@ namespace volumeshOS
 
     void remove_shape(const VShape& shape)
     {
-        commands.emplace_back([shape]{
-            shapes->remove_shape(shape.get_id());
+        int id = shape.get_id();
+        commands.emplace_back([id]{
+            shapes->remove_shape(id);
         });
     }
 
@@ -1641,7 +1660,6 @@ namespace volumeshOS
     template VMesh load<OpenVolumeMesh::TetrahedralMeshTopologyKernel>(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TetrahedralMeshTopologyKernel>*, const char*);
     template VMesh load<OpenVolumeMesh::HexahedralMeshTopologyKernel>(const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::HexahedralMeshTopologyKernel>*, const char*);
 
-
     template void set_line_color<glm::vec3>(const VMesh&, const glm::vec3&);
     template void set_line_color<OpenVolumeMesh::Vec3d>(const VMesh&, const OpenVolumeMesh::Vec3d&);
     template void set_line_color<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
@@ -1653,6 +1671,9 @@ namespace volumeshOS
     template void set_point_color<OpenVolumeMesh::Vec3f>(const VMesh&, const OpenVolumeMesh::Vec3f&);
     template void set_point_color<std::array<double, 3>>(const VMesh&, const std::array<double, 3>&);
     template void set_point_color<std::array<float, 3>>(const VMesh&, const std::array<float, 3>&);
+    template void update<OpenVolumeMesh::TopologyKernel>(const VMesh&, const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TopologyKernel>*);
+    template void update<OpenVolumeMesh::TetrahedralMeshTopologyKernel>(const VMesh&, const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::TetrahedralMeshTopologyKernel>*);
+    template void update<OpenVolumeMesh::HexahedralMeshTopologyKernel>(const VMesh&, const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, OpenVolumeMesh::HexahedralMeshTopologyKernel>*);
 
     template void set_color<glm::vec4>(const glm::vec4&);
     template void set_color<OpenVolumeMesh::Vec4d>(const OpenVolumeMesh::Vec4d&);
@@ -1684,6 +1705,23 @@ namespace volumeshOS
     template void set_color<std::array<double, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const std::array<double, 4>&);
     template void set_color<std::array<float, 4>>(const VMesh&, OpenVolumeMesh::HalfFaceHandle, const std::array<float, 4>&);
 
+    template void set_sky_color<glm::vec3>(const glm::vec3&);
+    template void set_sky_color<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
+    template void set_sky_color<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
+    template void set_sky_color<std::array<double, 3>>(const std::array<double, 3>&);
+    template void set_sky_color<std::array<float, 3>>(const std::array<float, 3>&);
+
+    template void set_ground_color<glm::vec3>(const glm::vec3&);
+    template void set_ground_color<OpenVolumeMesh::Vec3d>(const OpenVolumeMesh::Vec3d&);
+    template void set_ground_color<OpenVolumeMesh::Vec3f>(const OpenVolumeMesh::Vec3f&);
+    template void set_ground_color<std::array<double, 3>>(const std::array<double, 3>&);
+    template void set_ground_color<std::array<float, 3>>(const std::array<float, 3>&);
+
+    template glm::vec3 get_sky_color<glm::vec3>();
+    template OpenVolumeMesh::Vec3d get_sky_color<OpenVolumeMesh::Vec3d>();
+    template OpenVolumeMesh::Vec3f get_sky_color<OpenVolumeMesh::Vec3f>();
+    template std::array<double, 3> get_sky_color<std::array<double, 3>>();
+    template std::array<float, 3> get_sky_color<std::array<float, 3>>();
 
     template glm::vec4 get_color<glm::vec4>(const VMesh&);
     template OpenVolumeMesh::Vec4d get_color<OpenVolumeMesh::Vec4d>(const VMesh&);

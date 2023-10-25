@@ -64,6 +64,33 @@ namespace volumeshOS::Internal
         undo_dig_stack = RingBuffer(1000);
     }
 
+    void MeshVertexBuffer::serialize(const std::string& filename) const
+    {
+        auto& indices = m_indices_rounded;
+
+        auto& vao_locations = s_attribute_definitions.of(VAO::MESH_ROUNDED);
+        auto& location = vao_locations[static_cast<int>(Attribute::POSITION)];
+        auto& vao_data = m_attributes.at(static_cast<int>(VAO::MESH_ROUNDED));
+        auto positions = vao_data.data.at(location.location);
+
+        std::ofstream out(filename);
+
+        out << "ply" << std::endl;
+        out << "format ascii 1.0" << std::endl;
+        out << "element vertex " << positions.size() / 3lu << std::endl;
+        out << "property float x" << std::endl;
+        out << "property float y" << std::endl;
+        out << "property float z" << std::endl;
+        out << "element face " << indices.size() / 3lu << std::endl;
+        out << "property list uchar int vertex_index" << std::endl;
+        out << "end_header" << std::endl;
+        for (int i = 0; i < positions.size(); i += 3)
+            out << positions[i] << " " << positions[i+1] << " " << positions[i+2] << std::endl;
+        for (int i = 0; i < indices.size(); i += 3)
+            out << "3 " << indices[i] << " " << indices[i+1] << " " << indices[i+2] << std::endl;
+
+    }
+
     void MeshVertexBuffer::build_vertex_arrays()
     {
         auto& positions_by_face = get_attrib_array(VAO::MESH_FACE, Attribute::POSITION);

@@ -69,6 +69,7 @@ set(imgui_HEADERS
         imgui/imgui.h
         imgui/backends/imgui_impl_glfw.h
         imgui/backends/imgui_impl_opengl3.h
+        imgui/misc/cpp/imgui_stdlib.h
         )
 
 set(imgui_SOURCES
@@ -79,6 +80,7 @@ set(imgui_SOURCES
         imgui/imgui_tables.cpp
         imgui/backends/imgui_impl_glfw.cpp
         imgui/backends/imgui_impl_opengl3.cpp
+        imgui/misc/cpp/imgui_stdlib.cpp
         )
 
 add_library(imgui STATIC ${imgui_SOURCES} ${imgui_HEADERS})

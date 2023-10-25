@@ -395,7 +395,7 @@ void main()
     float alpha = 1.0;
     vec3 color = vec3(0.0, 0.0, 0.0);
 
-    vec2 coord = v_uv * float(u_tile_count);
+    vec2 coord = v_uv * float(u_tile_count) * 3;
 
     vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord) * 0.8;
     float line = min(grid.x, grid.y);

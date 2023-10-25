@@ -33,7 +33,7 @@ namespace volumeshOS::Internal
     {
         auto ovm_mesh = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
         OpenVolumeMesh::IO::FileManager file_manager;
-        file_manager.readFile(path, *ovm_mesh);
+        file_manager.readFile(path, *ovm_mesh, false);
         add_mesh(mesh_id, ovm_mesh);
     }
 

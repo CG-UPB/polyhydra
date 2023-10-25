@@ -100,7 +100,7 @@ void main()
 
     float is_digged = a_is_digged[0];
     float never_discard = a_is_digged[1];
-    if (never_discard != 1.0 && (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || is_digged == 1.0 || u_object_color.a != 1.0 || a_color.a == 0.0))
+    if (never_discard != 1.0 && (peel_depth < u_peel_depth || angle > 0 || a_is_isolated == 1.0 || is_digged == 1.0 || u_object_color.a == 0.0 || a_color.a == 0.0))
     {
         v_Pos = vec3(0.0, 0.0, 0.0);
         v_min_edge_length = 0.0;

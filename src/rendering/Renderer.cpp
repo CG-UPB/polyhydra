@@ -1,4 +1,3 @@
-
 #include "Renderer.h"
 
 #include "volumeshOS.h"
@@ -79,6 +78,7 @@ namespace volumeshOS::Internal
         input.last.x = (float) width / 2.0f;
         input.last.y = (float) height / 2.0f;
         camera->set_viewport_size((float) width, (float) height);
+        camera->update();
     }
 
     bool Renderer::should_render_mesh(const std::shared_ptr<MeshObject>& mesh)
