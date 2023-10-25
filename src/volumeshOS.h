@@ -608,8 +608,8 @@ namespace volumeshOS
      * @param mesh
      * @param instance
      */
-    void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance);
-
+    template<typename KernelType>
+    void update(const VMesh& mesh, const OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d, KernelType>* instance);
 
     /**
      * Set mesh from file without generating a new id.
@@ -636,6 +636,8 @@ namespace volumeshOS
      * @param mesh mesh to remove
      */
     void clear(const VMesh& mesh);
+
+    void serialize(const VMesh& mesh, const std::string& filename);
 
     /**
      * Returns the OpenVolumeMesh instance of a mesh.

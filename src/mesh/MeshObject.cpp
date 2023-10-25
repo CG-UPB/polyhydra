@@ -26,8 +26,8 @@ namespace volumeshOS::Internal
         // calculates the amount of ids the mesh needs
         calculate_mesh_offset();
 
-        translate(glm::vec3(0.0f));
-        scale(glm::vec3(1.0f));
+        // translate(glm::vec3(0.0f));
+        // scale(glm::vec3(1.0f));
 
         m_mvb = std::make_shared<MeshVertexBuffer>(m_mesh);
         m_mtb = std::make_shared<MeshTextureBuffer>(m_mesh, GL_TEXTURE12);
@@ -36,7 +36,7 @@ namespace volumeshOS::Internal
 
     void MeshObject::update_texture_buffer()
     {
-        if(*m_mesh->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER)->begin())
+        if(m_mesh->request_mesh_property<bool>(MeshProperties::PROP_IS_BEZIER)[OpenVolumeMesh::MH(0)])
         {
             OpenVolumeMesh::FacePropertyT<std::vector<double>> controlPointProp =
                     m_mesh->request_face_property<std::vector<double>>(MeshProperties::PROP_BEZIER_FACE_CONTROL_POINTS);
@@ -61,7 +61,7 @@ namespace volumeshOS::Internal
         bool load_roundings = m_data.rounding_size >= 0.0f;
         if (m_mvb != nullptr && !m_mvb->is_loading_finished())
         {
-            int load_cells_per_frame = 50000;
+            int load_cells_per_frame = 100000000;
             for (size_t i = 0; i < load_cells_per_frame; i++)
             {
                 m_mvb->load_next_cell();
@@ -81,8 +81,8 @@ namespace volumeshOS::Internal
         glm::vec3 diameter = max - min;
         m_data.origin = min + (diameter * 0.5f);
         // all meshes should have the same screen size, regardless of their actual size
-        m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
-
+        // m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
+        m_data.origin = glm::vec3(0.0f, 0.0f, 0.0f);
     }
 
     void MeshObject::calculate_peel_depth()
@@ -114,20 +114,21 @@ namespace volumeshOS::Internal
         {
             depth++;
             // to get the next layer we get the neighbour vertices of the vertices of actual layer
+            std::set<OpenVolumeMesh::CellHandle> neighborCells;
             for (auto vertex: act_level)
-            {
-                // vertices of next layer are the vertices of adjacent cells (especially important for 90°+ angles)
                 for (auto neighbour_cell: m_mesh->vertex_cells(vertex))
+                    neighborCells.insert(neighbour_cell);
+            // vertices of next layer are the vertices of adjacent cells (especially important for 90°+ angles)
+            for (auto neighbour_cell: neighborCells)
+            {
+                for (auto neighbour: m_mesh->cell_vertices(neighbour_cell))
                 {
-                    for (auto neighbour: m_mesh->cell_vertices(neighbour_cell))
+                    // if not yet initalized: peel_depth of vertex = actual_depth
+                    if (vertex_peel_property[neighbour] == -1)
                     {
-                        // if not yet initalized: peel_depth of vertex = actual_depth
-                        if (vertex_peel_property[neighbour] == -1)
-                        {
-                            vertex_peel_property[neighbour] = depth;
-                            // only fills with vertices that are not yet initialized
-                            next_level.push_back(neighbour);
-                        }
+                        vertex_peel_property[neighbour] = depth;
+                        // only fills with vertices that are not yet initialized
+                        next_level.push_back(neighbour);
                     }
                 }
             }
@@ -286,8 +287,8 @@ namespace volumeshOS::Internal
 
         }
 
-        glm::vec4 min(vertices[0], vertices[1], vertices[2], 1.0);
-        glm::vec4 max(vertices[0], vertices[1], vertices[2], 1.0);
+        glm::vec4 min(FLT_MAX, FLT_MAX, FLT_MAX, 1.0);
+        glm::vec4 max(-FLT_MAX, -FLT_MAX, -FLT_MAX, 1.0);
         for (int i = 0; i < vertices.size(); i += 3)
         {
             glm::vec3 vertex(vertices[i], vertices[i + 1], vertices[i + 2]);

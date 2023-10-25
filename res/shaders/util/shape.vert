@@ -45,7 +45,7 @@ mat4 get_rotation_matrix(vec3 axis, float angle)
 
 mat4 look_at(vec3 direction, vec3 up)
 {
-    if(abs(dot(direction, up)) == 1.0)
+    if(abs(abs(dot(direction, up)) - 1.0) < 0.00001)
     {
         float tmp = abs(direction.x);
         if(abs(direction.y) >= tmp)
@@ -117,7 +117,7 @@ void main()
         0.0, 0.0, a_scale.z * scale_offset , 0.0,
         0.0, 0.0, 0.0, 1.0
     );
-    mat4 rotation = look_at(a_rotation.xyz, vec3(cos(a_rotation.w), 0.0, sin(a_rotation.w)));
+    mat4 rotation = look_at(normalize(a_rotation.xyz), vec3(cos(a_rotation.w), 0.0, sin(a_rotation.w)));
     mat4 transform = translation * inverse(rotation) * scale;
 
     v_pos = vec3(u_mesh_transform * transform * vec4(a_pos, 1.0));

@@ -168,6 +168,8 @@ namespace volumeshOS::Internal
          */
         int to_edge_id(int value);
 
+        void serialize(const std::string& filename) const;
+
         /**
          * converts selection id of faces to OVM id
          * @param value id value

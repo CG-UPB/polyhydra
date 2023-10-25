@@ -55,8 +55,7 @@ void main()
 
     float alpha = v_color.a;
 
-
-    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || alpha >= 1.0 - alpha_bias || v_visible == 0 || alpha == 0)
+    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || alpha >= 1.0 - alpha_bias || alpha == 0 || v_visible == 0)
     {
         discard;
     }

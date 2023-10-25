@@ -28,7 +28,7 @@ endif ()
 set(EXPORT_TARGET_SET)
 
 list(APPEND EXPORT_TARGET_SET "volumeshOS_core")
-list(APPEND EXPORT_TARGET_SET "glm" "glad" "glfw" "imgui" "OpenVolumeMesh" "nlohmann_json" "stb" "tinyfiledialogs")
+list(APPEND EXPORT_TARGET_SET "glm" "glad" "glfw" "imgui" "nlohmann_json" "stb" "tinyfiledialogs")
 
 export(TARGETS ${EXPORT_TARGET_SET} FILE "${PROJECT_BINARY_DIR}/volumeshOSTargets.cmake")
 export(PACKAGE volumeshOS_core)
