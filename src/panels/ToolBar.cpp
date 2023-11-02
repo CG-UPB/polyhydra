@@ -282,7 +282,7 @@ namespace volumeshOS::Internal
                 direction[0] = light_direction.r;
                 direction[1] = light_direction.g;
                 direction[2] = light_direction.b;
-                if (ImGui::DragFloat3("##LightDirection", direction, 0.1f, -1.0f, 1.0f, "%.001f"))
+                if (ImGui::DragFloat3("##LightDirection", direction, 0.025f, -1.00f, 1.00f, "%.2f"))
                 {
                     light_direction = glm::vec3(direction[0], direction[1], direction[2]);
                 }

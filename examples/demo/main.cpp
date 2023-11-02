@@ -159,6 +159,7 @@ void setup_graphics()
     // Set direction for light as cube position [-1,1]x[-1,1]x[-1,1]
     set_light_direction(std::array<float,3>{0.5f, 1.0f, 1.0f});
 
+
     // Ground
     // you can choose between a solid ground, a grid or both
     use_grid(true);
@@ -189,7 +190,13 @@ int main(int argc, char* argv[])
     auto ovm_mesh = gen_mesh();
     // load mesh into view; get VMesh object in return to operate on
     //auto mesh = setup_mesh(ovm_mesh, "Cube");
-    auto mesh = load_from_dialog("");
+    //auto mesh = load_from_dialog("");
+
+    auto ovm_mesh2 = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
+    OpenVolumeMesh::IO::FileManager file_manager;
+    std::string path = "/home/lukas/CLionProjects/volumeshos/res/sample_meshes/nut_el0_5_hex_opt.ovm";
+    file_manager.readFile(path, *ovm_mesh2);
+    auto mesh = load(path);
 
     //auto ovm_mesh2 = gen_mesh();
     //auto mesh2 = setup_mesh(ovm_mesh2, "Cube2", glm::vec3{2.0, 0.0, 0.0});
@@ -213,6 +220,29 @@ int main(int argc, char* argv[])
     on_face_select(&face_select);
     on_cell_select(&cell_select);
 
+
+    for(auto c_it : ovm_mesh2->cells())
+    {
+        for(auto e_it : ovm_mesh2->cell_edges(c_it))
+        {
+            auto edge = ovm_mesh2->edge(e_it);
+            auto from = ovm_mesh2->vertex(edge.from_vertex());
+            auto to = ovm_mesh2->vertex(edge.to_vertex());
+
+            auto dir = to - from;
+            auto pos = from + (dir) / 2.0f;
+
+            auto cylinder = mesh.add_shape<VCylinder>(c_it);
+            cylinder.set_position(pos);
+            cylinder.set_scale(0.1f, glm::length(glm::vec3(dir[0], dir[1], dir[2])), 0.1f);
+            cylinder.set_direction(dir);
+        }
+    }
+
+
+    log("This is a Log.");
+    warn("This is a Warning.");
+    error("This is an Error.");
 
     open();
 }

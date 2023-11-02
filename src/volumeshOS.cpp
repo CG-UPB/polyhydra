@@ -332,6 +332,34 @@ namespace volumeshOS
         return Internal::glm_vec3_to<Vec3T>(Internal::AppState::settings.sky.sky_color);
     }
 
+    void set_fog_density(float density)
+    {
+        commands.emplace_back([density]{
+            std::clamp(density, 0.0f, 1.0f);
+            Internal::AppState::settings.sky.fog_density = density;
+        });
+    }
+
+    float get_fog_density()
+    {
+        return Internal::AppState::settings.sky.fog_density;
+    }
+
+    template<typename Vec3T>
+    void set_fog_color(const Vec3T& color)
+    {
+        commands.emplace_back([color]{
+            auto col = Internal::to_glm_vec3(color);
+            Internal::AppState::settings.sky.fog_color = col;
+        });
+    }
+
+    template<typename Vec3T>
+    Vec3T get_fog_color()
+    {
+        return Internal::glm_vec3_to<Vec3T>(Internal::AppState::settings.sky.fog_color);
+    }
+
     void set_selection_mode(SelectionMode mode)
     {
         commands.emplace_back([mode]{
@@ -510,6 +538,34 @@ namespace volumeshOS
         return Internal::AppState::settings.light.direction;
     }
 
+    // Set light color
+    template<typename Vec3T>
+    void set_light_color(const Vec3T& color)
+    {
+        commands.emplace_back([color]{
+            auto col = Internal::to_glm_vec3(color);
+            Internal::AppState::settings.light.color = col;
+        });
+    }
+
+    template<typename Vec3T>
+    Vec3T& get_light_color()
+    {
+        return Internal::AppState::settings.light.color;
+    }
+
+    void set_light_intensity(float intensity)
+    {
+        commands.emplace_back([intensity]{
+            Internal::AppState::settings.light.intensity = intensity;
+        });
+    }
+
+    float get_light_intensity()
+    {
+        return Internal::AppState::settings.light.intensity;
+    }
+
     void set_gamma(float gamma)
     {
         commands.emplace_back([gamma]{
@@ -624,6 +680,44 @@ namespace volumeshOS
         return Internal::AppState::settings.shadows_active;
     }
 
+    void set_shadow_cascades(int cascades)
+    {
+        cascades = std::clamp(cascades, 0, 8);
+        commands.emplace_back([cascades]{
+            Internal::AppState::settings.num_shadow_cascades = cascades;
+        });
+    }
+
+    int get_shadow_cascades()
+    {
+        return Internal::AppState::settings.num_shadow_cascades;
+    }
+
+    void set_shadow_strength(float strength)
+    {
+        commands.emplace_back([strength]{
+            Internal::AppState::settings.shadow.shadow_strength = strength;
+        });
+    }
+
+    float get_shadow_strength()
+    {
+        return Internal::AppState::settings.shadow.shadow_strength;
+    }
+
+    void set_shadow_penumbra(float penumbra)
+    {
+        commands.emplace_back([penumbra]{
+            Internal::AppState::settings.shadow.penumbra_scale = penumbra;
+        });
+    }
+
+    float get_shadow_penumbra()
+    {
+        return Internal::AppState::settings.shadow.penumbra_scale;
+    }
+
+
     void use_ambient_occlusion( bool ssao)
     {
         commands.emplace_back([ssao]{
@@ -636,6 +730,19 @@ namespace volumeshOS
         return Internal::AppState::settings.ssao_active;
     }
 
+    void set_ambient_occlusion_preset(SSAOMode mode)
+    {
+        commands.emplace_back([mode]{
+            Internal::AppState::settings.ssao_mode = mode;
+        });
+    }
+
+    bool get_ambient_occlusion_preset()
+    {
+        return Internal::AppState::settings.ssao_active;
+    }
+
+
     void use_transparency( bool transparency)
     {
         commands.emplace_back([transparency]{
@@ -646,6 +753,31 @@ namespace volumeshOS
     bool is_using_transparency()
     {
         return Internal::AppState::settings.transparency_active;
+    }
+
+    void set_transparency_mode(TransparencyMode mode)
+    {
+        commands.emplace_back([mode]{
+            Internal::AppState::settings.transparency_mode = mode;
+        });
+    }
+
+    TransparencyMode set_transparency_mode()
+    {
+        return Internal::AppState::settings.transparency_mode;
+    }
+
+    void set_transparency_passes(int passes)
+    {
+        passes = std::clamp(passes, 0, 100);
+        commands.emplace_back([passes]{
+            Internal::AppState::settings.num_depth_peeling_passes = passes;
+        });
+    }
+
+    int set_transparency_passes()
+    {
+        return Internal::AppState::settings.num_depth_peeling_passes;
     }
 
     void update(const VMesh& mesh, OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>* instance)

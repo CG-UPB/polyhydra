@@ -154,3 +154,11 @@ mesh.save_configuration("path/to/configuration");
 ```
 It is possible to save the settings of a mesh in a file and load it to any other mesh.
 This enables fine-tuning inside the viewer and load it in code afterward.
+
+***
+<details>
+<summary> More </summary>
+
+[Table of Content](TableOfContents.md)
+
+</details>

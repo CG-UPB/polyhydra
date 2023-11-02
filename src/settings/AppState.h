@@ -42,8 +42,8 @@ namespace volumeshOS::Internal
         float specular_strength = 0.15f;
         float specular_exponent = 8.0f;
         bool use_pbr            = true;
-        float metallic          = 0.15;
-        float roughness         = 0.65;
+        float metallic          = 0.15f;
+        float roughness         = 0.65f;
     };
 
     struct GroundOptions

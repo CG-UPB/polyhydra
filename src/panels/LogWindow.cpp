@@ -84,6 +84,7 @@ namespace volumeshOS::Internal
             ImGui::PushStyleColor(ImGuiCol_TableBorderLight, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
             ImGui::BeginTable("Messages", 4, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_ScrollX);
 
+            // show messages
             for(const auto& message : messages)
             {
                 show_message(message);
@@ -149,37 +150,43 @@ namespace volumeshOS::Internal
         ImGui::Dummy(ImVec2(0.0f, min_height));
         ImGui::SameLine();
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + min_height / 2.0f));
+        ImGuiStyle* style = &ImGui::GetStyle();
+        auto text_color = style->Colors[ImGuiCol_Text];
         switch (message.type)
         {
             case Info:
-                ImGuiUtil::icon("info.png", ImGui::GetFontSize(), true);
+                style->Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+                ImGuiUtil::icon("info2.png", ImGui::GetFontSize(), true);
                 break;
             case Warning:
-                ImGuiUtil::icon("info.png", ImGui::GetFontSize(), true);
+                style->Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+                ImGuiUtil::icon("alert.png", ImGui::GetFontSize(), true);
                 break;
             case Error:
-                ImGuiUtil::icon("info.png", ImGui::GetFontSize(), true);
+                style->Colors[ImGuiCol_Text] = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
+                ImGuiUtil::icon("error.png", ImGui::GetFontSize(), true);
                 break;
 
         }
 
-        ImGui::TableSetColumnIndex(1);
-        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + min_height / 2.0f));
-        ImGui::SetNextItemWidth(ImGui::CalcTextSize(types[(int)message.type]).x);
-        ImGui::Text("%s", types[(int)message.type]);
+//        ImGui::TableSetColumnIndex(1);
+//        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + min_height / 2.0f));
+//        ImGui::SetNextItemWidth(ImGui::CalcTextSize(types[(int)message.type]).x);
+//        ImGui::Text("%s", types[(int)message.type]);
 
-        ImGui::TableSetColumnIndex(2);
+        ImGui::TableSetColumnIndex(1);
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + min_height / 2.0f));
         char buffer[9];
         strftime(buffer, 9, "%H:%M:%S", localtime(&message.time));
         ImGui::SetNextItemWidth(ImGui::CalcTextSize(buffer).x);
-        ImGui::Text("[%s]", buffer);
+        ImGui::Text(" [%s] ", buffer);
 
-        ImGui::TableSetColumnIndex(3);
+        ImGui::TableSetColumnIndex(2);
         ImGui::SetNextItemWidth(ImGui::GetContentRegionMax().x);
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + min_height / 2.0f));
         ImGui::Text("%s", message.msg.c_str());
         ImGui::PopID();
+        style->Colors[ImGuiCol_Text] = text_color;
     }
 
     void LogWindow::switch_arrow()

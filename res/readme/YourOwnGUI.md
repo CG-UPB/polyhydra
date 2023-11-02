@@ -1,5 +1,5 @@
 # Your Own GUI
-The viewer provides a section where own GUI elements can be placed. For this we use [ImGui](). 
+The viewer provides a section where own GUI elements can be placed. For this we use [ImGui](https://github.com/ocornut/imgui). 
 ## Load Mesh Button
 ```cpp
 on_gui_render([](){
