@@ -6,50 +6,50 @@ of algorithms for volumetric mesh *generation*, *manipulation* or *visualization
 
 ***
 ## Content
-* [Installation](Installation.md)
-    * [Dependencies](Installation.md#dependencies)
-    * [Cmake](Installation.md#cmake)
+* [Installation](res/readme/Installation.md)
+    * [Dependencies](res/readme/Installation.md#dependencies)
+    * [Cmake](res/readme/Installation.md#cmake)
 
-* [Your First Program](YourFirstProgram.md)
+* [Your First Program](res/readme/YourFirstProgram.md)
 
-* [Meshes](Meshes.md)
-    * [Add a Mesh](Meshes.md#add-a-mesh)
-    * [VMesh](Meshes.md#vmesh)
-    * [Mesh Setup](Meshes.md#mesh-setup)
-        * [Load and Name](Meshes.md#load-and-name)
-        * [Color](Meshes.md#color)
-        * [Transformation](Meshes.md#transformation)
-        * [Lighting](Meshes.md#lighting)
-        * [Cells](Meshes.md#cells)
-        * [Lines and Points](Meshes.md#lines-and-points)
-        * [Extras](Meshes.md#extras)
+* [Meshes](res/readme/Meshes.md)
+    * [Add a Mesh](res/readme/Meshes.md#add-a-mesh)
+    * [VMesh](res/readme/Meshes.md#vmesh)
+    * [Mesh Setup](res/readme/Meshes.md#mesh-setup)
+        * [Load and Name](res/readme/Meshes.md#load-and-name)
+        * [Color](res/readme/Meshes.md#color)
+        * [Transformation](res/readme/Meshes.md#transformation)
+        * [Lighting](res/readme/Meshes.md#lighting)
+        * [Cells](res/readme/Meshes.md#cells)
+        * [Lines and Points](res/readme/Meshes.md#lines-and-points)
+        * [Extras](res/readme/Meshes.md#extras)
 
-    * [Load/Save Configuration](Meshes.md#loadsave-configuration)
+    * [Load/Save Configuration](res/readme/Meshes.md#loadsave-configuration)
 
-* [Graphics](Graphics.md)
-    * [Shadows](Graphics.md#shadows)
-    * [Transparency](Graphics.md#transparency)
-    * [Post Processing](Graphics.md#post-processing)
+* [Graphics](res/readme/Graphics.md)
+    * [Shadows](res/readme/Graphics.md#shadows)
+    * [Transparency](res/readme/Graphics.md#transparency)
+    * [Post Processing](res/readme/Graphics.md#post-processing)
 
-* [Camera](Camera.md)
+* [Camera](res/readme/Camera.md)
 
-* [Selection](Selection.md)
+* [Selection](res/readme/Selection.md)
 
-* [Sky](Sky.md)
+* [Sky](res/readme/Sky.md)
 
-* [Light](Light.md)
+* [Light](res/readme/Light.md)
 
-* [Shapes](Shapes.md)
+* [Shapes](res/readme/Shapes.md)
 
-* [Ground](Ground.md)
+* [Ground](res/readme/Ground.md)
 
-* [Screenshots](Screenshots.md)
+* [Screenshots](res/readme/Screenshots.md)
 
-* [Debugging](Debugging.md)
+* [Debugging](res/readme/Debugging.md)
 
-* [Callbacks](Callbacks.md)
+* [Callbacks](res/readme/Callbacks.md)
 
-* [Your Own GUI](YourOwnGUI.md)
+* [Your Own GUI](res/readme/YourOwnGUI.md)
 
 ***
 
