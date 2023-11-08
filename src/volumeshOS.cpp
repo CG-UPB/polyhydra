@@ -775,7 +775,7 @@ namespace volumeshOS
         });
     }
 
-    int set_transparency_passes()
+    int get_transparency_passes()
     {
         return Internal::AppState::settings.num_depth_peeling_passes;
     }

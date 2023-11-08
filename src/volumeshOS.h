@@ -180,7 +180,7 @@ namespace volumeshOS
     ShadingMode get_shading_mode(const VMesh& mesh);
 
     /**
-     * Set Sky color
+     * Set sky color
      * @tparam Vec3T 3D vector type
      * @param color vector in range [0,1]
      */
@@ -188,12 +188,40 @@ namespace volumeshOS
     void set_sky_color(const Vec3T& color);
 
     /**
-     * Get Sky color
-     * @tparam Vec3T
+     * Get sky color
+     * @tparam Vec3T 3D vector type
      * @return color vector in range [0,1]
      */
     template<typename Vec3T>
     Vec3T& get_sky_color();
+
+    /**
+     * Set fog density
+     * @param density float in range [0,1]
+     */
+    void set_fog_density(float density);
+
+    /**
+     * Get fog density
+     * @return
+     */
+    float get_fog_density();
+
+    /**
+     * Set fog color
+     * @tparam Vec3T
+     * @param color
+     */
+    template<typename Vec3T>
+    void set_fog_color(const Vec3T& color);
+
+    /**
+     * Get fog color
+     * @tparam Vec3T
+     * @return
+     */
+    template<typename Vec3T>
+    Vec3T get_fog_color();
 
 
     /* SELECTION */
@@ -389,6 +417,16 @@ namespace volumeshOS
     template<typename Vec3T>
     Vec3T get_light_direction();
 
+    template<typename Vec3T>
+    void set_light_color(const Vec3T& color);
+
+    template<typename Vec3T>
+    Vec3T& get_light_color();
+
+    void set_light_intensity(float intensity);
+
+    float get_light_intensity();
+
 
     /* POST PROCESSING */
 
@@ -513,6 +551,18 @@ namespace volumeshOS
      */
     bool is_using_shadows();
 
+    void set_shadow_cascades(int cascades);
+
+    int get_shadow_cascades();
+
+    void set_shadow_strength(float strength);
+
+    float get_shadow_strength();
+
+    void set_shadow_penumbra(float penumbra);
+
+    float get_shadow_penumbra();
+
 
     /* AMBIENT OCCLUSION */
 
@@ -528,6 +578,8 @@ namespace volumeshOS
      */
     bool is_using_ambient_occlusion();
 
+    /* TRANSPARENCY*/
+
     /**
     * Enable/Disable transparency. Affects meshes with alpha value < 255 and cells when using peeling.
     * @param transparency
@@ -540,9 +592,16 @@ namespace volumeshOS
      */
     bool is_using_transparency();
 
+    void set_transparency_mode(TransparencyMode mode);
+
+    TransparencyMode set_transparency_mode();
+
+    void set_transparency_passes(int passes);
+
+    int get_transparency_passes();
+
 
     /* MESH */
-
 
     /**
      * Set mesh from ovm instance without generating a new id.
