@@ -11,3 +11,7 @@ set_ground_height(-5.0f);
 ```
 
 The floor consists of a solid part and a grid. Both can be assigned an individual color. The height counts for both. The solid ground receives shadows.
+
+![](../readme_res/ground.png)
+![](../readme_res/ground_grid.png)
+![](../readme_res/ground_both.png)

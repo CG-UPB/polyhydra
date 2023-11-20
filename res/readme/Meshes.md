@@ -1,3 +1,5 @@
+[Table of Content](TableOfContents.md)
+
 # Meshes
 
 We currently only support volume meshes created with OpenVolumeMesh
@@ -52,7 +54,7 @@ The name is displayed in the mesh list inside the viewer.
 ```cpp
 mesh.use_base_color(true);
 
-std::array<float, 4> color = {0.0f, 1.0f, 0.0f, 1.0f};
+std::array<float, 4> color = {1.0f, 0.0f, 0.0f, 1.0f};
 
 mesh.set_color(color);
 
@@ -63,18 +65,20 @@ mesh.set_color(hfh, color);
 ```
 Depending on the `use_base_color` value either one base color is displayed for the whole mesh or each Cell. By passing an OVM Handle object a color can be set directly to a cell, face or halfface.
 
+![](../readme_res/mesh_color.png)
+
 #### Transformation
 ```cpp
 std::array<float, 3> origin = {0.0f, 0.0f, 0.0f}
 mesh.set_origin(origin)
 
-std::array<float, 4> position = {0.0f, 1.0f, 0.0f, 0.5f}
+std::array<float, 3> position = {7.0f, 1.0f, -11.0f}
 mesh.set_position(position);
 
-mesh.set_scale(1.0f);
+mesh.set_scale(0.7f);
 mesh.use_scale_normalization(false);
 
-mesh.set_rotation(90.0, 30.0, 10.0);
+mesh.set_rotation(-30.0, 30.0, 30.0);
 // mesh.set_rotation(rot_vector);
 // mesh.set_rotation(anlge, axis_vector);
 mesh.reset_rotation();
@@ -83,24 +87,31 @@ By default a mesh or rather its point of gravity is placed in the worlds center 
 The `origin` position can set multiple meshes in the same system (e.g a mesh splitted into two different files). Rotation and scaling is also done around the origin.
 When setting `scale_normalization = false`  the mesh stays in its original size and is not scaled to fit in front of the camera.
 
+
+![](../readme_res/mesh_transformation.png)
+
 #### Lighting
 ```cpp
-// chose a lighting mode
+// PBR lighting
 mesh.set_lighting_mode(LightingMode::PBR);
+// settings
+mesh.set_metallic(0.15f);
+mesh.set_roughness(0.65f);
 
-// settings for phong lighting
+// OR 
+
+// Phong lighting
+mesh.set_lighting_mode(LightingMode::PHONG);
+// settings
 mesh.set_ambient(1.0f);
 mesh.set_diffuse(1.0f);
 mesh.set_specular(0.15f);
 mesh.set_specular_coefficient(8.0f);
-
-// settings for physically based lighting (PBR)
-mesh.set_metallic(0.15f);
-mesh.set_roughness(0.65f);
 ```
 We provide two different lighting modes: `LightingMode::PHONG` and `LightingMode::PBR`for a more realistic look. 
 Each mesh can be lighted differently.
 
+![](../readme_res/mesh_lighting.png)
 #### Cells
 
 ```cpp
@@ -118,6 +129,24 @@ mesh.set_cell_rounding(0.0f);
 ```
 To get an insight of the meshes there are some functions to use. It is recommended to test its functionality inside the viewer.
 
+<div style="display:flex; justify-content:space-between;">
+    <img src="../readme_res/mesh_cell_size.png" alt="Bild 1" style="width:50%;">
+    <img src="../readme_res/mesh_roundings.png" alt="Bild 2" style="width:50%;">
+</div>
+
+<div style="display:flex; justify-content:space-between;">
+    <img src="../readme_res/mesh_peeling1.png" alt="Bild 1" style="width:50%;">
+    <img src="../readme_res/mesh_peeling2.png" alt="Bild 2" style="width:50%;">
+</div>
+
+
+<!--
+<img src="../readme_res/mesh_cells.gif" alt="" width="1200" height="900">
+ <div style="position:relative; width:1200px; height:0; padding-bottom:100%;">
+ <img src="../readme_res/mesh_cells.gif" alt="Alternativer Text" style="position:absolute; width:100%; height:100%;">
+</div>
+-->
+
 #### Lines and Points
 ```cpp
 mesh.render_cells(true);
@@ -129,6 +158,12 @@ mesh.render_points(true);
 mesh.set_point_size(0.5);
 ```
 Cells, Lines and Points can be rendered in any combination.
+
+<div style="display:flex; justify-content:space-between;">
+    <img src="../readme_res/mesh_lines_and_points.png" alt="Bild 1" style="width:33%;">
+    <img src="../readme_res/mesh_lines.png" alt="Bild 2" style="width:33%;">
+    <img src="../readme_res/mesh_points.png" alt="Bild 3" style="width:33%;">
+</div>
 
 #### Extras
 ```cpp
@@ -155,10 +190,3 @@ mesh.save_configuration("path/to/configuration");
 It is possible to save the settings of a mesh in a file and load it to any other mesh.
 This enables fine-tuning inside the viewer and load it in code afterward.
 
-***
-<details>
-<summary> More </summary>
-   
- [Table of Content](TableOfContents.md)
-
-</details>

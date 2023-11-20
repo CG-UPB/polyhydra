@@ -13,3 +13,5 @@ int main()
 }
 ```
 First include `volumeshOS.h`. Then load a mesh and open the viewer. 
+
+![](../readme_res/viewer.png)

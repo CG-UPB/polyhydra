@@ -16,3 +16,5 @@ on_gui_render([](){
 This feature can especially useful to create a button to load meshes with a file dialog.
 The `on_gui_render` function takes a callback function that is called once per frame when the GUI is rendered.
 In this example we use ImGui to create a button that calls the `load_from_dialog` function.
+
+![](../readme_res/custom_gui.png)
