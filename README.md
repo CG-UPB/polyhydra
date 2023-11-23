@@ -26,6 +26,8 @@ of algorithms for volumetric mesh *generation*, *manipulation* or *visualization
 
     * [Load/Save Configuration](res/readme/Meshes.md#loadsave-configuration)
 
+* [Bézier Meshes](res/readme/BezierMeshes.md)
+
 * [Graphics](res/readme/Graphics.md)
     * [Shadows](res/readme/Graphics.md#shadows)
     * [Transparency](res/readme/Graphics.md#transparency)
