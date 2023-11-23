@@ -1,4 +1,3 @@
-
 ## Table of Contents
 
 * [Installation](Installation.md)
@@ -45,15 +44,3 @@
 * [Callbacks](Callbacks.md)
 
 * [Your Own GUI](YourOwnGUI.md)
-
-
-
-<details>
-<summary> Mehr </summary>
-Hallo
-
-</details>
-
-> **_NOTE:_** 
-> Hier ist ein Note
-
