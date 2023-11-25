@@ -18,13 +18,14 @@ target_link_libraries(target volumeshOS_core)
 #### Dependencies
 Before getting started some libraries are required to use volumeshOS:
 
-Ubuntu 20.04:
+For instance, on Ubuntu 20.04:
 ```console
 sudo apt-get install libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
 ```
+...and possibly for OpenGL:
 ```console
-#OpenGL:
 sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+```
 ```
 ## How to use
 The simplest volumeshOS program that simply loads a mesh looks like this:
