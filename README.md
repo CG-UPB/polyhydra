@@ -55,3 +55,5 @@ OpenVolumeMesh : https://www.graphics.rwth-aachen.de/software/openvolumemesh/
 ***
 
 ## License
+
+* See [LICENSE](LICENSE)

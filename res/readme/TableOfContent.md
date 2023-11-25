@@ -1,5 +1,4 @@
-
-## Table of Content
+## Table of Contents
 
 * [Installation](Installation.md)
   * [Dependencies](Installation.md#dependencies)

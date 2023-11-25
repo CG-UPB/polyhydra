@@ -1,26 +1,19 @@
-# **Information regarding Bézier mesh visualization**
+# ***Handling of Bézier Meshes***
 
-VolumeshOS was adapted to also visualize tetrahedral Bézier meshes.
+The visualization of meshes consisting of curved Bézier tetrahedra is supported as well, for polynomial degree up to 9. 
 
 Example Bézier meshes can be found in `res/sample_meshes/bezier_meshes/`.
 
-For visualizing the control polygons of a Bézier mesh, the example program `"volumeshOS_bezier_select"` can be executed.
-In this program Halfface selection must be activated and the option "Show control polygon when selected" must be ticked to visualize the control points of a selected halfface.
-
-## Content
-- [Bézier mesh format](#bézier-mesh-format)
-- [Changes made to volumeshOS for Bézier mesh visualization](#Changes-made-to-volumeshOS-for-Bézier-mesh-visualization)
-- [Completely separating Bézier mesh visualization from the polyhedral mesh visualization](#Completely-separating-Bézier-mesh-visualization-from-the-polyhedral-mesh-visualization)
-
+The additional visualization of the control polygons of a Bézier mesh is demonstrated in the example program `"volumeshOS_bezier_select".
+In this program halfface selection must be activated and the option "Show control polygon when selected" must be ticked to visualize the control points of a selected halfface.
 
 ## **Bézier mesh format**
 
-Bézier meshes are represented as tetrahedral OpenVolumeMesh geometry kernels with certain face property.
-The underlying topology of a Bézier mesh is encoded via the underlying OVM geometry kernel.
+Bézier meshes are represented as standard tetrahedral meshes in OpenVolumeMesh, with a certain additional per-face property holding the control points.
 
-The control points defining each Bézier tetrahedron's face are stored in a face property named `"BezierFaceControlPoints"` which is attached to the corresponding face of a tetrahedron of the OVM geometry kernel.
-This means that control points for a Bézier tetrahedron are stored per face and not per tetrahedron, so that inner control points of a Bézier tetrahedron are not stored with this representation.
-The face property is of type `std::vector<double>`, since OpenVolumeMesh is able to serialize this type.
+The control points defining a Bézier tetrahedron's face are stored in an OpenVolumeMesh face property named `"BezierFaceControlPoints"`.
+This means that control points for a Bézier tetrahedron are stored per face and not per tetrahedron. Inner control points of a Bézier tetrahedron are not stored with this representation, as they are not relevant for visualization purposes.
+The face property is of type `std::vector<double>`; OpenVolumeMesh natively supports serialization of this type.
 All control points $`c_{(i_2, i_1, i_0)}`$ of a Bézier tetrahedron's must be stored in the following format in the face property:
 ```math
 \begin{align*}
@@ -36,16 +29,16 @@ In this *one-dimensional* vector, each control point is then encoded as its thre
 
 The degree of a Bézier mesh is encoded via a OpenVolumeMesh mesh property of type `int` named `"BezierDegree"`.
 
-Also, an OVM geometry kernel representing a Bézier mesh needs a mesh property of type `bool` named `"BézierMesh"` which is set to `true` in order to be visualized at all.
+Also, a Bézier mesh needs a mesh property of type `bool` named `"BézierMesh"` which needs to be set to `true` in order to turn of curved visualization.
 
-## **Changes made to volumeshOS for Bézier mesh visualization**
+## **List of internal changes to enable Bézier mesh visualization**
 
-The following is a list of changes applied to volumeshOS in order to visualize Bézier meshes represented as described above.
-This information may become useful when debugging, changing, or removing the code added for Bézier mesh visualization.
+The following is a list of code changes applied in order to visualize Bézier meshes represented as described above.
+This information may become useful when debugging or further developing the code added for Bézier mesh visualization.
 
 ### `Shader` class
-One of the main additions to volumeshOS for Bézier mesh visualization is a tessellation stage consisting of a tessellation control shader (`.tesc`) and a tessellation evaluation shader (`.tese`).
-The `Shader` class is adapted in such a way that it automatically loads, compiles and links these tessellation shaders from files with a respective file extension if they can be found (similar to how geometry shaders are loaded).
+One of the main additions for Bézier mesh visualization is a tessellation stage consisting of a tessellation control shader (`.tesc`) and a tessellation evaluation shader (`.tese`).
+The `Shader` class is adapted in such a way that it automatically loads, compiles and links these tessellation shaders from files with a respective file extension if they can be found.
 
 ### `VertexArrayObject` class
 If a shader program contains a tessellation stage, `Gl_PATCHES` must be set as the OpenGL primitive for drawing.
@@ -60,7 +53,7 @@ Also, the tessellation level applied in the tessellation control shader is set a
 Additionally, the `u_rounding` uniform is always set to false for Bézier meshes and the vertex array object used for rounding is never bound for Bézier meshes.
 
 If a Bézier mesh is rendered, the text buffer storing the control points is also bound. 
-This texture buffer is wrapped through the new class `MeshTextureBuffer` which automatically creates an OpenGL texture buffer and fills it with the control points of a Bézier mesh's face property, when a OpenVolumeMesh geometry kernel with the mesh property `"BézierMesh"` set to `true` is loaded.
+This texture buffer is wrapped through the new class `MeshTextureBuffer` which automatically creates an OpenGL texture buffer and fills it with the control points of a Bézier mesh's face property, when an OpenVolumeMesh with the mesh property `"BézierMesh"` set to `true` is loaded.
 
 ### Shader programs
 
@@ -88,18 +81,16 @@ This includes setting the OVM halfface index for each vertex of the correspondin
 For the former two features, as vertices of a Bézier mesh the "corner control points" of each Bézier tetrahedron are used, i.e. the four control points with multi-indices $`(0,0,0,m), (0,0,m,0), (0,m,0,0), (m,0,0,0)`$, which are retrieved from the meshes face property holding the control points.
 
 ### Miscellaneous
-- To the `ToolBar` class and static `AppState::settings` structure  additional fields and functions have been added, so that an additional menu entry is rendered below the existing ones to allow the user to change the tessellation level applied in the tessellation control shader for Bézier mesh rendering.
+- To the `ToolBar` class and static `AppState::settings` structure additional fields and functions have been added, so that an additional menu entry is rendered below the existing ones to allow the user to change the tessellation level applied in the tessellation control shader for Bézier mesh rendering.
 - The new `MeshTextureBuffer` class is instantiated as a member of a `MeshObject` instance.
 - The `MeshObject` class has a new method `is_bezier_mesh` to retrieve if a mesh represents a Bézier mesh.
 
-## Completely separating Bézier mesh visualization from the polyhedral mesh visualization
+## **Future Improvements**
 Although no tessellation is performed for normal polyhedral meshes, the tessellation stage is still invoked for them.
-Also, the changes applied to volumeshOS' rendering pipeline should be oblivious to the visualization of non-Bézier, polyhedral meshes.
-If this still yields a disproportionately much performance decrease, the changes done to volumeshOS could be completely separated from the unchanged volumeshOS rendering pipeline.
-This could be done in the following, simplified way:
+If this turns out to cause a significant performance decrease, the following changes could be made:
 
 - Duplicating each shader to which a tessellation stage was added. Then, removing the tessellation stage for one of each pair. For the "reverted" shader also the custom shader changes discussed above would need to be removed.
 - In each rendering pass which was adapted for Bézier meshes (uniform set up, texture buffer binding, `draw_patches`) `MeshObject::is_bezier_mesh` can be used to distinguish between a mesh representing a Bézier mesh and a normal polyhedral mesh.
-Then, for each Bézier meshes the adjusted rendering function can be called using the shader program with tessellation stage.
-For each normal polyhedral mesh, the other shader program with the tessellation stage removed could be used by calling `VertexArrayObject::draw`.
+Then, for each Bézier mesh the adjusted rendering function can be called using the shader program with tessellation stage.
+For each normal mesh, the other shader program with the tessellation stage removed could be used by calling `VertexArrayObject::draw`.
 In the latter case, also the preparations for Bézier meshes in the rendering function (uniform set up, texture buffer binding) would need to be removed.
