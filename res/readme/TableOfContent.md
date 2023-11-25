@@ -1,5 +1,5 @@
 
-## Table of Contents
+## Table of Content
 
 * [Installation](Installation.md)
   * [Dependencies](Installation.md#dependencies)
@@ -26,34 +26,21 @@
   * [Transparency](Graphics.md#transparency)
   * [Post Processing](Graphics.md#post-processing)
 
+* [Environment](Environment.md)
+  * [Ground](Environment.md#ground)
+  * [Light](Environment.md#light)
+  * [Sky](Environment.md#sky)
+
 * [Camera](Camera.md)
 
 * [Selection](Selection.md)
 
-* [Sky](Sky.md)
-
-* [Light](Light.md)
-
 * [Shapes](Shapes.md)
-
-* [Ground](Ground.md)
 
 * [Screenshots](Screenshots.md)
 
 * [Debugging](Debugging.md)
 
-* [Callbacks](Callbacks.md)
-
 * [Your Own GUI](YourOwnGUI.md)
 
-
-
-<details>
-<summary> Mehr </summary>
-Hallo
-
-</details>
-
-> **_NOTE:_** 
-> Hier ist ein Note
 

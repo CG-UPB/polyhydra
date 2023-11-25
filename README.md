@@ -5,55 +5,48 @@ With ease of use in mind, **volumeshOS** has been created thoroughly to support 
 of algorithms for volumetric mesh *generation*, *manipulation* or *visualization*.
 
 ***
-## Content
-* [Installation](res/readme/Installation.md)
-    * [Dependencies](res/readme/Installation.md#dependencies)
-    * [Cmake](res/readme/Installation.md#cmake)
+## How to install
+#### CMake
+VolumeshOS uses CMake for building. Integrate this into your CMake file:
+```console
+add_subdirectory("path/to/volumeshOS")
 
-* [Your First Program](res/readme/YourFirstProgram.md)
+add_executable(target files..)
+target_link_libraries(target volumeshOS_core)
+```
 
-* [Meshes](res/readme/Meshes.md)
-    * [Add a Mesh](res/readme/Meshes.md#add-a-mesh)
-    * [VMesh](res/readme/Meshes.md#vmesh)
-    * [Mesh Setup](res/readme/Meshes.md#mesh-setup)
-        * [Load and Name](res/readme/Meshes.md#load-and-name)
-        * [Color](res/readme/Meshes.md#color)
-        * [Transformation](res/readme/Meshes.md#transformation)
-        * [Lighting](res/readme/Meshes.md#lighting)
-        * [Cells](res/readme/Meshes.md#cells)
-        * [Lines and Points](res/readme/Meshes.md#lines-and-points)
-        * [Extras](res/readme/Meshes.md#extras)
+#### Dependencies
+Before getting started some libraries are required to use volumeshOS:
 
-    * [Load/Save Configuration](res/readme/Meshes.md#loadsave-configuration)
+Ubuntu 20.04:
+```console
+sudo apt-get install libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+```
+```console
+#OpenGL:
+sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+```
+## How to use
+The simplest volumeshOS program that simply loads a mesh looks like this:
+```c
+#include "volumeshOS.h"
 
-* [Graphics](res/readme/Graphics.md)
-    * [Shadows](res/readme/Graphics.md#shadows)
-    * [Transparency](res/readme/Graphics.md#transparency)
-    * [Post Processing](res/readme/Graphics.md#post-processing)
+using namespace volumeshOS;
 
-* [Camera](res/readme/Camera.md)
+int main()
+{
+    load("path/to/ovm_file");
+    open();
+}
+```
 
-* [Selection](res/readme/Selection.md)
+## Documentation
+There are three ways to get further information
+* [Documentation](res/readme/TableOfContent.md) 
+* Examples inside the `examples` directory
+* `volumeshOS.h` in the `src` directory for a full overview of every usable function
 
-* [Sky](res/readme/Sky.md)
-
-* [Light](res/readme/Light.md)
-
-* [Shapes](res/readme/Shapes.md)
-
-* [Ground](res/readme/Ground.md)
-
-* [Screenshots](res/readme/Screenshots.md)
-
-* [Debugging](res/readme/Debugging.md)
-
-* [Callbacks](res/readme/Callbacks.md)
-
-* [Your Own GUI](res/readme/YourOwnGUI.md)
-
-***
-
-## **Credits**
+## Credits
 
 ImGui          : https://github.com/ocornut/imgui
 
@@ -61,4 +54,4 @@ OpenVolumeMesh : https://www.graphics.rwth-aachen.de/software/openvolumemesh/
 
 ***
 
-## **License**
+## License

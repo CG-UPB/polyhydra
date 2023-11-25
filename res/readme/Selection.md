@@ -19,3 +19,6 @@ Other possibilities are to change the color or append a shape at the entity's po
     <img src="../readme_res/selection_face.png" alt="Bild 4" style="width:19.5%;">
     <img src="../readme_res/selection_cell.png" alt="Bild 5" style="width:19.5%;">
 </div>
+
+***
+[Table of Content](TableOfContent.md)

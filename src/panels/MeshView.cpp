@@ -236,66 +236,66 @@ namespace volumeshOS::Internal
                         {1.0f, 0.0f}
                 );
 
-//        // show frame time and fps
-//        ImGui::SetCursorPos(topLeft);
-//        ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
-//        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-//        ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
-//        float y_pos = ImGui::GetCursorPosY();
-//
-//        // display mesh loading percentage
-//        const auto mesh = renderer->mesh_list->get_focused_mesh();
-//
-//        const float progress_bar_width = 150.0f;
-//        const float progress_bar_height = 30.0f;
-//
-//        if(AppState::settings.reading_file)
-//        {
-//            AppState::settings.reading_file = false;
-//            auto text = "Reading file...";
-//            ImVec2 text_size = ImGui::CalcTextSize(text);
-//            float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
-//            ImGui::SetCursorPos({middle_x - text_size.x / 2.0f, topLeft.y});
-//            ImGui::Text("%s", text);
-//        }
-//
-//        if (mesh != nullptr)
-//        {
-//            const auto mvb = mesh->get_mvb();
-//
-//            if (mvb != nullptr && !mvb->is_loading_finished())
-//            {
-//                ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
-//                float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
-//                ImGui::SetCursorPos({middle_x - progress_bar_width / 2.0f, topLeft.y});
-//                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
-//                ImGui::ProgressBar(mvb->get_loading_percentage() / 100.0f, ImVec2(progress_bar_width, progress_bar_height));
-//                ImGui::PopStyleColor();
-//            }
-//            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, y_pos});
-//            ImGui::Text("vertices: %zu", mesh->get_ovm()->n_logical_vertices());
-//            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-//            ImGui::Text("edges: %zu",mesh->get_ovm()->n_logical_edges());
-//            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-//            ImGui::Text("faces: %zu", mesh->get_ovm()->n_logical_faces());
-//            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-//            ImGui::Text("cells: %zu", mesh->get_ovm()->n_logical_cells());
-//        }
-//
-//        // Show hovered element type and id
-//        if (AppState::settings.selection_active && m_hovered_element_type != SELECTION_TYPE_NONE)
-//        {
-//            std::string element_name = SELECTION_TYPE_NAME[m_hovered_element_type];
-//            element_name += " : " + std::to_string(m_hovered_element_ovm_id);
-//            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
-//            ImGui::Text( "%s", element_name.c_str());
-//        }
-//
-//        // render LogWindow
-//
-//        auto c = ImGui::GetContentRegionMax();
-//        c.y -= 8.0f;
-//        log_window->show(c.x, c.y, renderer);
+        // show frame time and fps
+        ImGui::SetCursorPos(topLeft);
+        ImGui::Text("%.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+        ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+        ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+        float y_pos = ImGui::GetCursorPosY();
+
+        // display mesh loading percentage
+        const auto mesh = renderer->mesh_list->get_focused_mesh();
+
+        const float progress_bar_width = 150.0f;
+        const float progress_bar_height = 30.0f;
+
+        if(AppState::settings.reading_file)
+        {
+            AppState::settings.reading_file = false;
+            auto text = "Reading file...";
+            ImVec2 text_size = ImGui::CalcTextSize(text);
+            float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
+            ImGui::SetCursorPos({middle_x - text_size.x / 2.0f, topLeft.y});
+            ImGui::Text("%s", text);
+        }
+
+        if (mesh != nullptr)
+        {
+            const auto mvb = mesh->get_mvb();
+
+            if (mvb != nullptr && !mvb->is_loading_finished())
+            {
+                ImVec2 text_size = ImGui::CalcTextSize("Loading: %%");
+                float middle_x = ImGui::GetContentRegionAvailWidth() / 2.0f - text_size.x / 2.0f;
+                ImGui::SetCursorPos({middle_x - progress_bar_width / 2.0f, topLeft.y});
+                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
+                ImGui::ProgressBar(mvb->get_loading_percentage() / 100.0f, ImVec2(progress_bar_width, progress_bar_height));
+                ImGui::PopStyleColor();
+            }
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, y_pos});
+            ImGui::Text("vertices: %zu", mesh->get_ovm()->n_logical_vertices());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("edges: %zu",mesh->get_ovm()->n_logical_edges());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("faces: %zu", mesh->get_ovm()->n_logical_faces());
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text("cells: %zu", mesh->get_ovm()->n_logical_cells());
+        }
+
+        // Show hovered element type and id
+        if (AppState::settings.selection_active && m_hovered_element_type != SELECTION_TYPE_NONE)
+        {
+            std::string element_name = SELECTION_TYPE_NAME[m_hovered_element_type];
+            element_name += " : " + std::to_string(m_hovered_element_ovm_id);
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + padding.x, ImGui::GetCursorPos().y});
+            ImGui::Text( "%s", element_name.c_str());
+        }
+
+        // render LogWindow
+
+        auto c = ImGui::GetContentRegionMax();
+        c.y -= 8.0f;
+        log_window->show(c.x, c.y, renderer);
 
 
         ImGui::End();

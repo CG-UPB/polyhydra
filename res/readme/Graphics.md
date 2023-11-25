@@ -18,8 +18,16 @@ set_shadow_cascades(8);
 set_shadow_strength(0.8f);
 set_shadow_penumbra(1.0f);
 ```
-![](../readme_res/mesh_shadow_off.png)
-![](../readme_res/mesh_shadow_on.png)
+
+<div style="display:flex; justify-content:space-between;">
+    <img src="../readme_res/mesh_shadow_off.png" alt="Bild 1" style="width:49.75%;">
+    <img src="../readme_res/mesh_shadow_on.png" alt="Bild 2" style="width:49.75%;">
+</div>
+<figcaption style="width: 100%;">
+    shadow
+    (left) off,
+    (right) on
+</figcaption>
 
 ## Ambient Occlusion
 For ambient occlusion we have a bunch of presets: `OFF`, `QUALITY`, `BALANCED` and `PERFORMANCE`.
@@ -30,13 +38,25 @@ use_ambient_occlusion(true);
 set_ambient_occlusion_preset(SSAOMode::QUALITY);
 ```
 
-![](../readme_res/mesh_ssao_off.png)
-![](../readme_res/mesh_ssao_on.png)
+<div style="display:flex; justify-content:space-between;">
+    <img src="../readme_res/mesh_ssao_off.png" alt="Bild 1" style="width:49.75%;">
+    <img src="../readme_res/mesh_ssao_on.png" alt="Bild 2" style="width:49.75%;">
+</div>
+<figcaption style="width: 100%;">
+    ambient occlusion
+    (left) off,
+    (right) on
+</figcaption>
+
+Ambient occlusion can be seen be seen particularly well on the spots where the mesh touches the grund, on sharp edges and in the gaps between the cells.
 
 ## Transparency
 There are two different transparency modes: `DEPTH_PEELING` and `WEIGHTED_BLENDED`.
-While depth peeling displays an exact transparency it takes a lot of computational power. Therefore, the
-number of `passes` sets how many layers are blended.
+`Depth peeling` is an order independent method that produces accurate transparency. Therefore, the
+number of `passes` sets how many layers are blended. A higher number leads to a better result, but also causes
+higher computing time. The `weightet-blended` order-independent transparency calculation method, on the other hand, is just an approximation, but is
+more performant.
+
 ```cpp
 use_transparency(true);
 
@@ -44,9 +64,19 @@ use_transparency(true);
 set_transparency_mode(TransparencyMode::DEPTH_PEELING);
 set_transparency_passes(15); // passes for depth peeling
 ```
-![](../readme_res/mesh_transperency_off.png)
-![](../readme_res/mesh_transperency_on.png)
+<div style="display: flex; flex-wrap: wrap; gap: 5px;">
+  <img src="../readme_res/mesh_transperency_off.png" alt="Bild 1" style="flex: 1 1 calc(50% - 5px); max-width: calc(50% - 5px);">
+  <img src="../readme_res/mesh_transperency_on.png" alt="Bild 2" style="flex: 1 1 calc(50%); max-width: calc(50%);">
+  <img src="../readme_res/tranparency_x.png" alt="Bild 3" style="flex: 1 1 calc(50% - 5px); max-width: calc(50% - 5px);">
+  <img src="../readme_res/tranparency_y.png" alt="Bild 4" style="flex: 1 1 calc(50% - 5px); max-width: calc(50%);">
+</div>
+<figcaption style="width: 100%;">
+    transparency
+    (left) off,
+    (right) on
+</figcaption>
 
+Note that transparent meshes does not cast shadow.
 
 ## Post Processing
 Finally, some post processing values (`gamma`, `saturation`, `contrast`) can be set.
@@ -55,3 +85,6 @@ set_gamma(2.4);
 set_saturation(1.0);
 set_contrast(1.0);
 ```
+
+***
+[Table of Content](TableOfContent.md)

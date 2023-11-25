@@ -1,4 +1,4 @@
-[Table of Content](TableOfContents.md)
+[Table of Content](TableOfContent.md)
 
 # Meshes
 
@@ -129,6 +129,7 @@ mesh.set_cell_rounding(0.0f);
 ```
 To get an insight of the meshes there are some functions to use. It is recommended to test its functionality inside the viewer.
 
+<!--
 <div style="display:flex; justify-content:space-between;">
     <img src="../readme_res/mesh_cell_size.png" alt="Bild 1" style="width:50%;">
     <img src="../readme_res/mesh_roundings.png" alt="Bild 2" style="width:50%;">
@@ -137,6 +138,11 @@ To get an insight of the meshes there are some functions to use. It is recommend
 <div style="display:flex; justify-content:space-between;">
     <img src="../readme_res/mesh_peeling1.png" alt="Bild 1" style="width:50%;">
     <img src="../readme_res/mesh_peeling2.png" alt="Bild 2" style="width:50%;">
+</div>
+-->
+
+<div style="text-align: center;">
+  <img src="../readme_res/mesh_cells.gif" alt="Alternativer Text" style="display: block; margin: 0 auto;">
 </div>
 
 
@@ -190,3 +196,5 @@ mesh.save_configuration("path/to/configuration");
 It is possible to save the settings of a mesh in a file and load it to any other mesh.
 This enables fine-tuning inside the viewer and load it in code afterward.
 
+***
+[Table of Content](TableOfContent.md)

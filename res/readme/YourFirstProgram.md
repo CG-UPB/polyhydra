@@ -14,4 +14,13 @@ int main()
 ```
 First include `volumeshOS.h`. Then load a mesh and open the viewer. 
 
-![](../readme_res/viewer.png)
+<div style="display:flex; justify-content:space-between;">
+    <img src="../readme_res/viewer.png" alt="Bild 1" style="width:100%;">
+</div>
+<figcaption style="width: 100%;">
+    Example view
+</figcaption>
+
+
+***
+[Table of Content](TableOfContent.md)

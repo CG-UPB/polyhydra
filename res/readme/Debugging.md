@@ -9,3 +9,11 @@ log("This is a log");
 warn("This is a warning");
 error("This is an error");
 ```
+
+
+<div style="text-align: left;">
+    <img src="../readme_res/debugging.png" alt="Bild 1">
+</div>
+
+***
+[Table of Content](TableOfContent.md)
