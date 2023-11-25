@@ -20,6 +20,8 @@
 
   * [Load/Save Configuration](Meshes.md#loadsave-configuration)
 
+* [Bezier Meshes](BezierMeshes.md)
+
 * [Graphics](Graphics.md)
   * [Shadows](Graphics.md#shadows)
   * [Transparency](Graphics.md#transparency)
