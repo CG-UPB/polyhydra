@@ -185,7 +185,6 @@ mesh.set_visibility(true);
 - Sometimes it is desired to have a look inside cells e.g when making specific faces transparent. To prevent a weird look `use_backface_culling` can be turned off.
 - `use_two_sided_lighting` set to "false" also lights the back of a mesh
 - For Bezier meshes `tessellation_level` sets the degree of tessellation. A higher value results into a more 'round' curve, but also uses more rendering resources.
-- It is also possible 
 
 ## Load/Save Configuration
 ```cpp

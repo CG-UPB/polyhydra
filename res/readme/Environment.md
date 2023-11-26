@@ -63,7 +63,7 @@ std::array<float, 4> fog_col = {0.5f, 0.75f, 0.8f};
 set_fog_color(fog_col);
 ```
 
-### Influence on lighting
+### Environmental influence on lighting
 Some of the settings above have an influence on the lighting:
 
 * Standard 

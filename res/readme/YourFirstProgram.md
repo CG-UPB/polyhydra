@@ -8,7 +8,7 @@ using namespace volumeshOS;
 
 int main()
 {
-    load("path/to/ovm_file");
+    load("path/to/ovm_file.ovm");
     open();
 }
 ```

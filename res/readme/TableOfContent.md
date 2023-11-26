@@ -23,7 +23,7 @@
 * [Bezier Meshes](BezierMeshes.md)
 
 * [Graphics](Graphics.md)
-  * [Shadows](Graphics.md#shadows)
+  * [Shadow](Graphics.md#shadow)
   * [Transparency](Graphics.md#transparency)
   * [Post Processing](Graphics.md#post-processing)
 
@@ -43,5 +43,7 @@
 * [Debugging](Debugging.md)
 
 * [Your Own GUI](YourOwnGUI.md)
+
+* [Example: Shapes](Example-Shapes.md)
 
 

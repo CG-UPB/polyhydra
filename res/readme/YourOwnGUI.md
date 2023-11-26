@@ -22,7 +22,7 @@ In this example we use ImGui to create a button that calls the `load_from_dialog
     <img src="../readme_res/custom_gui.png" alt="Bild 1" style="width:100%;">
 </div>
 <figcaption style="width: 100%;">
-    Custom GUI panel
+    Custom GUI panel with additional button, slider and text input
 </figcaption>
 
 ***

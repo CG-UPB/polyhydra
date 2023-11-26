@@ -193,171 +193,71 @@ int main(int argc, char *argv[])
     setup_graphics();
 
 
-    // generate ovm mesh
-    auto ovm_mesh = gen_mesh();
-    // load mesh into view; get VMesh object in return to operate on
-    auto mesh = setup_mesh(ovm_mesh, "Cube");
-    //auto mesh = load_from_dialog("");
+    auto ovm_mesh = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
+    OpenVolumeMesh::IO::FileManager file_manager;
+    std::string path = "/home/lukas/CLionProjects/volumeshos/res/OVM/Tet/bunny5824.1.ovm";
+    file_manager.readFile(path, ovm_mesh);
 
-//    auto ovm_mesh2 = std::make_shared<OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>>();
-//    OpenVolumeMesh::IO::FileManager file_manager;
-//    std::string path = "/home/lukas/CLionProjects/volumeshos/res/OVM/Tet/vase-lion13536.1.ovm";
-//    file_manager.readFile(path, *ovm_mesh2);
+    auto mesh = load(&ovm_mesh, "");
 
-//    auto mesh = load(path);
-//    mesh.set_name("mesh");
-//
-//    mesh.set_color(std::array<float, 4>{0.7f, 0.15f, 0.15f, 0.5f});
-//    mesh.set_metallic(0.3f);
-//    mesh.set_roughness(0.5f);
+    using namespace OpenVolumeMesh;
 
-    //auto cylinder = mesh.add_shape<VCylinder>();
-    //auto cone = mesh.add_shape<VCone>();
-    //auto sphere = mesh.add_shape<VSphere>();
-    //auto box = mesh.add_shape<VBox>();
-//    auto arrow = mesh.add_shape<VArrow>();
-//    arrow.set_scale(std::array<float,3>{0.5f, 1.5f, 0.5f});
-//    arrow.set_tip_height(0.35f);
-//    arrow.set_base_width(0.5f);
-    //cylinder.set_color(std::array<float, 4>{0.7f, 0.15f, 0.15f, 0.5f});
+    for(auto c_it : ovm_mesh.cells())
+    {
+        for(auto e_it : ovm_mesh.cell_edges(c_it))
+        {
+            // get both vertices of the edge
+            auto edge = ovm_mesh.edge(e_it);
+            auto from = ovm_mesh.vertex(edge.from_vertex());
+            auto to = ovm_mesh.vertex(edge.to_vertex());
 
+            // calculate direction
+            auto dir = to - from;
+            auto pos = from + (dir / 2.0f);
 
-//    for(auto c_it : ovm_mesh2->cells())
-//    {
-//        for(auto e_it : ovm_mesh2->cell_edges(c_it))
-//        {
-//            // get both vertices of the edge
-//            auto edge = ovm_mesh2->edge(e_it);
-//            auto from = ovm_mesh2->vertex(edge.from_vertex());
-//            auto to = ovm_mesh2->vertex(edge.to_vertex());
-//
-//            // calculate direction
-//            auto dir = to - from;
-//            auto pos = from + (dir / 2.0f);
-//
-//            // add cylinder
-//            auto cylinder = mesh.add_shape<VCylinder>(c_it);
-//            cylinder.set_position(pos);
-//            float thickness = 0.001f;
-//            cylinder.set_scale(thickness, glm::length(glm::vec3(dir[0], dir[1], dir[2])), thickness);
-//            cylinder.set_direction(dir);
-//        }
-//    }
+            // add cylinder
+            auto cylinder = mesh.add_shape<VCylinder>(c_it);
+            cylinder.set_position(pos);
+            float thickness = 0.05f;
+            cylinder.set_scale(thickness, dir.length(), thickness);
+            cylinder.set_direction(dir);
+        }
+    }
 
 
-
-    // define lambda function that gets executed each frame
-    // use ImGUI to setup your own GUI
-
-    bool animation = false;
-    clock_t animation_start, animation_end;
-    int animation_time = 8;
-    int image = 0;
-    bool render_video = false;
-    char name[50]{};
-
-    float x = 0.0f;
-    char st[20]{};
-
-    on_gui_render(
-            [mesh, &name, &x, &st]() {
-                ImGui::Begin("MyPanel");
-                if (ImGui::Button("Load Mesh"))
+    for(auto c_it : ovm_mesh.cells())
+    {
+        for(auto f_it : ovm_mesh.cell_faces(c_it))
+        {
+            for(auto hf_it: ovm_mesh.face_halffaces(f_it))
+            {
+                if(ovm_mesh.is_boundary(hf_it))
                 {
-                    // open a file manager to select an ovm file
-                    auto m = load_from_dialog("Select OVM file");
+                    // get face center
+                    auto center = ovm_mesh.barycenter(f_it);
+
+                    // add arrow
+                    auto arrow = mesh.add_shape<VArrow>(c_it);
+                    arrow.set_position(center);
+                    auto dir = ovm_mesh.normal(hf_it);
+                    arrow.set_direction(dir);
+                    float thickness = 0.1f;
+                    arrow.set_scale(Vec3d(thickness, 1.0f, thickness));
+                    arrow.set_tip_height(0.3f);
                 }
+            }
+        }
+    }
 
-
-//                if (ImGui::Button("Animate "))
-//                {
-//                    animation = true;
-//                    animation_start = clock();
-//                    animation_end = animation_start + animation_time * CLOCKS_PER_SEC;
-//                    image = 0;
-//                }
-//        if(!animation && ImGui::SliderInt("Seconds", &animation_time, 0, 20));
-//
-//        if(animation)
-//        {
-//            auto current_time = clock();
-//            double elapsed_time = (double)(current_time - animation_start) / CLOCKS_PER_SEC;
-//
-//            double percentage = (elapsed_time / animation_time) * 10.0;
-//
-//            int max_images = animation_time * 30;
-//
-//            // percentage = (double)image / (double)max_images;
-//
-//
-//            auto p = std::clamp(sin(PI*(float)percentage) * sin(PI*(float)percentage), 0.0f, 1.0f);
-//
-////            mesh.set_cell_rounding(p);
-////            mesh2.set_cell_size(1.0f - p);
-////            mesh3.set_slice_factor(p);
-//
-//            glm::vec3 dest = glm::vec3{5.0f, 0.0f, 0.0f};
-//
-//            mesh.set_position(dest * (float)percentage);
-//
-//            auto pos2 = mesh2.get_position<glm::vec3>();
-//            mesh2.set_position(dest * -(float)percentage);
-//
-//            if(render_video)
-//            {
-//                ExportOptions options;
-//                options.width = 1024;
-//                options.height = 768;
-//                options.include_background = true;
-//                options.include_shapes = true;
-//                options.include_ground = true;
-//                options.ground_shadow_only = false;
-//
-//                std::string path = "/home/lukas/CLionProjects/volumeshos/res/readme_res/video_rounding/image";
-//                path += std::to_string(image++);
-//                path += ".png";
-//                export_image(path, options);
-//            }
-//
-//            if (percentage >= 1.0f)
-//            {
-//                animation = false;
-//            }
-//
-//        }
-//
-
-
-                std::string base_path = "/home/lukas/CLionProjects/volumeshos/res/readme_res/";
-
-                if(ImGui::InputText("Name", name, 50))
-                {
-
-                }
-
-                if (ImGui::Button("Screenshot "))
-                {
-                    ExportOptions options;
-                    options.width = 1280;
-                    options.height = 720;
-                    options.include_background = true;
-                    options.include_shapes = true;
-                    options.include_ground = true;
-                    options.ground_shadow_only = false;
-
-                    std::string s(name);
-                    base_path += s;
-                    base_path += ".png";
-                    export_image(base_path, options);
-                }
-
-                ImGui::End();
-            });
-
-
-    on_face_select(&face_select);
-    on_cell_select(&cell_select);
-
+    on_gui_render([](){
+        ImGui::Begin("MyPanel");
+        if (ImGui::Button("Load Mesh"))
+        {
+            // open a file manager to select an ovm file
+            auto mesh = load_from_dialog("Select OVM file");
+        }
+        ImGui::End();
+    });
 
     open();
 }

@@ -4,7 +4,7 @@ At the moment further settings can only be made in the viewer.
 
 
 
-## Shadows
+## Shadow
 VolumeshOS uses cascaded shadow maps with up to 8 cascades.
 More `cascades` result in a better quality shadow, but also needs more computational power.
 The `shadow strength` controls the darkness of the shadow. 
