@@ -193,61 +193,61 @@ int main(int argc, char *argv[])
     setup_graphics();
 
 
-    auto ovm_mesh = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
-    OpenVolumeMesh::IO::FileManager file_manager;
-    std::string path = "/home/lukas/CLionProjects/volumeshos/res/OVM/Tet/bunny5824.1.ovm";
-    file_manager.readFile(path, ovm_mesh);
-
-    auto mesh = load(&ovm_mesh, "");
-
-    using namespace OpenVolumeMesh;
-
-    for(auto c_it : ovm_mesh.cells())
-    {
-        for(auto e_it : ovm_mesh.cell_edges(c_it))
-        {
-            // get both vertices of the edge
-            auto edge = ovm_mesh.edge(e_it);
-            auto from = ovm_mesh.vertex(edge.from_vertex());
-            auto to = ovm_mesh.vertex(edge.to_vertex());
-
-            // calculate direction
-            auto dir = to - from;
-            auto pos = from + (dir / 2.0f);
-
-            // add cylinder
-            auto cylinder = mesh.add_shape<VCylinder>(c_it);
-            cylinder.set_position(pos);
-            float thickness = 0.05f;
-            cylinder.set_scale(thickness, dir.length(), thickness);
-            cylinder.set_direction(dir);
-        }
-    }
-
-
-    for(auto c_it : ovm_mesh.cells())
-    {
-        for(auto f_it : ovm_mesh.cell_faces(c_it))
-        {
-            for(auto hf_it: ovm_mesh.face_halffaces(f_it))
-            {
-                if(ovm_mesh.is_boundary(hf_it))
-                {
-                    // get face center
-                    auto center = ovm_mesh.barycenter(f_it);
-
-                    // add arrow
-                    auto arrow = mesh.add_shape<VArrow>(c_it);
-                    arrow.set_position(center);
-                    auto dir = ovm_mesh.normal(hf_it);
-                    arrow.set_direction(dir);
-                    float thickness = 0.1f;
-                    arrow.set_scale(Vec3d(thickness, 1.0f, thickness));
-                    arrow.set_tip_height(0.3f);
-                }
-            }
-        }
-    }
+//    auto ovm_mesh = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
+//    OpenVolumeMesh::IO::FileManager file_manager;
+//    std::string path = "/home/lukas/CLionProjects/volumeshos/res/OVM/Tet/bunny5824.1.ovm";
+//    file_manager.readFile(path, ovm_mesh);
+//
+//    auto mesh = load(&ovm_mesh, "");
+//
+//    using namespace OpenVolumeMesh;
+//
+//    for(auto c_it : ovm_mesh.cells())
+//    {
+//        for(auto e_it : ovm_mesh.cell_edges(c_it))
+//        {
+//            // get both vertices of the edge
+//            auto edge = ovm_mesh.edge(e_it);
+//            auto from = ovm_mesh.vertex(edge.from_vertex());
+//            auto to = ovm_mesh.vertex(edge.to_vertex());
+//
+//            // calculate direction
+//            auto dir = to - from;
+//            auto pos = from + (dir / 2.0f);
+//
+//            // add cylinder
+//            auto cylinder = mesh.add_shape<VCylinder>(c_it);
+//            cylinder.set_position(pos);
+//            float thickness = 0.05f;
+//            cylinder.set_scale(thickness, dir.length(), thickness);
+//            cylinder.set_direction(dir);
+//        }
+//    }
+//
+//
+//    for(auto c_it : ovm_mesh.cells())
+//    {
+//        for(auto f_it : ovm_mesh.cell_faces(c_it))
+//        {
+//            for(auto hf_it: ovm_mesh.face_halffaces(f_it))
+//            {
+//                if(ovm_mesh.is_boundary(hf_it))
+//                {
+//                    // get face center
+//                    auto center = ovm_mesh.barycenter(f_it);
+//
+//                    // add arrow
+//                    auto arrow = mesh.add_shape<VArrow>(c_it);
+//                    arrow.set_position(center);
+//                    auto dir = ovm_mesh.normal(hf_it);
+//                    arrow.set_direction(dir);
+//                    float thickness = 0.1f;
+//                    arrow.set_scale(Vec3d(thickness, 1.0f, thickness));
+//                    arrow.set_tip_height(0.3f);
+//                }
+//            }
+//        }
+//    }
 
     on_gui_render([](){
         ImGui::Begin("MyPanel");
