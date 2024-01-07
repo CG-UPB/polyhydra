@@ -1,3 +1,6 @@
+[Table of Content](TableOfContent.md)
+***
+
 # Environment
 
 ## Ground
@@ -13,16 +16,7 @@ set_ground_height(-5.0f);
 
 The floor consists of a solid part and a grid. Both can be assigned an individual color. The height counts for both. The solid ground receives shadows.
 
-<div style="display:flex; justify-content:space-between;">
-    <img src="../readme_res/ground.png" alt="Bild 1" style="width:33%;">
-    <img src="../readme_res/ground_grid.png" alt="Bild 2" style="width:33%;">
-    <img src="../readme_res/ground_both.png" alt="Bild 3" style="width:33%;">
-</div>
-<figcaption style="width: 100%;">
-    (left) ground only,
-    (middle) grid only,
-    (right) ground and grid
-</figcaption>
+![](../readme_res/gifs/ground.gif)
 
 
 ## Light
@@ -100,8 +94,3 @@ Some of the settings above have an influence on the lighting:
 <figcaption style="width: 100%;">
     The ground color affects the lower part of the mesh.
 </figcaption>
-
-
-
-***
-[Table of Content](TableOfContent.md)

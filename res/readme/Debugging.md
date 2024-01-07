@@ -1,3 +1,6 @@
+[Table of Content](TableOfContent.md)
+***
+
 # Debugging
 
 For Debugging purposes there is a special window at the bottom right.
@@ -14,6 +17,3 @@ error("This is an error");
 <div style="text-align: left;">
     <img src="../readme_res/debugging.png" alt="Bild 1">
 </div>
-
-***
-[Table of Content](TableOfContent.md)

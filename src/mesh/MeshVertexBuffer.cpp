@@ -225,6 +225,7 @@ namespace volumeshOS::Internal
             // every unique control point of all Bézier faces is retrieved.
             vertices.clear();
             std::vector<OpenVolumeMesh::Vec3d> corner_cps;
+
             for(auto f : mesh->cell_faces(cell))
             {
                 // m = Bézier mesh degree
@@ -496,6 +497,7 @@ namespace volumeshOS::Internal
 
     void MeshVertexBuffer::add_face_indices(HalffaceData& face) const
     {
+
         switch (face.vertices.size())
         {
             case 3:
@@ -1254,15 +1256,17 @@ namespace volumeshOS::Internal
 
     void MeshVertexBuffer::set_cell_isolated(int cell_id)
     {
-        if (cell_id == m_current_isolated_cell_id)
-        {
-            reset_isolation();
-            m_current_isolated_cell_id = -1;
-            return;
-        }
+
         auto cell = OpenVolumeMesh::CellHandle{cell_id};
         if (cell.is_valid())
         {
+            if (cell_id == m_current_isolated_cell_id)
+            {
+                //reset_isolation();
+                m_current_isolated_cell_id = -1;
+                return;
+            }
+
             float invisible = 1.0f;
             float visible = 0.0f;
             update_attribute(VAO::MESH_FACE, Attribute::IS_ISOLATED, invisible);

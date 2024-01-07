@@ -1,3 +1,6 @@
+[Table of Content](TableOfContent.md)
+***
+
 # ***Handling of Bézier Meshes***
 
 The visualization of meshes consisting of curved Bézier tetrahedra is supported as well, for polynomial degree up to 9. 

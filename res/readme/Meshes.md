@@ -1,4 +1,5 @@
 [Table of Content](TableOfContent.md)
+***
 
 # Meshes
 
@@ -129,21 +130,8 @@ mesh.set_cell_rounding(0.0f);
 ```
 To get an insight of the meshes there are some functions to use. It is recommended to test its functionality inside the viewer.
 
-<!--
-<div style="display:flex; justify-content:space-between;">
-    <img src="../readme_res/mesh_cell_size.png" alt="Bild 1" style="width:50%;">
-    <img src="../readme_res/mesh_roundings.png" alt="Bild 2" style="width:50%;">
-</div>
 
-<div style="display:flex; justify-content:space-between;">
-    <img src="../readme_res/mesh_peeling1.png" alt="Bild 1" style="width:50%;">
-    <img src="../readme_res/mesh_peeling2.png" alt="Bild 2" style="width:50%;">
-</div>
--->
-
-<div style="text-align: center;">
-  <img src="../readme_res/mesh_cells.gif" alt="Alternativer Text" style="display: block; margin: 0 auto;">
-</div>
+![](../readme_res/gifs/mesh_video.gif)
 
 
 <!--
@@ -165,11 +153,8 @@ mesh.set_point_size(0.5);
 ```
 Cells, Lines and Points can be rendered in any combination.
 
-<div style="display:flex; justify-content:space-between;">
-    <img src="../readme_res/mesh_lines_and_points.png" alt="Bild 1" style="width:33%;">
-    <img src="../readme_res/mesh_lines.png" alt="Bild 2" style="width:33%;">
-    <img src="../readme_res/mesh_points.png" alt="Bild 3" style="width:33%;">
-</div>
+![](../readme_res/gifs/lines_and_points.gif)
+
 
 #### Extras
 ```cpp
@@ -195,5 +180,3 @@ mesh.save_configuration("path/to/configuration");
 It is possible to save the settings of a mesh in a file and load it to any other mesh.
 This enables fine-tuning inside the viewer and load it in code afterward.
 
-***
-[Table of Content](TableOfContent.md)

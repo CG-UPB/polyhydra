@@ -600,14 +600,14 @@ namespace volumeshOS::Internal
                 }
             });
 
-            ImGuiUtil::menu_item_filled("Softness", [&]
-            {
-                float softness = settings.shadow.softness;
-                if (ImGui::DragFloat("##ShadowSoftness", &softness, 0.1f, 1.0f, 5.0f))
-                {
-                    settings.shadow.softness = softness;
-                }
-            });
+//            ImGuiUtil::menu_item_filled("Softness", [&]
+//            {
+//                float softness = settings.shadow.softness;
+//                if (ImGui::DragFloat("##ShadowSoftness", &softness, 0.1f, 1.0f, 5.0f))
+//                {
+//                    settings.shadow.softness = softness;
+//                }
+//            });
 
             ImGuiUtil::end_menu();
         }

@@ -193,12 +193,12 @@ int main(int argc, char *argv[])
     setup_graphics();
 
 
-//    auto ovm_mesh = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
-//    OpenVolumeMesh::IO::FileManager file_manager;
-//    std::string path = "/home/lukas/CLionProjects/volumeshos/res/OVM/Tet/bunny5824.1.ovm";
-//    file_manager.readFile(path, ovm_mesh);
-//
-//    auto mesh = load(&ovm_mesh, "");
+    auto ovm_mesh = OpenVolumeMesh::GeometryKernel<OpenVolumeMesh::Vec3d>();
+    OpenVolumeMesh::IO::FileManager file_manager;
+    std::string path = "/home/lukas/CLionProjects/volumeshos/res/OVM/Tet/bunny5824.1.ovm";
+    file_manager.readFile(path, ovm_mesh);
+
+    auto mesh = load(&ovm_mesh, "");
 //
 //    using namespace OpenVolumeMesh;
 //

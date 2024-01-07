@@ -262,6 +262,7 @@ namespace volumeshOS::Internal
 
     void MeshList::set_cell_rounding(MeshID id, float rounding)
     {
+        assert(0.0f <= rounding <= 1.0f);
         auto f = [rounding](const std::shared_ptr<MeshObject>& mesh) -> void{
             mesh->get_data().rounding_size = rounding;
         };

@@ -1,3 +1,6 @@
+[Table of Content](TableOfContent.md)
+***
+
 # Screenshots
 For Screenshots there is an `ExportOptions` object. 
 Currently `.png` are `.bmp` are supported. 
@@ -17,21 +20,5 @@ options.ground_shadow_only = false;
 export_image("screenshot.png", options);
 ```
 
-<div style="display: flex; flex-wrap: wrap; gap: 5px;">
-  <img src="../readme_res/mesh_screenshot_complete.png" alt="Bild 1" style="flex: 1 1 calc(50% - 5px); max-width: calc(50% - 5px);">
-  <img src="../readme_res/mesh_screenshot_nobg.png" alt="Bild 2" style="flex: 1 1 calc(50%); max-width: calc(50%);">
-  <img src="../readme_res/mesh_screenshot_nog.png" alt="Bild 3" style="flex: 1 1 calc(50% - 5px); max-width: calc(50% - 5px);">
-  <img src="../readme_res/mesh_screenshot_shadow.png" alt="Bild 4" style="flex: 1 1 calc(50% - 5px); max-width: calc(50%);">
-</div>
-<figcaption style="width: 100%;">
-    (top-left) normal, 
-    (top-right) without background,
-    (bottom-left) without background and without ground, 
-    (bottom-right) ground shadow only;
-    the checkerboard pattern indicates transparent areas
-</figcaption>
-
-***
-[Table of Content](TableOfContent.md)
-
+![](../readme_res/gifs/screenshot.gif)
  

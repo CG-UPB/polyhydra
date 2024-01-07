@@ -1,3 +1,6 @@
+[Table of Content](TableOfContent.md)
+***
+
 # Shapes
 
 In Addition to the meshes we offer a variety of shapes:
@@ -49,19 +52,11 @@ set_shape_metallic(0.15f);
 set_shape_roughness(0.65f);
 ```
 
-<div style="display:flex; justify-content:space-between;">
-    <img src="../readme_res/shape_arrow_cut.png" alt="Bild 1" style="width:20%;">
-    <img src="../readme_res/shape_box_cut.png" alt="Bild 2" style="width:20%;">
-    <img src="../readme_res/shape_cone_cut.png" alt="Bild 3" style="width:20%;">
-    <img src="../readme_res/shape_cylinder_cut.png" alt="Bild 4" style="width:20%;">
-    <img src="../readme_res/shape_sphere_cut.png" alt="Bild 5" style="width:20%;">
-</div>
+![](../readme_res/gifs/shapes.gif)
+
 
 <div style="display:flex; justify-content:space-between;">
 
 </div>
 
 See this [example](Example-Shapes.md) for more details
-
-***
-[Table of Content](TableOfContent.md)

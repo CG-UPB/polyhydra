@@ -1,3 +1,6 @@
+[Table of Content](TableOfContent.md)
+***
+
 # Your Own GUI
 The viewer provides a section where own GUI elements can be placed. For this we use [ImGui](https://github.com/ocornut/imgui). 
 ## Load Mesh Button
@@ -24,6 +27,3 @@ In this example we use ImGui to create a button that calls the `load_from_dialog
 <figcaption style="width: 100%;">
     Custom GUI panel with additional button, slider and text input
 </figcaption>
-
-***
-[Table of Content](TableOfContent.md)

@@ -303,7 +303,9 @@ namespace volumeshOS::Internal
                     {
                         m_isolation_started = false;
                         //m_mesh_list->reset_visibility(id);
-                        volumeshOS::reset_visibility(VMesh(id));
+                        //volumeshOS::reset_visibility(VMesh(id));
+                        //m_mesh_list->reset_visibility(id);
+                        //shapes->reset_visibility();
                     }
                     AppState::settings.isolation_active = m_isolation_started;
                 }

@@ -1,3 +1,6 @@
+[Table of Content](TableOfContent.md)
+***
+
 # Your First Program
 
 The simplest volumeshOS program looks like this:
@@ -20,7 +23,3 @@ First include `volumeshOS.h`. Then load a mesh and open the viewer.
 <figcaption style="width: 100%;">
     Example view
 </figcaption>
-
-
-***
-[Table of Content](TableOfContent.md)
