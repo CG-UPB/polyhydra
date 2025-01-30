@@ -17,8 +17,8 @@ set(VOLUMESHOS_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(VOLUMESHOS_SRC ${VOLUMESHOS_ROOT}/src)
 set(VOLUMESHOS_EXT ${VOLUMESHOS_ROOT}/ext)
 
-add_subdirectory(${VOLUMESHOS_SRC})
 add_subdirectory(${VOLUMESHOS_EXT})
+add_subdirectory(${VOLUMESHOS_SRC})
 
 if (VOLUMESHOS_BUILD_EXAMPLES)
     add_subdirectory(${VOLUMESHOS_ROOT}/examples)

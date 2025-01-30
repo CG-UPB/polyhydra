@@ -1,3 +1,121 @@
+###########################
+# CMake Dependencies
+###########################
+
+# all regular cmake dependencies
+add_subdirectory(${VOLUMESHOS_EXT}/glad ext/glad EXCLUDE_FROM_ALL)
+
+# we don't need glfw docs, tests or examples
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_LIBRARY_TYPE "STATIC")
+
+add_subdirectory(${VOLUMESHOS_EXT}/glfw ext/glfw EXCLUDE_FROM_ALL)
+
+add_subdirectory(${VOLUMESHOS_EXT}/glm ext/glm EXCLUDE_FROM_ALL)
+if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/OpenVolumeMesh/CMakeLists.txt")
+        add_subdirectory(${VOLUMESHOS_EXT}/OpenVolumeMesh OpenVolumeMesh EXCLUDE_FROM_ALL)
+    else()
+        find_package(OpenVolumeMesh REQUIRED)
+    endif()
+endif()
+
+#json
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(${VOLUMESHOS_EXT}/json-develop ext/json-develop EXCLUDE_FROM_ALL)
+
+###########################
+# ImGui
+###########################
+
+# imgui is not built with cmake by default, so we need to include the files ourselves
+project(imgui)
+
+set(imgui_HEADERS
+        ${VOLUMESHOS_EXT}/imgui/imgui.h
+        ${VOLUMESHOS_EXT}/imgui/backends/imgui_impl_glfw.h
+        ${VOLUMESHOS_EXT}/imgui/backends/imgui_impl_opengl3.h
+        ${VOLUMESHOS_EXT}/imgui/misc/cpp/imgui_stdlib.h
+        )
+
+set(imgui_SOURCES
+        ${VOLUMESHOS_EXT}/imgui/imgui.cpp
+        ${VOLUMESHOS_EXT}/imgui/imgui_demo.cpp
+        ${VOLUMESHOS_EXT}/imgui/imgui_draw.cpp
+        ${VOLUMESHOS_EXT}/imgui/imgui_widgets.cpp
+        ${VOLUMESHOS_EXT}/imgui/imgui_tables.cpp
+        ${VOLUMESHOS_EXT}/imgui/backends/imgui_impl_glfw.cpp
+        ${VOLUMESHOS_EXT}/imgui/backends/imgui_impl_opengl3.cpp
+        ${VOLUMESHOS_EXT}/imgui/misc/cpp/imgui_stdlib.cpp
+        )
+
+add_library(imgui STATIC ${imgui_SOURCES} ${imgui_HEADERS})
+
+set_target_properties(imgui PROPERTIES FOLDER "ext")
+
+set(IMGUI_INCLUDE_DIR  ${VOLUMESHOS_EXT}/imgui ${VOLUMESHOS_EXT}/imgui/backends ${VOLUMESHOS_EXT}/glad/include)
+target_include_directories(imgui
+                           PUBLIC
+                           "$<BUILD_INTERFACE:${IMGUI_INCLUDE_DIR}"
+                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+
+target_link_libraries(imgui PRIVATE glad glfw)
+if (MINGW)
+    target_link_libraries(imgui PRIVATE imm32)
+endif()
+
+###########################
+# stb
+###########################
+
+# add stb library
+set(stb_DIR stb)
+set(stb_Headers
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_c_lexer.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_connected_components.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_divide.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_ds.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_dxt.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_easy_font.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_herringbone_wang_tile.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_hexwave.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_image.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_image_resize.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_image_write.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_include.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_leakcheck.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_rect_pack.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_sprintf.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_textedit.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_tilemap_editor.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_truetype.h
+        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_voxel_render.h)
+
+set(stb_Sources ${VOLUMESHOS_EXT}${stb_DIR}/stb_vorbis.c)
+
+add_library(stb STATIC ${stb_Headers} ${stb_Sources})
+target_include_directories(stb PUBLIC
+                           "$<BUILD_INTERFACE:${stb_DIR}"
+                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+
+###########################
+# tinyfiledialogs
+###########################
+
+# add tinyfiledialogs library
+set(tinyfiledialogs_DIR tinyfiledialogs)
+set(tinyfiledialogs_Headers ${VOLUMESHOS_EXT}/${tinyfiledialogs_DIR}/tinyfiledialogs.h)
+set(tinyfiledialogs_Sources ${VOLUMESHOS_EXT}/${tinyfiledialogs_DIR}/tinyfiledialogs.c)
+
+add_library(tinyfiledialogs STATIC ${tinyfiledialogs_Headers} ${tinyfiledialogs_Sources})
+target_include_directories(tinyfiledialogs PUBLIC
+                           "$<BUILD_INTERFACE:${tinyfiledialogs_DIR}"
+                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+
+
 set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/Window.cpp
         ${VOLUMESHOS_SRC}/Window.h
@@ -142,7 +260,7 @@ target_include_directories(volumeshOS
 
 find_package(Filesystem REQUIRED Experimental Final)
 
-target_link_libraries(volumeshOS PUBLIC ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
+target_link_libraries(volumeshOS PUBLIC ${CMAKE_DL_LIBS} imgui OpenVolumeMesh::OpenVolumeMesh glm glad glfw nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
 
 set_target_properties(volumeshOS PROPERTIES
                       DEBUG_POSTFIX "d"
@@ -173,7 +291,7 @@ install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/volumeshOSConfig.cmake"
         DESTINATION "${volumeshOS_INSTALL_INCLUDE_DIR}")
 
-install(TARGETS       volumeshOS
+install(TARGETS       volumeshOS glm glad imgui nlohmann_json stb tinyfiledialogs
         EXPORT        volumeshOSTargets
         LIBRARY       DESTINATION "${volumeshOS_INSTALL_LIB_DIR}"
         ARCHIVE       DESTINATION "${volumeshOS_INSTALL_LIB_DIR}")
