@@ -1,9 +1,39 @@
+macro(clean_interface_include_directories target)
+    get_target_property(TARGET_INCLUDE_DIRS ${target} INTERFACE_INCLUDE_DIRECTORIES)
+
+    if(TARGET_INCLUDE_DIRS)
+        # Create a new list to hold the modified include directories
+        set(MODIFIED_INCLUDE_DIRS)
+
+        # Iterate over each include directory in the list
+        foreach(INCLUDE_DIR ${TARGET_INCLUDE_DIRS})
+            # Check if the directory path is relative to the source directory
+            if(NOT INCLUDE_DIR STREQUAL ${CMAKE_SOURCE_DIR}
+               AND (NOT INCLUDE_DIR MATCHES "^BUILD_INTERFACE")
+               AND INCLUDE_DIR MATCHES "^${CMAKE_SOURCE_DIR}")
+                # If it's relative to the source, wrap it in BUILD_INTERFACE
+                list(APPEND MODIFIED_INCLUDE_DIRS "$<BUILD_INTERFACE:${INCLUDE_DIR}>")
+                list(APPEND MODIFIED_INCLUDE_DIRS "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+            else()
+                # If it's not relative to the source directory, keep it as is
+                list(APPEND MODIFIED_INCLUDE_DIRS "${INCLUDE_DIR}")
+            endif()
+        endforeach()
+
+        # Set the modified include directories back to the target's property
+        set_target_properties(${target} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${MODIFIED_INCLUDE_DIRS}")
+    else()
+        message(WARNING "No INTERFACE_INCLUDE_DIRECTORIES found for target ${target}")
+    endif()
+endmacro()
+
 ###########################
 # CMake Dependencies
 ###########################
 
 # all regular cmake dependencies
 add_subdirectory(${VOLUMESHOS_EXT}/glad ext/glad EXCLUDE_FROM_ALL)
+clean_interface_include_directories(glad)
 
 # we don't need glfw docs, tests or examples
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -12,8 +42,10 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_LIBRARY_TYPE "STATIC")
 
 add_subdirectory(${VOLUMESHOS_EXT}/glfw ext/glfw EXCLUDE_FROM_ALL)
+clean_interface_include_directories(glfw)
 
 add_subdirectory(${VOLUMESHOS_EXT}/glm ext/glm EXCLUDE_FROM_ALL)
+clean_interface_include_directories(glm)
 if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/OpenVolumeMesh/CMakeLists.txt")
         add_subdirectory(${VOLUMESHOS_EXT}/OpenVolumeMesh OpenVolumeMesh EXCLUDE_FROM_ALL)
@@ -32,8 +64,6 @@ add_subdirectory(${VOLUMESHOS_EXT}/json-develop ext/json-develop EXCLUDE_FROM_AL
 ###########################
 
 # imgui is not built with cmake by default, so we need to include the files ourselves
-project(imgui)
-
 set(imgui_HEADERS
         ${VOLUMESHOS_EXT}/imgui/imgui.h
         ${VOLUMESHOS_EXT}/imgui/backends/imgui_impl_glfw.h
@@ -59,7 +89,9 @@ set_target_properties(imgui PROPERTIES FOLDER "ext")
 set(IMGUI_INCLUDE_DIR  ${VOLUMESHOS_EXT}/imgui ${VOLUMESHOS_EXT}/imgui/backends ${VOLUMESHOS_EXT}/glad/include)
 target_include_directories(imgui
                            PUBLIC
-                           "$<BUILD_INTERFACE:${IMGUI_INCLUDE_DIR}"
+                           "$<BUILD_INTERFACE:${VOLUMESHOS_EXT}/imgui>"
+                           "$<BUILD_INTERFACE:${VOLUMESHOS_EXT}/imgui/backends>"
+                           "$<BUILD_INTERFACE:${VOLUMESHOS_EXT}/glad/include>"
                            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
 
 target_link_libraries(imgui PRIVATE glad glfw)
@@ -72,33 +104,33 @@ endif()
 ###########################
 
 # add stb library
-set(stb_DIR stb)
+set(stb_DIR ${VOLUMESHOS_EXT}/stb)
 set(stb_Headers
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_c_lexer.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_connected_components.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_divide.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_ds.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_dxt.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_easy_font.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_herringbone_wang_tile.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_hexwave.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_image.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_image_resize.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_image_write.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_include.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_leakcheck.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_rect_pack.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_sprintf.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_textedit.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_tilemap_editor.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_truetype.h
-        ${VOLUMESHOS_EXT}/${stb_DIR}/stb_voxel_render.h)
+        ${stb_DIR}/stb_c_lexer.h
+        ${stb_DIR}/stb_connected_components.h
+        ${stb_DIR}/stb_divide.h
+        ${stb_DIR}/stb_ds.h
+        ${stb_DIR}/stb_dxt.h
+        ${stb_DIR}/stb_easy_font.h
+        ${stb_DIR}/stb_herringbone_wang_tile.h
+        ${stb_DIR}/stb_hexwave.h
+        ${stb_DIR}/stb_image.h
+        ${stb_DIR}/stb_image_resize.h
+        ${stb_DIR}/stb_image_write.h
+        ${stb_DIR}/stb_include.h
+        ${stb_DIR}/stb_leakcheck.h
+        ${stb_DIR}/stb_rect_pack.h
+        ${stb_DIR}/stb_sprintf.h
+        ${stb_DIR}/stb_textedit.h
+        ${stb_DIR}/stb_tilemap_editor.h
+        ${stb_DIR}/stb_truetype.h
+        ${stb_DIR}/stb_voxel_render.h)
 
-set(stb_Sources ${VOLUMESHOS_EXT}${stb_DIR}/stb_vorbis.c)
+set(stb_Sources ${stb_DIR}/stb_vorbis.c)
 
 add_library(stb STATIC ${stb_Headers} ${stb_Sources})
 target_include_directories(stb PUBLIC
-                           "$<BUILD_INTERFACE:${stb_DIR}"
+                           "$<BUILD_INTERFACE:${stb_DIR}>"
                            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
 
 ###########################
@@ -106,13 +138,13 @@ target_include_directories(stb PUBLIC
 ###########################
 
 # add tinyfiledialogs library
-set(tinyfiledialogs_DIR tinyfiledialogs)
-set(tinyfiledialogs_Headers ${VOLUMESHOS_EXT}/${tinyfiledialogs_DIR}/tinyfiledialogs.h)
-set(tinyfiledialogs_Sources ${VOLUMESHOS_EXT}/${tinyfiledialogs_DIR}/tinyfiledialogs.c)
+set(tinyfiledialogs_DIR ${VOLUMESHOS_EXT}/tinyfiledialogs)
+set(tinyfiledialogs_Headers ${tinyfiledialogs_DIR}/tinyfiledialogs.h)
+set(tinyfiledialogs_Sources ${tinyfiledialogs_DIR}/tinyfiledialogs.c)
 
 add_library(tinyfiledialogs STATIC ${tinyfiledialogs_Headers} ${tinyfiledialogs_Sources})
 target_include_directories(tinyfiledialogs PUBLIC
-                           "$<BUILD_INTERFACE:${tinyfiledialogs_DIR}"
+                           "$<BUILD_INTERFACE:${tinyfiledialogs_DIR}>"
                            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
 
 
@@ -271,9 +303,7 @@ set_target_properties(volumeshOS PROPERTIES
 
 target_precompile_headers(volumeshOS PUBLIC vospch.h)
 
-target_compile_definitions(volumeshOS PRIVATE FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
-target_compile_definitions(volumeshOS PUBLIC VOS_RESOURCE_BASE_PATH="${VOS_RESOURCE_BASE_PATH}")
-
+target_compile_definitions(volumeshOS PUBLIC VOS_RESOURCE_BASE_PATH="${VOS_RESOURCE_BASE_PATH}" FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
 # copy our resources to the build dir
 set(VOLUMESHOS_RES ${VOLUMESHOS_ROOT}/res)
 file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
@@ -291,7 +321,7 @@ install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/volumeshOSConfig.cmake"
         DESTINATION "${volumeshOS_INSTALL_INCLUDE_DIR}")
 
-install(TARGETS       volumeshOS glm glad imgui nlohmann_json stb tinyfiledialogs
+install(TARGETS       volumeshOS glm glfw glad imgui nlohmann_json stb tinyfiledialogs
         EXPORT        volumeshOSTargets
         LIBRARY       DESTINATION "${volumeshOS_INSTALL_LIB_DIR}"
         ARCHIVE       DESTINATION "${volumeshOS_INSTALL_LIB_DIR}")

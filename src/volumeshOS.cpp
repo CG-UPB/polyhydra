@@ -129,7 +129,6 @@ namespace volumeshOS
         VMesh vmesh(id);
         Internal::AppState::settings.reading_file = true;
         commands.emplace_back([id, path, strname]{
-            window->panels.mesh_view->read_data = true;
             mesh_list->add_mesh(id, path);
             if (!strname.empty())
             {
@@ -157,7 +156,6 @@ namespace volumeshOS
         VMesh vmesh(id);
         Internal::AppState::settings.reading_file = true;
         commands.emplace_back([id, path, strname]{
-            window->panels.mesh_view->read_data = true;
             mesh_list->add_mesh(id, path);
             if (!strname.empty())
             {
