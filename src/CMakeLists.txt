@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
-project(volumeshOS_core)
-
-set(volumeshOS_core_SOURCES
+set(volumeshOS_SOURCES
         ${VOLUMESHOS_SRC}/Window.cpp
         ${VOLUMESHOS_SRC}/Window.h
 
@@ -112,13 +109,81 @@ else()
         set(VOS_RESOURCE_BASE_PATH "./res")
 endif()
 
-add_library(volumeshOS_core STATIC ${volumeshOS_core_SOURCES})
+add_library(volumeshOS STATIC ${volumeshOS_SOURCES})
+add_library(volumeshOS::volumeshOS ALIAS volumeshOS)
+
+### Configure install paths
+include(CMakePackageConfigHelpers)
+if(WIN32 AND NOT CYGWIN)
+  set(DEF_INSTALL_CMAKE_DIR "CMake")
+else()
+  set(DEF_INSTALL_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/MC3D")
+endif()
+set(volumeshOS_INSTALL_CMAKE_DIR "${DEF_INSTALL_CMAKE_DIR}" CACHE PATH "Installation directory for CMake files")
+set(volumeshOS_INSTALL_LIB_DIR "${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Installation directory for libraries")
+set(volumeshOS_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}" CACHE PATH "Installation directory for header files")
+# ... for the build tree
+set(CONF_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/../include")
+set(CONF_LIB_DIRS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+configure_package_config_file(../volumeshOSConfig.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/volumeshOSConfig.cmake"
+  INSTALL_DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+# ... for the install tree
+set(CONF_INCLUDE_DIRS "${volumeshOS_INSTALL_INCLUDE_DIR}")
+set(CONF_LIB_DIRS "${volumeshOS_INSTALL_LIB_DIR}")
+configure_package_config_file(../volumeshOSConfig.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/volumeshOSConfig.cmake"
+  INSTALL_DESTINATION "${volumeshOS_INSTALL_CMAKE_DIR}")
+
+target_include_directories(volumeshOS
+  PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
+  "$<INSTALL_INTERFACE:${volumeshOS_INSTALL_INCLUDE_DIR}>")
 
 find_package(Filesystem REQUIRED Experimental Final)
 
-target_precompile_headers(volumeshOS_core PUBLIC vospch.h)
-target_include_directories(volumeshOS_core PUBLIC ${VOLUMESHOS_SRC})
+target_link_libraries(volumeshOS PUBLIC ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
 
-target_link_libraries(volumeshOS_core PUBLIC ${CMAKE_DL_LIBS} glm glad glfw imgui OpenVolumeMesh nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
+set_target_properties(volumeshOS PROPERTIES
+                      DEBUG_POSTFIX "d"
+                      VERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}
+                      SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}
+                      CXX_STANDARD 17
+                      CXX_STANDARD_REQUIRED ON)
 
-target_compile_definitions(volumeshOS_core PUBLIC FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE} VOS_RESOURCE_BASE_PATH="${VOS_RESOURCE_BASE_PATH}")
+target_precompile_headers(volumeshOS PUBLIC vospch.h)
+
+target_compile_definitions(volumeshOS PRIVATE FS_HEADER=<${CXX_FILESYSTEM_HEADER}> FS_NAMESPACE=${CXX_FILESYSTEM_NAMESPACE})
+target_compile_definitions(volumeshOS PUBLIC VOS_RESOURCE_BASE_PATH="${VOS_RESOURCE_BASE_PATH}")
+
+# copy our resources to the build dir
+set(VOLUMESHOS_RES ${VOLUMESHOS_ROOT}/res)
+file(COPY ${VOLUMESHOS_RES} DESTINATION ${CMAKE_BINARY_DIR})
+
+install(DIRECTORY
+        "${VOLUMESHOS_RES}"
+        DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+### Install and export
+install(DIRECTORY "${VOLUMESHOS_SRC}"
+        DESTINATION "${volumeshOS_INSTALL_INCLUDE_DIR}"
+        FILES_MATCHING PATTERN "*.h")
+
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/volumeshOSConfig.cmake"
+        DESTINATION "${volumeshOS_INSTALL_INCLUDE_DIR}")
+
+install(TARGETS       volumeshOS
+        EXPORT        volumeshOSTargets
+        LIBRARY       DESTINATION "${volumeshOS_INSTALL_LIB_DIR}"
+        ARCHIVE       DESTINATION "${volumeshOS_INSTALL_LIB_DIR}")
+
+install(EXPORT volumeshOSTargets
+        FILE volumeshOSTargets.cmake
+        NAMESPACE volumeshOS::
+        DESTINATION "${volumeshOS_INSTALL_CMAKE_DIR}")
+
+export(EXPORT volumeshOSTargets
+       NAMESPACE volumeshOS::)
+
+set(VOLUMESHOS_RES ${VOLUMESHOS_ROOT}/res)
