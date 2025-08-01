@@ -88,7 +88,7 @@ namespace volumeshOS::Internal
         {
             bind_for_writing(i);
 
-            glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
+            // glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, m_depth_texture, 0);
             glViewport(0, 0, m_width, m_height);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             glCullFace(GL_BACK);  // peter panning

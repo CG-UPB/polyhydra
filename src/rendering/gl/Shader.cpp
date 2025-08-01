@@ -73,7 +73,7 @@ namespace volumeshOS::Internal
         }
 
         // setup geometry shader, if it exists
-        uint32_t geometryID = -1;
+        uint32_t geometryID = 0;
 //        if (!geometryPath.empty())
 //        {
 //            std::string geometrySource = get_shader_source(geometryPath);
@@ -94,8 +94,8 @@ namespace volumeshOS::Internal
 //        }
 
         // setup tessellation control and evaluation shader, if they exists
-        unsigned int tessellationControlID = -1;
-        unsigned int tessellationEvaluationID = -1;
+        unsigned int tessellationControlID = 0;
+        unsigned int tessellationEvaluationID = 0;
         if (!tessellationControlPath.empty() && !tessellationEvaluationPath.empty())
         {
             // Load and Compile Tessellation Control Shader

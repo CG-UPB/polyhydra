@@ -27,11 +27,11 @@ namespace volumeshOS::Internal
                                 },
                         FrameBufferAttachment
                                 {
-                                        .internal_format    = GL_DEPTH_COMPONENT,
+                                        .internal_format    = GL_DEPTH_COMPONENT32F,
                                         .format             = GL_DEPTH_COMPONENT,
                                         .type               = GL_FLOAT,
                                         .attachment         = GL_DEPTH_ATTACHMENT,
-                                        .texture_filter     = GL_LINEAR
+                                        .texture_filter     = GL_NEAREST
                                 }
                 };
         m_transparent_framebuffer0 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments0);
@@ -49,11 +49,11 @@ namespace volumeshOS::Internal
                         },
                         FrameBufferAttachment
                                 {
-                                        .internal_format    = GL_DEPTH_COMPONENT,
+                                        .internal_format    = GL_DEPTH_COMPONENT32F,
                                         .format             = GL_DEPTH_COMPONENT,
                                         .type               = GL_FLOAT,
                                         .attachment         = GL_DEPTH_ATTACHMENT,
-                                        .texture_filter     = GL_LINEAR
+                                        .texture_filter     = GL_NEAREST
                                 }
                 };
         m_transparent_framebuffer1 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments1);
@@ -116,7 +116,7 @@ namespace volumeshOS::Internal
                 m_transparency_shader->bind();
 
                 uint32_t depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE2, depth_texture);
                 for (const auto& mesh: renderer.render_list)
                 {
                     render_mesh(renderer, mesh, i);
@@ -129,7 +129,7 @@ namespace volumeshOS::Internal
                 m_transparent_framebuffer1->bind();
                 m_transparency_shader->bind();
                 uint32_t depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
-                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE0, depth_texture);
+                m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE2, depth_texture);
                 for (const auto& mesh: renderer.render_list)
                 {
                     render_mesh(renderer, mesh, i);

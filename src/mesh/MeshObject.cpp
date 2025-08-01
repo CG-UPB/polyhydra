@@ -81,8 +81,8 @@ namespace volumeshOS::Internal
         glm::vec3 diameter = max - min;
         m_data.origin = min + (diameter * 0.5f);
         // all meshes should have the same screen size, regardless of their actual size
-        // m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
-        m_data.origin = glm::vec3(0.0f, 0.0f, 0.0f);
+        m_data.scale_normalization = 7.0f / std::max(std::max(diameter.x, diameter.y), diameter.z);
+        // m_data.origin = glm::vec3(0.0f, 0.0f, 0.0f);
     }
 
     void MeshObject::calculate_peel_depth()

@@ -185,8 +185,8 @@ namespace volumeshOS::Internal
         }
 
         FrameBufferObject::copy(
-                GL_DEPTH_STENCIL_ATTACHMENT,
-                GL_DEPTH_ATTACHMENT,
+                GL_NONE,
+                GL_NONE,
                 GL_DEPTH_BUFFER_BIT,
                 buffers.target_framebuffer_ms,
                 buffers.target_framebuffer
@@ -228,7 +228,7 @@ namespace volumeshOS::Internal
 
         // copy multisampled framebuffer that we rendered on to the imgui texture for display
         FrameBufferObject::copy(GL_COLOR_ATTACHMENT0, GL_COLOR_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
-        FrameBufferObject::copy(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
+        FrameBufferObject::copy(GL_NONE, GL_NONE, GL_DEPTH_BUFFER_BIT, buffers.target_framebuffer_ms, buffers.target_framebuffer);
 
         passes.post_processing_pass->render(*this);
     }
