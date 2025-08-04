@@ -388,7 +388,7 @@ void main()
             discard;
         }
         // Take the average of ambient occlusion and shadow as alpha value, weigh the ao-factor a bit more
-        FragColor = vec4(0.0, 0.0, 0.0, ((1.0 - ao_factor) * 2.0 + shadow) * 0.5);
+        FragColor = vec4(0.0, 0.0, 0.0, ((1.0 - ao_factor) * 2.0 + shadow) * 0.75);
         return;
     }
 
