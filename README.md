@@ -1,6 +1,6 @@
-<h1><a href="https://gitcg.informatik.uni-osnabrueck.de/teaching/volumeshos"><img src="res/icons/logo.png" width="50" heigth="50" /></a><a href="https://gitcg.informatik.uni-osnabrueck.de/teaching/volumeshos">volumeshOS</a> - flexible volumetric mesh visualization framework</h1>
+<h1><img src="res/icons/logo.png" width="50" heigth="50" />volumeshOS - flexible volumetric mesh visualization framework</h1>
 
-**volumeshOS** is a modern and lightweight framework to visualize volumetric mesh data. 
+**volumeshOS** is a modern and lightweight framework to visualize volumetric mesh data.
 With ease of use in mind, **volumeshOS** has been created thoroughly to support the development
 of algorithms for volumetric mesh *generation*, *manipulation* or *visualization*.
 
@@ -43,7 +43,7 @@ int main()
 
 ## Documentation
 There are three ways to get further information
-* [Documentation](res/readme/TableOfContent.md) 
+* [Documentation](res/readme/TableOfContent.md)
 * Examples inside the `examples` directory
 * `volumeshOS.h` in the `src` directory for a full overview of every usable function
 
