@@ -1,0 +1,11 @@
+@PACKAGE_INIT@
+
+if(NOT TARGET polyhydra::polyhydra)
+    include("${CMAKE_CURRENT_LIST_DIR}/polyhydraTargets.cmake")
+endif()
+
+set(polyhydra_LIBRARY polyhydra)
+set(polyhydra_LIBRARIES polyhydra)
+set(polyhydra_LIBRARY_DIRS "@PACKAGE_CONF_LIB_DIRS@")
+set(polyhydra_INCLUDE_DIRS "@PACKAGE_CONF_INCLUDE_DIRS@")
+set(polyhydra_FOUND TRUE)

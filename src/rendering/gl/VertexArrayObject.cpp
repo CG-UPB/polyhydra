@@ -1,189 +1,196 @@
 
-#include "VertexArrayObject.h"
-#include "../meshes/CommonMeshes.h"
-#include "../../settings/AppState.h"
+#include "polyhydra/rendering/gl/VertexArrayObject.h"
 
-namespace volumeshOS::Internal
+#include "polyhydra/rendering/meshes/CommonMeshes.h"
+#include "polyhydra/settings/AppState.h"
+
+namespace polyhydra::Internal
 {
-    std::unique_ptr<VertexArrayObject> VertexArrayObject::s_screen_quad = nullptr;
+std::unique_ptr<VertexArrayObject> VertexArrayObject::s_screen_quad = nullptr;
 
-    void VertexArrayObject::init()
-    {
-        s_screen_quad = std::make_unique<VertexArrayObject>(
-                CommonMeshes::PlaneXY::vertices(2.0f, 2.0f),
-                CommonMeshes::PlaneXY::indices()
-        );
-        s_screen_quad->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
-    }
-
-    void VertexArrayObject::clean_up()
-    {
-        s_screen_quad.reset();
-    }
-
-    void VertexArrayObject::draw_screen_quad()
-    {
-        s_screen_quad->draw();
-    }
-
-    VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
-    {
-        m_num_indices = (int) indices.size();
-        m_num_vertices = (int) vertices.size() / 3;
-
-        glGenVertexArrays(1, &m_vao);
-        glBindVertexArray(m_vao);
-
-        glGenBuffers(1, &m_vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_DYNAMIC_DRAW);
-
-        glGenBuffers(1, &m_ibo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int) indices.size() * 4, indices.data(), GL_DYNAMIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
-    VertexArrayObject::~VertexArrayObject()
-    {
-        glDeleteVertexArrays(1, &m_vao);
-        glDeleteBuffers(1, &m_vbo);
-        glDeleteBuffers(1, &m_ibo);
-
-        for (uint32_t buffer: m_buffers)
-        {
-            glDeleteBuffers(1, &buffer);
-        }
-    }
-
-    void VertexArrayObject::update_statistics(int num_instances) const
-    {
-        AppState::statistics.draw_calls_per_frame++;
-        AppState::statistics.total_rendered_vertices_per_frame += m_num_vertices * num_instances;
-        AppState::statistics.total_rendered_triangles_per_frame += (m_num_indices / 3) * num_instances;
-    }
-
-    void VertexArrayObject::draw() const
-    {
-        glBindVertexArray(m_vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_INT, nullptr);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        update_statistics();
-    }
-
-    void VertexArrayObject::draw_patches() const
-    {
-        glBindVertexArray(m_vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glPatchParameteri(GL_PATCH_VERTICES, 3);
-        glDrawElements(GL_PATCHES, m_num_indices, GL_UNSIGNED_INT, nullptr);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        update_statistics();
-    }
-
-    void VertexArrayObject::draw_instanced(int num_instances) const
-    {
-        glBindVertexArray(m_vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glDrawElementsInstanced(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_INT, nullptr, num_instances);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        update_statistics(num_instances);
-    }
-
-    void VertexArrayObject::update_vertices(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
-    {
-        m_num_indices = (int) indices.size();
-        m_num_vertices = (int) vertices.size() / 3;
-        glBindVertexArray(m_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, (int) vertices.size() * 4, vertices.data(), GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int) indices.size() * 4, indices.data(), GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
-    template<typename T>
-    void VertexArrayObject::add_attribute(const std::vector<T>& data, int location, int element_count, bool per_instance)
-    {
-        int gl_type;
-        if constexpr(std::is_same_v<T, float>)
-        { gl_type = GL_FLOAT; }
-        else if constexpr(std::is_same_v<T, int>)
-        { gl_type = GL_INT; }
-        else if constexpr(std::is_same_v<T, uint32_t>)
-        { gl_type = GL_UNSIGNED_INT; }
-        else
-        { throw std::invalid_argument("Invalid data type for gl buffer"); }
-
-        m_location_buffer_index[location] = (int) m_buffers.size();
-        m_buffers.push_back(-1);
-
-        glBindVertexArray(m_vao);
-        glGenBuffers(1, &m_buffers[m_buffers.size() - 1]);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[m_buffers.size() - 1]);
-        glBufferData(GL_ARRAY_BUFFER, (int) data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
-        if (gl_type == GL_FLOAT)
-        {
-            glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
-        }
-        else
-        {
-            glVertexAttribIPointer(location, element_count, gl_type, element_count * sizeof(T), nullptr);
-        }
-        glEnableVertexAttribArray(location);
-        if (per_instance)
-        {
-            glVertexAttribDivisor(location, 1);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
-    template<typename T>
-    void VertexArrayObject::update_attribute(const std::vector<T>& data, int location)
-    {
-        int buffer_index = m_location_buffer_index[location];
-        glBindVertexArray(m_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[buffer_index]);
-        glBufferData(GL_ARRAY_BUFFER, (int) data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
-    template<typename T>
-    void VertexArrayObject::update_attribute(const std::vector<T>& data, int location, int offset, int size)
-    {
-        int buffer_index = m_location_buffer_index[location];
-        glBindVertexArray(m_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffers[buffer_index]);
-        glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(T), (int) size * sizeof(T), &data[offset]);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
-    // these are necessary for the linker to find the templated function types, otherwise we would need to implement
-    // the template function in the header file, which would cause some problems
-    template void VertexArrayObject::add_attribute<float>(const std::vector<float>&, int, int, bool);
-    template void VertexArrayObject::add_attribute<int>(const std::vector<int>&, int, int, bool);
-    template void VertexArrayObject::add_attribute<uint32_t>(const std::vector<uint32_t>&, int, int, bool);
-
-    template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int);
-    template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int);
-    template void VertexArrayObject::update_attribute<uint32_t>(const std::vector<uint32_t>&, int);
-
-    template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int, int, int);
-    template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int, int, int);
-    template void VertexArrayObject::update_attribute<uint32_t>(const std::vector<uint32_t>&, int, int, int);
+void VertexArrayObject::init()
+{
+    s_screen_quad = std::make_unique<VertexArrayObject>(CommonMeshes::PlaneXY::vertices(2.0f, 2.0f),
+                                                        CommonMeshes::PlaneXY::indices());
+    s_screen_quad->add_attribute(CommonMeshes::PlaneXY::uvs(), 1, 2);
 }
+
+void VertexArrayObject::clean_up()
+{
+    s_screen_quad.reset();
+}
+
+void VertexArrayObject::draw_screen_quad()
+{
+    s_screen_quad->draw();
+}
+
+VertexArrayObject::VertexArrayObject(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
+{
+    m_num_indices = (int)indices.size();
+    m_num_vertices = (int)vertices.size() / 3;
+
+    glGenVertexArrays(1, &m_vao);
+    glBindVertexArray(m_vao);
+
+    glGenBuffers(1, &m_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, (int)vertices.size() * 4, vertices.data(), GL_DYNAMIC_DRAW);
+
+    glGenBuffers(1, &m_ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int)indices.size() * 4, indices.data(), GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+VertexArrayObject::~VertexArrayObject()
+{
+    glDeleteVertexArrays(1, &m_vao);
+    glDeleteBuffers(1, &m_vbo);
+    glDeleteBuffers(1, &m_ibo);
+
+    for (uint32_t buffer : m_buffers)
+    {
+        glDeleteBuffers(1, &buffer);
+    }
+}
+
+void VertexArrayObject::update_statistics(int num_instances) const
+{
+    AppState::statistics.draw_calls_per_frame++;
+    AppState::statistics.total_rendered_vertices_per_frame += m_num_vertices * num_instances;
+    AppState::statistics.total_rendered_triangles_per_frame += (m_num_indices / 3) * num_instances;
+}
+
+void VertexArrayObject::draw() const
+{
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_INT, nullptr);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    update_statistics();
+}
+
+void VertexArrayObject::draw_patches() const
+{
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glPatchParameteri(GL_PATCH_VERTICES, 3);
+    glDrawElements(GL_PATCHES, m_num_indices, GL_UNSIGNED_INT, nullptr);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    update_statistics();
+}
+
+void VertexArrayObject::draw_instanced(int num_instances) const
+{
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glDrawElementsInstanced(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_INT, nullptr, num_instances);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    update_statistics(num_instances);
+}
+
+void VertexArrayObject::update_vertices(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
+{
+    m_num_indices = (int)indices.size();
+    m_num_vertices = (int)vertices.size() / 3;
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, (int)vertices.size() * 4, vertices.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (int)indices.size() * 4, indices.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+template <typename T>
+void VertexArrayObject::add_attribute(const std::vector<T>& data, int location, int element_count, bool per_instance)
+{
+    int gl_type;
+    if constexpr (std::is_same_v<T, float>)
+    {
+        gl_type = GL_FLOAT;
+    }
+    else if constexpr (std::is_same_v<T, int>)
+    {
+        gl_type = GL_INT;
+    }
+    else if constexpr (std::is_same_v<T, uint32_t>)
+    {
+        gl_type = GL_UNSIGNED_INT;
+    }
+    else
+    {
+        throw std::invalid_argument("Invalid data type for gl buffer");
+    }
+
+    m_location_buffer_index[location] = (int)m_buffers.size();
+    m_buffers.push_back(-1);
+
+    glBindVertexArray(m_vao);
+    glGenBuffers(1, &m_buffers[m_buffers.size() - 1]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_buffers[m_buffers.size() - 1]);
+    glBufferData(GL_ARRAY_BUFFER, (int)data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
+    if (gl_type == GL_FLOAT)
+    {
+        glVertexAttribPointer(location, element_count, gl_type, GL_FALSE, element_count * sizeof(T), nullptr);
+    }
+    else
+    {
+        glVertexAttribIPointer(location, element_count, gl_type, element_count * sizeof(T), nullptr);
+    }
+    glEnableVertexAttribArray(location);
+    if (per_instance)
+    {
+        glVertexAttribDivisor(location, 1);
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+template <typename T>
+void VertexArrayObject::update_attribute(const std::vector<T>& data, int location)
+{
+    int buffer_index = m_location_buffer_index[location];
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_buffers[buffer_index]);
+    glBufferData(GL_ARRAY_BUFFER, (int)data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+template <typename T>
+void VertexArrayObject::update_attribute(const std::vector<T>& data, int location, int offset, int size)
+{
+    int buffer_index = m_location_buffer_index[location];
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_buffers[buffer_index]);
+    glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(T), (int)size * sizeof(T), &data[offset]);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+// these are necessary for the linker to find the templated function types, otherwise we would need to implement
+// the template function in the header file, which would cause some problems
+template void VertexArrayObject::add_attribute<float>(const std::vector<float>&, int, int, bool);
+template void VertexArrayObject::add_attribute<int>(const std::vector<int>&, int, int, bool);
+template void VertexArrayObject::add_attribute<uint32_t>(const std::vector<uint32_t>&, int, int, bool);
+
+template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int);
+template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int);
+template void VertexArrayObject::update_attribute<uint32_t>(const std::vector<uint32_t>&, int);
+
+template void VertexArrayObject::update_attribute<float>(const std::vector<float>&, int, int, int);
+template void VertexArrayObject::update_attribute<int>(const std::vector<int>&, int, int, int);
+template void VertexArrayObject::update_attribute<uint32_t>(const std::vector<uint32_t>&, int, int, int);
+} // namespace polyhydra::Internal

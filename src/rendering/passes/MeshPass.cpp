@@ -1,189 +1,185 @@
-#include "MeshPass.h"
-#include "mesh/MeshProperties.h"
-#include "rendering/Renderer.h"
+#include "polyhydra/rendering/passes/MeshPass.h"
 
-namespace volumeshOS::Internal
+#include "polyhydra/mesh/MeshProperties.h"
+#include "polyhydra/rendering/Renderer.h"
+
+namespace polyhydra::Internal
 {
 
-    void MeshPass::render(const Renderer& renderer)
+void MeshPass::render(const Renderer& renderer)
+{
+    renderer.buffers.target_framebuffer_ms->bind();
+    for (const auto& mesh : renderer.render_list)
     {
-        renderer.buffers.target_framebuffer_ms->bind();
-        for (const auto& mesh : renderer.render_list)
+        // We only render cells and lines in this pass
+        bool draw_cells = mesh->get_data().cells;
+        bool draw_lines = mesh->get_data().lines;
+        if (!(draw_cells || draw_lines))
         {
-            // We only render cells and lines in this pass
-            bool draw_cells = mesh->get_data().cells;
-            bool draw_lines = mesh->get_data().lines;
-            if (!(draw_cells || draw_lines))
-            {
-                continue;
-            }
-
-
-            auto& settings = AppState::settings;
-            float line_size = mesh->get_data().line_width;
-            bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
-
-            bool is_bezier_mesh = mesh->is_bezier_mesh();
-            // Currently, cells sometimes appear hollow if CULL_FACE is not
-            // disabled for Bézier meshes
-            if (draw_lines || is_bezier_mesh || !mesh->get_data().use_back_face_culling)
-            {
-                glDisable(GL_CULL_FACE);
-//                if(draw_wireframe)
-//                {
-//                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//                    glLineWidth(settings.wireframe_size);
-//                }
-            }
-            else
-            {
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CCW);
-                glCullFace(GL_BACK);
-            }
-
-            glDisable(GL_BLEND);
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LESS);
-            glDepthMask(GL_TRUE);
-
-            // Get shader
-            auto m_mesh_shader = Shader::get("mesh_phong");
-            m_mesh_shader->bind();
-
-            const auto& data = renderer.pass_data_list.at(mesh->get_id());
-            auto cam = renderer.camera;
-            auto light = AppState::settings.light;
-
-
-            // Shader uniforms
-            m_mesh_shader->set_uniform_mat4f("u_transform", data.transform);
-            m_mesh_shader->set_uniform_mat4f("u_projection", data.projection);
-            m_mesh_shader->set_uniform_mat4f("u_view", data.view);
-            m_mesh_shader->set_uniform_vec3f("u_view_dir", data.view_dir);
-            m_mesh_shader->set_uniform_vec3f("u_light_pos", data.light_pos);
-            m_mesh_shader->set_uniform_vec3f("u_cam_pos", data.cam_pos);
-            m_mesh_shader->set_uniform_vec3f("u_light_color", data.light_color);
-            m_mesh_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-            m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
-            m_mesh_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
-            m_mesh_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
-            m_mesh_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
-            m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
-            m_mesh_shader->set_uniform_vec3f("u_min", data.bb_min);
-            m_mesh_shader->set_uniform_vec3f("u_max", data.bb_max);
-            m_mesh_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
-            m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-
-            m_mesh_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
-            m_mesh_shader->set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
-            m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
-            m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
-            m_mesh_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
-            m_mesh_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
-
-            m_mesh_shader->set_uniform_bool("u_use_pbr", mesh->get_data().use_pbr);
-            m_mesh_shader->set_uniform_float("u_metallic", mesh->get_data().metallic);
-            m_mesh_shader->set_uniform_float("u_roughness", mesh->get_data().roughness);
-            m_mesh_shader->set_uniform_float("u_light_intensity", light.intensity);
-            m_mesh_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
-            m_mesh_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
-            m_mesh_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
-
-            m_mesh_shader->set_uniform_float("u_shadow_strength", settings.shadow.shadow_strength);
-            m_mesh_shader->set_uniform_float("u_softness", settings.shadow.softness);
-
-
-            // Do not use rounding on Bézier meshes.
-            m_mesh_shader->set_uniform_bool("u_rounding", !(is_bezier_mesh) && mesh->get_data().rounding_size > 0.0f);
-            m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
-            m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);
-            m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-            m_mesh_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
-
-            m_mesh_shader->set_uniform_bool("u_draw_cells", draw_cells);
-            m_mesh_shader->set_uniform_bool("u_draw_lines", draw_lines);
-            m_mesh_shader->set_uniform_float("u_line_size", line_size);
-            m_mesh_shader->set_uniform_vec4f("u_line_color", mesh->get_data().line_color);
-
-            m_mesh_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
-            m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
-
-            m_mesh_shader->set_uniform_float("u_near", cam->near);
-            m_mesh_shader->set_uniform_float("u_far", cam->far);
-
-
-            m_bias_min = 0.00000001f;
-            m_bias_max = 0.003f;
-
-            m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
-            m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);
-            m_mesh_shader->set_uniform_float("u_bias_modifier", m_bias_modifier);
-
-
-            // shadow maps
-            std::vector<unsigned int> bindings = {GL_TEXTURE2, GL_TEXTURE3, GL_TEXTURE4, GL_TEXTURE5,
-                                                  GL_TEXTURE6, GL_TEXTURE7, GL_TEXTURE8, GL_TEXTURE9};
-
-            auto s = renderer.passes.shadow_pass;
-            for (int i = 0; i < s->max_cascades; i++)
-            {
-                m_mesh_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) + "]",
-                                                 s->cascade_projections[i]);
-                m_mesh_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", s->cascade_views[i]);
-                m_mesh_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
-                m_mesh_shader->set_uniform_sampler2D("u_shadow_texture[" + std::to_string(i) + "]", bindings[i],s->shadow_maps[i]);
-
-            }
-
-
-            m_mesh_shader->set_uniform_mat4f("u_light_transform", data.light_transform);
-            m_mesh_shader->set_uniform_float("u_light_size", settings.shadow.penumbra_scale);
-
-
-            // settings
-            m_mesh_shader->set_uniform_bool("u_draw_shadows", settings.shadows_active);
-            m_mesh_shader->set_uniform_bool("u_draw_ao", settings.ssao_active);
-            m_mesh_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
-
-            // input textures
-            m_mesh_shader->set_uniform_sampler2D("u_depth_texture", GL_TEXTURE0,
-                                                 renderer.passes.pre_pass->get_framebuffer()->get_depth_texture());
-            m_mesh_shader->set_uniform_sampler2D("u_ssao_texture", GL_TEXTURE1,
-                                                 renderer.passes.ssao_pass->get_blur_texture());
-
-           // m_mesh_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
-
-            m_mesh_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
-            if(is_bezier_mesh)
-            {
-                auto mtb = mesh->get_mtb();
-                // Use Bezier Mesh Property to set uniform.
-                m_mesh_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
-
-                // GL_TEXTURE12 is used for control points storage.
-                m_mesh_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
-                // Use tessellation level value from toolbar.
-                m_mesh_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
-            }
-
-            // wireframe mode should always be non-rounded
-            if (draw_lines)
-            {
-                mesh->get_mvb()->get_vao_by_face()->draw_patches();
-            }
-            else
-            {
-                auto vao = mesh->get_vao();
-                if (mesh->get_data().rounding_size > 0.0 && !is_bezier_mesh)
-                {
-                    vao = mesh->get_mvb()->get_vao_rounded();
-                }
-                vao->draw_patches();
-            }
-
-            m_mesh_shader->unbind();
+            continue;
         }
-        renderer.buffers.target_framebuffer_ms->unbind();
+
+        auto& settings = AppState::settings;
+        float line_size = mesh->get_data().line_width;
+        bool use_vertex_normals = mesh->get_data().shading_mode == ShadingMode::PHONG;
+
+        bool is_bezier_mesh = mesh->is_bezier_mesh();
+        // Currently, cells sometimes appear hollow if CULL_FACE is not
+        // disabled for Bézier meshes
+        if (draw_lines || is_bezier_mesh || !mesh->get_data().use_back_face_culling)
+        {
+            glDisable(GL_CULL_FACE);
+            //                if(draw_wireframe)
+            //                {
+            //                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            //                    glLineWidth(settings.wireframe_size);
+            //                }
+        }
+        else
+        {
+            glEnable(GL_CULL_FACE);
+            glFrontFace(GL_CCW);
+            glCullFace(GL_BACK);
+        }
+
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+
+        // Get shader
+        auto m_mesh_shader = Shader::get("mesh_phong");
+        m_mesh_shader->bind();
+
+        const auto& data = renderer.pass_data_list.at(mesh->get_id());
+        auto cam = renderer.camera;
+        auto light = AppState::settings.light;
+
+        // Shader uniforms
+        m_mesh_shader->set_uniform_mat4f("u_transform", data.transform);
+        m_mesh_shader->set_uniform_mat4f("u_projection", data.projection);
+        m_mesh_shader->set_uniform_mat4f("u_view", data.view);
+        m_mesh_shader->set_uniform_vec3f("u_view_dir", data.view_dir);
+        m_mesh_shader->set_uniform_vec3f("u_light_pos", data.light_pos);
+        m_mesh_shader->set_uniform_vec3f("u_cam_pos", data.cam_pos);
+        m_mesh_shader->set_uniform_vec3f("u_light_color", data.light_color);
+        m_mesh_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+        m_mesh_shader->set_uniform_vec4f("u_object_color", mesh->get_data().color);
+        m_mesh_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+        m_mesh_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
+        m_mesh_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
+        m_mesh_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+        m_mesh_shader->set_uniform_vec3f("u_min", data.bb_min);
+        m_mesh_shader->set_uniform_vec3f("u_max", data.bb_max);
+        m_mesh_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
+        m_mesh_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+
+        m_mesh_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
+        m_mesh_shader->set_uniform_bool("u_two_sided_lighting", mesh->get_data().use_two_sided_lighting);
+        m_mesh_shader->set_uniform_float("u_spec_strength", mesh->get_data().specular_strength);
+        m_mesh_shader->set_uniform_float("u_spec_exponent", mesh->get_data().specular_exponent);
+        m_mesh_shader->set_uniform_float("u_ambient_strength", mesh->get_data().ambient_strength);
+        m_mesh_shader->set_uniform_float("u_diffuse_strength", mesh->get_data().diffuse_strength);
+
+        m_mesh_shader->set_uniform_bool("u_use_pbr", mesh->get_data().use_pbr);
+        m_mesh_shader->set_uniform_float("u_metallic", mesh->get_data().metallic);
+        m_mesh_shader->set_uniform_float("u_roughness", mesh->get_data().roughness);
+        m_mesh_shader->set_uniform_float("u_light_intensity", light.intensity);
+        m_mesh_shader->set_uniform_float("u_gamma", settings.post_processing.gamma);
+        m_mesh_shader->set_uniform_vec3f("u_ground_color", settings.ground.solid_color);
+        m_mesh_shader->set_uniform_vec3f("u_background_color", settings.sky.sky_color);
+
+        m_mesh_shader->set_uniform_float("u_shadow_strength", settings.shadow.shadow_strength);
+        m_mesh_shader->set_uniform_float("u_softness", settings.shadow.softness);
+
+        // Do not use rounding on Bézier meshes.
+        m_mesh_shader->set_uniform_bool("u_rounding", !(is_bezier_mesh) && mesh->get_data().rounding_size > 0.0f);
+        m_mesh_shader->set_uniform_float("u_rounding_size", mesh->get_data().rounding_size);
+        m_mesh_shader->set_uniform_vec4f("u_selection_color", mesh->get_data().selection_color);
+        m_mesh_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+        m_mesh_shader->set_uniform_int("u_cascade_level", settings.num_shadow_cascades - 1);
+
+        m_mesh_shader->set_uniform_bool("u_draw_cells", draw_cells);
+        m_mesh_shader->set_uniform_bool("u_draw_lines", draw_lines);
+        m_mesh_shader->set_uniform_float("u_line_size", line_size);
+        m_mesh_shader->set_uniform_vec4f("u_line_color", mesh->get_data().line_color);
+
+        m_mesh_shader->set_uniform_int("u_viewport_width", renderer.frame.width);
+        m_mesh_shader->set_uniform_int("u_viewport_height", renderer.frame.height);
+
+        m_mesh_shader->set_uniform_float("u_near", cam->near);
+        m_mesh_shader->set_uniform_float("u_far", cam->far);
+
+        m_bias_min = 0.00000001f;
+        m_bias_max = 0.003f;
+
+        m_mesh_shader->set_uniform_float("u_bias_min", m_bias_min);
+        m_mesh_shader->set_uniform_float("u_bias_max", m_bias_max);
+        m_mesh_shader->set_uniform_float("u_bias_modifier", m_bias_modifier);
+
+        // shadow maps
+        std::vector<unsigned int> bindings
+            = {GL_TEXTURE2, GL_TEXTURE3, GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7, GL_TEXTURE8, GL_TEXTURE9};
+
+        auto s = renderer.passes.shadow_pass;
+        for (int i = 0; i < s->max_cascades; i++)
+        {
+            m_mesh_shader->set_uniform_mat4f("u_light_projection[" + std::to_string(i) + "]",
+                                             s->cascade_projections[i]);
+            m_mesh_shader->set_uniform_mat4f("u_light_view[" + std::to_string(i) + "]", s->cascade_views[i]);
+            m_mesh_shader->set_uniform_float("u_cascade_ends[" + std::to_string(i) + "]", s->cascade_ends[i]);
+            m_mesh_shader->set_uniform_sampler2D(
+                "u_shadow_texture[" + std::to_string(i) + "]", bindings[i], s->shadow_maps[i]);
+        }
+
+        m_mesh_shader->set_uniform_mat4f("u_light_transform", data.light_transform);
+        m_mesh_shader->set_uniform_float("u_light_size", settings.shadow.penumbra_scale);
+
+        // settings
+        m_mesh_shader->set_uniform_bool("u_draw_shadows", settings.shadows_active);
+        m_mesh_shader->set_uniform_bool("u_draw_ao", settings.ssao_active);
+        m_mesh_shader->set_uniform_bool("u_use_vertex_normals", use_vertex_normals);
+
+        // input textures
+        m_mesh_shader->set_uniform_sampler2D(
+            "u_depth_texture", GL_TEXTURE0, renderer.passes.pre_pass->get_framebuffer()->get_depth_texture());
+        m_mesh_shader->set_uniform_sampler2D(
+            "u_ssao_texture", GL_TEXTURE1, renderer.passes.ssao_pass->get_blur_texture());
+
+        // m_mesh_shader->set_uniform_sampler2DArray("u_shadow_texture", GL_TEXTURE4, s->get_depth_texture());
+
+        m_mesh_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+        if (is_bezier_mesh)
+        {
+            auto mtb = mesh->get_mtb();
+            // Use Bezier Mesh Property to set uniform.
+            m_mesh_shader->set_uniform_int(
+                "u_bezier_degree",
+                *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+
+            // GL_TEXTURE12 is used for control points storage.
+            m_mesh_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
+            // Use tessellation level value from toolbar.
+            m_mesh_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
+        }
+
+        // wireframe mode should always be non-rounded
+        if (draw_lines)
+        {
+            mesh->get_mvb()->get_vao_by_face()->draw_patches();
+        }
+        else
+        {
+            auto vao = mesh->get_vao();
+            if (mesh->get_data().rounding_size > 0.0 && !is_bezier_mesh)
+            {
+                vao = mesh->get_mvb()->get_vao_rounded();
+            }
+            vao->draw_patches();
+        }
+
+        m_mesh_shader->unbind();
     }
+    renderer.buffers.target_framebuffer_ms->unbind();
 }
+} // namespace polyhydra::Internal

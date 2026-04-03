@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(volumeshOS)
+project(polyhydra)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -10,16 +10,17 @@ if (NOT DEFINED MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 endif ()
 
-option(VOLUMESHOS_BUILD_EXAMPLES "Build volumeshOS examples" ON)
+option(POLYHYDRA_BUILD_EXAMPLES "Build polyhydra examples" ON)
 
-# volumeshOS configuration
-set(VOLUMESHOS_ROOT ${CMAKE_CURRENT_LIST_DIR})
-set(VOLUMESHOS_SRC ${VOLUMESHOS_ROOT}/src)
-set(VOLUMESHOS_EXT ${VOLUMESHOS_ROOT}/ext)
+# polyhydra configuration
+set(POLYHYDRA_ROOT ${CMAKE_CURRENT_LIST_DIR})
+set(POLYHYDRA_SRC ${POLYHYDRA_ROOT}/src)
+set(POLYHYDRA_INC ${POLYHYDRA_ROOT}/include)
+set(POLYHYDRA_EXT ${POLYHYDRA_ROOT}/ext)
 
-add_subdirectory(${VOLUMESHOS_EXT})
-add_subdirectory(${VOLUMESHOS_SRC})
+add_subdirectory(${POLYHYDRA_EXT})
+add_subdirectory(${POLYHYDRA_SRC})
 
-if (VOLUMESHOS_BUILD_EXAMPLES)
-    add_subdirectory(${VOLUMESHOS_ROOT}/examples)
+if (POLYHYDRA_BUILD_EXAMPLES)
+    add_subdirectory(${POLYHYDRA_ROOT}/examples)
 endif ()

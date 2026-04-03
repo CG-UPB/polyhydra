@@ -3,11 +3,11 @@
 
 # ***Handling of Bézier Meshes***
 
-The visualization of meshes consisting of curved Bézier tetrahedra is supported as well, for polynomial degree up to 9. 
+The visualization of meshes consisting of curved Bézier tetrahedra is supported as well, for polynomial degree up to 9.
 
 Example Bézier meshes can be found in `res/sample_meshes/bezier_meshes/`.
 
-The additional visualization of the control polygons of a Bézier mesh is demonstrated in the example program `"volumeshOS_bezier_select".
+The additional visualization of the control polygons of a Bézier mesh is demonstrated in the example program `"polyhydra_bezier_select".
 In this program halfface selection must be activated and the option "Show control polygon when selected" must be ticked to visualize the control points of a selected halfface.
 
 ## **Bézier mesh format**
@@ -27,7 +27,7 @@ All control points $`c_{(i_2, i_1, i_0)}`$ of a Bézier tetrahedron's must be st
 &c_{(m, 0,0)}
 \end{align*}
 ```
-where $m$ is the degree of the Bézier triangle and $`(i_2, i_1, i_0)`$ is the multi-index of each control point, e.g. $`c_{(0,0,m)}`$, $`c_{(0,m,0)}`$ and $`c_{(m, 0,0)}`$ are the "corner control points" of the triangle. 
+where $m$ is the degree of the Bézier triangle and $`(i_2, i_1, i_0)`$ is the multi-index of each control point, e.g. $`c_{(0,0,m)}`$, $`c_{(0,m,0)}`$ and $`c_{(m, 0,0)}`$ are the "corner control points" of the triangle.
 In this *one-dimensional* vector, each control point is then encoded as its three successive coordinates.
 
 The degree of a Bézier mesh is encoded via a OpenVolumeMesh mesh property of type `int` named `"BezierDegree"`.
@@ -45,17 +45,17 @@ The `Shader` class is adapted in such a way that it automatically loads, compile
 
 ### `VertexArrayObject` class
 If a shader program contains a tessellation stage, `Gl_PATCHES` must be set as the OpenGL primitive for drawing.
-For this the `draw_patches` method has been added to the `VertexArrayObject` which is called in a rendering pass instead of `draw` if a tessellation stage is present. 
+For this the `draw_patches` method has been added to the `VertexArrayObject` which is called in a rendering pass instead of `draw` if a tessellation stage is present.
 
 ### Rendering Passes
 All shader programs adjusted for Bézier mesh visualization need certain uniform shader variables and a texture buffer which is used for control point access from a shader.
 
-Regarding uniforms, the uniform `u_is_bezier_mesh` always needs to be set, so that the tessellation stage actually tessellates a triangle patch into more sub-patches for Bézier meshes. 
+Regarding uniforms, the uniform `u_is_bezier_mesh` always needs to be set, so that the tessellation stage actually tessellates a triangle patch into more sub-patches for Bézier meshes.
 If a Bézier mesh is rendered, also `u_bezier_degree` is set to the Bézier meshes degree and `u_control_points_tb` is set to 12, so that **texture unit 12 is used for the control point texture buffer**.
 Also, the tessellation level applied in the tessellation control shader is set as the uniform `u_bezier_tessellation_level`.
 Additionally, the `u_rounding` uniform is always set to false for Bézier meshes and the vertex array object used for rounding is never bound for Bézier meshes.
 
-If a Bézier mesh is rendered, the text buffer storing the control points is also bound. 
+If a Bézier mesh is rendered, the text buffer storing the control points is also bound.
 This texture buffer is wrapped through the new class `MeshTextureBuffer` which automatically creates an OpenGL texture buffer and fills it with the control points of a Bézier mesh's face property, when an OpenVolumeMesh with the mesh property `"BézierMesh"` set to `true` is loaded.
 
 ### Shader programs

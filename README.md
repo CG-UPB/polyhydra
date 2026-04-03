@@ -1,22 +1,22 @@
-<h1><img src="res/icons/logo.png" width="50" heigth="50" />volumeshOS - flexible volumetric mesh visualization framework</h1>
+<h1><img src="res/icons/logo.png" width="50" heigth="50" />Polyhydra - flexible volumetric mesh visualization framework</h1>
 
-**volumeshOS** is a modern and lightweight framework to visualize volumetric mesh data.
-With ease of use in mind, **volumeshOS** has been created thoroughly to support the development
+**Polyhydra** is a modern and lightweight framework to visualize volumetric mesh data.
+With ease of use in mind, **Polyhydra** has been created thoroughly to support the development
 of algorithms for volumetric mesh *generation*, *manipulation* or *visualization*.
 
 ***
 ## How to install
 #### CMake
-VolumeshOS uses CMake for building. Integrate this into your CMake file:
+Polyhydra uses CMake for building. Integrate this into your CMake file:
 ```console
-add_subdirectory("path/to/volumeshOS")
+add_subdirectory("path/to/polyhydra")
 
 add_executable(target files..)
-target_link_libraries(target volumeshOS_core)
+target_link_libraries(target polyhydra::polyhydra)
 ```
 
 #### Dependencies
-Before getting started some libraries are required to use volumeshOS:
+Before getting started some libraries are required to use Polyhydra:
 
 For instance, on Ubuntu 20.04:
 ```console
@@ -28,11 +28,11 @@ sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
 ```
 
 ## How to use
-The simplest volumeshOS program that simply loads a mesh looks like this:
+The simplest Polyhydra program that simply loads a mesh looks like this:
 ```c
-#include "volumeshOS.h"
+#include "polyhydra.h"
 
-using namespace volumeshOS;
+using namespace polyhydra;
 
 int main()
 {
@@ -45,7 +45,7 @@ int main()
 There are three ways to get further information
 * [Documentation](res/readme/TableOfContent.md)
 * Examples inside the `examples` directory
-* `volumeshOS.h` in the `src` directory for a full overview of every usable function
+* `polyhydra.h` in the `src` directory for a full overview of every usable function
 
 ## Credits
 

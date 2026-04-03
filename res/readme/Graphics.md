@@ -2,15 +2,15 @@
 ***
 
 # Graphics
-To improve the three-dimensional impression there are some options. 
+To improve the three-dimensional impression there are some options.
 At the moment further settings can only be made in the viewer.
 
 
 
 ## Shadow
-VolumeshOS uses cascaded shadow maps with up to 8 cascades.
+Polyhydra uses cascaded shadow maps with up to 8 cascades.
 More `cascades` result in a better quality shadow, but also needs more computational power.
-The `shadow strength` controls the darkness of the shadow. 
+The `shadow strength` controls the darkness of the shadow.
 Set a higher `penumbra width` for a softer shadow.
 
 ```cpp

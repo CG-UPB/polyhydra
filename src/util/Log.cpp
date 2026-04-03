@@ -1,7 +1,7 @@
 
-#include "Log.h"
+#include "polyhydra/util/Log.h"
 
-namespace volumeshOS::Internal
+namespace polyhydra::Internal
 {
-    Log::Level Log::s_log_level = Log::Level::INFO;
+Log::Level Log::s_log_level = Log::Level::INFO;
 }

@@ -1,0 +1,158 @@
+#pragma once
+
+#include "polyhydra/polyhydraPCH.h"
+
+#include "polyhydra/mesh/MeshList.h"
+#include "polyhydra/rendering/Light.h"
+#include "polyhydra/rendering/camera/Camera.h"
+#include "polyhydra/rendering/gl/FrameBufferObject.h"
+#include "polyhydra/rendering/gl/PixelBufferObject.h"
+#include "polyhydra/rendering/gl/PrePassFrameBufferObject.h"
+#include "polyhydra/rendering/passes/BackgroundPass.h"
+#include "polyhydra/rendering/passes/GroundPass.h"
+#include "polyhydra/rendering/passes/MeshPass.h"
+#include "polyhydra/rendering/passes/OutlinePass.h"
+#include "polyhydra/rendering/passes/PostProcessingPass.h"
+#include "polyhydra/rendering/passes/PrePass.h"
+#include "polyhydra/rendering/passes/SSAOPass.h"
+#include "polyhydra/rendering/passes/SelectionHoverPass.h"
+#include "polyhydra/rendering/passes/SelectionPass.h"
+#include "polyhydra/rendering/passes/ShadowMapPass.h"
+#include "polyhydra/rendering/passes/TransparencyPassDP.h"
+#include "polyhydra/rendering/passes/TransparencyPassWB.h"
+#include "polyhydra/rendering/passes/VertexOnlyPass.h"
+#include "polyhydra/rendering/shapes/ShapeRenderer.h"
+#include "polyhydra/settings/AppState.h"
+
+namespace polyhydra
+{
+struct ExportOptions;
+}
+
+namespace polyhydra::Internal
+{
+class SSAOPass;
+class TransparencyPassWB;
+class TransparencyPassDP;
+class ShadowMapPass;
+class PostProcessingPass;
+class OutlinePass;
+
+struct RenderData
+{
+    bool render_bg = true;
+    bool render_shapes = true;
+    bool update_input = true;
+    bool render_ground = true;
+    bool ground_shadow_only = false;
+};
+
+class Renderer
+{
+  public:
+    Renderer(int width, int height);
+
+    void set_selection_callback(std::function<void(int, int)> callback)
+    {
+        selection_callback = std::move(callback);
+    };
+
+    void resize(int width, int height);
+
+    void render(const RenderData& data = {});
+
+    void export_image(const std::string& path, const ExportOptions& options);
+
+  public:
+    [[nodiscard]] static bool should_render_mesh(const std::shared_ptr<MeshObject>& mesh);
+
+  public:
+    std::shared_ptr<MeshList> mesh_list = nullptr;
+    std::shared_ptr<Camera> camera = nullptr;
+    std::shared_ptr<ShapeRenderer> shapes = nullptr;
+    std::vector<std::shared_ptr<MeshObject>> render_list;
+    std::function<void(int, int)> selection_callback;
+    glm::vec3 hover_position = {0.0, 0.0, 0.0};
+    bool input_blocking = false;
+
+    // render buffers
+    struct
+    {
+        std::shared_ptr<FrameBufferObject> target_framebuffer_ms = nullptr;
+        std::shared_ptr<FrameBufferObject> target_framebuffer = nullptr;
+        std::shared_ptr<FrameBufferObject> post_framebuffer = nullptr;
+        std::shared_ptr<FrameBufferObject> selection_frame_buffer = nullptr;
+        std::shared_ptr<PixelBufferObject> pixel_buffer = nullptr;
+    } buffers;
+
+    // render passes
+    struct
+    {
+        std::shared_ptr<BackgroundPass> background_pass = nullptr;
+        std::shared_ptr<GroundPass> ground_pass = nullptr;
+        std::shared_ptr<PrePass> pre_pass = nullptr;
+        std::shared_ptr<ShadowMapPass> shadow_pass = nullptr;
+        std::shared_ptr<MeshPass> mesh_pass = nullptr;
+        std::shared_ptr<SSAOPass> ssao_pass = nullptr;
+        std::shared_ptr<TransparencyPassWB> transparency_pass_wb = nullptr;
+        std::shared_ptr<TransparencyPassDP> transparency_pass_dp = nullptr;
+        std::shared_ptr<SelectionPass> selection_pass = nullptr;
+        std::shared_ptr<SelectionHoverPass> selection_hover_pass = nullptr;
+        std::shared_ptr<VertexOnlyPass> vertex_only_pass = nullptr;
+        std::shared_ptr<PostProcessingPass> post_processing_pass = nullptr;
+        std::shared_ptr<OutlinePass> outline_pass = nullptr;
+    } passes;
+
+    // frame attributes
+    struct
+    {
+        bool screenshot = true;
+        int limit = 4;
+        int current = 0;
+        int width = 0;
+        int height = 0;
+        bool is_rendering_background = false;
+        bool ground_shadow_only = false;
+    } frame;
+
+    // input handling
+
+    struct
+    {
+        glm::vec2 last = {0.0f, 0.0f};
+        glm::vec2 pos = {0.0f, 0.0f};
+        glm::vec2 offset = {0.0f, 0.0f};
+        bool mesh_moving = false;
+    } input;
+
+    struct PassData
+    {
+        MeshData data;
+
+        glm::mat4 transform;
+        glm::mat4 projection;
+        glm::mat4 view;
+        glm::mat4 view_transform;
+        glm::vec3 view_dir;
+        glm::vec3 cam_pos;
+        glm::vec3 light_pos;
+        glm::vec3 light_color;
+        glm::mat4 light_transform;
+
+        glm::vec3 slice_direction;
+
+        glm::vec3 bb_min;
+        glm::vec3 bb_max;
+    };
+
+    std::unordered_map<int, PassData> pass_data_list;
+
+  private:
+    void handle_zoom();
+    void handle_input();
+    void handle_camera_input();
+    void handle_mesh_input();
+
+    void update_pass_data();
+};
+} // namespace polyhydra::Internal

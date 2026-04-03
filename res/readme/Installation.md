@@ -4,16 +4,16 @@
 # Installation
 
 ## CMake
-VolumeshOS uses CMake for building. Integrate this into your CMake file:
+Polyhydra uses CMake for building. Integrate this into your CMake file:
 ```console
-add_subdirectory("path/to/volumeshOS")
+add_subdirectory("path/to/polyhydra")
 
 add_executable(target files..)
-target_link_libraries(target volumeshOS_core)
+target_link_libraries(target polyhydra::polyhydra)
 ```
 
 ## Dependencies
-Before getting started some libraries are required to use volumeshOS:
+Before getting started some libraries are required to use polyhydra:
 
 For instance, on Ubuntu 20.04:
 ```console

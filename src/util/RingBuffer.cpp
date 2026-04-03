@@ -1,7 +1,9 @@
-#include "RingBuffer.h"
+#include "polyhydra/util/RingBuffer.h"
 
 RingBuffer::RingBuffer() = default;
-RingBuffer::RingBuffer(size_t size): max_size(size){}
+RingBuffer::RingBuffer(size_t size) : max_size(size)
+{
+}
 
 void RingBuffer::push(int value)
 {

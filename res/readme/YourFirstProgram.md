@@ -3,11 +3,11 @@
 
 # Your First Program
 
-The simplest volumeshOS program looks like this:
+The simplest Polyhydra program looks like this:
 ```c
-#include "volumeshOS.h"
+#include "polyhydra.h"
 
-using namespace volumeshOS;
+using namespace polyhydra;
 
 int main()
 {
@@ -15,7 +15,7 @@ int main()
     open();
 }
 ```
-First include `volumeshOS.h`. Then load a mesh and open the viewer. 
+First include `polyhydra.h`. Then load a mesh and open the viewer.
 
 <div style="display:flex; justify-content:space-between;">
     <img src="../readme_res/viewer.png" alt="Bild 1" style="width:100%;">

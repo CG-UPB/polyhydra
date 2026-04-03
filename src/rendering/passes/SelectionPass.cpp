@@ -1,219 +1,218 @@
 
-#include "SelectionPass.h"
-#include "MeshPass.h"
-#include "../meshes/CommonMeshes.h"
-#include "../Renderer.h"
-#include "../gl/Shader.h"
-#include "mesh/MeshProperties.h"
+#include "polyhydra/rendering/passes/SelectionPass.h"
 
-namespace volumeshOS::Internal
+#include "polyhydra/mesh/MeshProperties.h"
+#include "polyhydra/rendering/Renderer.h"
+#include "polyhydra/rendering/gl/Shader.h"
+#include "polyhydra/rendering/meshes/CommonMeshes.h"
+#include "polyhydra/rendering/passes/MeshPass.h"
+
+namespace polyhydra::Internal
 {
-    SelectionPass::SelectionPass()
+SelectionPass::SelectionPass()
+{
+    // Get Shaders
+    m_selection_shader = Shader::selection_face();
+    m_selection_sphere_shader = Shader::selection_vertex_shader();
+    m_selection_cylinder_shader = Shader::selection_edge_shader();
+}
+
+void SelectionPass::render(const Renderer& renderer)
+{
+    // now render our mesh scene to the framebuffer texture
+    renderer.buffers.selection_frame_buffer->bind();
+
+    // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
+    // viewport[3] equals viewport height
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    // read Pixel data/color from framebuffer
+    ImVec2 mouse_pos_in_window = {ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
+                                  ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()};
+    int x = (int)mouse_pos_in_window.x / 2;
+    int y = (int)(viewport[3] * 2 - (int)mouse_pos_in_window.y) / 2;
+
+    GLubyte* data = renderer.buffers.pixel_buffer->start_read(x, y, 1, 1);
+
+    if (data != nullptr)
     {
-        // Get Shaders
-        m_selection_shader = Shader::selection_face();
-        m_selection_sphere_shader = Shader::selection_vertex_shader();
-        m_selection_cylinder_shader = Shader::selection_edge_shader();
-    }
-
-    void SelectionPass::render(const Renderer& renderer)
-    {
-        // now render our mesh scene to the framebuffer texture
-        renderer.buffers.selection_frame_buffer->bind();
-
-        // viewport (0,0) starts top left, but framebuffer (0,0) starts bottom left
-        // viewport[3] equals viewport height
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-
-        // read Pixel data/color from framebuffer
-        ImVec2 mouse_pos_in_window = {
-                ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX(),
-                ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()
-        };
-        int x = (int) mouse_pos_in_window.x / 2;
-        int y = (int) (viewport[3] * 2 - (int) mouse_pos_in_window.y) / 2;
-
-        GLubyte* data = renderer.buffers.pixel_buffer->start_read(x, y, 1, 1);
-
-        if (data != nullptr)
+        // evaluate ID out of color
+        int type = data[0] & 3;
+        int id;
+        if (renderer.passes.selection_pass->is_debug_mode())
         {
-            // evaluate ID out of color
-            int type = data[0] & 3;
-            int id;
-            if (renderer.passes.selection_pass->is_debug_mode())
-            {
-                id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
-            }
-            else
-            {
-                id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
-            }
-            renderer.selection_callback(type, id);
-        }
-
-        renderer.buffers.pixel_buffer->finish_read();
-        if (renderer.frame.current == 0)
-        {
-            // we need to clear our framebuffer as well
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            for (const auto& mesh : renderer.render_list)
-            {
-                render_mesh(mesh, renderer);
-            }
-        }
-        renderer.buffers.selection_frame_buffer->unbind();
-    }
-
-    void SelectionPass::render_mesh(const std::shared_ptr<MeshObject>& mesh, const Renderer& renderer)
-    {
-        // Set Variables from Mesh Data
-        int offset = std::get<0>(mesh->selection_offset());
-        mesh->get_data().selection_id_offset = offset;
-        m_sphere_vao = mesh->get_sphere_vao();
-        m_num_vertices = mesh->get_num_visible_vertices();
-        m_cylinder_vao = mesh->get_cylinder_vao();
-        m_num_edges = mesh->get_num_visible_edges();
-        
-        bool is_bezier_mesh = mesh->is_bezier_mesh();
-        
-        // GL Setup
-        // Disable CULL_FACE for Bézier meshes
-        if (is_bezier_mesh)
-        {
-            glDisable(GL_CULL_FACE);
+            id = (data[0] + data[1] * 256 + data[2] * 256 * 256) >> 2;
         }
         else
         {
-            glEnable(GL_CULL_FACE);
-            glFrontFace(GL_CCW);
-            glCullFace(GL_BACK);
+            id = (data[0] + data[1] * 256 + data[2] * 256 * 256 + data[3] * 256 * 256 * 256) >> 2;
         }
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
+        renderer.selection_callback(type, id);
+    }
 
-        const auto& data = renderer.pass_data_list.at(mesh->get_id());
+    renderer.buffers.pixel_buffer->finish_read();
+    if (renderer.frame.current == 0)
+    {
+        // we need to clear our framebuffer as well
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Get SelectionMode Mode
-        // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
-        auto selection_mode = AppState::settings.selection_mode;
-
-
-        // Faces should not be selectable in Vertex or Edge SelectionMode mode
-        bool faces_selectable = false;
-
-        if(selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::FACE || selection_mode == SelectionMode::CELL)
+        for (const auto& mesh : renderer.render_list)
         {
-            faces_selectable = true;
+            render_mesh(mesh, renderer);
         }
+    }
+    renderer.buffers.selection_frame_buffer->unbind();
+}
 
-        // Draw Faces
-        m_selection_shader->bind();
+void SelectionPass::render_mesh(const std::shared_ptr<MeshObject>& mesh, const Renderer& renderer)
+{
+    // Set Variables from Mesh Data
+    int offset = std::get<0>(mesh->selection_offset());
+    mesh->get_data().selection_id_offset = offset;
+    m_sphere_vao = mesh->get_sphere_vao();
+    m_num_vertices = mesh->get_num_visible_vertices();
+    m_cylinder_vao = mesh->get_cylinder_vao();
+    m_num_edges = mesh->get_num_visible_edges();
+
+    bool is_bezier_mesh = mesh->is_bezier_mesh();
+
+    // GL Setup
+    // Disable CULL_FACE for Bézier meshes
+    if (is_bezier_mesh)
+    {
+        glDisable(GL_CULL_FACE);
+    }
+    else
+    {
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
+    }
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+
+    const auto& data = renderer.pass_data_list.at(mesh->get_id());
+
+    // Get SelectionMode Mode
+    // 0 = Faces, 1 = Vertex, 2 = Edges, 3 = All
+    auto selection_mode = AppState::settings.selection_mode;
+
+    // Faces should not be selectable in Vertex or Edge SelectionMode mode
+    bool faces_selectable = false;
+
+    if (selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::FACE
+        || selection_mode == SelectionMode::CELL)
+    {
+        faces_selectable = true;
+    }
+
+    // Draw Faces
+    m_selection_shader->bind();
+
+    // Set Uniforms
+    m_selection_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
+    m_selection_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+    m_selection_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+    m_selection_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
+    m_selection_shader->set_uniform_bool("u_debug_mode", m_debug);
+    m_selection_shader->set_uniform_bool("u_faces_selectable", faces_selectable);
+    m_selection_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+    m_selection_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+    m_selection_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
+    m_selection_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
+    m_selection_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+    m_selection_shader->set_uniform_vec3f("u_min", data.bb_min);
+    m_selection_shader->set_uniform_vec3f("u_max", data.bb_max);
+    m_selection_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
+    m_selection_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+
+    m_selection_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+    if (is_bezier_mesh)
+    {
+        auto mtb = mesh->get_mtb();
+        // Use Bezier Mesh Property to set uniform.
+        m_selection_shader->set_uniform_int(
+            "u_bezier_degree",
+            *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+
+        // GL_TEXTURE12 is used for control points storage.
+        m_selection_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
+        // Use tessellation level value from toolbar.
+        m_selection_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
+    }
+    mesh->get_vao()->draw_patches();
+
+    m_selection_shader->unbind();
+
+    if ((selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::EDGE) && !is_bezier_mesh)
+    {
+        // Draw cylinders for each Edge
+        glDisable(GL_CULL_FACE);
+        // glDepthMask(GL_FALSE);
+
+        m_selection_cylinder_shader->bind();
 
         // Set Uniforms
-        m_selection_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
-        m_selection_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
-        m_selection_shader->set_uniform_mat4f("u_view", renderer.camera->view);
-        m_selection_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
-        m_selection_shader->set_uniform_bool("u_debug_mode", m_debug);
-        m_selection_shader->set_uniform_bool("u_faces_selectable", faces_selectable);
-        m_selection_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-        m_selection_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
-        m_selection_shader->set_uniform_float("u_max_peel_depth", mesh->get_data().max_peel_depth);
-        m_selection_shader->set_uniform_bool("u_reverse_peeling", mesh->get_data().reverse_peeling);
-        m_selection_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
-        m_selection_shader->set_uniform_vec3f("u_min", data.bb_min);
-        m_selection_shader->set_uniform_vec3f("u_max", data.bb_max);
-        m_selection_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
-        m_selection_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-        
-        m_selection_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
-        if(is_bezier_mesh)
-        {
-            auto mtb = mesh->get_mtb();
-            // Use Bezier Mesh Property to set uniform.
-            m_selection_shader->set_uniform_int("u_bezier_degree", *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
+        m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
+        m_selection_cylinder_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+        m_selection_cylinder_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+        m_selection_cylinder_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
+        m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", m_debug);
+        m_selection_cylinder_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+        m_selection_cylinder_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+        m_selection_cylinder_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+        m_selection_cylinder_shader->set_uniform_vec3f("u_min", data.bb_min);
+        m_selection_cylinder_shader->set_uniform_vec3f("u_max", data.bb_max);
+        m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
+        m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+        m_selection_cylinder_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
 
-            // GL_TEXTURE12 is used for control points storage.
-            m_selection_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
-            // Use tessellation level value from toolbar.
-            m_selection_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
-        }
-        mesh->get_vao()->draw_patches();
+        m_cylinder_vao->draw_instanced(m_num_edges);
 
-        m_selection_shader->unbind();
-
-        if((selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::EDGE) && !is_bezier_mesh)
-        {
-            // Draw cylinders for each Edge
-            glDisable(GL_CULL_FACE);
-            //glDepthMask(GL_FALSE);
-
-            m_selection_cylinder_shader->bind();
-
-            // Set Uniforms
-            m_selection_cylinder_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
-            m_selection_cylinder_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
-            m_selection_cylinder_shader->set_uniform_mat4f("u_view", renderer.camera->view);
-            m_selection_cylinder_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
-            m_selection_cylinder_shader->set_uniform_bool("u_debug_mode", m_debug);
-            m_selection_cylinder_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-            m_selection_cylinder_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
-            m_selection_cylinder_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
-            m_selection_cylinder_shader->set_uniform_vec3f("u_min", data.bb_min);
-            m_selection_cylinder_shader->set_uniform_vec3f("u_max", data.bb_max);
-            m_selection_cylinder_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
-            m_selection_cylinder_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            m_selection_cylinder_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-
-            m_cylinder_vao->draw_instanced(m_num_edges);
-
-            m_selection_cylinder_shader->unbind();
-        }
-
-        glDepthMask(GL_TRUE);
-
-        if((selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::VERTEX) && !is_bezier_mesh)
-        {
-
-            // Draw spheres for each Vertex
-            m_selection_sphere_shader->bind();
-
-            // Set Uniforms
-            m_selection_sphere_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
-            m_selection_sphere_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
-            m_selection_sphere_shader->set_uniform_mat4f("u_view", renderer.camera->view);
-            m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", renderer.camera->position);
-            m_selection_sphere_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
-            m_selection_sphere_shader->set_uniform_bool("u_debug_mode", m_debug);
-            m_selection_sphere_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
-            m_selection_sphere_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
-            m_selection_sphere_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
-            m_selection_sphere_shader->set_uniform_vec3f("u_min", data.bb_min);
-            m_selection_sphere_shader->set_uniform_vec3f("u_max", data.bb_max);
-            m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
-            m_selection_sphere_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
-            m_selection_sphere_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
-
-
-
-            m_sphere_vao->draw_instanced(m_num_vertices);
-
-            m_selection_sphere_shader->unbind();
-        }
+        m_selection_cylinder_shader->unbind();
     }
 
-    void SelectionPass::set_debug_mode(bool mode)
-    {
-        m_debug = mode;
-    }
+    glDepthMask(GL_TRUE);
 
-    bool SelectionPass::is_debug_mode() const
+    if ((selection_mode == SelectionMode::ALL || selection_mode == SelectionMode::VERTEX) && !is_bezier_mesh)
     {
-        return m_debug;
+
+        // Draw spheres for each Vertex
+        m_selection_sphere_shader->bind();
+
+        // Set Uniforms
+        m_selection_sphere_shader->set_uniform_mat4f("u_mesh_transform", data.transform);
+        m_selection_sphere_shader->set_uniform_mat4f("u_projection", renderer.camera->projection);
+        m_selection_sphere_shader->set_uniform_mat4f("u_view", renderer.camera->view);
+        m_selection_sphere_shader->set_uniform_vec3f("u_cam_pos", renderer.camera->position);
+        m_selection_sphere_shader->set_uniform_int("u_selection_offset", mesh->get_data().selection_id_offset);
+        m_selection_sphere_shader->set_uniform_bool("u_debug_mode", m_debug);
+        m_selection_sphere_shader->set_uniform_float("u_cell_size", mesh->get_data().cell_size);
+        m_selection_sphere_shader->set_uniform_float("u_peel_depth", mesh->get_data().peel_level);
+        m_selection_sphere_shader->set_uniform_float("u_slice_depth", mesh->get_data().slice_level);
+        m_selection_sphere_shader->set_uniform_vec3f("u_min", data.bb_min);
+        m_selection_sphere_shader->set_uniform_vec3f("u_max", data.bb_max);
+        m_selection_sphere_shader->set_uniform_vec3f("u_slice_direction", data.slice_direction);
+        m_selection_sphere_shader->set_uniform_bool("u_slice_locked", mesh->get_data().slice_locked);
+        m_selection_sphere_shader->set_uniform_float("u_average_cell_size", mesh->get_mvb()->get_average_cell_size());
+
+        m_sphere_vao->draw_instanced(m_num_vertices);
+
+        m_selection_sphere_shader->unbind();
     }
 }
+
+void SelectionPass::set_debug_mode(bool mode)
+{
+    m_debug = mode;
+}
+
+bool SelectionPass::is_debug_mode() const
+{
+    return m_debug;
+}
+} // namespace polyhydra::Internal

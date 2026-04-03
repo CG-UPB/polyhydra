@@ -4,7 +4,7 @@
 
 # update all submodules before building
 find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${VOLUMESHOS_ROOT}/.git")
+if(GIT_FOUND AND EXISTS "${POLYHYDRA_ROOT}/.git")
     # Update submodules as needed
     message(STATUS "Submodule init")
     execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -f

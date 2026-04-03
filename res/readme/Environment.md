@@ -21,7 +21,7 @@ The floor consists of a solid part and a grid. Both can be assigned an individua
 
 ## Light
 
-VolumeshOS has one global light. Its direction and color affects lighting and shadows and also the sky gradient.
+Polyhydra has one global light. Its direction and color affects lighting and shadows and also the sky gradient.
 
 ```cpp
 // direction
@@ -60,7 +60,7 @@ set_fog_color(fog_col);
 ### Environmental influence on lighting
 Some of the settings above have an influence on the lighting:
 
-* Standard 
+* Standard
 <div style="text-align: left;">
     <img src="../readme_res/environment_off.png" alt="Bild 1" style="width:50%;">
 </div>
