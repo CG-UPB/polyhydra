@@ -82,7 +82,7 @@ set(imgui_SOURCES
         ${POLYHYDRA_EXT}/imgui/misc/cpp/imgui_stdlib.cpp
         )
 
-add_library(imgui STATIC ${imgui_SOURCES} ${imgui_HEADERS})
+add_library(imgui ${imgui_SOURCES} ${imgui_HEADERS})
 
 set_target_properties(imgui PROPERTIES FOLDER "ext")
 
@@ -128,7 +128,7 @@ set(stb_Headers
 
 set(stb_Sources ${stb_DIR}/stb_vorbis.c)
 
-add_library(stb STATIC ${stb_Headers} ${stb_Sources})
+add_library(stb ${stb_Headers} ${stb_Sources})
 target_include_directories(stb PUBLIC
                            "$<BUILD_INTERFACE:${stb_DIR}>"
                            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
@@ -142,7 +142,7 @@ set(tinyfiledialogs_DIR ${POLYHYDRA_EXT}/tinyfiledialogs)
 set(tinyfiledialogs_Headers ${tinyfiledialogs_DIR}/tinyfiledialogs.h)
 set(tinyfiledialogs_Sources ${tinyfiledialogs_DIR}/tinyfiledialogs.c)
 
-add_library(tinyfiledialogs STATIC ${tinyfiledialogs_Headers} ${tinyfiledialogs_Sources})
+add_library(tinyfiledialogs ${tinyfiledialogs_Headers} ${tinyfiledialogs_Sources})
 target_include_directories(tinyfiledialogs PUBLIC
                            "$<BUILD_INTERFACE:${tinyfiledialogs_DIR}>"
                            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
@@ -260,7 +260,7 @@ else()
         set(POLYHYDRA_RESOURCE_BASE_PATH "./res")
 endif()
 
-add_library(polyhydra STATIC ${polyhydra_SOURCES})
+add_library(polyhydra ${polyhydra_SOURCES})
 add_library(polyhydra::polyhydra ALIAS polyhydra)
 
 ### Configure install paths
@@ -334,4 +334,3 @@ install(EXPORT polyhydraTargets
 
 export(EXPORT polyhydraTargets
        NAMESPACE polyhydra::)
-

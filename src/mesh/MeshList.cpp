@@ -209,7 +209,7 @@ void MeshList::reset_rotation(MeshID id)
 
 void MeshList::set_slice_factor(const MeshID id, const float level)
 {
-    assert(0.0f <= level <= 1.0f);
+    assert(0.0f <= level && level <= 1.0f);
     auto f = [level](const std::shared_ptr<MeshObject>& mesh) -> void { mesh->get_data().slice_level = level; };
     execute_for_mesh(f, id);
 }
@@ -252,14 +252,14 @@ void MeshList::set_reverse_peeling(const MeshID id, const bool reverse)
 
 void MeshList::set_cell_rounding(MeshID id, float rounding)
 {
-    assert(0.0f <= rounding <= 1.0f);
+    assert(0.0f <= rounding && rounding <= 1.0f);
     auto f = [rounding](const std::shared_ptr<MeshObject>& mesh) -> void { mesh->get_data().rounding_size = rounding; };
     execute_for_mesh(f, id);
 }
 
 void MeshList::set_cell_size(const MeshID id, const float size)
 {
-    assert(0.0f <= size <= 1.0f);
+    assert(0.0f <= size && size <= 1.0f);
     auto f = [size](const std::shared_ptr<MeshObject>& mesh) -> void { mesh->get_data().cell_size = size; };
     execute_for_mesh(f, id);
 }
