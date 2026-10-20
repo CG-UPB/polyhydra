@@ -45,7 +45,7 @@ add_subdirectory(${POLYHYDRA_EXT}/glfw ext/glfw EXCLUDE_FROM_ALL)
 clean_interface_include_directories(glfw)
 
 add_subdirectory(${POLYHYDRA_EXT}/glm ext/glm EXCLUDE_FROM_ALL)
-clean_interface_include_directories(glm)
+# clean_interface_include_directories(glm)
 if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
     if(EXISTS "${POLYHYDRA_EXT}/OpenVolumeMesh/CMakeLists.txt")
         add_subdirectory(${POLYHYDRA_EXT}/OpenVolumeMesh OpenVolumeMesh EXCLUDE_FROM_ALL)
@@ -293,7 +293,7 @@ target_include_directories(polyhydra
 
 find_package(Filesystem REQUIRED Experimental Final)
 
-target_link_libraries(polyhydra PUBLIC ${CMAKE_DL_LIBS} imgui OpenVolumeMesh::OpenVolumeMesh glm glad glfw nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
+target_link_libraries(polyhydra PUBLIC ${CMAKE_DL_LIBS} imgui OpenVolumeMesh::OpenVolumeMesh glm glm-header-only glad glfw nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
 
 set_target_properties(polyhydra PROPERTIES
                       DEBUG_POSTFIX "d"
@@ -322,7 +322,7 @@ install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/polyhydraConfig.cmake"
         DESTINATION "${polyhydra_INSTALL_INCLUDE_DIR}")
 
-install(TARGETS       polyhydra glm glfw glad imgui nlohmann_json stb tinyfiledialogs
+install(TARGETS       polyhydra glm glm-header-only glfw glad imgui nlohmann_json stb tinyfiledialogs
         EXPORT        polyhydraTargets
         LIBRARY       DESTINATION "${polyhydra_INSTALL_LIB_DIR}"
         ARCHIVE       DESTINATION "${polyhydra_INSTALL_LIB_DIR}")

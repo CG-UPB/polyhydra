@@ -37,6 +37,7 @@
 #include <OpenVolumeMesh/Geometry/VectorT.hh>
 
 // GLM
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
 // ImGui

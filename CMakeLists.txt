@@ -11,6 +11,7 @@ if (NOT DEFINED MSVC)
 endif ()
 
 option(POLYHYDRA_BUILD_EXAMPLES "Build polyhydra examples" ON)
+option(POLYHYDRA_SUBMODULES_MANUAL "Skip automatic submodule download" OFF)
 
 # polyhydra configuration
 set(POLYHYDRA_ROOT ${CMAKE_CURRENT_LIST_DIR})
@@ -18,7 +19,10 @@ set(POLYHYDRA_SRC ${POLYHYDRA_ROOT}/src)
 set(POLYHYDRA_INC ${POLYHYDRA_ROOT}/include)
 set(POLYHYDRA_EXT ${POLYHYDRA_ROOT}/ext)
 
-add_subdirectory(${POLYHYDRA_EXT})
+if (NOT POLYHYDRA_SUBMODULES_MANUAL)
+    add_subdirectory(${POLYHYDRA_EXT})
+endif()
+
 add_subdirectory(${POLYHYDRA_SRC})
 
 if (POLYHYDRA_BUILD_EXAMPLES)
