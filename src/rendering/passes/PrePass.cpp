@@ -73,16 +73,16 @@ void PrePass::draw_with_shader(const Renderer& renderer, Shader& shader)
 
         pre_phong_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
         pre_phong_shader->set_uniform_bool("u_use_base_color", mesh->get_data().use_base_color);
+        auto mtb = mesh->get_mtb();
+        shader.set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
+
         if (is_bezier_mesh)
         {
-            auto mtb = mesh->get_mtb();
             // Use Bezier Mesh Property to set uniform.
             shader.set_uniform_int(
                 "u_bezier_degree",
                 *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
 
-            // GL_TEXTURE12 is used for control points storage.
-            shader.set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
             // Use tessellation level value from toolbar.
             shader.set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
         }

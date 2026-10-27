@@ -8,55 +8,142 @@ namespace polyhydra::Internal
 {
 class MeshView;
 
+namespace
+{
+std::optional<FrameBufferAttachment> opaque_depth_attachment_specification()
+{
+    const std::vector<FrameBufferAttachment>& attachments = AppState::settings.multisampling
+                                                                ? FrameBufferObject::RGBA_AND_DEPTH_MULTISAMPLE
+                                                                : FrameBufferObject::RGBA_AND_DEPTH;
+    for (const auto& attachment : attachments)
+    {
+        if (attachment.attachment == GL_DEPTH_ATTACHMENT || attachment.attachment == GL_DEPTH_STENCIL_ATTACHMENT)
+        {
+            return attachment;
+        }
+    }
+    return std::nullopt;
+}
+
+FrameBufferAttachment single_sample_depth_attachment(const FrameBufferAttachment& specification)
+{
+    FrameBufferAttachment attachment = specification;
+    attachment.multisample = false;
+    return attachment;
+}
+
+void copy_depth_attachment(const FrameBufferObject& source, const FrameBufferObject& destination)
+{
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, source.get_id());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destination.get_id());
+    glBlitFramebuffer(0,
+                      0,
+                      source.get_width(),
+                      source.get_height(),
+                      0,
+                      0,
+                      destination.get_width(),
+                      destination.get_height(),
+                      GL_DEPTH_BUFFER_BIT,
+                      GL_NEAREST);
+}
+
+FrameBufferAttachment fallback_depth_attachment()
+{
+    return FrameBufferAttachment{.internal_format = GL_DEPTH_COMPONENT24,
+                                 .format = GL_DEPTH_COMPONENT,
+                                 .type = GL_UNSIGNED_INT,
+                                 .attachment = GL_DEPTH_ATTACHMENT,
+                                 .texture_filter = GL_NEAREST};
+}
+} // namespace
+
 TransparencyPassDP::TransparencyPassDP(int width, int height) : m_width(width), m_height(height)
 {
     m_transparency_shader = Shader::get("transparency_dp");
     m_composite_shader = Shader::get("composite_dp");
-
-    std::vector<FrameBufferAttachment> transparent_attachments0
-        = {FrameBufferAttachment{.internal_format = GL_RGBA16F,
-                                 .format = GL_RGBA,
-                                 .type = GL_FLOAT,
-                                 .attachment = GL_COLOR_ATTACHMENT0,
-                                 .texture_filter = GL_LINEAR,
-                                 .texture_wrap = GL_CLAMP_TO_EDGE},
-           FrameBufferAttachment{.internal_format = GL_DEPTH_COMPONENT32F,
-                                 .format = GL_DEPTH_COMPONENT,
-                                 .type = GL_FLOAT,
-                                 .attachment = GL_DEPTH_ATTACHMENT,
-                                 .texture_filter = GL_NEAREST}};
-    m_transparent_framebuffer0 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments0);
-
-    std::vector<FrameBufferAttachment> transparent_attachments1
-        = {FrameBufferAttachment{.internal_format = GL_RGBA16F,
-                                 .format = GL_RGBA,
-                                 .type = GL_FLOAT,
-                                 .attachment = GL_COLOR_ATTACHMENT0,
-                                 .texture_filter = GL_LINEAR,
-                                 .texture_wrap = GL_CLAMP_TO_EDGE
-
-           },
-           FrameBufferAttachment{.internal_format = GL_DEPTH_COMPONENT32F,
-                                 .format = GL_DEPTH_COMPONENT,
-                                 .type = GL_FLOAT,
-                                 .attachment = GL_DEPTH_ATTACHMENT,
-                                 .texture_filter = GL_NEAREST}};
-    m_transparent_framebuffer1 = std::make_shared<FrameBufferObject>(width, height, transparent_attachments1);
 }
 
-void TransparencyPassDP::render(const Renderer& renderer)
+TransparencyPassDP::~TransparencyPassDP()
 {
+    release_render_target_resources();
+}
 
-    auto& settings = AppState::settings;
-    int num_passes = settings.num_depth_peeling_passes;
+void TransparencyPassDP::release_render_target_resources()
+{
+    m_transparent_framebuffer0.reset();
+    m_transparent_framebuffer1.reset();
+    m_opaque_depth_framebuffer.reset();
 
-    // TODO: Refactor this pass so that textures are not allocated every frame. Rather check if something changed
-    //       and then update allocations
-    std::vector<uint32_t> textures;
-    for (int i = 0; i < num_passes; i++)
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    if (!m_layer_textures.empty())
     {
-        unsigned int texture;
-        glGenTextures(1, &texture);
+        glDeleteTextures(static_cast<GLsizei>(m_layer_textures.size()), m_layer_textures.data());
+        m_layer_textures.clear();
+    }
+
+    m_layer_width = 0;
+    m_layer_height = 0;
+    m_copy_opaque_depth = false;
+}
+
+void TransparencyPassDP::create_peel_framebuffers()
+{
+    const std::optional<FrameBufferAttachment> opaque_depth = opaque_depth_attachment_specification();
+    m_copy_opaque_depth = opaque_depth.has_value();
+    if (!m_copy_opaque_depth)
+    {
+        Log::warn("The target framebuffer has no depth attachment in one of the default formats, "
+                  "transparent fragments are not hidden by opaque geometry");
+    }
+    const FrameBufferAttachment depth_attachment
+        = single_sample_depth_attachment(opaque_depth.value_or(fallback_depth_attachment()));
+
+    const std::vector<FrameBufferAttachment> attachments
+        = {FrameBufferAttachment{.internal_format = GL_RGBA16F,
+                                  .format = GL_RGBA,
+                                  .type = GL_FLOAT,
+                                  .attachment = GL_COLOR_ATTACHMENT0,
+                                  .texture_filter = GL_LINEAR,
+                                  .texture_wrap = GL_CLAMP_TO_EDGE},
+            FrameBufferAttachment{.internal_format = GL_R32F,
+                                  .format = GL_RED,
+                                  .type = GL_FLOAT,
+                                  .attachment = GL_COLOR_ATTACHMENT1,
+                                  .texture_filter = GL_NEAREST,
+                                  .texture_wrap = GL_CLAMP_TO_EDGE},
+            depth_attachment};
+
+    m_transparent_framebuffer0 = std::make_shared<FrameBufferObject>(m_width, m_height, attachments);
+    m_transparent_framebuffer1 = std::make_shared<FrameBufferObject>(m_width, m_height, attachments);
+
+    const std::vector<FrameBufferAttachment> opaque_depth_attachments{depth_attachment};
+    m_opaque_depth_framebuffer = std::make_shared<FrameBufferObject>(m_width, m_height, opaque_depth_attachments);
+}
+
+void TransparencyPassDP::ensure_layer_textures(int num_passes)
+{
+    if (static_cast<int>(m_layer_textures.size()) == num_passes && m_layer_width == m_width
+        && m_layer_height == m_height)
+    {
+        return;
+    }
+
+    // Recreate the whole pool instead of only growing it, so that its size follows the number of
+    // peel passes and the resolution instead of only ever increasing.
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    if (!m_layer_textures.empty())
+    {
+        glDeleteTextures(static_cast<GLsizei>(m_layer_textures.size()), m_layer_textures.data());
+    }
+
+    m_layer_textures.assign(static_cast<size_t>(num_passes), 0);
+    glGenTextures(num_passes, m_layer_textures.data());
+
+    for (const uint32_t texture : m_layer_textures)
+    {
         glBindTexture(GL_TEXTURE_2D, texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
 
@@ -64,69 +151,99 @@ void TransparencyPassDP::render(const Renderer& renderer)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        textures.push_back(texture);
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    m_layer_width = m_width;
+    m_layer_height = m_height;
+}
+
+void TransparencyPassDP::render(const Renderer& renderer)
+{
+    auto& settings = AppState::settings;
+    int num_passes = settings.num_depth_peeling_passes;
+    if (num_passes <= 0)
+    {
+        return;
+    }
+
+    // Recreated at the first render() call and whenever the resources were released, e.g. by a
+    // window resize (see resize_buffers).
+    if (!m_transparent_framebuffer0 || !m_transparent_framebuffer1 || !m_opaque_depth_framebuffer)
+    {
+        release_render_target_resources();
+        create_peel_framebuffers();
+    }
+
+    ensure_layer_textures(num_passes);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+
+    // Clear value of the depth copy attachments (COLOR_ATTACHMENT1): a pixel that this peel pass
+    // did not write has to read as "nothing peeled here yet", i.e. the far plane.
+    const float far_plane[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+
+    // Collect the depth of the opaque scene once per frame, from where it is copied into the depth
+    // buffer of every peel framebuffer (see create_peel_framebuffers).
+    if (m_copy_opaque_depth)
+    {
+        copy_depth_attachment(*renderer.buffers.target_framebuffer_ms, *m_opaque_depth_framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     for (int i = 0; i < num_passes; i++)
     {
-        if (i % 2 == 0)
-        {
-            m_transparent_framebuffer0->bind();
-        }
-        else
-        {
-            m_transparent_framebuffer1->bind();
-        }
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
+        const std::shared_ptr<FrameBufferObject>& current
+            = (i % 2 == 0) ? m_transparent_framebuffer0 : m_transparent_framebuffer1;
+        const std::shared_ptr<FrameBufferObject>& previous
+            = (i % 2 == 0) ? m_transparent_framebuffer1 : m_transparent_framebuffer0;
 
-        if (i == 0)
-        {
-            m_transparent_framebuffer1->bind();
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            m_transparent_framebuffer1->unbind();
-            m_transparent_framebuffer0->bind();
-        }
-        glClearDepth(1.0f);
+        current->bind();
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_layer_textures[i], 0);
+
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClearBufferfv(GL_COLOR, 1, far_plane);
 
-        if (i % 2 == 0)
+        if (m_copy_opaque_depth)
         {
-            m_transparent_framebuffer0->bind();
-            m_transparency_shader->bind();
-
-            uint32_t depth_texture = m_transparent_framebuffer1->get_texture(GL_DEPTH_ATTACHMENT);
-            m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE2, depth_texture);
-            for (const auto& mesh : renderer.render_list)
-            {
-                render_mesh(renderer, mesh, i);
-            }
-            m_transparency_shader->unbind();
-            m_transparent_framebuffer0->unbind();
+            // Fragments that are hidden by opaque geometry never enter a peel layer, since the depth
+            // buffer of this pass is initialized with the depth of the opaque scene. Afterwards the
+            // read framebuffer is switched back, current stays bound for rendering.
+            copy_depth_attachment(*m_opaque_depth_framebuffer, *current);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, current->get_id());
         }
         else
         {
-            m_transparent_framebuffer1->bind();
-            m_transparency_shader->bind();
-            uint32_t depth_texture = m_transparent_framebuffer0->get_texture(GL_DEPTH_ATTACHMENT);
-            m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE2, depth_texture);
-            for (const auto& mesh : renderer.render_list)
-            {
-                render_mesh(renderer, mesh, i);
-            }
-            m_transparency_shader->unbind();
-            m_transparent_framebuffer1->unbind();
+            glClearDepth(1.0);
+            glClear(GL_DEPTH_BUFFER_BIT);
         }
+
+        m_transparency_shader->bind();
+
+        // Depth of the fragments that all previous peel layers already contain, read from the float
+        // depth copy attachment of the previous peel pass.
+        const uint32_t last_depth_texture = previous->get_texture(GL_COLOR_ATTACHMENT1);
+        m_transparency_shader->set_uniform_sampler2D("last_depth_texture", GL_TEXTURE2, last_depth_texture);
+
+        for (const auto& mesh : renderer.render_list)
+        {
+            render_mesh(renderer, mesh, i);
+        }
+        m_transparency_shader->unbind();
     }
+
+    // Composite the peeled layers from the farthest to the nearest one.
     for (int i = num_passes - 1; i >= 0; i--)
     {
-        render_composition(renderer, i, num_passes, textures[i]);
+        render_composition(renderer, i, num_passes, m_layer_textures[i]);
     }
 
-    glDeleteTextures((int)textures.size(), textures.data());
-    textures.clear();
+    // None of the peel framebuffers must stay bound, their attachments are sampled above.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer)
@@ -207,20 +324,22 @@ void TransparencyPassDP::render_mesh(const Renderer& renderer, const std::shared
     m_transparency_shader->set_uniform_vec3f("u_ground_color", AppState::settings.ground.solid_color);
     m_transparency_shader->set_uniform_vec3f("u_background_color", AppState::settings.sky.sky_color);
 
-    uint32_t depth_texture = renderer.buffers.target_framebuffer->get_texture(GL_DEPTH_ATTACHMENT);
-    m_transparency_shader->set_uniform_sampler2D("max_depth_texture", GL_TEXTURE1, depth_texture);
-
     m_transparency_shader->set_uniform_bool("u_is_bezier_mesh", is_bezier_mesh);
+
+    // The sampler for the Bezier control points is part of the tessellation evaluation shader of
+    // every mesh and only skipped by a dynamic branch, so it always needs to reference a valid
+    // texture buffer. An unset sampler uniform would default to texture unit 0.
+    auto mtb = mesh->get_mtb();
+    // GL_TEXTURE12 is used for control points storage.
+    m_transparency_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
+
     if (is_bezier_mesh)
     {
-        auto mtb = mesh->get_mtb();
         // Use Bezier Mesh Property to set uniform.
         m_transparency_shader->set_uniform_int(
             "u_bezier_degree",
             *mesh->get_ovm()->request_mesh_property<int>(MeshProperties::PROP_BEZIER_DEGREE).begin());
 
-        // GL_TEXTURE12 is used for control points storage.
-        m_transparency_shader->set_uniform_texbuffer("u_control_points_tb", mtb->get_binding(), mtb->get_texture());
         // Use tessellation level value from toolbar.
         m_transparency_shader->set_uniform_int("u_bezier_tessellation_level", mesh->get_data().tessellation_level);
     }
@@ -250,17 +369,6 @@ void TransparencyPassDP::render_composition(const Renderer& renderer, int curren
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    uint32_t new_layer;
-
-    if (current_pass % 2 == 0)
-    {
-        new_layer = m_transparent_framebuffer0->get_texture(GL_COLOR_ATTACHMENT0);
-    }
-    else
-    {
-        new_layer = m_transparent_framebuffer1->get_texture(GL_COLOR_ATTACHMENT0);
-    }
-
     renderer.buffers.target_framebuffer_ms->bind();
     m_composite_shader->bind();
     m_composite_shader->set_uniform_int("u_current_pass", current_pass);
@@ -280,19 +388,9 @@ void TransparencyPassDP::resize_buffers(int width, int height)
 {
     m_width = width;
     m_height = height;
-    m_transparent_framebuffer0->resize(width, height);
-    m_transparent_framebuffer1->resize(width, height);
-}
 
-void TransparencyPassDP::update_draw_texture()
-{
-    // uint32_t texture = renderer.buffers.target_framebuffer_ms->get_texture(GL_COLOR_ATTACHMENT0);
-    //        m_transparent_framebuffer0->bind();
-    //        m_transparent_framebuffer0->attach_texture(GL_COLOR_ATTACHMENT0, texture);
-    //        m_transparent_framebuffer0->unbind();
-    //        m_transparent_framebuffer1->bind();
-    //        m_transparent_framebuffer1->attach_texture(GL_COLOR_ATTACHMENT0, texture);
-    //        m_transparent_framebuffer1->unbind();
+    // The peel framebuffers and layer textures are recreated at the next render() call.
+    release_render_target_resources();
 }
 
 } // namespace polyhydra::Internal

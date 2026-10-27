@@ -11,6 +11,7 @@ class TransparencyPassDP : public RenderPass
 {
   public:
     explicit TransparencyPassDP(int width, int height);
+    ~TransparencyPassDP();
 
     void render(const Renderer& renderer) override;
     void render_mesh(const Renderer& renderer, const std::shared_ptr<MeshObject>& mesh, int layer);
@@ -18,18 +19,27 @@ class TransparencyPassDP : public RenderPass
 
     void resize_buffers(int width, int height);
 
-    GLuint m_texture;
-
-    uint32_t m_width;
-    uint32_t m_height;
+    int m_width;
+    int m_height;
 
     std::shared_ptr<FrameBufferObject> m_transparent_framebuffer0;
     std::shared_ptr<FrameBufferObject> m_transparent_framebuffer1;
 
   private:
-    void update_draw_texture();
+    std::shared_ptr<FrameBufferObject> m_opaque_depth_framebuffer;
 
-    Renderer* m_renderer;
+    void release_render_target_resources();
+
+    void create_peel_framebuffers();
+
+    void ensure_layer_textures(int num_passes);
+
+    std::vector<uint32_t> m_layer_textures;
+    int m_layer_width = 0;
+    int m_layer_height = 0;
+
+    bool m_copy_opaque_depth = false;
+
     std::shared_ptr<Shader> m_transparency_shader;
     std::shared_ptr<Shader> m_composite_shader;
 

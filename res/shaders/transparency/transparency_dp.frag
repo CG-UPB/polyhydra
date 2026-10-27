@@ -4,6 +4,7 @@
 #include "phong.glsl"
 
 layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 DepthOut;
 
 const float alpha_bias = 0.0001;
 
@@ -36,10 +37,11 @@ uniform int u_current_layer;
 uniform bool u_is_bezier_mesh;
 
 uniform sampler2D last_depth_texture;
-uniform sampler2D max_depth_texture;
 
 void main()
 {
+    DepthOut = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
+
     vec3 n = normalize(v_normal);
     vec3 l = normalize(u_light_pos);
     vec3 v = normalize(u_cam_pos - v_pos);
@@ -51,11 +53,10 @@ void main()
     float frag_depth = gl_FragCoord.z;
 
     float last_depth = texelFetch(last_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
-    float max_depth = texelFetch(max_depth_texture, ivec2(gl_FragCoord.xy), 0).r;
 
     float alpha = v_color.a;
 
-    if((u_current_layer != 0 && frag_depth <= last_depth) || frag_depth >= max_depth || alpha >= 1.0 - alpha_bias || alpha == 0 || v_visible == 0)
+    if((u_current_layer != 0 && frag_depth <= last_depth) || alpha >= 1.0 - alpha_bias || alpha == 0 || v_visible == 0)
     {
         discard;
     }
