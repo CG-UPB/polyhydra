@@ -1,5 +1,4 @@
 #include <polyhydra/polyhydra.h>
-#include "bits/stdc++.h"
 
 OpenVolumeMesh::GeometricPolyhedralMeshV3d gen_mesh()
 {

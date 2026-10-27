@@ -6,7 +6,7 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME} main.cpp)
 
-target_link_libraries(${PROJECT_NAME} polyhydra::polyhydra polyhydra::polyhydra)
+target_link_libraries(${PROJECT_NAME} polyhydra::polyhydra)
 
 # this is only needed for examples
 get_target_property(${PROJECT_NAME}_BINARY_DIR ${PROJECT_NAME} BINARY_DIR)

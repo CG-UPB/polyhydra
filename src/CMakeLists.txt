@@ -32,20 +32,25 @@ endmacro()
 ###########################
 
 # all regular cmake dependencies
-add_subdirectory(${POLYHYDRA_EXT}/glad ext/glad EXCLUDE_FROM_ALL)
-clean_interface_include_directories(glad)
+if (NOT TARGET glad)
+    add_subdirectory(${POLYHYDRA_EXT}/glad ext/glad EXCLUDE_FROM_ALL)
+    clean_interface_include_directories(glad)
+endif()
 
 # we don't need glfw docs, tests or examples
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_LIBRARY_TYPE "STATIC")
 
-add_subdirectory(${POLYHYDRA_EXT}/glfw ext/glfw EXCLUDE_FROM_ALL)
-clean_interface_include_directories(glfw)
+if (NOT TARGET glfw)
+    add_subdirectory(${POLYHYDRA_EXT}/glfw ext/glfw EXCLUDE_FROM_ALL)
+    clean_interface_include_directories(glfw)
+endif()
 
-add_subdirectory(${POLYHYDRA_EXT}/glm ext/glm EXCLUDE_FROM_ALL)
-# clean_interface_include_directories(glm)
+if (NOT TARGET glm)
+    add_subdirectory(${POLYHYDRA_EXT}/glm ext/glm EXCLUDE_FROM_ALL)
+    # clean_interface_include_directories(glm)
+endif()
 if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
     if(EXISTS "${POLYHYDRA_EXT}/OpenVolumeMesh/CMakeLists.txt")
         add_subdirectory(${POLYHYDRA_EXT}/OpenVolumeMesh OpenVolumeMesh EXCLUDE_FROM_ALL)
@@ -55,13 +60,16 @@ if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
 endif()
 
 #json
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-
-add_subdirectory(${POLYHYDRA_EXT}/json-develop ext/json-develop EXCLUDE_FROM_ALL)
+if (NOT TARGET nlohmann_json::nlohmann_json)
+    set(JSON_BuildTests OFF CACHE INTERNAL "")
+    add_subdirectory(${POLYHYDRA_EXT}/json-develop ext/json-develop EXCLUDE_FROM_ALL)
+endif()
 
 ###########################
 # ImGui
 ###########################
+
+if (NOT TARGET imgui)
 
 # imgui is not built with cmake by default, so we need to include the files ourselves
 set(imgui_HEADERS
@@ -99,6 +107,8 @@ if (MINGW)
     target_link_libraries(imgui PRIVATE imm32)
 endif()
 
+endif()
+
 ###########################
 # stb
 ###########################
@@ -128,10 +138,12 @@ set(stb_Headers
 
 set(stb_Sources ${stb_DIR}/stb_vorbis.c)
 
-add_library(stb ${stb_Headers} ${stb_Sources})
-target_include_directories(stb PUBLIC
-                           "$<BUILD_INTERFACE:${stb_DIR}>"
-                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+if (NOT TARGET stb)
+    add_library(stb ${stb_Headers} ${stb_Sources})
+    target_include_directories(stb PUBLIC
+                               "$<BUILD_INTERFACE:${stb_DIR}>"
+                               "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+endif()
 
 ###########################
 # tinyfiledialogs
@@ -142,10 +154,12 @@ set(tinyfiledialogs_DIR ${POLYHYDRA_EXT}/tinyfiledialogs)
 set(tinyfiledialogs_Headers ${tinyfiledialogs_DIR}/tinyfiledialogs.h)
 set(tinyfiledialogs_Sources ${tinyfiledialogs_DIR}/tinyfiledialogs.c)
 
-add_library(tinyfiledialogs ${tinyfiledialogs_Headers} ${tinyfiledialogs_Sources})
-target_include_directories(tinyfiledialogs PUBLIC
-                           "$<BUILD_INTERFACE:${tinyfiledialogs_DIR}>"
-                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+if (NOT TARGET tinyfiledialogs)
+    add_library(tinyfiledialogs ${tinyfiledialogs_Headers} ${tinyfiledialogs_Sources})
+    target_include_directories(tinyfiledialogs PUBLIC
+                               "$<BUILD_INTERFACE:${tinyfiledialogs_DIR}>"
+                               "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE_DIR}>")
+endif()
 
 set(polyhydra_SOURCES
         ${POLYHYDRA_SRC}/Window.cpp
@@ -293,14 +307,14 @@ target_include_directories(polyhydra
 
 find_package(Filesystem REQUIRED Experimental Final)
 
-target_link_libraries(polyhydra PUBLIC ${CMAKE_DL_LIBS} imgui OpenVolumeMesh::OpenVolumeMesh glm glm-header-only glad glfw nlohmann_json::nlohmann_json stb std::filesystem tinyfiledialogs)
+target_link_libraries(polyhydra PUBLIC imgui glad OpenVolumeMesh::OpenVolumeMesh glfw tinyfiledialogs glm nlohmann_json::nlohmann_json)
+target_link_libraries(polyhydra PRIVATE ${CMAKE_DL_LIBS} stb)
+target_link_libraries(polyhydra INTERFACE std::filesystem glm-header-only )
 
 set_target_properties(polyhydra PROPERTIES
                       DEBUG_POSTFIX "d"
                       VERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}
-                      SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}
-                      CXX_STANDARD 17
-                      CXX_STANDARD_REQUIRED ON)
+                      SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR})
 
 target_precompile_headers(polyhydra PUBLIC ${POLYHYDRA_INC}/polyhydra/polyhydraPCH.h)
 
